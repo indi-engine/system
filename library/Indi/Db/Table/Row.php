@@ -2933,6 +2933,22 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Id $fetch argument is object, we interpret it as nested data, so we assign it directly
         if (is_object($fetch)) return $this->_nested[$table] = $fetch;
 
+        // Else if it's a non-associative array - assume it's a data to be
+        // used for creating a rowset and putting it under $table key within $this->_nested prop
+        else if (is_array($fetch) && preg_match('~^[0-9,]+$~', im(array_keys($fetch)))) {
+
+            // Get rowset class
+            $rowsetClass = m($table)->rowsetClass();
+
+            // Create the rowset and assign it directly
+            return $this->_nested[$table] = new $rowsetClass([
+                'table' => $table,
+                'data' => $fetch,
+                'rowClass' => m($table)->rowClass(),
+                'found' => count($fetch)
+            ]);
+        }
+
         // Determine the nested rowset identifier. If $alias argument is not null, we will assume that needed rowset
         // is or should be stored under $alias key within $this->_nested array, or under $table key otherwise.
         // This is useful in cases when we need to deal with nested rowsets, got from same database table, but
@@ -6971,6 +6987,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function radio($field, $store = false) {
         return array('xtype' => 'radios', 'cls' => 'i-field-radio') + $this->combo($field, $store);
+    }
+
+    /**
+     * Build extjs config object for {'xtype': 'radios'}, based on given field
+     *
+     * @param $field
+     * @param bool $store
+     * @return array
+     */
+    public function multicheck($field, $store = false) {
+        return array('xtype' => 'multicheck', 'cls' => 'i-field-multicheck') + $this->combo($field, $store);
     }
 
     /**

@@ -1413,10 +1413,24 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // implemented for multi-columns mode, currently
         if ($multi) $imploded = $unique = false;
 
-        // Strip duplicate values from $valueA array, if $unique argument is `true`
+        // Strip duplicate values from $valueA array, if $unique argument is truly
         if ($unique) {
-            foreach ($this as $r) $valueA[$r->$column] = true;
-            $valueA = array_keys($valueA);
+
+            // If $unique arg is a string
+            if (is_string($unique)) {
+                foreach ($this as $r) {
+                    if ($multi) {
+                        foreach ($multi as $c) $valueA[$r->$unique] []= $r->$c;
+                    } else {
+                        $valueA[$r->$unique] = $r->$column;
+                    }
+                }
+
+            // Else
+            } else {
+                foreach ($this as $r) $valueA[$r->$column] = true;
+                $valueA = array_keys($valueA);
+            }
 
         // Else simply collect column data
         } else foreach ($this as $r) {

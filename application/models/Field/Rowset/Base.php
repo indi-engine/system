@@ -83,9 +83,10 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      *
      * @param $column
      * @param bool|string $imploded
+     * @param bool $unique
      * @return array
      */
-    public function column($column, $imploded = false) {
+    public function column($column, $imploded = false, $unique = false) {
 
         // If $column argument is 'alias'
         if ($column == 'alias') {
@@ -97,7 +98,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
             return $imploded ? implode(is_string($imploded) ? $imploded : ',', $valueA) : $valueA;
 
         // Else call ordinary function
-        } else return parent::column($column, $imploded);
+        } else return parent::column($column, $imploded, $unique);
     }
 
     /**

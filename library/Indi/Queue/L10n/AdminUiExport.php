@@ -1,6 +1,94 @@
 <?php
 trait Indi_Queue_L10n_AdminUiExport {
-    
+
+    /**
+     * @var array
+     */
+    public $meta = [];
+
+    /**
+     * @var array
+     */
+    public $params = [];
+
+    /**
+     * @param $params
+     * @return bool|Indi_Db_Table_Row|string|void
+     */
+    public function chunk($params) {
+
+        //
+        if (is_array($params)) $this->params = $params;
+
+        // Call parent and get return value
+        $return = parent::chunk($params);
+
+        // If fields l10n toggling code should be exported
+        if (in('meta', $this->params['export'])) {
+
+            // Build php-file
+            $this->fieldsToggleL10nYExport();
+
+            //
+            if ($return instanceof Indi_Db_Table_Row
+                && !in('data', $this->params['export']))
+                $return->assign([
+                    'countState' => 'finished',
+                    'itemsState' => 'finished',
+                    'queueState' => 'finished',
+                    'applyState' => 'finished',
+                ])->basicUpdate();
+        }
+
+        // Return
+        return $return;
+    }
+
+    public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = array()) {
+
+        // Call parent
+        $return = parent::appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where);
+
+        //
+        if (in('meta', $this->params['export'])
+            && !$fieldR_having_l10nY->nested('consider')->count()
+            && $return instanceof Indi_Db_Table_Row)
+            $this->meta[$return->id] = $fieldR_having_l10nY->id;
+
+        // Return
+        return $return;
+    }
+
+    /**
+     *
+     */
+    public function fieldsToggleL10nYExport() {
+
+        // Absolute path
+        $abs = DOC . STD . '/' . $this->fractionDir . '/application/lang/ui.php';
+
+        // Put php opening atg
+        file_put_contents($abs, '<?php' . "\n");
+
+        // Collect chunk ids in right order
+        $chunkIdA = Indi::db()->query('
+            SELECT `id` 
+            FROM `queueChunk`
+            WHERE `id` IN (' . im(array_keys($this->meta)) . ')
+            ORDER BY `move`
+        ')->fetchAll(PDO::FETCH_COLUMN);
+
+        // Collect field ids in right order
+        foreach ($chunkIdA as $chunkId) {
+
+            // Build line
+            $line = m('field')->fetchRow($this->meta[$chunkId])->export(false) . "->toggleL10n('qy', 'ru', false);";
+
+            // Append to ui.php
+            file_put_contents($abs, $line . "\n", FILE_APPEND);
+        }
+    }
+
     /**
      * Process queue items
      *

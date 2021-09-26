@@ -1675,7 +1675,12 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Build an expression for creating the current `field` entry in another project, running on Indi Engine
+     * Build an expression for creating/getting the current `field` entry in another project, running on Indi Engine
+     *
+     * Usage:
+     * $field->export(): "field('tablename', 'fieldname', ['fieldprop1' => 'value1', 'fieldprop2' => 'value2', ...]);"
+     * $field->export('fieldprop1'): "field('tablename', 'fieldname', ['fieldprop1' => 'value1']);"
+     * $field->export(false): "field('tablename', 'fieldname')"
      *
      * @param string $certain
      * @return string
@@ -1688,11 +1693,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Build `field` entry creation line
         $lineA[] = $this->entry
-            ? "cfgField('" . $table . "', '" . $entry . "', '" . $this->alias . "', " . $this->_ctor($certain) . ");"
-            : "field('" . $table . "', '" . $this->alias . "', " . $this->_ctor($certain) . ");";
+            ? "cfgField('" . $table . "', '" . $entry . "', '" . $this->alias . "'" . rif($certain !== false, ", " . $this->_ctor($certain) . ");", ')')
+            : "field('" . $table . "', '" . $this->alias . "'" . rif($certain !== false, ", " . $this->_ctor($certain) . ");", ')');
 
         // If $certain arg is given - export it only
-        if ($certain) return $lineA[0];
+        if ($certain || $certain === false) return $lineA[0];
 
         // Foreach `enumset` entry, nested within current `field` entry
         // - build `enumset` entry's creation expression
@@ -1844,6 +1849,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @throws Exception
      */
     public function toggleL10n($value, $lang, $async = true) {
+
+        // If we're going to start the queue for an aim,
+        // that is already achieved, e.g. we're trying to turn on l10n
+        // for a field that already has l10n = y - return
+        if ($this->l10n == ltrim($value, 'q')) return;
 
         // Get fraction
         $fraction = ar($this->l10nFraction());

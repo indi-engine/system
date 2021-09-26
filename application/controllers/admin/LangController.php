@@ -301,34 +301,73 @@ class Admin_LangController extends Indi_Controller_Admin {
      */
     public function exportAction() {
 
-        // Get `lang` fields, representing fractions of ui
-        $ui = t()->model->fields('adminSystem,adminCustom')->column('id');
+        // Get titles of `lang` fields, representing fractions of ui
+        $t = t()->model
+            ->fields('adminSystem,adminSystemUi,adminCustom,adminCustomUi,adminCustomData')
+            ->column('title', false, 'alias');
 
-        // Create phantom `ui` field for being used for radio buttons rendering
-        $radio = m('Field')->createRow([
-            'alias' => 'ui',
-            'columnTypeId' => 'INT(11)',
+        // Create phantom `fraction` field for being used for radio buttons rendering
+        $fraction = m('Field')->new([
+            'alias' => 'fraction',
+            'columnTypeId' => 'ENUM',
             'elementId' => 'combo',
             'storeRelationAbility' => 'one',
-            'relation' => 'field',
-            'filter' => '`id` IN (' . im($ui) . ')',
+            'relation' => 'enumset',
             'mode' => 'hidden'
-        ], true);
+        ]);
+
+        // Setup possible values
+        $fraction->nested('enumset', [
+            ['alias' => $_ = 'adminSystemUi',  'title' => im([$t['adminSystem'], $t['adminSystemUi']],   ' - ')],
+            ['alias' => 'adminCustomUi',       'title' => im([$t['adminCustom'], $t['adminCustomUi']],   ' - ')],
+            ['alias' => 'adminCustomData',     'title' => im([$t['adminCustom'], $t['adminCustomData']], ' - ')],
+        ]);
 
         // Append to fields list and set first fraction to be selected by default
-        t()->model->fields()->append($radio); t()->row->ui = $ui[0];
+        t()->model->fields()->append($fraction); t()->row->fraction = $_;
 
-        // Build config for ui-radio and prompt for ui
-        $prompt = $this->prompt(I_LANG_EXPORT_FRACTION, [t()->row->radio('ui')]);
+        // Create `export` field for being used for checkboxes rendering
+        $export = m('Field')->new([
+            'alias' => 'export',
+            'columnTypeId' => 'SET',
+            'elementId' => 'combo',
+            'storeRelationAbility' => 'many',
+            'relation' => 'enumset',
+            'mode' => 'hidden'
+        ]);
+
+        // Setup possible values
+        $export->nested('enumset', [
+            ['alias' => 'meta', 'title' => 'Подготовка полей'],
+            ['alias' => 'data', 'title' => 'Миграция переводов'],
+        ]);
+
+        // Append to fields list and set first step to be selected by default
+        t()->model->fields()->append($export); t()->row->export = 'fields';
+
+        // Show prompt dialog with two fields
+        $prompt = $this->prompt(I_LANG_EXPORT_HEADER, [
+            t()->row->radio('fraction'),
+            t()->row->multicheck('export')
+        ]);
 
         // Check prompt data
-        $_ = jcheck(['ui' => ['req' => true, 'rex' => 'int11', 'key' => 'field']], $prompt);
+        jcheck([
+            'fraction' => [
+                'req' => true,
+                'rex' => '~^(adminSystemUi|adminCustomUi|adminCustomData)$~'
+            ],
+            'export' => [
+                'req' => true,
+                'rex' => '~^(meta|data|meta,data)$~'
+            ]
+        ], $prompt);
 
         // Prepare params
-        $params = ['source' => t()->row->alias];
+        $params = ['source' => t()->row->alias, 'export' => $prompt['export']];
 
         // Build queue class name
-        $queueClassName = 'Indi_Queue_L10n_' . ucfirst($_['ui']->alias) . 'UiExport';
+        $queueClassName = 'Indi_Queue_L10n_' . ucfirst($prompt['fraction']) . 'Export';
 
         // Check that class exists
         if (!class_exists($queueClassName)) jflush(false, sprintf('Не найден класс %s', $queueClassName));
@@ -340,9 +379,9 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process
-        Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+        if (in('data', $prompt['export'])) Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
 
-        //
+        // Flush ok
         jflush(true, 'OK');
     }
 }

@@ -1901,4 +1901,14 @@ class Indi_Db_Table
         // Build template file name
         return $tpl;
     }
+
+    /**
+     * Create and return new *_Row instance
+     *
+     * @param $data
+     * @return Indi_Db_Table_Row
+     */
+    public function new($data) {
+        return $this->createRow($data, true);
+    }
 }
