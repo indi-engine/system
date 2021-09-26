@@ -1,5 +1,113 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function adminSystemUiFieldsToggleL10nAction() {
+        consider('realtime', 'title', 'type', ['required' => 'y']);
+        field('element', 'storeRelationAbility')->toggleL10n('qy', 'ru', false);
+        field('columnType', 'canStoreRelation')->toggleL10n('qy', 'ru', false);
+        field('grid', 'summaryType')->toggleL10n('qy', 'ru', false);
+        field('section', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('section2action', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('profile', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('admin', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('search', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('resize', 'proportions')->toggleL10n('qy', 'ru', false);
+        field('resize', 'masterDimensionAlias')->toggleL10n('qy', 'ru', false);
+        field('action', 'rowRequired')->toggleL10n('qy', 'ru', false);
+        field('field', 'storeRelationAbility')->toggleL10n('qy', 'ru', false);
+        field('section2action', 'south')->toggleL10n('qy', 'ru', false);
+        field('section', 'defaultSortDirection')->toggleL10n('qy', 'ru', false);
+        field('resize', 'changeColor')->toggleL10n('qy', 'ru', false);
+        field('entity', 'system')->toggleL10n('qy', 'ru', false);
+        field('action', 'type')->toggleL10n('qy', 'ru', false);
+        field('section', 'type')->toggleL10n('qy', 'ru', false);
+        field('section', 'rownumberer')->toggleL10n('qy', 'ru', false);
+        field('section', 'disableAdd')->toggleL10n('qy', 'ru', false);
+        field('action', 'display')->toggleL10n('qy', 'ru', false);
+        field('grid', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('alteredField', 'mode')->toggleL10n('qy', 'ru', false);
+        field('field', 'mode')->toggleL10n('qy', 'ru', false);
+        field('search', 'access')->toggleL10n('qy', 'ru', false);
+        field('action', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('grid', 'access')->toggleL10n('qy', 'ru', false);
+        field('alteredField', 'impact')->toggleL10n('qy', 'ru', false);
+        field('grid', 'editor')->toggleL10n('qy', 'ru', false);
+        field('section', 'rowsetSeparate')->toggleL10n('qy', 'ru', false);
+        field('section2action', 'fitWindow')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplFor')->toggleL10n('qy', 'ru', false);
+        field('notice', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('notice', 'qtyDiffRelyOn')->toggleL10n('qy', 'ru', false);
+        field('lang', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('field', 'l10n')->toggleL10n('qy', 'ru', false);
+        field('entity', 'spaceScheme')->toggleL10n('qy', 'ru', false);
+        field('noticeGetter', 'criteriaRelyOn')->toggleL10n('qy', 'ru', false);
+        field('noticeGetter', 'email')->toggleL10n('qy', 'ru', false);
+        field('noticeGetter', 'vk')->toggleL10n('qy', 'ru', false);
+        field('noticeGetter', 'sms')->toggleL10n('qy', 'ru', false);
+        field('month', 'month')->toggleL10n('qy', 'ru', false);
+        field('section', 'expand')->toggleL10n('qy', 'ru', false);
+        field('consider', 'required')->toggleL10n('qy', 'ru', false);
+        field('grid', 'group')->toggleL10n('qy', 'ru', false);
+        field('section', 'multiSelect')->toggleL10n('qy', 'ru', false);
+        field('noticeGetter', 'toggle')->toggleL10n('qy', 'ru', false);
+        field('admin', 'demo')->toggleL10n('qy', 'ru', false);
+        field('profile', 'demo')->toggleL10n('qy', 'ru', false);
+        field('notice', 'type')->toggleL10n('qy', 'ru', false);
+        field('admin', 'uiedit')->toggleL10n('qy', 'ru', false);
+        field('lang', 'state')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminSystemUi')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminSystemConst')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminCustomUi')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminCustomConst')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminCustomData')->toggleL10n('qy', 'ru', false);
+        field('lang', 'adminCustomTmpl')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'stage')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'state')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'countState')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'itemsState')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'queueState')->toggleL10n('qy', 'ru', false);
+        field('queueTask', 'applyState')->toggleL10n('qy', 'ru', false);
+        field('queueChunk', 'countState')->toggleL10n('qy', 'ru', false);
+        field('queueChunk', 'itemsState')->toggleL10n('qy', 'ru', false);
+        field('queueChunk', 'queueState')->toggleL10n('qy', 'ru', false);
+        field('queueChunk', 'applyState')->toggleL10n('qy', 'ru', false);
+        field('queueItem', 'stage')->toggleL10n('qy', 'ru', false);
+        field('queueChunk', 'fraction')->toggleL10n('qy', 'ru', false);
+        field('profile', 'type')->toggleL10n('qy', 'ru', false);
+        field('section2action', 'l10n')->toggleL10n('qy', 'ru', false);
+        field('realtime', 'type')->toggleL10n('qy', 'ru', false);
+        field('realtime', 'mode')->toggleL10n('qy', 'ru', false);
+        field('grid', 'rowReqIfAffected')->toggleL10n('qy', 'ru', false);
+        field('columnType', 'title')->toggleL10n('qy', 'ru', false);
+        field('entity', 'title')->toggleL10n('qy', 'ru', false);
+        field('field', 'title')->toggleL10n('qy', 'ru', false);
+        field('section', 'title')->toggleL10n('qy', 'ru', false);
+        field('action', 'title')->toggleL10n('qy', 'ru', false);
+        field('profile', 'title')->toggleL10n('qy', 'ru', false);
+        field('admin', 'title')->toggleL10n('qy', 'ru', false);
+        field('element', 'title')->toggleL10n('qy', 'ru', false);
+        field('resize', 'title')->toggleL10n('qy', 'ru', false);
+        field('field', 'tooltip')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplDecSubj')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplIncBody')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplIncSubj')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tooltip')->toggleL10n('qy', 'ru', false);
+        field('notice', 'title')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplDecBody')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplEvtSubj')->toggleL10n('qy', 'ru', false);
+        field('notice', 'tplEvtBody')->toggleL10n('qy', 'ru', false);
+        field('month', 'title')->toggleL10n('qy', 'ru', false);
+        field('grid', 'summaryText')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'datetime', 'when')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'calendar', 'when')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'string', 'vtype')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'combo', 'placeholder')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'string', 'inputMask')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'calendar', 'displayFormat')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'number', 'measure')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'datetime', 'displayTimeFormat')->toggleL10n('qy', 'ru', false);
+        cfgField('element', 'datetime', 'displayDateFormat')->toggleL10n('qy', 'ru', false);
+        die('ok');
+    }
     public function cfgFieldMissingAction() {
         cfgField('element', 'textarea', 'wide', [
             'title' => 'Во всю ширину',
@@ -19,12 +127,18 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('paramsAll', 'fieldId', 'entityId', ['move' => '']);
         field('param', 'cfgField', ['filter' => '`entry` != "0"']);
         field('notice', 'type', ['title' => 'Фракция']);
-        section('fields', ['extendsJs' => 'Indi.lib.controller.Field']);
-        section('fieldsAll', ['extendsJs' => 'Indi.lib.controller.Field']);
+        section('fields', [
+            'extendsPhp' => 'Indi_Controller_Admin_Field',
+            'extendsJs' => 'Indi.lib.controller.Field',
+        ]);
+        section('fieldsAll', [
+            'filter' => '`entry` = "0"',
+            'extendsPhp' => 'Indi_Controller_Admin_Field',
+            'extendsJs' => 'Indi.lib.controller.Field'
+        ]);
         field('queueTask', 'chunk', ['move' => 'params']);
         field('queueChunk', 'itemsBytes', ['move' => 'queueSize']);
         grid('search', 'consistence', ['move' => '']);
-        section('fields', ['extendsPhp' => 'Indi_Controller_Admin_Field']);
         filter('fieldsAll', 'entityId', true)->move(10);
         filter('fieldsAll', 'entityId', 'system', true)->move(10);
         section2action('lang','export', ['profileIds' => '1'])->move(2);
@@ -2760,7 +2874,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'mode' => 'required',
         ]);
         field('profile', 'type', [
-            'title' => 'Тип',
+            'title' => 'Фракция',
             'columnTypeId' => 'ENUM',
             'elementId' => 'radio',
             'defaultValue' => 'p',
