@@ -49,7 +49,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         $masterIds = array_column($master, 'entityId');
 
         // Foreach `entity` entry, having `system` = "n" (e.g. project's custom entities)
-        foreach (Indi::model('Entity')->fetchAll('`system` = "y"') as $entityR) {
+        foreach (m('Entity')->fetchAll('`system` = "y"', '`table`') as $entityR) {
 
             // If current entity is a multi-fraction entity
             if ($master[$entityR->table])

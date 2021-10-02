@@ -142,6 +142,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         filter('fieldsAll', 'entityId', true)->move(10);
         filter('fieldsAll', 'entityId', 'system', true)->move(10);
         section2action('lang','export', ['profileIds' => '1'])->move(2);
+        section2action('lang','form', ['toggle' => 'n']);
+        section2action('lang','delete', ['toggle' => 'n']);
         die('ok');
     }
     public function cfgFieldRemoveLegacyAction() {
