@@ -946,6 +946,12 @@ function jprompt($msg, array $cfg) {
     // Start building data for flushing
     $flush = array('prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg);
 
+    // Append prev prompts data
+    if ($flush['prompt'] > 1)
+        for ($i = 1; $i < $flush['prompt']; $i++)
+            if ($name = '_prompt' . rif($i - 1, $i))
+                $flush[$name] = json_decode(Indi::post($name));
+
     // Send content type header
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
 

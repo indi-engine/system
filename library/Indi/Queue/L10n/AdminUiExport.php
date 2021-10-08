@@ -82,7 +82,7 @@ trait Indi_Queue_L10n_AdminUiExport {
         foreach ($chunkIdA as $chunkId) {
 
             // Build line
-            $line = m('field')->fetchRow($this->meta[$chunkId])->export(false) . "->toggleL10n('qy', 'ru', false);";
+            $line = m('field')->fetchRow($this->meta[$chunkId])->export(false) . "->toggleL10n('qy', \$lang, false);";
 
             // Append to ui.php
             file_put_contents($abs, $line . "\n", FILE_APPEND);

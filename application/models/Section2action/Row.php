@@ -15,6 +15,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'actionId') $value = action($value)->id;
+            else if ($columnName == 'move') return $this->_system['move'] = $value;
         }
 
         // Standard __set()
@@ -33,7 +34,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         $ctor = $this->_original;
 
         // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['move']);
+        unset($ctor['id']);
 
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('sectionId,actionId') as $arg) unset($ctor[$arg]);
@@ -50,6 +51,10 @@ class Section2action_Row extends Indi_Db_Table_Row {
             // Exclude prop, if it has value equal to default value (unless it's `profileIds`)
             if ($fieldR->defaultValue == $value && $prop != 'profileIds' && !in($prop, $certain)) unset($ctor[$prop]);
 
+            // Else if $prop is 'move' - get alias of the field, that current field is after,
+            // among fields with same value of `entityId` prop
+            else if ($prop == 'move') $value = $this->position();
+
             // Exclude `title` prop, if it was auto-created
             else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
                 unset($ctor[$prop]);
@@ -62,6 +67,40 @@ class Section2action_Row extends Indi_Db_Table_Row {
 
         // Stringify
         return _var_export($ctor);
+    }
+
+    /**
+     * Get the the alias of the `field` entry,
+     * that current `field` entry is positioned after
+     * among all `field` entries having same `entityId`
+     * according to the values `move` prop
+     *
+     * @param null|string $after
+     * @param string $withinFields
+     * @return string|Indi_Db_Table_Row
+     */
+    public function position($after = null, $withinFields = 'sectionId') {
+
+        // Build within-fields WHERE clause
+        $wfw = [];
+        foreach (ar($withinFields) as $withinField)
+            $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+
+        // Get ordered action aliases
+        $actionA_alias = Indi::db()->query('
+            SELECT `sa`.`id`, `a`.`alias` 
+            FROM `action` `a`, `section2action` `sa`
+            WHERE 1 
+                AND `a`.`id` = `sa`.`actionId`
+                AND :p  
+            ORDER BY `sa`.`move`
+        ', $within = im($wfw, ' AND '))->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        // Get current position
+        $currentIdx = array_flip(array_keys($actionA_alias))[$this->id]; $actionA_alias = array_values($actionA_alias);
+
+        // Do positioning
+        return $this->_position($after, $actionA_alias, $currentIdx, $within);
     }
 
     /**
@@ -135,7 +174,19 @@ class Section2action_Row extends Indi_Db_Table_Row {
      *
      */
     public function onSave() {
+
+        // Trigger menu reload
         Indi::ws(['type' => 'menu', 'to' => true]);
+
+        // Do positioning, if $this->_system['move'] is set
+        if (array_key_exists('move', $this->_system)) {
+
+            // Get field, that current field should be moved after
+            $after = $this->_system['move']; unset($this->_system['move']);
+
+            // Position field for it to be after field, specified by $this->_system['move']
+            $this->position($after);
+        }
     }
 
     /**

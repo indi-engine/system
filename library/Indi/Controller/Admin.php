@@ -3639,8 +3639,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function prompt($msg, $cfg = array()) {
 
+        // Answer index
+        $answerIdx = rif(Indi::$answer, count(Indi::$answer) + 1);
+
         // Get answer
-        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
+        $answer = Indi::get()->{'answer' . $answerIdx};
 
         // Build meta
         $meta = array(); foreach($cfg as $field) $meta[$field['name']] = $field;
@@ -3655,7 +3658,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::$answer[count(Indi::$answer)] = $answer;
 
         // Return prompt data
-        return json_decode(Indi::post('_prompt'), true) + array('_meta' => $meta);
+        return json_decode(Indi::post('_prompt' . $answerIdx), true) + array('_meta' => $meta);
     }
 
     /**
