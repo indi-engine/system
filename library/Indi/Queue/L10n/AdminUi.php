@@ -48,7 +48,24 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         // Collect id of enties
         $masterIds = array_column($master, 'entityId');
 
-        // Foreach `entity` entry, having `system` = "n" (e.g. project's custom entities)
+        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
+        if ($master['entity']['value'] == 'n') foreach (Indi::model('Entity')->fetchAll('`system` = "n"') as $entityR) {
+
+            // If $this->fieldId prop is set, it means that we're here
+            // because of Indi_Queue_L10n_FieldToggleL10n->getFractionChunkWHERE() call
+            // so out aim here to obtain WHERE clause for certain field's chunk,
+            // and appendChunk() call will return WHERE clause rather than `queueChunk` instance
+            if ($this->fieldId) {
+                if ($fieldR_certain = m($entityR->id)->fields($this->fieldId))
+                    return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
+
+                // Foreach `field` entry, having `l10n` = "y"
+            } else foreach (m($entityR->id)->fields()->select('y', 'l10n') as $fieldR_having_l10nY)
+                if ($fieldR_having_l10nY->relation == 6)
+                    $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
+        }
+
+        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
         foreach (Indi::model('Entity')->fetchAll('`system` = "y"') as $entityR) {
 
             // If current entity is a multi-fraction entity
