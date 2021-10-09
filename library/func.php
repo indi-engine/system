@@ -2151,7 +2151,7 @@ function filter($section, $field, $ctor = false) {
     }
 
     // Mind `further` field
-    $w []= '`further` = "' . ($further ? $fieldR->rel()->fields($further)->id : 0) . '"';
+    $w []= '`further` = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `filter` entry
     $filterR = Indi::model('Search')->fetchRow($w);
