@@ -400,6 +400,9 @@ class Admin_LangController extends Indi_Controller_Admin {
 
             // Restore current language
             Indi::ini('lang')->admin = $_lang;
+
+            // Set 'y' for imported language's fraction-column
+            t()->row->set($prompt['fraction'], 'y')->save();
         }
 
         // Flush ok

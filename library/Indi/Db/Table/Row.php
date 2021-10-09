@@ -5027,6 +5027,20 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Alias for assign(), if $value is not given
+     *
+     * @param $assign
+     */
+    public function set($assign, $value = null) {
+
+        // If $value arg is given, assumes the first arg is the property name
+        if (func_num_args() > 1) $assign = [$assign => $value];
+
+        // Return
+        return $this->assign($assign);
+    }
+
+    /**
      * Return Field_Row object for a given field/property within current row
      *
      * @param $alias

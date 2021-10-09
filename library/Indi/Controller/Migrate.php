@@ -4,7 +4,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
         consider('realtime', 'title', 'type', ['required' => 'y']);
         filter('lang', 'state', ['defaultValue' => 'smth']);
         action('import', ['title' => 'Импорт', 'type' => 's']);
+        section2action('lang', 'export', ['move' => 'down', 'profileIds' => '1']);
         section2action('lang','import', ['move' => 'export', 'profileIds' => '1']);
+        section('queueTask', ['groupBy' => 0]);
         if ($_ = action('sitemap')) $_->delete();
         action('revert', ['title' => 'Восстановить', 'type' => 's']);
         if ($_ = alteredField('sections', 'type')) $_->delete();
@@ -32,10 +34,16 @@ class Indi_Controller_Migrate extends Indi_Controller {
         }
         if ($_ = field('section', 'grid')) $_->delete();
         if (field('grid', 'alias')) {
-            Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0 AND ``alias` != ""');
+            Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0 AND `alias` != ""');
         } else {
             Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0');
         }
+        section2action('lang', 'form', ['toggle' => 'n']);
+        section2action('lang', 'delete', ['toggle' => 'n']);
+        section('fieldsAll', ['defaultSortField' => 'move']);
+        grid('sections', 'load', ['alterTitle' => 'Подгрузка']);
+        m('profile')->row(1)->set('title', 'Разработчик')->save();
+        filter('fieldsAll', 'entityId', 'system', ['alt' => '']);
         die('ok');
     }
     public function cfgFieldMissingAction() {
