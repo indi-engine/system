@@ -49,7 +49,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
 
             // Update `queueTask` entry chunk counter
             $queueTaskR->chunk ++;
-            $queueTaskR->basicUpdate();
+            $queueTaskR->basicUpdate(false, false);
 
             // Foreach entity, that affected-field's dependent-field is in
             foreach ($considerRA_byEntityId as $entityId => $considerRA) {
@@ -64,7 +64,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     if ($m->fields($fieldId)->storeRelationAbility != 'none') continue;
 
                     // If it's consider-field is an enumset-field
-                    if ($m->fields($consider)->rel()->table() == 'enumset') {
+                    if (($rel = $m->fields($consider)->rel()) && $rel->table() == 'enumset') {
 
                         // Get enumset alias
                         $alias = m('enumset')->fetchRow($params['entry'])->alias;
@@ -96,7 +96,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
 
                     // Increment `queueTask` entry's chunk counter
                     $queueTaskR->chunk ++;
-                    $queueTaskR->basicUpdate();
+                    $queueTaskR->basicUpdate(false, false);
                 }
             }
         }
@@ -119,14 +119,13 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
         $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
         $queueTaskR->state = 'progress';
         $queueTaskR->queueState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -233,7 +232,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     $queueChunkR->queueSize ++; $queueChunkR->basicUpdate();
 
                     // Increment `queueSize` prop on `queueTask` entry and save it
-                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate();
+                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate(false, false);
 
                     // Increment $deduct
                     $deduct ++;
@@ -263,7 +262,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params);
@@ -317,7 +316,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                 $queueChunkR->applySize ++; $queueChunkR->basicUpdate();
 
                 // Increment `applySize` prop on `queueTask` entry and save it
-                $queueTaskR->applySize ++; $queueTaskR->basicUpdate();
+                $queueTaskR->applySize ++; $queueTaskR->basicUpdate(false, false);
 
             }, $where, '`id` ASC');
 

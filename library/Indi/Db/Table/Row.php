@@ -689,8 +689,336 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Update usages
         if (!$new) $this->_updateUsages();
 
+        // For now, only existing entries changes are supported
+        $this->realtime($new ? 'inserted' : 'affected');
+
         // Return current row id (in case if it was a new row) or number of affected rows (1 or 0)
         return $return;
+    }
+
+    /**
+     * Get info about affected fields and send it to websocket-channels,
+     * that are representing browser tabs having grids where current entry
+     * and old values of it's affected fields are displayed
+     */
+    public function realtime($event = 'affected') {
+
+        // If websockets are not enabled, or realtime is not enabled - return
+        if (!Indi::ini('ws')->enabled || !Indi::ini('ws')->realtime) return;
+
+        // Start building WHERE clause
+        $where = [
+            '`type` = "context"',
+            '`entityId` = "' . $this->model()->id() . '"',
+        ];
+
+        // If $event is  'affected'
+        if ($event == 'affected') {
+
+            // Append clause for `entries` column
+            $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
+
+            // If no fields affected - return
+            if (!$fieldIdA_affected = $this->field(array_keys($this->_affected))->column('id')) return;
+
+            // Append clause for `fields` column
+            $where []= 'CONCAT(",", `fields`, ",") REGEXP ",(' . im($fieldIdA_affected, '|') . '),"';
+        }
+
+        // Fetch matching `realtime` entries
+        $realtimeRs = m('Realtime')->fetchAll($where)->exclude(': != "context"', 'type');
+
+        // Pull foreign data for `realtimeId` key
+        $realtimeRs->foreign('realtimeId');
+
+        // Foreach
+        foreach ($realtimeRs as $realtimeR) {
+
+            // Get channel
+            $channel = $realtimeR->foreign('realtimeId')->token;
+
+            // Get context
+            $context = $realtimeR->token;
+
+            // If $event is 'affected'
+            if ($event == 'affected') {
+
+                // Prepare blank data and group it by channel and context
+                $byChannel[$channel][$context] = [
+                    'table' => $this->_table,
+                    'entry' => $this->id
+                ];
+
+                // If at least one of affected fields stand behind of a grid column, having `rowReqIfAffected` = 'y'
+                if (array_intersect($fieldIdA_affected, ar(json_decode($realtimeR->scope)->rowReqIfAffected))) {
+
+                    // It means that such column's cell content IS INVOLVED in the process
+                    // of rendering content for at least one other column's cell within same grid,
+                    // and in that case we give a signal for whole row to be reloaded rather than
+                    // sending only changed cells data
+                    $byChannel[$channel][$context]['affected'] = true;
+
+                // Else
+                } else {
+
+                    // Get IDs of affected fields involved by context
+                    $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
+
+                    // Get aliases of affected fields involved by context
+                    $dataColumns = [];
+                    foreach ($fieldIds as $fieldId)
+                        if ($field = $this->field($fieldId)->alias)
+                            $dataColumns[] = $field;
+
+                    // Prepare grid data, however with no adjustments that could be applied at section/controller-level
+                    $data = [$this->toGridData($dataColumns)];
+
+                    // Prepare blank data and group it by channel and context
+                    $byChannel[$channel][$context]['affected'] = array_shift($data);
+                }
+
+            // Else if $event is 'deleted'
+            } else if ($event == 'deleted') {
+
+                // Get scope
+                $scope = json_decode($realtimeR->scope, true); $entries = false;
+
+                // If scope's tree-flag is true
+                if ($scope['tree']) {
+
+                    // Get raw tree
+                    $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
+
+                    // Pick tree if need
+                    if ($scope['WHERE']) $tree = $tree['tree'];
+
+                    // Build ORDER clause, respecting the tree
+                    $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
+
+                // Else build ORDER clause using ordinary approach
+                } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
+
+                // If deleted entry is on current page
+                if (in($this->id, $realtimeR->entries)) {
+
+                    // If there is at least 1 next page exists
+                    // Detect ID of entry that will be shifted from next page's first to current page's last
+                    if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
+                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) Indi::db()->query('
+                            SELECT `id` FROM `' . $this->_table . '` 
+                            WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
+                            ' . rif($order, 'ORDER BY $1') . ' 
+                            LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
+                        ')->fetchColumn());
+
+                    // Else if it's the last page - do nothing
+                    else $byChannel[$channel][$context]['deleted'] = 'this';
+
+                    // Prepare data and group it by channel and context
+                    $byChannel[$channel][$context] += [
+                        'table' => $this->_table,
+                        'entry' => $this->id
+                    ];
+
+                    // Decrement found
+                    $scope['found'] --;
+
+                    // Update scope
+                    $realtimeR->scope = json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
+
+                    // Drop current entry ID from `entries` column of `realtime` entry
+                    $realtimeR->drop('entries', $this->id);
+
+                    // Update `realtime` entry
+                    $realtimeR->basicUpdate();
+
+                // Else if deleted entry is on prev or next page
+                } else if (!$scope['WHERE'] || Indi::db()->query($sql = '
+                    SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
+                )->fetchColumn()) {
+
+                    // Push current entry ID to the beginning of `entries` column of `realtime` entry
+                    $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
+
+                    // Get the ordered IDs: deleted, first on current page, and last on current page
+                    $idA = Indi::db()->query($sql = '
+                        SELECT `id` FROM `' . $this->_table . '`
+                        WHERE `id` IN (' . rif($first, '$1,') . rif($last, '$1,') .  $this->id . ')
+                        ' . rif($order, 'ORDER BY $1') . ' 
+                    ')->fetchAll(PDO::FETCH_COLUMN);
+
+                    // If deleted entry ID is above the others, it means it belongs to the one of prev pages
+                    if ($this->id == array_shift($idA)) {
+
+                        // Remove first from $entries to set it as new scope's pgupLast
+                        $scope['pgupLast'] = $first; $realtimeR->drop('entries', $first);
+
+                        // If there is at least 1 next page exists
+                        // Detect ID of entry that will be shifted from next page's first to current page's last
+                        if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
+                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) Indi::db()->query('
+                                SELECT `id` FROM `' . $this->_table . '` 
+                                WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
+                                ' . rif($order, 'ORDER BY $1') . ' 
+                                LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
+                            ')->fetchColumn());
+
+                        // Else if it's the last page
+                        else $byChannel[$channel][$context]['deleted'] = 'prev';
+
+                    // Else if deleted entry ID is below the others, it means it belongs to the one of next pages
+                    } else if ($this->id == array_pop($idA)) $byChannel[$channel][$context]['deleted'] = 'next';
+
+                    // If $byChannel[$channel][$context] is empty - this means that current entry was already deleted
+                    if ($byChannel[$channel][$context]) {
+
+                        // Prepare data and group it by channel and context
+                        $byChannel[$channel][$context] += [
+                            'table' => $this->_table,
+                            'entry' => $this->id
+                        ];
+
+                        // Decrement found
+                        $scope['found'] --;
+
+                        // Update scope
+                        $realtimeR->scope = json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
+
+                        // Update `realtime` entry
+                        $realtimeR->basicUpdate();
+                    }
+                }
+
+            // Else if $event is 'inserted'
+            } else if ($event == 'inserted') {
+
+                // Get scope
+                $scope = json_decode($realtimeR->scope, true); $entries = false;
+
+                // If scope's tree-flag is true
+                if ($scope['tree']) {
+
+                    // Get raw tree
+                    $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
+
+                    // Pick tree if need
+                    if ($scope['WHERE']) $tree = $tree['tree'];
+
+                    // Build ORDER clause, respecting the tree
+                    $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
+
+                // Else build ORDER clause using ordinary approach
+                } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
+
+                // Check whether inserted row match scope's WHERE clause
+                if (!$scope['WHERE'] || Indi::db()->query($sql = '
+                    SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
+                )->fetchColumn()) {
+
+                    // Prepare blank data and group it by channel and context
+                    $byChannel[$channel][$context] = [
+                        'table' => $this->_table,
+                        'entry' => $this->id,
+                        'inserted' => true
+                    ];
+
+                    // If there are at least 1 entry on current page
+                    if ($realtimeR->entries) {
+
+                        // Get the ordered IDs: pgupLast, current, and newly added
+                        $idA = Indi::db()->query($sql = '
+                            SELECT `id` FROM `' . $this->_table . '`
+                            WHERE `id` IN (' . rif($scope['pgupLast'], '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
+                            ' . rif($order, 'ORDER BY $1') . ' 
+                        ')->fetchAll(PDO::FETCH_COLUMN);
+
+                        // If new entry belongs to prev page
+                        if ($scope['pgupLast'] && $this->id == array_shift($idA)) {
+
+                            // Make sure pgupLast-entry will be appended -
+                            $byChannel[$channel][$context]['entry'] = $scope['pgupLast'];
+
+                            // - Appended to the top of current page
+                            $byChannel[$channel][$context]['inserted'] = 0;
+
+                            // Push current entry ID to the beginning of `entries` column of `realtime` entry
+                            $entries = ar($realtimeR->entries); array_unshift($entries, $scope['pgupLast']);
+
+                            //
+                            $scope['pgupLast'] = Indi::db()->query('
+                                SELECT `id` FROM `' . $this->_table . '` 
+                                WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
+                                ' . rif($order, 'ORDER BY $1') . ' 
+                                LIMIT ' . ($scope['rowsOnPage'] * ($scope['page'] - 1) - 1) . ', 1
+                            ')->fetchColumn();
+
+                        // Else if total number of entries is more than rowsOnPage
+                        } else if (count($idA) > $scope['rowsOnPage'])
+
+                            // If new entry is the last entry - it means that it is needless
+                            // entry of current page and belongs to next page
+                            if ($this->id == array_pop($idA)) $byChannel[$channel][$context]['inserted'] = 'next';
+
+                            // Otherwise detect position index at that it should be inserted at current page, so that
+                            // the record, that is currently last on current page will be pushed out to next page
+                            else {
+
+                                // Detect position
+                                $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+
+                                // Push current entry ID to `entries` column of `realtime` entry
+                                $entries = ar($realtimeR->entries); array_splice($entries, $byChannel[$channel][$context]['inserted'], 0, $this->id);
+                            }
+
+                        // Else it total number of entries on current page is less or equal than the rowsOnPage
+                        else {
+
+                            // Detect the insertion index
+                            $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+
+                            // Push current entry ID to `entries` column of `realtime` entry
+                            $entries = ar($realtimeR->entries); array_push($entries, $this->id);
+                        }
+
+                    // Else if there is not yet entries on current page
+                    // it means that we're on 1st page and it's empty
+                    } else {
+
+                        // So set the insertion index for new entry to be at the top
+                        $byChannel[$channel][$context]['inserted'] = 0;
+
+                        // Push current entry ID to `entries` column of `realtime` entry
+                        $entries = ar($realtimeR->entries); array_push($entries, $this->id);
+                    }
+
+                    // Increment scope's 'found' prop
+                    $scope['found'] ++;
+
+                    // Data to update `realtime` entry with
+                    $data = ['scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)];
+
+                    // If $entries is modified
+                    if ($entries !== false) {
+
+                        // If count of IDs in $entries became greater than rowsOnPage after that - remove the last
+                        if (count($entries) > $scope['rowsOnPage']) array_pop($entries);
+
+                        // Setup 'entries' prop
+                        $data['entries'] = im($entries);
+                    }
+
+                    // Update `realtime` entry
+                    $realtimeR->assign($data)->basicUpdate();
+                }
+            }
+        }
+
+        // Send data to each channel
+        if ($byChannel) foreach ($byChannel as $channel => $byContext) Indi::ws([
+            'type' => 'realtime',
+            'to' => $channel,
+            'data' => $byContext
+        ]);
     }
 
     /**
@@ -710,9 +1038,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param bool $notices If `true - notices will not be omitted
      * @param bool $amerge If `true - previous value $this->_affected will be kept, but newly affected will have a priority
+     * @param bool $realtime If `true - $this->realtime('affected') call will be made
      * @return int
      */
-    public function basicUpdate($notices = false, $amerge = true) {
+    public function basicUpdate($notices = false, $amerge = true, $realtime = true) {
 
         // Data types check, and if smth is not ok - flush mismatches
         $this->scratchy(true);
@@ -753,6 +1082,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // and compare results with the results of previous check, that was made before any modifications
         if ($notices) $this->_noticesStep2($original);
 
+        // Involve realtime feature
+        if ($realtime) $this->realtime('affected');
+
         // Return number of affected rows (1 or 0)
         return $affected;
     }
@@ -772,10 +1104,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     protected function _localize(array &$data) {
 
+        // If it's an enumset-entry, and it's field has l10n turned on
+        if ($this->_table == 'enumset' && $this->foreign('fieldId')->l10n == 'y') $lfA = ['title'];
+
+        // Else if it's a param-entry, and it's cfgField has l10n turned on
+        else if ($this->_table == 'param' && $this->foreign('cfgField')->l10n == 'y') $lfA = ['cfgValue'];
+
+        // Else
+        else $lfA = Indi_Db::l10n($this->_table);
+
         // If current entity has no localized fields - return
-        if (!$lfA = $this->_table == 'enumset' && $this->foreign('fieldId')->l10n == 'y'
-            ? array('title')
-            : Indi_Db::l10n($this->_table)) return;
+        if (!$lfA) return;
 
         // If there are localized fields, but none of them were modified - return
         if (!$mlfA = array_intersect($lfA, array_keys($this->_modified))) return;
@@ -786,57 +1125,139 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get json-template containing {lang1:"",lang2:"",...} for each language, that is applicable to current fraction
         if (!$jtpl = Lang::$_jtpl[$fraction]) return;
 
+        // Aux variables
+        $setterA = $batch = $json = $keep = [];
+
+        // For each localized modified field
+        foreach ($mlfA as $mlfI) {
+
+            // Prepare blank template and setup first value - for current language
+            $json[$mlfI] = $jtpl; $json[$mlfI][Indi::ini('lang')->admin] = $data[$mlfI];
+
+            // Check whether setter-method exists and if yes - remember that
+            if (method_exists($this, $setter = 'set' . ucfirst($mlfI)) && !ini()->lang->migration) $setterA[$mlfI] = $setter;
+
+            // Else if value should be translated - collect such values for further batch translate
+            else if (!$this->id || $this->field($mlfI)->param('refreshL10nsOnUpdate')) $batch[$mlfI] = $data[$mlfI];
+
+            // Else collect props, those translations (except the one for current language) should be kept as is,
+            // so we will know what fields should be used for spoofing the $this->_modified
+            else $keep []= $mlfI;
+        }
+
+        // Get target languages
+        $targets = $jtpl; unset($targets[Indi::ini('lang')->admin]); $targets = array_keys($targets);
+
+        // If both $batch and $targets are not empty
+        if ($batch && $targets) {
+
+            // Require and instantiate Google Cloud Translation PHP API and
+            $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
+
+            // Try to call Google Cloud Translate API
+            try {
+
+                // Foreach target language - make api call to google passing source values
+                foreach (ar($targets) as $target) $resultByLang[$target] = array_combine(
+                        array_keys($batch),
+                        array_column($gapi->translateBatch(array_values($batch), [
+                            'source' => Indi::ini('lang')->admin,
+                            'target' => $target,
+                        ]), 'text')
+                    );
+
+                // For each of localized modified fields
+                foreach ($mlfA as $mlfI) {
+
+                    // If $mlfI-field has no setter method - call it
+                    if (!$setterA[$mlfI]) {
+
+                        // Build localized values
+                        foreach ($json[$mlfI] as $lang => &$holder) {
+
+                            // Else if $lang is same as current system lang - use as is
+                            if ($lang == Indi::ini('lang')->admin) $holder = $data[$mlfI];
+
+                            // Else if translation result defined - use it
+                            else if (array_key_exists($mlfI, $resultByLang[$lang])) $holder = $resultByLang[$lang][$mlfI];
+
+                            // Else use existing language version
+                            else $holder = $this->_language[$mlfI][$lang] ?: '';
+                        }
+
+                        // Update $this->_language
+                        $this->_language[$mlfI] = $json[$mlfI];
+                    }
+                }
+
+            // Catch exception
+            } catch (Exception $e) {
+
+                // Log error
+                ehandler(1, json_decode($e->getMessage())->error->message, __FILE__, __LINE__);
+
+                // Exit
+                exit;
+            }
+        }
+
+        // Backup modified state
+        $modified = $this->_modified;
+
+        // Here results built by setters will be collected
+        $resultBySetter = [];
+
         // For each of localized modified fields
         foreach ($mlfA as $mlfI) {
 
-            // If field contain keys - skip (this may happen for enumset-fields)
-            if ($this->field($mlfI)->storeRelationAbility != 'none') continue;
+            // If $mlfI-field has setter method - call it
+            if ($setter = $setterA[$mlfI]) {
 
-            // Setup flag, indicating whether or not $mlfI-field has localized dependency
-            $hasLD = $this->field($mlfI)->hasLocalizedDependency();
-
-            // Copy/Reset $json from/to $jtpl
-            $json = $jtpl;
-
-            // Build localized values
-            foreach ($json as $lang => &$holder) {
-
-                // If $mlfI-field has setter method - call it
-                if (method_exists($this, $setter = 'set' . ucfirst($mlfI))) {
+                // Build localized values
+                foreach ($json[$mlfI] as $lang => &$holder) {
 
                     // Backup current language
                     $_lang = Indi::ini('lang')->admin;
 
-                    // Set current language to $lang
+                    // Temporary spoof values within $this->_modified for localized fields, as they may be involved by setters
+                    $this->_modified = array_merge(
+                        $modified,
+                        $resultByLang[$lang] ?: [],
+                        $resultBySetter[$lang] ?: []
+                    );
+
+                    // If current language is not the same we're going to call setter for - spoof modified with existing translation
+                    // This is used in this way because of that setter for $mlfI-prop may involve getter for other props,
+                    // having only current-language verion modified while other-languages versions are not modified,
+                    // but we directly assign the into $this->_modified because of *_Row->__get($columnName) value pickup priority logic
+                    if ($_lang != $lang) foreach ($keep as $keep_) $this->_modified[$keep_] = $this->_language['alias'][$lang];
+
+                    // Temporary spoof current language with $lang
                     Indi::ini('lang')->admin = $lang;
 
-                    // Get value according to required language
+                    // Call setter and get value according to required language
                     $this->{$setter}(); $holder =  $this->$mlfI;
+
+                    // Collect values, built by setters, as they can be used by other setters
+                    $resultBySetter[$lang][$mlfI] = $holder;
 
                     // Restore current language back
                     Indi::ini('lang')->admin = $_lang;
 
-                // Else if $mlfI-field has no localized dependencies
-                } else {
-
-                    // If this is a new entry, or existing entry but field having 'refreshL10nsOnUpdate'
-                    // flag turned On - use transliteration, where possible
-                    if (!$this->id || $this->field($mlfI)->param('refreshL10nsOnUpdate'))
-                        $holder = Indi::l10n($this->_modified[$mlfI], $lang);
-
-                    // Else if $lang is same as current system lang - use as is
-                    else if ($lang == Indi::ini('lang')->admin) $holder = $data[$mlfI];
-
-                    // Else use existing language version
-                    else $holder = $this->_language[$mlfI][$lang] ?: '';
+                    // Restore $this->_modified
+                    $this->_modified = $modified;
                 }
-            }
 
-            // Revert value back to current language
-            if ($hasLD) $this->$mlfI = $json[Indi::ini('lang')->admin];
+                // Revert value back to current language
+                $this->$mlfI = $json[$mlfI][Indi::ini('lang')->admin];
+
+            // Else
+            } else if (!array_key_exists($mlfI, $batch))
+                foreach ($json[$mlfI] as $lang => &$holder)
+                    $holder = $lang == Indi::ini('lang')->admin ? $data[$mlfI] : $this->_language[$mlfI][$lang];
 
             // Get JSON
-            $data[$mlfI] = json_encode($json, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
+            $data[$mlfI] = json_encode($json[$mlfI], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
         }
     }
 
@@ -1173,6 +1594,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // or row has dependent rowsets
         $this->deleteUsages();
 
+        // Notify UI-users
+        $this->realtime('deleted');
+
         // Standard deletion
         $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
 
@@ -1344,10 +1768,18 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Get that foreign-key field
                 $cField_foreign = $considerR->foreign('foreign');
 
+                // Get entry, identified by current value of consider-field
+                $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+
                 // Get it's value
-                $cValueForeign = Indi::model($cField->relation)
-                    ->fetchRow('`id` = "' . $cValue . '"')
-                    ->{$cField_foreign->alias};
+                $cValueForeign = $cEntryR->{$cField_foreign->alias};
+
+                // If current field itself is not linked to any entity, it mean that this entity would be identified by
+                // the value of consider-entry's foreign field's value, and in this case there may be a need to anyway
+                // involve consider-field's name and value in combo data WHERE clause. First faced case is to to this
+                // for consider-fields linked to `profile`-entity, as different `profile` entries may have same `entityId`
+                if (!$fieldR->relation && $cValueForeign)
+                    $cEntryR->_comboDataConsiderWHERE($where, $fieldR, $cField, $cValue, $considerR->required, $cValueForeign);
 
                 // Spoof variables before usage
                 $cField = $cField_foreign; $cValue = $cValueForeign;
@@ -1410,7 +1842,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         // because we can have situations, there order is not set at all and if so, we won't use ORDER clause
         // So, if order is empty, the results will be retrieved in the order of their physical placement in
         // their database table
-        if (!is_array($order) && preg_match('~^[a-zA-Z0-9]$~', $order)) $order = '`' . $order . '`';
+        if (!is_array($order) && preg_match('~^[a-zA-Z0-9_]+$~', $order)) $order = '`' . $order . '`';
 
         // If fetch-mode is 'keyword'
         if ($selectedTypeIsKeyword) {
@@ -1995,8 +2427,31 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if ($fieldR->original('storeRelationAbility') == 'one' || strlen($val) || $aux) {
 
                     // Determine a model, for foreign row to be got from. If consider type is 'variable entity',
-                    // then model is a value of consider-field. Otherwise model is field's `relation` property
-                    $model = $fieldR->relation ?: $this->{$fieldR->nested('consider')->at(0)->foreign('consider')->alias};
+                    // then model is a value of consider-field, or it's foreign field. Otherwise model is field's `relation` property
+                    if ($fieldR->relation) $model = $fieldR->relation; else {
+
+                        // Get first `consider` entry
+                        $considerR = $fieldR->nested('consider')->at(0);
+
+                        // Get `field` entry that `consider` entry is representing
+                        $cField = $considerR->foreign('consider');
+
+                        // Get model
+                        $model = $cValue = $this->{$cField->alias};
+
+                        // If `consider` entry has non-zero `foreign` prop
+                        if ($considerR->foreign) {
+
+                            // Get that foreign-key field
+                            $cField_foreign = $considerR->foreign('foreign');
+
+                            // Get entry, identified by current value of consider-field
+                            $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+
+                            // Spoof model
+                            $model = $cValue = $cEntryR->{$cField_foreign->alias};
+                        }
+                    }
 
                     // Determine a fetch method
                     $methodType = $fieldR->original('storeRelationAbility') == 'many' ? 'All' : 'Row';
@@ -2477,6 +2932,22 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Id $fetch argument is object, we interpret it as nested data, so we assign it directly
         if (is_object($fetch)) return $this->_nested[$table] = $fetch;
+
+        // Else if it's a non-associative array - assume it's a data to be
+        // used for creating a rowset and putting it under $table key within $this->_nested prop
+        else if (is_array($fetch) && preg_match('~^[0-9,]+$~', im(array_keys($fetch)))) {
+
+            // Get rowset class
+            $rowsetClass = m($table)->rowsetClass();
+
+            // Create the rowset and assign it directly
+            return $this->_nested[$table] = new $rowsetClass([
+                'table' => $table,
+                'data' => $fetch,
+                'rowClass' => m($table)->rowClass(),
+                'found' => count($fetch)
+            ]);
+        }
 
         // Determine the nested rowset identifier. If $alias argument is not null, we will assume that needed rowset
         // is or should be stored under $alias key within $this->_nested array, or under $table key otherwise.
@@ -4556,6 +5027,20 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Alias for assign(), if $value is not given
+     *
+     * @param $assign
+     */
+    public function set($assign, $value = null) {
+
+        // If $value arg is given, assumes the first arg is the property name
+        if (func_num_args() > 1) $assign = [$assign => $value];
+
+        // Return
+        return $this->assign($assign);
+    }
+
+    /**
      * Return Field_Row object for a given field/property within current row
      *
      * @param $alias
@@ -5511,7 +5996,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
 
             // If $prop exists as a key in $data arg - assign in
-            if (array_key_exists($prop, $data)) $this->$prop = $data[$prop];
+            if (array_key_exists($prop, (array) $data)) $this->$prop = $data[$prop];
 
             // If $prop is an alias of thу existing field
             if ($fieldR = $this->field($prop)) {
@@ -6519,6 +7004,17 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Build extjs config object for {'xtype': 'radios'}, based on given field
+     *
+     * @param $field
+     * @param bool $store
+     * @return array
+     */
+    public function multicheck($field, $store = false) {
+        return array('xtype' => 'multicheck', 'cls' => 'i-field-multicheck') + $this->combo($field, $store);
+    }
+
+    /**
      * Get nesting-level, if applicable
      *
      * @return int
@@ -6578,5 +7074,63 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function tpldoc($field, $abs = false, $lang = null) {
         return $this->model()->tpldoc($field, $abs, $lang);
+    }
+
+    /**
+     * Helper function, used for system purposes, should not be called directly
+     *
+     * @param $after
+     * @param $among
+     * @param $currentIdx
+     * @param $within
+     * @return $this|string
+     */
+    protected function _position($after, $among, $currentIdx, $within = '') {
+
+        // If $after arg is null or not given
+        if ($after === null) {
+
+            // If position of current entry is non-zero, e.g. is not first
+            // return alias of entry, that current entry is positioned after,
+            // else return empty string, indicating that current entry is on top
+            return $currentIdx ? $among[$currentIdx - 1] : '';
+
+        // Else do positioning
+        } else {
+
+            // If current entry should moved to top
+            if ($after === '') {
+
+                // If current entry is already on top - return
+                if (!$currentIdx) return $this;
+
+                // Else set direction to 'up', and qty of $this->move() calls
+                $direction = 'up'; $count = $currentIdx;
+
+            // Else
+            } else {
+
+                // Get required position of current entry
+                $mustbeIdx = array_flip($among)[$after] + 1;
+
+                // If it's already at required position - do nothing
+                if ($mustbeIdx == $currentIdx) return $this;
+
+                // Set direction
+                $direction = $mustbeIdx > $currentIdx ? 'down' : 'up';
+
+                // Set count of $this->move() calls
+                $count = abs($currentIdx - $mustbeIdx);
+
+                // If $durection is  'down' - decrement $count
+                if ($direction == 'down') $count --;
+            }
+
+            // Do positioning
+            for ($i = 0; $i < $count; $i++) $this->move($direction, $within);
+
+            // Return this
+            return $this;
+        }
     }
 }

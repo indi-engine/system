@@ -6,7 +6,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
      *
      * @var string
      */
-    public $type = null;
+    public $fractionDir = null;
 
     /**
      * Create queue chunks
@@ -29,12 +29,12 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         // Create `queueChunk` entry and setup basic props
         Indi::model('QueueChunk')->createRow([
             'queueTaskId' => $queueTaskR->id,
-            'location' => '/' . $this->type . '/application/lang/admin/' . $params['source']. '.php'
+            'location' => '/' . $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
         ], true)->save();
 
         // Increment `chunk`
         $queueTaskR->chunk ++;
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Return
         return $queueTaskR;
@@ -80,7 +80,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
 
             // Update `queueTask` entry's `countSize` prop
             $queueTaskR->countSize += $queueChunkR->countSize;
-            $queueTaskR->basicUpdate();
+            $queueTaskR->basicUpdate(false, false);
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
@@ -102,7 +102,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         $queueTaskR->stage = 'items';
         $queueTaskR->state = 'progress';
         $queueTaskR->itemsState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -169,7 +169,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
                 // Increment `itemsSize` prop on `queueTask` entry and save it
                 $queueTaskR->itemsSize ++;
                 $queueTaskR->itemsBytes += $bytes;
-                $queueTaskR->basicUpdate();
+                $queueTaskR->basicUpdate(false, false);
             }
 
             // Remember that our try to count was successful
@@ -235,7 +235,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -304,7 +304,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
 
                 // Increment `applySize` prop on `queueTask` entry and save it
                 $queueTaskR->applySize++;
-                $queueTaskR->basicUpdate();
+                $queueTaskR->basicUpdate(false, false);
 
             }, $where, '`id` ASC');
 

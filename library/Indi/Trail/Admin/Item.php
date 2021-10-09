@@ -458,7 +458,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Else if current trail item doesn't have a row, but parent trail item do - append it's id
         else if ($this->parent()->row)
-            $bid .= '-parentrow-' + (int) $this->parent()->row->id;
+            $bid .= '-parentrow-' . (int) $this->parent()->row->id;
 
         // Return base id
         return $bid;
@@ -630,5 +630,43 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Return array, but before json-encode it if need
         return $json ? json_encode($summary) : $summary;
+    }
+
+    /**
+     * Create `realtime` entry having `type` = "context"
+     *
+     * @return Indi_Db_Table_Row
+     */
+    public function context() {
+
+        // If channel found
+        if ($channel = m('realtime')->fetchRow('`token` = "' . CID . '"')) {
+
+            // Get data to be copied
+            $data = $channel->original(); unset($data['id'], $data['spaceSince']);
+
+            // Get involved fields
+            $fields = t()->row
+                ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+                : t()->gridFields->select(': > 0')->column('id', ',');
+
+            // Create `realtime` entry of `type` = "context"
+            $realtimeR = m('realtime')->createRow([
+                'realtimeId' => $channel->id,
+                'type' => 'context',
+                'token' => t()->bid(),
+                'sectionId' => t()->section->id,
+                'entityId' => t()->section->entityId,
+                'fields' => $fields,
+                'title' => Indi::trail(true)->toString(),
+                'mode' => $this->action->rowRequired == 'y' ? 'row' : 'rowset'
+            ] + $data, true);
+
+            // Save it
+            $realtimeR->save();
+
+            // Return it
+            return $realtimeR;
+        }
     }
 }

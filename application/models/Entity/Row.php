@@ -444,9 +444,10 @@ class Entity_Row extends Indi_Db_Table_Row {
      *
      * @param string $deferred
      * @param bool $invert
+     * @param string $certain
      * @return string
      */
-    protected function _ctor($deferred = '', $invert = false) {
+    protected function _ctor($deferred = '', $invert = false, $certain = '') {
 
         // Use original data as initial ctor
         $ctor = $this->_original;
@@ -459,6 +460,9 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // Exclude props that rely on entity's inner fields as they not exist at the moment of ctor usage
         if (!$invert) foreach (ar($deferred) as $defer) unset($ctor[$defer]);
+
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value)
@@ -477,22 +481,20 @@ class Entity_Row extends Indi_Db_Table_Row {
                 }
             }
 
-        // Stringify
-        $ctorS = var_export($ctor, true);
-
-        // Minify
-        if (count($ctor) == 1) $ctorS = preg_replace('~^array \(\s+(.*),\s+\)$~', 'array($1)', $ctorS);
-
-        // Return
-        return $ctorS;
+        // Stringify and return
+        return _var_export($ctor);
     }
 
     /**
      * Build an expression for creating the current entity in another project, running on Indi Engine
      *
+     * @param string $certain
      * @return string
      */
-    public function export() {
+    public function export($certain = null) {
+
+        // If $certain arg is given - export it only
+        if ($certain) return "entity('" . $this->table . "', " . $this->_ctor('', false, $certain) . ");";
 
         // Declare list of `entity` entry's props, that rely on fields,
         // that will be created AFTER `entity` entry's itself creation
@@ -509,7 +511,8 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // Build expression, that will now apply $deferred props,
         // because underlying fields creation expressions are already prepared
-        $lineA[] = "entity('" . $this->table . "', " . $this->_ctor($deferred, true) . ");";
+        if (($deferred = $this->_ctor($deferred, true)) != 'true')
+            $lineA[] = "entity('" . $this->table . "', " . $deferred . ");";
 
         // Return newline-separated list of creation expressions
         return im($lineA, "\n");

@@ -139,7 +139,7 @@ class Indi_Uri_Base {
         $this->setCookieDomain();
 
         // If 'Indi-Auth' header given - use it's value as session id
-        if ($id = $_COOKIE['PHPSESSID']) session_id($id);
+        if (!session_id()) if ($id = $_COOKIE['PHPSESSID']) session_id($id);
 
         // Start session
         session_start();
@@ -155,10 +155,13 @@ class Indi_Uri_Base {
     public function setCookieDomain(){
         
         // Detect domain
-	$domainA = explode(' ', Indi::ini()->general->domain);
+        $domainA = explode(' ', Indi::ini()->general->domain);
         foreach ($domainA as $domainI) 
             if (preg_match('/' . preg_quote($domainI) . '$/', $_SERVER['HTTP_HOST']))
                 $domain = Indi::ini('general')->domain = $domainI;
+
+        // If session is already active - prevent 'PHP Warning: ini_set(): A session is active. You cannot change the session module's ini settings at this time' error msg
+        if (session_id()) return;
 
         // Set cookie domain and path
         ini_set('session.cookie_domain', (preg_match('/^[0-9\.]+$/', $domain) ? '' : '.') . $domain);

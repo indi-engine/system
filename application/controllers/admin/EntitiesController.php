@@ -1,6 +1,9 @@
 <?php
-class Admin_EntitiesController extends Indi_Controller_Admin {
+class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
+    /**
+     * Create php classes files
+     */
     public function phpAction() {
 
         // PHP class files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
@@ -185,12 +188,5 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
 
         // Flush success
         jflush(true, 'Поле "Статус" было добавлено в структуру сущности "' . $this->row->title . '"');
-    }
-
-    /**
-     * Flush entity entry's creation expression, to be applied on another project running on Indi Engine
-     */
-    public function exportAction() {
-        jflush(true, '<textarea style="width: 500px; height: 400px;">' . $this->row->export() . '</textarea>');
     }
 }

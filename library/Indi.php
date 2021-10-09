@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+
 class Indi {
 
     /**
@@ -68,6 +72,16 @@ class Indi {
     public static $answer = array();
 
     /**
+     * @var null
+     */
+    protected static $_ws = null;
+
+    /**
+     * @var null
+     */
+    protected static $_mq = null;
+
+    /**
      * Regular expressions patterns for common usage
      *
      * @var array
@@ -101,6 +115,9 @@ class Indi {
         'coords' => '/^([0-9]{1,3}+\.[0-9]{1,12})\s*,\s*([0-9]{1,3}+\.[0-9]{1,12}+)$/',
         'timespan' => '/^[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}$/',
         'ipv4' => '~^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$~',
+        'base64' => '^~(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$~',
+        'wskey' => '~^[A-Za-z0-9+/]{22}==$~',
+        'ctx' => '~^i-[a-zA-Z\-0-9]+$~',
         'json' => '/
           (?(DEFINE)
              (?<number>   -? (?= [1-9]|0(?!\d) ) \d+ (\.\d+)? ([eE] [+-]? \d+)? )
@@ -2490,39 +2507,82 @@ class Indi {
     }
 
     /**
-     * Send websockets message
+     * Send websockets message via client socket, that will be auto-created if not yet exists
+     * If $data arg is `false` - socket client will be closed
      */
-    public static function ws(array $data) {
+    public static function ws($data) {
 
         // If websockets is not enabled - return
         if (!Indi::ini('ws')->enabled) return;
 
-        // If websockets server is not running - return
-        //ob_start(); file_get_contents(Indi::ini('ws')->socket); if (ob_get_clean()) return;
+        // If data type is 'realtime' or 'F5', and rabbitmq is enabled
+        if (in($data['type'], 'realtime,F5') && Indi::ini('rabbitmq')->enabled) {
 
-        // Build path
-        $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
+            // If rabbitmq connection channel not yet exists
+            if (!self::$_mq) {
 
-        // Protocol
-        $prot = is_file(DOC . STD . '/core/application/ws.pem') ? 'wss' : 'ws';
+                // Get credentials
+                $mq = (array) Indi::ini('rabbitmq');
 
-        // Try send websocket-message
-        try {
+                // Create connection
+                $connection = new AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
 
-            // Log
-            if (Indi::ini('ws')->log) wsmsglog($data, $data['row'] . '.evt');
-
-            // Create client
-            $client = new WsClient($prot . '://' . Indi::ini('ws')->socket . ':' . Indi::ini('ws')->port . '/' . $path);
+                // Create channel
+                self::$_mq = $connection->channel();
+            }
 
             // Send message
-            $client->send(json_encode($data));
+            self::$_mq->basic_publish(new AMQPMessage(json_encode($data)), '', $data['to']);
 
-            // Close client
-            $client->close();
+            // Return
+            return;
+        }
 
-        // Catch exception
-        } catch (Exception $e) { wslog($e->getMessage()); }
+        // If client socket is not yet created
+        if (!self::$_ws && $data !== false)  {
+
+            // Build path
+            $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
+
+            // Protocol
+            $prot = is_file(DOC . STD . '/core/application/ws.pem') ? 'wss' : 'ws';
+
+            // Try create client
+            try {
+
+                // Create client
+                self::$_ws = new WsClient($prot . '://' . Indi::ini('ws')->socket . ':' . Indi::ini('ws')->port . '/' . $path);
+
+            // If exception caught
+            } catch (Exception $e) {
+
+                // Log it
+                wslog($e->getMessage());
+            }
+        }
+
+        // If client socket exists
+        if (self::$_ws) {
+
+            // If $data arg is `false`
+            if ($data === false) {
+
+                // Close channel
+                self::$_ws->close();
+
+                // Unset channel
+                self::$_ws = null;
+
+            // Else
+            } else {
+
+                // Log message
+                if (Indi::ini('ws')->log) wsmsglog($data, $data['row'] . '.evt');
+
+                // Send message
+                self::$_ws->send(json_encode($data));
+            }
+        }
     }
 
     /**
@@ -2557,8 +2617,18 @@ class Indi {
      */
     public static function cmd($method, $args = array()) {
 
+        // Default temp dir
+        $dir = sys_get_temp_dir();
+        
+        // If open_basedir restriction is in effect - try to find tmp dir there
+        if ($dirS = ini_get('open_basedir'))
+            if ($dirA = explode(':', $dirS))
+                foreach ($dirA as $dirI)
+                    if (preg_match('~te?mp$~', $dirI))
+                        $dir = $dirI;
+
         // Create temporary file
-        $env = tempnam(sys_get_temp_dir(), 'cmd');
+        $env = tempnam($dir, 'cmd');
 
         // Prepare command
         $cmd = Indi::ini('general')->phpdir . "php ../core/application/cmd.php $method \"$env\"";

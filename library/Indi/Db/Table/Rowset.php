@@ -2,18 +2,25 @@
 class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
     /**
-     * Array of rows, that are stored within current rowset
-     *
-     * @var array
-     */
-    protected $_rows = array();
-
-    /**
      * Table name of table, that current rowset is related to
      *
      * @var string
      */
     protected $_table = '';
+
+    /**
+     * Sql query used to fetch this rowset
+     *
+     * @var mixed (null,int)
+     */
+    protected $_query = null;
+
+    /**
+     * Array of rows, that are stored within current rowset
+     *
+     * @var array
+     */
+    protected $_rows = array();
 
     /**
      * Contain keys, that current rowset have nested rowsets under
@@ -52,18 +59,24 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     protected $_page = null;
 
     /**
+     * Previous page's last entry
+     * Applicable only for 2nd and further pages
+     * We need this to detect the non-exact position of any new entry relative to current page's
+     * results according to WHERE and ORDER clauses that were used for fetching the rowset.
+     * For now, it will be used for realtime-feature, so that if some user opened a UI-grid with `product` entries,
+     * but there was NEW `product` entry added, system should be able to detect whether this event should affect the
+     * dataset currently displayed at user's UI-grid
+     *
+     * @var bool|Indi_Db_Table_Row
+     */
+    protected $_pgupLast = false;
+
+    /**
      * Indi_Db_Table_Row class name.
      *
      * @var string
      */
     protected $_rowClass = 'Indi_Db_Table_Row';
-
-    /**
-     * Sql query used to fetch this rowset
-     *
-     * @var mixed (null,int)
-     */
-    protected $_query = null;
 
     /**
      * Constructor.
@@ -111,6 +124,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (isset($config['page'])) $this->_page = $config['page'];
         if (isset($config['found'])) $this->_found = $config['found'];
         if (isset($config['query'])) $this->_query = $config['query'];
+
+        // If prev-page-last flag is `true` - shift first row for it to be that prev-page-last row
+        if ($config['pgupLast']) $this->_pgupLast = array_shift($this->_rows);
 
         $this->_count = count($this->_rows);
     }
@@ -713,11 +729,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     ->{is_string($title = $typeA['foreign']['single'][$columnI]['title']) ? $title : 'title'};
 
                 // If field column type is a multiple foreign key, we use comma-separated titles of related foreign rows
-                if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry)
+                if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry) {
+                    $data[$pointer][$columnI] = '';
                     foreach ($entry->foreign($further ?: $columnI) as $m)
                         $data[$pointer][$columnI] .= $m
-                            ->{is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title'} .
+                                ->{is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title'} .
                             ($entry->foreign($further ?: $columnI)->key() < $entry->foreign($further ?: $columnI)->count() - 1 ? ', ' : '');
+                }
 
                 // If field column type is 'date' we adjust it's format if need. If date is '0000-00-00' we set it
                 // to empty string
@@ -1098,13 +1116,43 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if ($fieldR->relation == 0 && $fieldR->nested('consider')->count()) {
 
                 // Get consider-field, e.g. field, that current field depends on
-                $consider = $fieldR->nested('consider')->at(0)->foreign('consider')->alias;
+                $considerR = $fieldR->nested('consider')->at(0);
+
+                // Get consider-field, e.g. field, that current field depends on
+                $cField = $considerR->foreign('consider');
+
+                // Get consider-field's name
+                $consider = $cField->alias;
+
+                // Mappings to be further used to distribute foreign rows
+                $entityIdByConsiderFieldA = [];
 
                 // Foreach row within current rowset
                 foreach ($this as $r) {
 
-                    // Get the id of entity, that current foreign key is related to
-                    $entityId = $r->$consider;
+                    // If consider-field's foreign-key field should be used instead of consider-field itself
+                    if ($considerR->foreign) {
+
+                        // Get that foreign-key field
+                        $cField_foreign = $considerR->foreign('foreign');
+
+                        // Consider-field's value
+                        $cValue = $r->$consider;
+
+                        // Get entry, identified by current value of consider-field
+                        $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+
+                        // Get it's value
+                        $cValueForeign = $cEntryR->{$cField_foreign->alias};
+
+                        // Add mapping
+                        $entityIdByConsiderFieldA[$cValue] = $cValueForeign;
+
+                        // Spoof variables before usage
+                        $entityId = $cValueForeign;
+
+                    // Else assume that consider-field's value is a direct entityId
+                    } else $entityId = $r->$consider;
 
                     // Collect foreign key values, grouped by entity id
                     $distinctA[$entityId] = array_merge(
@@ -1264,7 +1312,14 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Get the id of entity, that current row's foreign key is related to. If foreign key field
                 // dependency is 'Variable entity' - entity id is dynamic, that mean is may differ for each row
-                $foreignKeyEntityId = $fieldR->relation ?: $r->{$fieldR->nested('consider')->at(0)->foreign('consider')->alias};
+                if ($fieldR->relation) $foreignKeyEntityId = $fieldR->relation; else {
+
+                    // Get consider-value
+                    $cValue = $r->{$fieldR->nested('consider')->at(0)->foreign('consider')->alias};
+
+                    // Use mapping to spoof consider-value if need
+                    $foreignKeyEntityId = $entityIdByConsiderFieldA[$cValue] ?: $cValue;
+                }
 
                 // Get the column name, which value will be used for match
                 $col = $foreignKeyEntityId == 6 ? 'alias' : 'id';
@@ -1358,10 +1413,24 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // implemented for multi-columns mode, currently
         if ($multi) $imploded = $unique = false;
 
-        // Strip duplicate values from $valueA array, if $unique argument is `true`
+        // Strip duplicate values from $valueA array, if $unique argument is truly
         if ($unique) {
-            foreach ($this as $r) $valueA[$r->$column] = true;
-            $valueA = array_keys($valueA);
+
+            // If $unique arg is a string
+            if (is_string($unique)) {
+                foreach ($this as $r) {
+                    if ($multi) {
+                        foreach ($multi as $c) $valueA[$r->$unique] []= $r->$c;
+                    } else {
+                        $valueA[$r->$unique] = $r->$column;
+                    }
+                }
+
+            // Else
+            } else {
+                foreach ($this as $r) $valueA[$r->$column] = true;
+                $valueA = array_keys($valueA);
+            }
 
         // Else simply collect column data
         } else foreach ($this as $r) {
@@ -1417,7 +1486,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         $titleMaxIndent = 0;
 
         // Get title-column field. If it's a foreig-key field - pull foreign data
-        if ($tc = $this->model()->fields($this->titleColumn))
+        if ($this->_table && $tc = $this->model()->fields($this->titleColumn))
             if ($tc->storeRelationAbility != 'none')
                 $this->foreign($foreign = $tc->alias);
 
@@ -1682,6 +1751,31 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Call basicUpdate() on each row within current rowset
         foreach ($this as $row) $row->basicUpdate($notices, $amerge);
+
+        // Return rowset itself
+        return $this;
+    }
+
+    /**
+     * Getter for $this->_pgupLast
+     *
+     * @return bool|Indi_Db_Table_Row|mixed
+     */
+    public function pgupLast() {
+        return $this->_pgupLast;
+    }
+
+    /**
+     * Call *_Row->save() for each *_Row instance within current rowset
+     *
+     * @param bool $notices
+     * @param bool $amerge
+     * @return $this
+     */
+    public function save() {
+
+        // Call save() on each row within current rowset
+        foreach ($this as $row) $row->save();
 
         // Return rowset itself
         return $this;

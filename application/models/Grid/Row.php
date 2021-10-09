@@ -17,25 +17,11 @@ class Grid_Row extends Indi_Db_Table_Row {
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'gridId') $value = grid($this->sectionId, $value)->id;
+            else if ($columnName == 'move') return $this->_system['move'] = $value;
         }
 
         // Call parent
         parent::__set($columnName, $value);
-    }
-
-    /**
-     * @return int
-     */
-    public function save(){
-
-        // If no field chosen as a grid column basis - setup title same as `alterTitle`
-        // if (!$this->fieldId || $this->alterTitle) $this->title = $this->alterTitle;
-
-        // If there is no access limitation, empty `profileIds` prop
-        if ($this->access == 'all') $this->profileIds = '';
-
-        // Standard save
-        return parent::save();
     }
 
     /**
@@ -62,18 +48,22 @@ class Grid_Row extends Indi_Db_Table_Row {
     /**
      * Build a string, that will be used in Grid_Row->export()
      *
+     * @param string $certain
      * @return string
      */
-    protected function _ctor() {
+    protected function _ctor($certain = null) {
 
         // Use original data as initial ctor
         $ctor = $this->_original;
 
         // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['move']);
+        unset($ctor['id']);
 
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('sectionId,fieldId,alias,further') as $arg) unset($ctor[$arg]);
+
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {
@@ -82,11 +72,15 @@ class Grid_Row extends Indi_Db_Table_Row {
             $field = Indi::model('Grid')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Exclude `title` prop, if it was auto-created
-            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none')
+            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
                 unset($ctor[$prop]);
+
+            // Else if $prop is 'move' - get alias of the field, that current field is after,
+            // among fields with same value of `entityId` prop
+            else if ($prop == 'move') $value = $this->position();
 
             // Else if prop contains keys - use aliases instead
             else if ($field->storeRelationAbility != 'none') {
@@ -99,38 +93,30 @@ class Grid_Row extends Indi_Db_Table_Row {
         // Unset `width` if current `grid` entry has nested entries
         if ($this->nested('grid')->count()) unset($ctor['width']);
 
-        // Stringify
-        $ctorS = preg_replace("~(array \()\n~", 'array(', var_export($ctor, true));
-        $ctorS = preg_replace("~  ('[a-zA-Z0-9_]+' => '.*?',)\n~", '$1 ', $ctorS);
-        $ctorS = preg_replace("~, \)~", ')', $ctorS);
-
-        // Minify
-        if (count($ctor) == 1) $ctorS = preg_replace('~^array \(\s+(.*),\s+\)$~', 'array($1)', $ctorS);
-        else if (count($ctor) == 0) $ctorS = 'true';
-
-        // Return
-        return $ctorS;
+        // Return stringified $ctor
+        return _var_export($ctor);
     }
 
     /**
      * Build an expression for creating the current grid column in another project, running on Indi Engine
      *
+     * @param string $certain
      * @return string
      */
-    public function export() {
+    public function export($certain = '') {
 
         // Return creation expression
         if ($this->further) return "grid('" .
             $this->foreign('sectionId')->alias . "', '" .
             $this->foreign('fieldId')->alias . "', '" .
             $this->foreign('fieldId')->rel()->fields($this->further)->alias . "', " .
-            $this->_ctor() . ");";
+            $this->_ctor($certain) . ");";
 
         // Return creation expression
         else return "grid('" .
             $this->foreign('sectionId')->alias . "', '" .
             ($this->foreign('fieldId')->alias ?: $this->alias) . "', " .
-            $this->_ctor() . ");";
+            $this->_ctor($certain) . ");";
     }
 
     /**
@@ -176,6 +162,9 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // If summaryType is not 'text' - set `summaryText` to be empty
         if ($this->summaryType != 'text') $this->zero('summaryText', true);
+
+        // Make sure `profileIds` will be empty if `access` is 'all'
+        if ($this->access == 'all') $this->zero('profileIds', true);
     }
 
     /**
@@ -190,16 +179,61 @@ class Grid_Row extends Indi_Db_Table_Row {
     }
 
     /**
+     * Get the the alias of the `field` entry,
+     * that current `field` entry is positioned after
+     * among all `field` entries having same `entityId`
+     * according to the values `move` prop
+     *
+     * @param null|string $after
+     * @param string $withinFields
+     * @return string|Indi_Db_Table_Row
+     */
+    public function position($after = null, $withinFields = 'sectionId,gridId,group') {
+
+        // Build within-fields WHERE clause
+        $wfw = [];
+        foreach (ar($withinFields) as $withinField)
+            $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+
+        // Get ordered fields aliases
+        $fieldA_alias = Indi::db()->query('
+            SELECT `g`.`id`, `f`.`alias` 
+            FROM `field` `f`, `grid` `g`
+            WHERE 1 
+                AND `f`.`id` = IF(`g`.`further` != "0", `g`.`further`, `g`.`fieldId`)
+                AND :p  
+            ORDER BY `g`.`move`
+        ', $within = im($wfw, ' AND '))->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        // Get current position
+        $currentIdx = array_flip(array_keys($fieldA_alias))[$this->id]; $fieldA_alias = array_values($fieldA_alias);
+
+        // Do positioning
+        return $this->_position($after, $fieldA_alias, $currentIdx, $within);
+    }
+
+    /**
      * Make sure parent gridcol's width will be adjusted if need
      */
     public function onSave() {
 
-        // If `width` was not affected, or this gridcol is a top-level gridcol - do nothing
-        if (!$this->affected('width') || !$this->gridId) return;
+        // If `width` was not affected, or this gridcol is a top-level gridcol
+        if ($this->affected('width') && $this->gridId) {
 
-        // Affect parent gridcol's width
-        $this->foreign('gridId')->width += $this->adelta('width');
-        $this->foreign('gridId')->save();
+            // Affect parent gridcol's width
+            $this->foreign('gridId')->width += $this->adelta('width');
+            $this->foreign('gridId')->save();
+        }
+
+        // Do positioning, if $this->_system['move'] is set
+        if (array_key_exists('move', $this->_system)) {
+
+            // Get field, that current field should be moved after
+            $after = $this->_system['move']; unset($this->_system['move']);
+
+            // Position field for it to be after field, specified by $this->_system['move']
+            $this->position($after);
+        }
     }
 
     /**

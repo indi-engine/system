@@ -99,6 +99,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Perform authentication
         $this->auth();
 
+        // Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
+        $this->deleteContextIfNeed();
+
         // Jump, if need
         $this->jump();
 
@@ -181,51 +184,78 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Get final ORDER clause, built regarding column name and sorting direction
                     $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort);
 
-                    // Try to get rowset
-                    do {
+                    // Build fetch method name
+                    $fetchMethod = t()->model->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn']
+                        ? 'fetchTree'
+                        : 'fetchAll';
 
-                        // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
-                        // constructed with usage of Indi::get('limit') and Indi::get('page') params
-                        $this->rowset = Indi::trail()->model->{
-                        'fetch'. (Indi::trail()->model->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'] ? 'Tree' : 'All')
-                        }($finalWHERE, $finalORDER,
-                            $limit = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int) Indi::get('limit') : null,
-                            $page  = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int) Indi::get('page') : null);
+                    // Else if $_GET['required'] given
+                    if ($required = (int) Indi::get('required')) {
 
-                        // If we're at 2nd or further page, but no results - try to detect new prev page
-                        $shift = $limit && $page > 1 && !$this->rowset->count() && ($found = $this->rowset->found()) ? ceil($found/$limit) : 0;
+                        // Fetch rowset consisting of only single row
+                        $this->rowset = Indi::trail()->model->{$fetchMethod}('`id` = "' . $required . '"' . rif($finalWHERE, ' AND ($1)'));
 
-                    // If we should try another page - do it
-                    } while ($shift && (Indi::get()->page = $shift));
+                    // Else behave in an standard way
+                    } else {
 
-                    /**
-                     * Remember current rowset properties SQL - WHERE, ORDER, LIMIT clauses - to be able to apply these properties in cases:
-                     *
-                     * 1. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page.
-                     *    After that we went to another section, and then decide to return to the first. So, by this function, system will be
-                     *    able to retrieve first section's params from $_SESSION, and display the grid in the exact same way as it was when
-                     *    we had left it.
-                     * 2. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page and
-                     *    clicked 'Details' on some row on that page, so the details form was displayed. So, this function is one of providing
-                     *    an ability to navigate/jump to current row's siblings - go to prev/next rows. Foк example if we have a States section,
-                     *    and we go to it, and types 'Ala' in fast-keyword-search field, so the corresponding results were displayed. Then, if we
-                     *    go to 'Alabama' form screen, there will be buttons titled "Prev" and "Next". For example, by clicking Next, the Alaska's
-                     *    editing form will be displayed instead of Alabama's. But there will be certainly no 'Ohio'.
-                     *
-                     * Actually, the only one param is stored as SQL-string - $primary param. This params includes all parts of WHERE clause, that
-                     * was used to retrieve a current rowset, but except parts, related to filters/keyword search usage. There parts are
-                     * stored as JSON-string, because it is much more easier to get last used filters's values from JSON rather than SQL.
-                     *
-                     * Function creates a hash-key (md5 from $primary param) to place the array of scope params under this key in $_SESSION
-                     *
-                     * $order param is stored in JSON format too, because it will be passed to Ext.grid
-                     */
-                    Indi::trail()->scope->apply(array(
-                        'primary' => $primaryWHERE, 'filters' => Indi::get()->search, 'keyword' => Indi::get()->keyword,
-                        'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
-                        'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => Indi::trail()->section->primaryHash
-                    ));
-        /* // */}
+                        // Try to get rowset
+                        do {
+
+                            // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
+                            // constructed with usage of Indi::get('limit') and Indi::get('page') params
+                            $this->rowset = Indi::trail()->model->{$fetchMethod}($finalWHERE, $finalORDER,
+                                $limit = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int)Indi::get('limit') : null,
+                                $page = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int)Indi::get('page') : null,
+                                null,
+                                null,
+                                ($fetchMethod == 'fetchAll') ?: null,
+                                false,
+                                $fetchMethod == 'fetchTree');
+
+                            // If we're at 2nd or further page, but no results - try to detect new prev page
+                            $shift = $limit && $page > 1 && !$this->rowset->count() && ($found = $this->rowset->found()) ? ceil($found / $limit) : 0;
+
+                        // If we should try another page - do it
+                        } while ($shift && (Indi::get()->page = $shift));
+
+                        // Scope params
+                        $scope = [
+                            'primary' => $primaryWHERE, 'filters' => Indi::get()->search, 'keyword' => Indi::get()->keyword,
+                            'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
+                            'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
+                            'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
+                            'tree' => $fetchMethod == 'fetchTree',
+                            'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true)
+                        ];
+
+                        // Create context if need
+                        $this->createContextIfNeed($scope);
+
+                        /**
+                         * Remember current rowset properties SQL - WHERE, ORDER, LIMIT clauses - to be able to apply these properties in cases:
+                         *
+                         * 1. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page.
+                         *    After that we went to another section, and then decide to return to the first. So, by this function, system will be
+                         *    able to retrieve first section's params from $_SESSION, and display the grid in the exact same way as it was when
+                         *    we had left it.
+                         * 2. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page and
+                         *    clicked 'Details' on some row on that page, so the details form was displayed. So, this function is one of providing
+                         *    an ability to navigate/jump to current row's siblings - go to prev/next rows. For example if we have a States section,
+                         *    and we go to it, and types 'Ala' in fast-keyword-search field, so the corresponding results were displayed. Then, if we
+                         *    go to 'Alabama' form screen, there will be buttons titled "Prev" and "Next". For example, by clicking Next, the Alaska's
+                         *    editing form will be displayed instead of Alabama's. But there will be certainly no 'Ohio'.
+                         *
+                         * Actually, the only one param is stored as SQL-string - $primary param. This params includes all parts of WHERE clause, that
+                         * was used to retrieve a current rowset, but except parts, related to filters/keyword search usage. There parts are
+                         * stored as JSON-string, because it is much more easier to get last used filters's values from JSON rather than SQL.
+                         *
+                         * Function creates a hash-key (md5 from $primary param) to place the array of scope params under this key in $_SESSION
+                         *
+                         * $order param is stored in JSON format too, because it will be passed to Ext.grid
+                         */
+                        Indi::trail()->scope->apply($scope);
+                    }
+                }
 
             // Else if where is some another action
             } else {
@@ -291,14 +321,43 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Access check
         if (!in($_['indiId']->id, is_numeric($scope[$ui]) ? $scope[$ui] : t()->{$scope[$ui]}->column('id'))) jflush(false);
 
+        // If we are editing grid column title, that was moved to tooltip due to icon
+        if (isset(Indi::post()->tooltip)
+            && $ui == 'grid'
+            && Indi::post()->icon
+            && !$_['indiId']->tooltip
+            && !$_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->tooltip) {
+
+            // Force 'rename' logic to be executed instead of 'tooltip' logic
+            Indi::post()->rename = Indi::post()->tooltip; unset(Indi::post()->tooltip);
+        }
+
         // If $_POST['rename'] is set, e.g editing type is 'rename'
         if (isset(Indi::post()->rename)) {
 
             // Map
             $rename = array('grid' => 'alterTitle', 'field' => 'title', 'entity' => 'title', 'search' => 'alt');
 
+            // If ctrl-key was hold and we were editing grid column title
+            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+
+                // Update grid column's underlying field's title
+                $_['indiId']
+                    ->foreign($_['indiId']->further ? 'further' : 'fieldId')
+                    ->assign(['title' => Indi::post()->rename])->save();
+
+                // Force grid column's own title to be empty string,
+                // so that underlying field's title will be used
+                Indi::post()->rename = '';
+
+            // Else if no ctrl-key was hold but new own title for grid column is going to be
+            // the same as for it's underlying field - force own one to be empty
+            } else if ($ui == 'grid'
+                && $_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->title == Indi::post()->rename)
+                Indi::post()->rename = '';
+
             // Do rename
-            $_['indiId']->assign(array($rename[$ui] => Indi::post()->rename))->save();
+            $_['indiId']->assign([$rename[$ui] => Indi::post()->rename])->save();
 
         // If $_POST['rename'] is set, e.g editing type is 'rename'
         } else if (isset(Indi::post()->tooltip)) {
@@ -306,8 +365,26 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Map
             $rename = array('grid' => 'tooltip', 'section' => 'help', 'section2action' => 'rename', 'search' => 'tooltip');
 
+            // If ctrl-key was hold and we were editing grid column tooltip
+            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+
+                // Update grid column's underlying field's tooltip
+                $_['indiId']
+                    ->foreign($_['indiId']->further ? 'further' : 'fieldId')
+                    ->assign(['tooltip' => Indi::post()->tooltip])->save();
+
+                // Force grid column's own tooltip to be empty string,
+                // so that underlying field's tooltip will be used
+                Indi::post()->tooltip = '';
+
+            // Else if no ctrl-key was hold but new own tooltip for grid column is going to be
+            // the same as for it's underlying field - force own one to be empty
+            } else if ($ui == 'grid'
+                && $_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->tooltip == Indi::post()->tooltip)
+                Indi::post()->tooltip = '';
+
             // Do rename
-            $_['indiId']->assign(array($rename[$ui] => Indi::post()->tooltip))->save();
+            $_['indiId']->assign([$rename[$ui] => Indi::post()->tooltip])->save();
 
         // Else if editing type if not rename
         } else {
@@ -318,7 +395,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Validity check
                 $_ += jcheck(array('gridId' => array('req' => false, 'rex' => 'int11', 'key' => $ui)), Indi::post());
 
-                // Get ids of grid columns that are currently accesible for current user
+                // Get ids of grid columns that are currently accessible for current user
                 $idA = t()->grid->select(': != 0')->column('id');
 
                 // Access check
@@ -521,7 +598,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // mean that page number should be recalculated, so 'page' param will store recalculated page number). After
         // all necessary operations will be done - valued from this ($modified) array will replace existing values
         // in scope
-        $modified = array('aix' => Indi::uri()->aix, 'lastIds' => ar($lastIds ?: $r->id));
+        $modified = array('aix' => Indi::uri()->aix != 'undefined' ? Indi::uri()->aix : 1, 'lastIds' => ar($lastIds ?: $r->id));
 
         // Start and end indexes. We calculate them, because we should know, whether page number should be changed or no
         $start = ($original['page'] - 1) * Indi::trail((int) $upper)->section->rowsOnPage + 1;
@@ -2088,6 +2165,15 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $allowedA = array('id', 'title', 'email', 'password', 'profileId', 'profileTitle', 'alternate', 'mid');
                     foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
+                    // Create `realtime` entry having `type` = 'session'
+                    m('Realtime')->createRow([
+                        'type' => 'session',
+                        'profileId' => $_SESSION['admin']['profileId'],
+                        'adminId' => $_SESSION['admin']['id'],
+                        'token' => session_id(),
+                        'langId' => m('Lang')->fetchRow('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+                    ], true)->save();
+
                     // Flush response
                     jflush(true, APP ? $this->info() : array('ok' => '1'));
                 }
@@ -2167,7 +2253,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 else if (!Indi::uri()->format) iexit('<script>top.window.location="' . PRE .'/logout/"</script>');
                 else jflush(false, array('throwOutMsg' => $data));
 
-            // Else if current section is 'index', e.g we are in the root of interface
+            // Else if current section is not 'index', e.g we are not in the root of interface
             } else if (Indi::uri()->section != 'index') {
 
                 // Do the second level access check
@@ -2178,11 +2264,23 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Else go further and perform last auth check, within Indi_Trail_Admin::__construct()
                 else Indi::trail($this->_routeA, $this)->authLevel3();
+
+            // Else if current section is 'index', e.g we are in the root of interface
+            } else if (!m('Realtime')->fetchRow(['`type` = "session"', '`token` = "' . session_id() . '"'])) {
+
+                // Create `realtime` entry having `type` = 'session'
+                m('Realtime')->createRow([
+                    'type' => 'session',
+                    'profileId' => $_SESSION['admin']['profileId'],
+                    'adminId' => $_SESSION['admin']['id'],
+                    'token' => session_id(),
+                    'langId' => m('Lang')->fetchRow('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+                ], true)->save();
             }
         }
 
         // If current request had a only aim to check access - report that all is ok
-        if (array_key_exists('check', Indi::get())) die('ok');
+        if (array_key_exists('check', (array) Indi::get())) die('ok');
     }
 
     /**
@@ -2267,6 +2365,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If we are in a root of interface, build the general layout
         if (Indi::uri('section') == 'index' && Indi::uri('action') == 'index') {
 
+            // If it's a refresh-menu request - flush fresh menu
+            if (isset(Indi::get()->menu)) jflush(true, ['menu' => $this->menu()]);
+
             // Get info
             $info = $this->info();
 
@@ -2325,14 +2426,25 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
+     * Get menu, accessible for current user
+     *
+     * @return array
+     */
+    protected function menu() {
+
+        // Get menu
+        $menu = Section::menu(); $this->menuNotices($menu); $this->adjustMenu($menu);
+
+        // Return menu
+        return $menu;
+    }
+
+    /**
      * Prepare params to be flushed on successful sign-in or on existing session resume
      *
      * @return array
      */
     protected function info() {
-
-        // Get menu, accessible for current user
-        $menu = Section::menu(); $this->menuNotices($menu); $this->adjustMenu($menu);
 
         // Return
         return array(
@@ -2353,7 +2465,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 'title' => Indi::admin()->title(),
                 'uid' => Indi::admin()->profileId . '-' . Indi::admin()->id,
                 'role' => Indi::admin()->foreign('profileId')->title,
-                'menu' => $menu,
+                'menu' => $this->menu(),
                 'auth' => session_id() . ':' . Indi::ini('lang')->admin,
                 'dashboard' => Indi::admin()->foreign('profileId')->dashboard ?: false,
                 'maxWindows' => Indi::admin()->foreign('profileId')->maxWindows ?: 15,
@@ -2520,7 +2632,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Pick values from Indi::post()
         $data = array();
         foreach ($possibleA as $possibleI)
-            if (array_key_exists($possibleI, Indi::post()))
+            if (array_key_exists($possibleI, (array) Indi::post()))
                 $data[$possibleI] = Indi::post($possibleI);
 
         // Unset 'move' key from data, because 'move' is a system field, and it's value will be set up automatically
@@ -2832,9 +2944,26 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If $data is not an array, e.g some error there, output it as json with that error
         if (!is_array($data)) jflush(false, $data);
 
-        // Else start a session for user and report that sing-in was ok
+        // Delete current `realtime` entry, representing the session
+        m('Realtime')->row([
+            '`token` = "' . session_id() . '"',
+            '`type` = "session"',
+            'profileId' => $_SESSION['admin']['profileId'],
+            'adminId' => $_SESSION['admin']['id'],
+        ])->delete();
+
+        // Start a session for user and report that sing-in was ok
         foreach (ar('id,title,email,password,profileId,profileTitle,alternate,mid') as $allowedI)
             $_SESSION['admin'][$allowedI] = $data[$allowedI];
+
+        // Create `realtime` entry having `type` = 'session'
+        m('Realtime')->createRow([
+            'type' => 'session',
+            'profileId' => $_SESSION['admin']['profileId'],
+            'adminId' => $_SESSION['admin']['id'],
+            'token' => session_id(),
+            'langId' => m('Lang')->fetchRow('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+        ], true)->save();
 
         // Reload main window for new session data to be picked
         jflush(true, array('throwOutMsg' => true));
@@ -2854,6 +2983,32 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Unset session
         if ($_SESSION['admin']['id'])  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
+
+        // If `realtime` entry of `type` = "session" exists
+        if ($_ = m('Realtime')->fetchRow([
+            '`type` = "session"',
+            '`token` = "' . session_id() . '"'
+        ])) {
+
+            // Refresh other tabs
+            foreach($channelA = Indi::db()->query('
+                SELECT `token` 
+                FROM `realtime` 
+                WHERE 1
+                  AND `type` = "channel" 
+                  AND `realtimeId` = "' . $_->id . '" 
+                  AND `token` != "' . CID . '"
+            ')->fetchAll(PDO::FETCH_COLUMN) as $channel)
+
+                // Reload tabs
+                Indi::ws([
+                    'type' => 'F5',
+                    'to' => $channel
+                ]);
+
+            // Delete `realtime` entry
+            $_->delete();
+        }
 
         // Flush basic info
         if (APP) jflush(true, array(
@@ -3484,8 +3639,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function prompt($msg, $cfg = array()) {
 
+        // Answer index
+        $answerIdx = rif(Indi::$answer, count(Indi::$answer) + 1);
+
         // Get answer
-        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
+        $answer = Indi::get()->{'answer' . $answerIdx};
 
         // Build meta
         $meta = array(); foreach($cfg as $field) $meta[$field['name']] = $field;
@@ -3500,7 +3658,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::$answer[count(Indi::$answer)] = $answer;
 
         // Return prompt data
-        return json_decode(Indi::post('_prompt'), true) + array('_meta' => $meta);
+        return json_decode(Indi::post('_prompt' . $answerIdx), true) + array('_meta' => $meta);
     }
 
     /**
@@ -3634,5 +3792,58 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Setup list of possible translations and current/last chosen one
         return Indi::view()->lang = array('odata' => $langA, 'name' => $lang) + ($l10n ?: array());
+    }
+
+    /**
+     * Create `realtime` entry having `type` = "context", if not yet created, and assign `scope` and `entries` props
+     *
+     * @param $scope
+     */
+    public function createContextIfNeed($scope) {
+
+        // Prevent `realtime` entry from being created in case of excel-export
+        if (Indi::uri()->format == 'excel') return;
+        
+        // Track involved entries
+        if ($_ = m('realtime')->fetchRow([
+            '`type` = "context"',
+            '`token` = "' . t()->bid() . '"',
+            '`realtimeId` = "' . m('realtime')->fetchRow('`token` = "' . CID . '"')->id . '"'
+        ]) ?: t()->context()) $_->assign([
+            'entries' => $this->rowset->column('id', ','),
+            'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
+        ])->save();
+    }
+
+    /**
+     * Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
+     */
+    public function deleteContextIfNeed() {
+
+        // If $_POST['destroy'] is only given
+        if ((count(Indi::post()) == 1) && ($ctx = Indi::post('destroy'))) {
+
+            // Check $token format and CID format
+            jcheck([
+                'ctx' => ['rex' => 'ctx'],
+                'cid' => ['rex' => 'wskey']
+            ], ['ctx' => $ctx, 'cid' => CID]);
+
+            // If websocket-channel is known - remove context
+            if (CID
+                && ($chl = m('realtime')->row(['`type` = "channel"', '`token` = "' . CID . '"']))
+                && ($ctx = m('realtime')->row(['`type` = "context"', '`token` = "' . $ctx . '"', '`realtimeId` = "' . $chl->id . '"']))
+            ) {
+
+                // Delete context
+                $ctx->delete();
+
+                // Flush success
+                jflush(true);
+            }
+
+            // Flush success if realtime is turned Off, else flush failure
+            jflush(!Indi::ini('ws')->realtime);
+        }
     }
 }

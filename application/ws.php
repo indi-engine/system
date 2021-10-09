@@ -11,6 +11,13 @@ include '../library/func.php';
 // Log that execution reached ws.php
 wslog('mypid: ' . getmypid() . ', ' . 'Reached ws.php', __DIR__);
 
+// Require autoload.php
+require_once __DIR__ . '/../vendor/autoload.php';
+
+// Declare PhpAmqLib usage
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+
 /**
  * Error logging
  *
@@ -29,6 +36,24 @@ function err($msg = null, $exit = false) {
 
     // Exit
     if ($exit === true) exit;
+}
+
+/**
+ * Log $data into ws.<pid>.data file
+ *
+ * @param $data
+ */
+function logd($data) {
+
+    // If $data is not scalar - do export
+    if (!is_scalar($data)) $data = var_export($data, true);
+
+    // Do log, with millisecond-precise timestamp
+    file_put_contents(
+        rtrim(__DIR__, '\\/') . '/' . 'ws.' . getmypid(). '.data',
+        date('Y-m-d H:i:s') . substr(explode(' ', microtime())[0], 1, 4) . ' => ' . $data . "\n",
+        FILE_APPEND
+    );
 }
 
 /**
@@ -59,6 +84,17 @@ set_error_handler('err');
 if (!is_file($ini = '../../www/application/config.ini')) err('No ini-file found', true);
 if (!$ini = parse_ini_file($ini, true)) err('Ini-file found but parsing failed', true);
 if (!array_key_exists('ws', $ini)) err('No [ws] section found in ini-file', true);
+
+// If ini's 'rabbit' section exists
+if ($ini['rabbitmq']['enabled']) {
+
+    // Prepare rabbit
+    $rabbit = new AMQPStreamConnection($ini['rabbitmq']['host'], $ini['rabbitmq']['port'], $ini['rabbitmq']['user'], $ini['rabbitmq']['pass']);
+    $rabbit = $rabbit->channel();
+
+} else $rabbit = false;
+
+// Do further checks
 if (!$ini = $ini['ws']) err('[ws] section found, but it is empty', true);
 if (!array_key_exists('port', $ini)) err('No socket port specified in ini-file', true);
 if (!$port = (int) $ini['port']) err('Invalid socket port specified in ini-file', true);
@@ -127,6 +163,7 @@ if (!is_file('ws.pem')) $prot = 'tcp'; else {
     stream_context_set_option($context, 'ssl', 'local_cert', 'ws.pem');
     stream_context_set_option($context, 'ssl', 'verify_peer', false);
     $prot = 'ssl';
+    if (!$ini['pem']) $ini['pem'] = true;
 }
 
 // Create socket server
@@ -141,11 +178,23 @@ fwrite($pid, getmypid());
 // Log that we successfully started websocket-server
 err('socket server started, ws.pid: ' . getmypid() . ' => updated');
 
+// Session ids array
+$sessidA = array();
+
+// Languages array
+$langidA = array();
+
 // Clients' streams array
 $clientA = array();
 
+// Array, containing URL path mentioned within handshake-headers
+$pathA = array();
+
 // Meta array, containing info about what users the active streams belongs to, and what roles those users are
 $channelA = array();
+
+// RabbitMQ queues array
+$queueA = array();
 
 // Start serving
 while (true) {
@@ -160,7 +209,10 @@ while (true) {
     $write = $except = array();
 
     // Check if something interesting happened
-    if (!stream_select($listenA, $write, $except, null)) break;
+    $changed = stream_select($listenA, $write, $except, $rabbit ? 0 : null, $rabbit ? 200000 : null);
+
+    // If something wrong happened - break
+    if (!$rabbit && !$changed) break;
 
     // If server got new client
     if (in_array($server, $listenA)) {
@@ -168,12 +220,80 @@ while (true) {
         // Accept client's stream
         if (($clientI = stream_socket_accept($server, -1)) && $info = handshake($clientI)) {
 
-            // Add to collection
-            $clientA[] = $clientI;
-
             // Write empty json
             fwrite($clientI, encode('{}'));
-            file_put_contents('ws.chl', date('Y-m-d H:i:s') . ' => handshake: ' . print_r($info, true) . "\n", FILE_APPEND);
+
+            // Add to collection
+            $clientA[$index = $info['Sec-WebSocket-Key'] ?: count($clientA)] = $clientI;
+
+            // Log channel id of accepted client
+            if ($ini['log']) logd('accepted: ' . $index);
+
+            // If  session id detected, and `realtime` entry of `type` = "session" found
+            if (preg_match('~PHPSESSID=([^; ]+)~', $info['Cookie'], $sessid)) {
+
+                // Log headers
+                if ($ini['log']) logd($info);
+
+                // Remember session id
+                $sessidA[$index] = $sessid[1];
+
+                // Log
+                if ($ini['log']) logd('identified: ' . $index);
+
+                // Get language
+                preg_match('~i-language=([a-zA-Z\-]{2,5})~', $info['Cookie'], $langid);
+
+                // Remember language
+                $langidA[$index] = $langid[1];
+
+                // Init curl
+                $ch = curl_init();
+
+                // If RabbitMQ is turned on
+                if ($rabbit) {
+
+                    // Declare queue
+                    $rabbit->queue_declare($index, false, false, true, false);
+
+                    // Collect client socket
+                    $queueA[$index] = $clientI;
+                }
+
+                // Log
+                if ($ini['log']) logd('?newtab init: ' . $index);
+
+                // Build url
+                $prevcid = '';
+
+                // If query string given in $info['path'] and ?prev=xxx param is there
+                if ($q = parse_url($info['uri'], PHP_URL_QUERY)) {
+
+                    // Get query params
+                    parse_str($q, $a);
+
+                    // Append prev cid
+                    if (isset($a['prevcid'])) $prevcid = $a['prevcid'];
+                }
+
+                // Get path, as different Indi Engine instances can run on different dirs within same domain
+                $pathA[$index] = rtrim(parse_url($info['uri'], PHP_URL_PATH), '/');
+
+                // Set opts
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $info['Origin'] . $pathA[$index] . '/realtime/?newtab',
+                    CURLOPT_HTTPHEADER => [
+                        'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
+                        'Cookie: ' . $info['Cookie'] . rif($prevcid, '; prevcid=$1'),
+                    ]
+                ]);
+
+                // Exec and close curl
+                curl_exec($ch); curl_close($ch);
+
+                // Log
+                if ($ini['log']) logd('?newtab done: ' . $index);
+            }
         }
 
         // Remove server's socket from the list of sockets to be listened
@@ -181,125 +301,81 @@ while (true) {
     }
 
     // Foreach client stream
-    foreach($listenA as $clientI) {
+    foreach($listenA as $index => $clientI) {
 
         // Read data
-        $data = fread($clientI, 100000);
-
-        // Get stream index
-        $index = array_search($clientI, $clientA);
+        $binary = fread($clientI, 10000);
 
         // If no data
-        if (!$data) {
+        if (!$binary) {
 
-            // Close client's current stream
-            fclose($clientI);
+            // Log that channel is going to be closed
+            if ($ini['log']) logd('nobinary: ' . $index);
 
-            // Unset meta info, related to current stream
-            foreach ($channelA as $rid => $byrid)
-                foreach ($channelA[$rid] as $uid => $byuid) {
-                    if (isset($channelA[$rid][$uid][$index])) {
-
-                        // Remove channel from channels registry
-                        unset($channelA[$rid][$uid][$index]);
-
-                        // Log that channel was closed
-                        if ($ini['log']) file_put_contents('ws.chl',
-                            date('Y-m-d H:i:s') . ' => close: ' . $rid . '-' . $uid . '-' . $index . "\n", FILE_APPEND);
-                    }
-                }
-
-            // Unset current stream
-            unset($clientA[$index]); echo 'close';
+            // Close client's stream
+            close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA);
 
             // Goto next stream
             continue;
         }
 
-        // Log that channel was closed
-        if ($ini['log']) file_put_contents('ws.' . getmypid() . '.data',
-            date('Y-m-d H:i:s') . ' => chl:' . $index . ', raw:' . print_r($data, true) . "\n", FILE_APPEND);
+        // Log incoming data
+        echo '--fread--' . "\n";
+        echo $log = 'chl:' . $index . ', len: ' . strlen($binary) . ', raw:' . $binary;
+        if ($ini['log']) logd($log);
 
-        // Decode data
-        $data = decode($data);
+        // Do
+        do {
 
-        // Log that channel was closed
-        if ($ini['log']) file_put_contents('ws.' . getmypid() . '.data',
-            date('Y-m-d H:i:s') . ' => chl:' . $index . ', obj:' . print_r($data, true) . "\n", FILE_APPEND);
+            // Decode data. If data is multi-framed - $binary - is the binary data representing the remaining frames
+            list($data, $binary) = decode($binary);
 
-        // Here we skip messages having 'type' not 'text'
-        if ($data['type'] != 'text') continue;
+            // Log decoded frame
+            if ($ini['log']) logd('chl:' . $index . ', obj:' . json_encode($data));
 
-        // Convert json-decoded payload into an array
-        $data = json_decode($data['payload'], true);
+            // If message type is  'close'
+            if ($data['type'] == 'close') {
 
-        // If some user connected
-        if ($data['type'] == 'open') {
+                // Log that channel is going to be closed
+                if ($ini['log']) logd('type=close: ' . $index);
 
-            // Get user's role id and self id
-            list($rid, $uid) = explode('-', $data['uid']);
+                // Close client's stream
+                close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA);
 
-            // Organize channels
-            if (!is_array($channelA[$rid])) $channelA[$rid] = array();
-            if (!is_array($channelA[$rid][$uid])) $channelA[$rid][$uid] = array();
-            $channelA[$rid][$uid][$index] = $index;
-
-            // Log that channel was opened
-            if ($ini['log']) file_put_contents('ws.chl',
-                date('Y-m-d H:i:s') . ' => open: ' . $data['uid'] . '-' . $index . "\n", FILE_APPEND);
-
-            // Write message into channel
-            fwrite($clientA[$channelA[$rid][$uid][$index]], encode(json_encode(array('type' => 'opened', 'cid' => $index))));
-
-        // Else if previously connected user pings the server
-        } else if ($data['type'] == 'ping') {
-
-            // Get user's role id and self id
-            list($rid, $uid) = explode('-', $data['uid']);
-
-            // If logging is On - do log
-            if ($ini['log']) file_put_contents('ws.ping.msg', date('Y-m-d H:i:s => ') . print_r($data, true) . "\n", FILE_APPEND);
-
-            // Change type to 'pong'
-            $data['type'] = 'pong';
-
-            // Write pong-message into channel
-            fwrite($clientA[$channelA[$rid][$uid][$data['cid']]], encode(json_encode($data)));
-
-        } else if ($data['type'] == 'notice') {
-
-            // If logging is On - do log
-            if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.rcv.msg', date('Y-m-d H:i:s') . ' => ' . print_r($data, true) . "\n", FILE_APPEND);
-
-            // Walk through roles, that recipients should have
-            // If there are channels already exist for recipients, having such role
-            foreach ($data['to'] as $rid => $uidA) if ($channelA[$rid]) {
-
-                // If all recipients having such role should be messaged
-                // Send message to all recipients having such role
-                if ($data['to'][$rid] === true) foreach ($channelA[$rid] as $uid => $byrole)
-                    foreach ($channelA[$rid][$uid] as $cid) {
-
-                        // If logging is On - do log
-                        if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
-
-                        // Write message into channel
-                        fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
-                    }
-
-                // Else if we have certain list of recipients
-                // Send message to certain recipients
-                else foreach ($data['to'][$rid] as $uid)
-                    if ($channelA[$rid][$uid])
-                        foreach ($channelA[$rid][$uid] as $cid) {
-
-                            // If logging is On - do log
-                            if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
-
-                            // Write message into channel
-                            fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
-                        }
+                // Goto next stream
+                continue 2;
             }
+
+            // Here we skip messages having 'type' not 'text'
+            if ($data['type'] != 'text') continue 2;
+
+            // Convert json-decoded payload into an array
+            $data = json_decode($data['payload'], true);
+
+            // Write data to clients
+            write($data, $index, $channelA, $clientA, $ini);
+
+        // While binary data remaining
+        } while ($binary);
+    }
+
+    // If RabbitMQ is turned on
+    if ($rabbit) foreach ($queueA as $index => $clientI) {
+
+        // While at least 1 message is available within queue
+        while ($msg = $rabbit->basic_get($index)) {
+
+            // Convert json-decoded payload into an array
+            $data = json_decode($msg->body, true);
+
+            // Log that message's body
+            logd('mq: ' . $msg->body);
+
+            // Write data to clients
+            write($data, $index, $channelA, $clientA, $ini);
+
+            // Acknowledge the queue about that message is picked
+            $rabbit->basic_ack($msg->getDeliveryTag());
         }
     }
 }
@@ -308,6 +384,8 @@ while (true) {
 fclose($server);
 
 /**
+ * Do a handshake for accepted client
+ *
  * @param $clientI
  * @return array|bool
  */
@@ -356,6 +434,8 @@ function handshake($clientI) {
 }
 
 /**
+ * Encode the message before being sent to client
+ *
  * @param $payload
  * @param string $type
  * @param bool $masked
@@ -423,6 +503,8 @@ function encode($payload, $type = 'text', $masked = false) {
 }
 
 /**
+ * Decode websocket data
+ *
  * @param $data
  * @return array|bool
  */
@@ -498,8 +580,171 @@ function decode($data) {
         if (isset($data[$i]))
             $decoded['payload'] .= $data[$i] ^ $mask[($i - $payloadOffset) % 4];
 
-    // Return decoded data
-    return $decoded;
+    // Return decoded data and remaining binary data
+    return [$decoded, substr($data, $dataLength)];
+}
+
+/**
+ * Write data to clients
+ *
+ * @param $data
+ * @param $index
+ * @param $channelA
+ * @param $clientA
+ * @param $ini
+ */
+function write($data, $index, &$channelA, &$clientA, $ini) {
+
+    // If some user connected
+    if ($data['type'] == 'open') {
+
+        // Get user's role id and self id
+        list($rid, $uid) = explode('-', $data['uid']);
+
+        // Organize channels
+        if (!is_array($channelA[$rid])) $channelA[$rid] = array();
+        if (!is_array($channelA[$rid][$uid])) $channelA[$rid][$uid] = array();
+        $channelA[$rid][$uid][$index] = $index;
+
+        // Log that open-message is received
+        if ($ini['log']) logd('open: ' . $data['uid'] . '-' . $index);
+
+        // Write message into channel
+        fwrite($clientA[$channelA[$rid][$uid][$index]], encode(json_encode(array('type' => 'opened', 'cid' => $index))));
+
+    // Else if previously connected user pings the server
+    } else if ($data['type'] == 'ping') {
+
+        // Get user's role id and self id
+        list($rid, $uid) = explode('-', $data['uid']);
+
+        // If logging is On - do log ping
+        if ($ini['log']) logd('ping: ' . json_encode($data));
+
+        // Change type to 'pong'
+        $data['type'] = 'pong';
+
+        // Write pong-message into channel
+        fwrite($clientA[$channelA[$rid][$uid][$data['cid']]], encode(json_encode($data)));
+
+    // Else if message type is 'notice' or 'reload'
+    } else if ($data['type'] == 'notice' || $data['type'] == 'reload') {
+
+        // If logging is On - do log
+        if ($ini['log'] && $data['row']) file_put_contents('ws.' . $data['row'] . '.rcv.msg', date('Y-m-d H:i:s') . ' => ' . print_r($data, true) . "\n", FILE_APPEND);
+
+        // Walk through roles, that recipients should have
+        // If there are channels already exist for recipients, having such role
+        foreach ($data['to'] as $rid => $uidA) if ($channelA[$rid]) {
+
+            // If all recipients having such role should be messaged
+            // Send message to all recipients having such role
+            if ($data['to'][$rid] === true) foreach ($channelA[$rid] as $uid => $byrole)
+                foreach ($channelA[$rid][$uid] as $cid) {
+
+                    // If logging is On - do log
+                    if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
+
+                    // Write message into channel
+                    fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
+                }
+
+            // Else if we have certain list of recipients
+            // Send message to certain recipients
+            else foreach ($data['to'][$rid] as $uid)
+                if ($channelA[$rid][$uid])
+                    foreach ($channelA[$rid][$uid] as $cid) {
+
+                        // If logging is On - do log
+                        if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
+
+                        // Write message into channel
+                        fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
+                    }
+        }
+
+    // Else if message type is 'realtime'
+    } else if ($data['type'] == 'realtime' || $data['type'] == 'F5' || $data['type'] == 'menu') {
+
+        // If recepient channel is given as `true` - send message to all recepients
+        if ($data['to'] === true) foreach ($clientA as $clientI) fwrite($clientI, encode(json_encode($data)));
+
+        // Else if recepient channel id is given and channel exists - write message into that channel
+        else if ($clientA[$data['to']]) fwrite($clientA[$data['to']], encode(json_encode($data)));
+    }
+}
+
+/**
+ * Close client socket
+ *
+ * @param $clientI
+ * @param $channelA
+ * @param $index
+ * @param $ini
+ * @param $sessidA
+ * @param $langidA
+ * @param $rabbit
+ * @param $queueA
+ * @param $clientA
+ */
+function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rabbit, &$queueA, &$clientA, &$pathA) {
+
+    // Close client's current stream
+    fclose($clientI);
+
+    // Unset meta info, related to current stream
+    foreach ($channelA as $rid => $byrid)
+        foreach ($channelA[$rid] as $uid => $byuid) {
+            if (isset($channelA[$rid][$uid][$index])) {
+
+                // Remove channel from channels registry
+                unset($channelA[$rid][$uid][$index]);
+
+                // Log that channel was closed
+                if ($ini['log']) logd('close: ' . $rid . '-' . $uid . '-' . $index);
+
+                // If session id detected, and `realtime` entry of `type` = "session" found
+                if (array_key_exists($index, $sessidA)) {
+
+                    // Init curl
+                    $ch = curl_init();
+
+                    // Log that Indi Engine is going to be notified about closed channel
+                    if ($ini['log']) logd('?closetab init: ' . $rid . '-' . $uid . '-' . $index);
+
+                    // Set opts
+                    curl_setopt_array($ch, [
+                        CURLOPT_URL => ($ini['pem'] ? 'https' : 'http') . '://' . $ini['socket'] . $pathA[$index] . '/realtime/?closetab',
+                        CURLOPT_HTTPHEADER => [
+                            'Indi-Auth: ' . implode(':', [$sessidA[$index], $langidA[$index], $index]),
+                            'Cookie: ' . 'PHPSESSID=' . $sessidA[$index] . '; i-language=' . $langidA[$index]
+                        ]
+                    ]);
+
+                    // Exec and close curl
+                    curl_exec($ch); curl_close($ch);
+
+                    // Log that Indi Engine is notified about closed channel
+                    if ($ini['log']) logd('?closetab done: ' . $rid . '-' . $uid . '-' . $index);
+
+                    // Drop session id and language id
+                    unset($sessidA[$index], $langidA[$index], $pathA[$index]);
+
+                    // If queue exists
+                    if (isset($queueA[$index])) {
+
+                        // Delete queue
+                        $rabbit->queue_delete($index);
+
+                        // Unset queue dict
+                        unset($queueA[$index]);
+                    }
+                }
+            }
+        }
+
+    // Unset current stream
+    unset($clientA[$index]); echo 'close';
 }
 
 // Shutdown

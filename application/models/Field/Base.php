@@ -41,27 +41,31 @@ class Field_Base extends Indi_Db_Table {
      * @param array $input
      * @return mixed
      */
-    public function createRowset($input = array()) {
+    public function createRowset($input = []) {
 
         // If no $input arg given - assume empty rowset
-        if (!$input) $input['rows'] = array();
+        if (!$input) $input['rows'] = [];
 
         // Get the type of construction
         $index = isset($input['rows']) ? 'rows' : 'data';
 
         // Prepare data for Indi_Db_Table_Rowset object construction
-        $data = array(
+        $data = [
             'table'   => $this->_table,
-            $index     => is_array($input[$index]) ? $input[$index] : array(),
+            $index     => is_array($input[$index]) ? $input[$index] : [],
             'rowClass' => $this->_rowClass,
             'found'=> isset($input['found'])
                 ? $input['found']
                 : (is_array($input[$index]) ? count($input[$index]) : 0)
-        );
+        ];
 
-        // Provide special 'aliases' construction property to be set up
-        if ($input['aliases'] && is_array($input['aliases'])) $data['aliases'] = $input['aliases'];
-        else foreach($input[$index] as $item) $data['aliases'][$index == 'rows' ? $item->alias : $item['alias']] = count($data['aliases'] ?: array());
+        // Provide special 'aliases' and 'ids' construction property to be set up
+        foreach (['aliases' => 'alias', 'ids' => 'id'] as $ctor => $prop) {
+            if ($input[$ctor] && is_array($input[$ctor])) $data[$ctor] = $input[$ctor];
+            else foreach($input[$index] as $item) {
+                $data[$ctor][$index == 'rows' ? $item->$prop : $item[$prop]] = count($data[$ctor] ?: []);
+            }
+        }
 
         // Construct and return Indi_Db_Table_Rowset object
         return new $this->_rowsetClass($data);

@@ -1,17 +1,30 @@
 <?php
 class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
+    /**
+     * Contents of admin/classic/app.js for checking js-controllers files presence
+     *
+     * @var string
+     */
+    public static $systemAppJs = '';
+
+    /**
+     * Create js-controller file for selected section
+     */
     public function jsAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
+        // JS-controller files for sections of type 'system' - will be created in '/core',
+        // 'often' - in '/coref', 'project' - in '/www', but beware that js-controller files
+        // created for system sections should be moved from /core/js/admin/app/controller
+        // to Indi Engine system app source code into app/controller folder, and then should be
+        // compiled by 'sencha app build --production' command, so that admin/classic/app.js bundle to be refreshed
         $repoDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen section');
+            jflush(false, 'Can\'t detect fraction of selected section');
 
         // Build the dir name, that controller's js-file should be created in
         $dir = Indi::dir(DOC . STD . '/' . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
@@ -51,6 +64,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         jflush(true);
     }
 
+    /**
+     * Create php-controller file for selected section
+     */
     public function phpAction() {
 
         // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
@@ -112,6 +128,25 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Call parent
         $this->callParent();
     }
+    /**
+     * Append sort direction clickable icon to the sort field
+     *
+     * @param $item
+     */
+    public function adjustGridDataItem(&$item) {
+
+        // Add icon for `defaultSortField` prop
+        if ($item['defaultSortField']
+            && $info = Indi::rexm('~<span (.*?) title="(.*?)"></span>$~', $item['defaultSortDirection'])) {
+
+            // Setup jump
+            $item['_system']['jump']['defaultSortField'] = [[
+                'href' => 'cell:defaultSortDirection',
+                'ibox' => $info[1],
+                'over' => $info[2]
+            ]];
+        }
+    }
 
     /**
      * 1.Hide default values for `extendsPhp` and `extendsJs` props, to prevent it from creating a mess in eyes
@@ -148,25 +183,57 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                     = sprintf('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
             }
 
-            // Get js-controller file name
-            $js = DOC . STD . '/' . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+            // Add icon for `extendsPhp` prop
+            if (($_ = $item['extendsPhp']) != 'Indi_Controller_Admin') $item['_render']['extendsPhp']
+                = '<img src="resources/images/icons/btn-icon-php-parent.png" class="i-cell-img">' . $_;
 
-            // If js-controller file exists
-            if (file_exists($js)) {
+            // Add icon for `extendsJs` prop
+            if (($_ = $item['extendsJs']) != 'Indi.lib.controller.Controller') $item['_render']['extendsJs']
+                = '<img src="resources/images/icons/btn-icon-js-parent.png" class="i-cell-img">' . $_;
 
-                // Setup flag
-                $item['_system']['js-class'] = true;
+            // Add icon for `filter` prop
+            if ($_ = $item['filter']) $item['_render']['filter']
+                = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
 
-                // If js-controller file is empty - setup error
-                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+            if ($item['$keys']['type'] != 's') {
 
-                // Else we're unable to find parent class mention - setup error
-                else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
-                    $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+                // Get js-controller file name
+                $js = DOC . STD . '/' . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
-                // Else if parent class is not as per `extendsJs` prop - setup error
-                else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
-                    = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
+                // If js-controller file exists
+                if (file_exists($js)) {
+
+                    // Setup flag
+                    $item['_system']['js-class'] = true;
+
+                    // If js-controller file is empty - setup error
+                    if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+
+                    // Else we're unable to find parent class mention - setup error
+                    else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
+                        $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+
+                    // Else if parent class is not as per `extendsJs` prop - setup error
+                    else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
+                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
+                }
+
+            // Else
+            } else {
+
+                // If system app js is not yet set up - do it
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/admin/classic/app.js');
+
+                // If js-controller file exists
+                if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
+
+                    // Setup flag
+                    $item['_system']['js-class'] = true;
+
+                    // If parent class is not as per `extendsJs` prop - setup error
+                    if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
+                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $m[1]);
+                }
             }
 
             // Hide default values
@@ -196,7 +263,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      * Created copies of selected sections and attach under section, chosen within prompt-window
      * Caution! Do not use it, it's not completed and works properly only in specific situations
      */
-    public function duplicateAction() {
+    public function copyAction() {
 
         // Get selected entries ids
         $sectionId_disabled = $this->selected->column('id');
@@ -210,12 +277,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             // Get `sectionId` field extjs config
             $sectionId_field = $sectionR->combo('sectionId') + array('disabledOptions' => $sectionId_disabled);
 
-            // Build prompt msg
-            $msg = implode(array('Выберите родительский раздел, в подчинении у которого должны быть',
-                'созданы дубликаты выбранных разделов'), '<br>');
-
             // Prompt for timeId
-            jprompt($msg, array($sectionId_field));
+            jprompt(I_SECTION_CLONE_SELECT_PARENT, array($sectionId_field));
 
         // If answer is 'ok'
         } else if (Indi::get('answer') == 'ok') {
@@ -296,6 +359,71 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(true, 'Copied');
 
         // Else flush failure
-        } else jflush(false, 'Duplication cancelled');
+        } else jflush(false, 'Copying cancelled');
+    }
+
+    /**
+     * Auto-create `grid` entries for `section` entry, if it's a new entry or `entityId` was changed
+     */
+    public function postSave() {
+
+        // If entityId was not changed - return
+        if (!in('entityId', $this->row->affected())) return;
+
+        // Delete old grid info when associated entity has changed
+        m('Grid')->fetchAll('`sectionId` = "' . $this->id . '"')->delete();
+
+        // Set up new grid, if associated entity remains not null, event after change
+        if (!$this->row->entityId) return;
+
+        // Get entity fields as grid columns candidates
+        $fields = m('Field')->fetchAll('`entityId` = "' . $this->row->entityId . '"', '`move`')->toArray();
+
+        // If no fields - return
+        if (!count($fields)) return;
+
+        // Declare exclusions array, because not each entity field will have corresponding column in grid
+        $exclusions = array();
+
+        // Exclude tree column, if exists
+        if ($tc = m($this->row->entityId)->treeColumn()) $exclusions[] = $tc;
+
+        // Exclude columns that have controls of several types, listed below
+        for ($i = 0; $i < count($fields); $i++) {
+            // 13 - html-editor
+            if (in_array($fields[$i]['elementId'], array(13))) {
+                if ($fields[$i]['elementId'] == 6 && $fields[$i]['alias'] == 'title') {} else {
+                    $exclusions[] = $fields[$i]['alias'];
+                }
+            }
+        }
+
+        // Exclude columns that are links to parent sections
+        $parentSectionId = $this->row->sectionId;
+        do {
+            $parentSection = t()->model->fetchRow('`id` = "' . $parentSectionId . '"');
+            if ($parentSection && $parentEntity = $parentSection->foreign('entityId')){
+                for ($i = 0; $i < count($fields); $i++) {
+                    if ($fields[$i]['alias'] == $parentEntity->table . 'Id' && $fields[$i]['relation'] == $parentEntity->id) {
+                        $exclusions[] = $fields[$i]['alias'];
+                    }
+                }
+                $parentSectionId = $parentSection->sectionId;
+            }
+        } while ($parentEntity);
+
+        // Create grid, stripping exclusions from final grid column list
+        $j = 0; $gridId = 0;
+        for ($i = 0; $i < count($fields); $i++) {
+            if (!in_array($fields[$i]['alias'], $exclusions)) {
+                $gridR = m('Grid')->createRow();
+                $gridR->gridId = $fields[$i]['elementId'] == 16 ? 0 : $gridId;
+                $gridR->sectionId = $this->row->id;
+                $gridR->fieldId = $fields[$i]['id'];
+                $gridR->save();
+                $j++;
+                if ($fields[$i]['elementId'] == 16) $gridId = $gridR->id;
+            }
+        }
     }
 }

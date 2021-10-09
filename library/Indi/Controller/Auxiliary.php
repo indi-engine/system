@@ -146,7 +146,13 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         // Start websocket server
         wslog('------------------------------');
         wslog('Exec: ' . $result['cmd']);
-        exec($result['cmd'], $result['output'], $result['return']);
+
+        // Exec
+        preg_match('/^WIN/i', PHP_OS)
+            ? pclose(popen($result['cmd'], "r"))
+            : exec($result['cmd'], $result['output'], $result['return']);
+
+        // Log output
         wslog('Output: ' . print_r($result['output'], true) . ', return: ' . $result['return']);
 
         // Unset 'cmd'-key

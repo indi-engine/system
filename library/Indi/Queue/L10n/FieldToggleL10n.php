@@ -24,11 +24,14 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         $queueTaskR->save();
 
         // Get table and field
-        list ($table, $field) = explode(':', $params['field']);
+        list ($table, $field, $entry) = explode(':', $params['field']);
+
+        //
+        $fieldR = $entry ? cfgField($table, $entry, $field) : field($table, $field);
 
         // Create separate `queueChunk`-trees for each fraction
         foreach ($params['target'] as $fraction => $targets)
-            $this->appendChunk($queueTaskR, entity($table), field($table, $field), array(), $fraction);
+            $this->appendChunk($queueTaskR, entity($table), $fieldR, array(), $fraction);
 
         // Return
         return $queueTaskR;
@@ -48,14 +51,13 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
         $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
         $queueTaskR->state = 'progress';
         $queueTaskR->queueState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -174,7 +176,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                     $queueChunkR->queueSize ++; $queueChunkR->basicUpdate();
 
                     // Increment `queueSize` prop on `queueTask` entry and save it
-                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate();
+                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate(false, false);
 
                     // Increment $deduct
                     $deduct ++;
@@ -204,7 +206,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -233,7 +235,14 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 : field($table, $field);
 
             // Convert column type to TEXT
-            if ($table != 'enumset' && $params['toggle'] != 'n') field($table, $field, array('columnTypeId' => 'TEXT'));
+            if ($params['toggle'] != 'n') {
+                if ($table == 'param' && $field == 'cfgValue') {
+                    list ($_table, $_field, $_entry) = explode(':', $params['field']);
+                    $fieldR = cfgField($_table, $_entry, $_field, ['columnTypeId' => 'TEXT']);
+                } else if ($table != 'enumset') {
+                    field($table, $field, array('columnTypeId' => 'TEXT'));
+                }
+            }
 
             // Setup $hasLD flag
             $hasLD = $fieldR->hasLocalizedDependency();
@@ -276,12 +285,19 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 $queueChunkR->applySize ++; $queueChunkR->basicUpdate();
 
                 // Increment `applySize` prop on `queueTask` entry and save it
-                $queueTaskR->applySize ++; $queueTaskR->basicUpdate();
+                $queueTaskR->applySize ++; $queueTaskR->basicUpdate(false,false);
 
             }, $where, '`id` ASC');
 
+            if ($table == 'param' && $field == 'cfgValue' && $params['toggle'] == 'n') {
+                if (!$queueChunkR->queueChunkId || !$hasLD) {
+                    list ($_table, $_field, $_entry) = explode(':', $params['field']);
+                    $fieldR = cfgField($_table, $_entry, $_field, ['columnTypeId' => 'VARCHAR(255)']);
+                }
+            }
+
             // Convert column type to TEXT
-            if ($table != 'enumset' && $params['toggle'] == 'n')
+            if ($table != 'enumset' && $params['toggle'] == 'n' && !($table == 'param' && $field == 'cfgValue'))
                 if (!$queueChunkR->queueChunkId || !$hasLD)
                     field($table, $field, array('columnTypeId' => 'VARCHAR(255)'));
 

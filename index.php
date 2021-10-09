@@ -57,6 +57,9 @@ set_include_path(implode($p, $inc));
 // Load misc functions
 require('func.php');
 
+// Require vendor
+if (file_exists('vendor/autoload.php')) require_once('vendor/autoload.php');
+
 // Register autoloader
 spl_autoload_register('autoloader');
 
@@ -80,6 +83,7 @@ if (function_exists('geoip_country_code_by_name')
 if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
     if ($_[0]) $_COOKIE['PHPSESSID'] = $_[0];
     if ($_[1]) setcookie('i-language', $_COOKIE['i-language'] = $_[1]);
+    define('CID', $_[2] ?: false);
 }
 
 Indi::cache();

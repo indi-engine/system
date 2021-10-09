@@ -8,6 +8,13 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         // Setup sibling combo
         Indi::view()->siblingCombo();
 
+        // Create `realtime` entry having `type` = "context"
+        if (!m('realtime')->fetchRow([
+            '`type` = "context"',
+            '`token` = "' . t()->bid() . '"',
+            '`realtimeId` = "' . m('realtime')->fetchRow('`token` = "' . CID . '"')->id . '"'
+        ])) t()->context();
+
         // Prepare and assign raw response for rendering tab contents, if need
         $this->renderTab();
 

@@ -18,18 +18,38 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
      */
     public function preDispatch() {
 
+        // Force redirect to certain row
         if (Indi::uri()->action == 'index' || Indi::uri()->id != Indi::admin()->id) {
 
+            // Set format to 'json', so scope things will be set up
             Indi::uri()->format = 'json';
+
+            // Call parent
             parent::preDispatch();
 
+            // Spoof uri params to force row-action
             Indi::uri()->action = $this->action;
             Indi::uri()->id = Indi::admin()->id;
             Indi::uri()->ph = Indi::trail()->scope->hash;
             Indi::uri()->aix = Indi::trail()->scope->aix;
         }
 
+        // Call parent
         parent::preDispatch();
+    }
+
+    /**
+     *
+     *
+     * @param $scope
+     */
+    public function createContextIfNeed($scope) {
+
+        // Do nothing for index-action
+        if (Indi::uri()->action == 'index' || Indi::uri()->id != Indi::admin()->id) return;
+
+        // Call parent
+        parent::createContextIfNeed($scope);
     }
 
     /**

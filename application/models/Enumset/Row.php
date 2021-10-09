@@ -73,8 +73,10 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $table = $fieldR->foreign('entityId')->table;
 
         // Get the current default value
-        $defaultValue = Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
-            ->fetch(PDO::FETCH_OBJ)->Default;
+        $defaultValue = $fieldR->entry
+            ? $fieldR->defaultValue
+            : Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
+                ->fetch(PDO::FETCH_OBJ)->Default;
 
         // If this is an existing enumset row
         if ($this->id) {
@@ -109,31 +111,54 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $enumsetA[] = $this->alias;
         }
 
-        // Build the ALTER query template
-        $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "%s"';
+        // If it's not a cfgField - re-run ALTER query
+        if (!$fieldR->entry) {
 
-        // Run that query
-        Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
-            '("' . im($enumsetA, '","') . '")', $defaultValue));
+            // Build the ALTER query template
+            $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "%s"';
+
+            // Run that query
+            Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
+                '("' . im($enumsetA, '","') . '")', $defaultValue));
+        }
 
         // Deal with existing values
         if ($this->id) {
 
-            // Replace mentions of original value with modified value
-            Indi::db()->query('
-                UPDATE `' . $table . '`
-                SET `' . $fieldR->alias . '` = TRIM(BOTH "," FROM REPLACE(
-                    CONCAT(",", `' . $fieldR->alias . '`, ","),
-                    ",' . $this->_original['alias'] . ',",
-                    ",' . $this->_modified['alias'] . ',"
-                ))
-            ');
+            // If it's not a cfgField
+            if (!$fieldR->entry) {
+
+                // Replace mentions of original value with modified value
+                Indi::db()->query('
+                    UPDATE `' . $table . '`
+                    SET `' . $fieldR->alias . '` = TRIM(BOTH "," FROM REPLACE(
+                        CONCAT(",", `' . $fieldR->alias . '`, ","),
+                        ",' . $this->_original['alias'] . ',",
+                        ",' . $this->_modified['alias'] . ',"
+                    ))
+                ');
+
+            // Else
+            } else {
+
+                // Replace mentions of original value with modified value
+                Indi::db()->query('
+                    UPDATE `param`
+                    SET `cfgValue` = TRIM(BOTH "," FROM REPLACE(
+                        CONCAT(",", `cfgValue`, ","),
+                        ",' . $this->_original['alias'] . ',",
+                        ",' . $this->_modified['alias'] . ',"
+                    ))
+                    WHERE `cfgField` = "' . $fieldR->id . '"
+                ');
+            }
 
             // Remove original value that was temporarily added to $enumsetA
             array_pop($enumsetA);
 
-            // Re-run ALTER query
-            Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
+            // If it's not a cfgField - re-run ALTER query
+            if (!$fieldR->entry)
+                Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
                 '("' . im($enumsetA, '","') . '")', $defaultValue));
         }
 
@@ -167,8 +192,10 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $table = $fieldR->foreign('entityId')->table;
 
         // Get the current default value
-        $defaultValue = Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
-            ->fetch(PDO::FETCH_OBJ)->Default;
+        $defaultValue = $fieldR->entry
+            ? $fieldR->defaultValue
+            : Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
+                ->fetch(PDO::FETCH_OBJ)->Default;
 
         // If current row is the last enumset row, related to current field - throw an error message
         if (count($enumsetA) == 1) iexit(sprintf(I_ENUMSET_ERROR_VALUE_LAST, $this->alias));
@@ -197,14 +224,18 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Convert $defaultValue back from array to string
         $defaultValue = implode(',', $defaultValue);
 
-        // Build the ALTER query
-        $sql[] = 'ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $fieldR->alias . '` `' . $fieldR->alias . '`';
-        $sql[] = $fieldR->foreign('columnTypeId')->type . '("' . implode('","', $enumsetA) . '")';
-        $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
-        $sql[] = 'DEFAULT "' . $defaultValue . '"';
+        // If it's not a cfgField
+        if (!$fieldR->entry) {
 
-        // Run that query
-        Indi::db()->query(implode(' ', $sql));
+            // Build the ALTER query
+            $sql[] = 'ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $fieldR->alias . '` `' . $fieldR->alias . '`';
+            $sql[] = $fieldR->foreign('columnTypeId')->type . '("' . implode('","', $enumsetA) . '")';
+            $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
+            $sql[] = 'DEFAULT "' . $defaultValue . '"';
+
+            // Run that query
+            Indi::db()->query(implode(' ', $sql));
+        }
 
         // If $updateFieldDefaultValue flag is set to true
         if ($updateFieldDefaultValue)
@@ -247,41 +278,60 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Build a string, that will be used in Enumset_Row->export()
      *
+     * @param string $certain
      * @return string
      */
-    protected function _ctor() {
+    protected function _ctor($certain = '') {
 
         // Use original data as initial ctor
         $ctor = $this->_original;
 
-        // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['move']);
+        // Exclude `id` as it will be set automatically by MySQL and Indi Engine
+        unset($ctor['id']);
 
         // Exclude props that will be already represented by shorthand-fn args
         foreach (ar('fieldId,alias') as $arg) unset($ctor[$arg]);
 
-        // Stringify
-        $ctorS = var_export($ctor, true);
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
 
-        // Minify
-        if (count($ctor) == 1) $ctorS = preg_replace('~^array \(\s+(.*),\s+\)$~', 'array($1)', $ctorS);
+        // Foreach $ctor prop
+        foreach ($ctor as $prop => &$value) {
 
-        // Return
-        return $ctorS;
+            // Get field
+            // $field = Indi::model('Enumset')->fields($prop);
+
+            // Else if $prop is 'move' - get alias of the enumset, that current enumset is after,
+            // among enumsets with same value of `fieldId` prop
+            if ($prop == 'move') $value = $this->position();
+        }
+
+        // Stringify and return $ctor
+        return _var_export($ctor);
     }
 
     /**
      * Build an expression for creating the current `enumset` entry in another project, running on Indi Engine
      *
+     * @param string $certain
      * @return string
      */
-    public function export() {
+    public function export($certain = '') {
+
+        // Shortcut
+        $fieldR = $this->foreign('fieldId');
 
         // Return
-        return "enumset('" .
-            $this->foreign('fieldId')->foreign('entityId')->table . "', '" .
-            $this->foreign('fieldId')->alias . "', '" .
-            $this->alias . "', " . $this->_ctor() . ");";
+        return $fieldR->entry
+            ? "cfgEnumset('" .
+                $fieldR->foreign('entityId')->table . "', '" .
+                ($fieldR->foreign('entry')->alias ?: $fieldR->entry) . "', '" .
+                $fieldR->alias . "', '" .
+                $this->alias . "', " . $this->_ctor($certain) . ");"
+            : "enumset('" .
+                $fieldR->foreign('entityId')->table . "', '" .
+                $fieldR->alias . "', '" .
+                $this->alias . "', " . $this->_ctor($certain) . ");";
     }
 
     /**
@@ -291,5 +341,68 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function box() {
         return preg_match('~<span.*?class=".*?i-color-box.*?".*?></span>~', $this->title, $m) ? $m[0] : '';
+    }
+
+    /**
+     * Get the the alias of the `enumset` entry,
+     * that current `enumset` entry is positioned after
+     * among all `enumset` entries having same `fieldId`
+     * according to the values `move` prop
+     *
+     * @param null|string $after
+     * @param string $withinFields
+     * @return string|Indi_Db_Table_Row
+     */
+    public function position($after = null, $withinFields = 'fieldId') {
+
+        // Build within-fields WHERE clause
+        $wfw = [];
+        foreach (ar($withinFields) as $withinField)
+            $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+
+        // Get ordered enumset aliases
+        $enumsetA_alias = Indi::db()->query(
+            'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
+        )->fetchAll(PDO::FETCH_COLUMN);
+
+        // Get current position
+        $currentIdx = array_flip($enumsetA_alias)[$this->alias];
+
+        // Do positioning
+        return $this->_position($after, $enumsetA_alias, $currentIdx, $within);
+    }
+
+    /**
+     * Do positioning, if $this->_system['move'] is set
+     */
+    public function onSave() {
+
+        // If no _system['move'] defined - return
+        if (!array_key_exists('move', $this->_system)) return;
+
+        // Get field, that current enumset should be moved after
+        $after = $this->_system['move']; unset($this->_system['move']);
+
+        // Position field for it to be after field, specified by $this->_system['move']
+        $this->position($after);
+    }
+
+    /**
+     * This method was redefined to provide ability for some enumset
+     * props to be set using aliases rather than ids
+     *
+     * @param  string $columnName The column key.
+     * @param  mixed  $value      The value for the property.
+     * @return void
+     */
+    public function __set($columnName, $value) {
+
+        // Provide ability for some field props to be set using aliases rather than ids
+        if (is_string($value) && !Indi::rexm('int11', $value)) {
+            if ($columnName == 'move') return $this->_system['move'] = $value;
+        }
+
+        // Standard __set()
+        parent::__set($columnName, $value);
     }
 }

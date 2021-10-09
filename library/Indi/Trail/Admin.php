@@ -256,7 +256,7 @@ class Indi_Trail_Admin {
                     $crumbA[] = '<i' . ($color ? ' style="color: ' . $color[1] . ';"' : '') . '>' . $title . '</i>';
 
                     // If current trail item is a last item, append current trail item action title
-                    if ($i == count($this->items) - 1) $crumbA[] = $item->action->title();
+                    if ($i == count(self::$items) - 1) $crumbA[] = $item->action->title();
 
                 // Else if current trail item row does not have and id, and current action alias is 'form'
                 } else if ($item->action->alias == 'form') {

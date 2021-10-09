@@ -48,7 +48,7 @@ class Indi_Controller {
             }
 
         // If more than 1 designs detected for current domain
-        if (count(Indi::ini()->design) > 1) {
+        if (count((array) Indi::ini()->design) > 1) {
 
             // Views dir shortcut
             $dir = DOC . STD . '/www/application/views/';
@@ -792,6 +792,9 @@ class Indi_Controller {
                 $this->adjustGridDataItem($item, $r);
                 $this->renderGridDataItem($item, $r);
             }
+
+            // If $_GET['required'] given - Flush required entry
+            if ($required = (int) Indi::get('required')) jflush(true,  ['required' => array_pop($data)]);
 
             // Else if data is gonna be used in the excel spreadsheet building process, pass it to a special function
             if (in(Indi::uri('format'), 'excel,pdf')) $this->export($data, Indi::uri('format'));
