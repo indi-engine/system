@@ -251,6 +251,15 @@ trait Indi_Queue_L10n_AdminUiExport {
             $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
         }
 
+        // Get file by lines
+        $php = file($l10n_target_abs); $tag = array_shift($php); $ini = array_shift($php);
+
+        // Sort lines and re-append first two lines
+        sort($php); array_unshift($php, $tag, $ini);
+
+        // Put back into file
+        file_put_contents($l10n_target_abs, join('', $php));
+
         // Mark stage as 'Finished' and save `queueTask` entry
         $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
     }
