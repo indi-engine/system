@@ -2022,7 +2022,7 @@ function filter($section, $field, $ctor = false) {
     }
 
     // Mind `further` field
-    if ($further) $w []= '`further` = "' . $fieldR->rel()->fields($further)->id . '"';
+    $w []= '`further` = "' . $fieldR->rel()->fields($further)->id . '"';
 
     // Try to find `filter` entry
     $filterR = Indi::model('Search')->fetchRow($w);

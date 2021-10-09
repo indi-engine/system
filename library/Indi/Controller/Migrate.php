@@ -2144,6 +2144,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'elementId' => 'combo',
             'defaultValue' => '0',
             'move' => 'profileId',
+            'relation' => 'admin',
             'storeRelationAbility' => 'one',
         ]);
         consider('realtime', 'adminId', 'profileId', ['foreign' => 'entityId', 'required' => 'y']);
@@ -2205,7 +2206,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         field('realtime', 'entries', [
             'title' => 'Записи',
-            'columnTypeId' => 'VARCHAR(255)',
+            'columnTypeId' => 'TEXT',
             'elementId' => 'combo',
             'move' => 'entityId',
             'storeRelationAbility' => 'many',
@@ -3299,6 +3300,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'INT(11)',
             'elementId' => 'combo',
             'defaultValue' => '0',
+            'relation' => 'admin',
             'storeRelationAbility' => 'one',
         ));
         consider('realtime', 'adminId', 'profileId', array (
@@ -3356,7 +3358,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ));
         field('realtime', 'entries', array (
             'title' => 'Записи',
-            'columnTypeId' => 'VARCHAR(255)',
+            'columnTypeId' => 'TEXT',
             'elementId' => 'combo',
             'storeRelationAbility' => 'many',
         ));
