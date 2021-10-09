@@ -95,6 +95,9 @@ class Indi_Queue_L10n extends Indi_Queue {
             if ($last) $where []= '`id` > ' . $last;
             $where = $where ? im($where, ' AND ') : null;
 
+            // Detect order column
+            $orderColumn = m($table)->fields('move')->alias ?: m($table)->fields('alias')->alias ?: 'id';
+
             // Foreach entry matching chunk's definition
             Indi::model($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
 
@@ -127,7 +130,7 @@ class Indi_Queue_L10n extends Indi_Queue {
                 $queueTaskR->basicUpdate(false, false);
 
                 // Fetch entries according to chunk's WHERE clause, and order by `id` ASC
-            }, $where, '`id` ASC');
+            }, $where, '`' . $orderColumn . '` ASC');
 
             // Remember that our try to count was successful
             $queueChunkR->assign(array('itemsState' => 'finished'))->basicUpdate();
