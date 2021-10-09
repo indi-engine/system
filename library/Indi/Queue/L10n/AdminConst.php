@@ -6,7 +6,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
      *
      * @var string
      */
-    public $type = null;
+    public $fractionDir = null;
 
     /**
      * Create queue chunks
@@ -29,7 +29,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         // Create `queueChunk` entry and setup basic props
         Indi::model('QueueChunk')->createRow([
             'queueTaskId' => $queueTaskR->id,
-            'location' => '/' . $this->type . '/application/lang/admin/' . $params['source']. '.php'
+            'location' => '/' . $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
         ], true)->save();
 
         // Increment `chunk`

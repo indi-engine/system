@@ -1,5 +1,5 @@
 <?php
-trait Indi_Queue_L10n_AdminUiExport {
+trait Indi_Queue_L10n_AdminExport {
 
     /**
      * @var array
@@ -65,7 +65,7 @@ trait Indi_Queue_L10n_AdminUiExport {
     public function fieldsToggleL10nYExport() {
 
         // Absolute path
-        $abs = DOC . STD . '/' . $this->fractionDir . '/application/lang/ui.php';
+        $abs = DOC . STD . '/' . $this->fractionDir . '/application/lang/' . $this->type . '.php';
 
         // Put php opening atg
         file_put_contents($abs, '<?php' . "\n");
@@ -204,7 +204,7 @@ trait Indi_Queue_L10n_AdminUiExport {
         $params = json_decode($queueTaskR->params, true);
 
         // Build filename of a php-file, containing l10n constants for source language
-        $l10n_target_abs = DOC . STD . '/' . $this->fractionDir . '/application/lang/ui/' . $params['source'] . '.php';
+        $l10n_target_abs = DOC . STD . '/' . $this->fractionDir . '/application/lang/' . $this->type . '/' . $params['source'] . '.php';
 
         // Put opening php tag
         file_put_contents($l10n_target_abs, '<?php' . "\n");

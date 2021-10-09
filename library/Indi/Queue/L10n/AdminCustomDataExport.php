@@ -1,5 +1,5 @@
 <?php
-class Indi_Queue_L10n_AdminCustomUiExport extends Indi_Queue_L10n_AdminCustomUi {
+class Indi_Queue_L10n_AdminCustomDataExport extends Indi_Queue_L10n_AdminCustomData {
 
     /**
      * Fraction dir
@@ -11,7 +11,7 @@ class Indi_Queue_L10n_AdminCustomUiExport extends Indi_Queue_L10n_AdminCustomUi 
      *
      * @var
      */
-    public $type = 'ui';
+    public $type = 'data';
 
     /**
      * Use trait

@@ -7,7 +7,14 @@ class Indi_Queue_L10n_AdminSystemUiExport extends Indi_Queue_L10n_AdminSystemUi 
     public $fractionDir = 'core';
 
     /**
+     * Type
+     *
+     * @var
+     */
+    public $type = 'ui';
+
+    /**
      * Use trait
      */
-    use Indi_Queue_L10n_AdminUiExport;
+    use Indi_Queue_L10n_AdminExport;
 }
