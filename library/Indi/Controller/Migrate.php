@@ -33,17 +33,21 @@ class Indi_Controller_Migrate extends Indi_Controller {
             }
         }
         if ($_ = field('section', 'grid')) $_->delete();
-        if (field('grid', 'alias')) {
-            Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0 AND `alias` != ""');
-        } else {
-            Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0');
-        }
+        Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0');
         section2action('lang', 'form', ['toggle' => 'n']);
         section2action('lang', 'delete', ['toggle' => 'n']);
         section('fieldsAll', ['defaultSortField' => 'move']);
         grid('sections', 'load', ['alterTitle' => 'Подгрузка']);
         m('profile')->row(1)->set('title', 'Разработчик')->save();
         filter('fieldsAll', 'entityId', 'system', ['alt' => '']);
+        field('section2action', 'fitWindow', ['defaultValue' => 'y']);
+        if (field('field', 'title')->l10n == 'y') {
+            if (field('param', 'title')->l10n != 'y') {
+                if ($_ = consider('param', 'title', 'cfgField')) $_->delete();
+                field('param', 'title')->toggleL10n('qy', 'ru', false);
+                consider('param', 'title', 'cfgField', ['foreign' => 'title', 'required' => 'y']);
+            }
+        }
         die('ok');
     }
     public function cfgFieldMissingAction() {
