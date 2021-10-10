@@ -2205,7 +2205,7 @@ function param($table, $field, $alias, $value = null) {
     $where = ['`fieldId` = "' . $fieldId . '"'];
 
     // If 'possibleElementParam' model still exists, it means we're yet using legacy logic
-    if (m('PossibleElementParam', true)) {
+    if (m('PossibleElementParam', true) && (!is_array($value) || isset($value['value']))) {
 
         // Get underlying `possibleElementParam` entry's id
         $possibleParamId = m('PossibleElementParam')->fetchRow([
@@ -2238,13 +2238,15 @@ function param($table, $field, $alias, $value = null) {
         . rif(!is_array($value), ',value')
         . rif(!is_array($cfgValue), ',cfgValue')) as $prop)
         if (!array_key_exists($prop, $ctor))
-            $ctor[$prop] = $$prop;
+            $ctor[$prop] = $$prop ?? 0;
 
     // If `param` entry already exists - do not allow re-linking it from one field to another
     if ($paramR) unset($ctor['fieldId'], $ctor['possibleParamId'], $ctor['cfgField']);
 
     // Else - create it
     else $paramR = m('Param')->createRow();
+
+    d($ctor);
 
     // Assign other props and save
     $paramR->assign($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
