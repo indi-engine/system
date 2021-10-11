@@ -2246,8 +2246,6 @@ function param($table, $field, $alias, $value = null) {
     // Else - create it
     else $paramR = m('Param')->createRow();
 
-    d($ctor);
-
     // Assign other props and save
     $paramR->assign($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 

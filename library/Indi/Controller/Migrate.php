@@ -23,6 +23,28 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'elementId' => 'string',
             'move' => 'maxSize',
         ]);
+        cfgField('element', 'price', 'measure', [
+            'title' => 'Единица измерения',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'maxlength',
+        ]);
+        cfgField('element', 'string', 'allowedTags', [
+            'title' => 'Разрешенные теги',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string'
+        ]);
+        cfgField('element', 'upload', 'postfix', [
+            'title' => 'Постфикс к имени файла при загрузке',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+        ]);
+        cfgField('element', 'upload', 'rowTitle', [
+            'title' => 'Включать заголовок записи в наименование файла при загрузке',
+            'columnTypeId' => 'BOOLEAN',
+            'elementId' => 'check',
+            'defaultValue' => '0',
+        ]);
         if ($auto = enumset('section2action', 'fitWindow', 'auto')) {
             if (enumset('section2action', 'fitWindow', 'y')) {
                 Indi::db()->query('UPDATE `section2action` SET `fitWindow` = "y" WHERE `fitWindow` = "auto"');
@@ -444,7 +466,29 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'elementId' => 'string',
             'move' => 'maxSize',
-        ]);        
+        ]);
+        cfgField('element', 'price', 'measure', [
+            'title' => 'Единица измерения',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'maxlength',
+        ]);
+        cfgField('element', 'string', 'allowedTags', [
+            'title' => 'Разрешенные теги',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string'
+        ]);
+        cfgField('element', 'upload', 'postfix', [
+            'title' => 'Постфикс к имени файла при загрузке',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+        ]);
+        cfgField('element', 'upload', 'rowTitle', [
+            'title' => 'Включать заголовок записи в наименование файла при загрузке',
+            'columnTypeId' => 'BOOLEAN',
+            'elementId' => 'check',
+            'defaultValue' => '0',
+        ]);
         alteredField('fields', 'entry', ['mode' => 'hidden']);
         section('params', ['extendsPhp' => 'Indi_Controller_Admin_CfgValue']);
         section('fields', ['filter' => '`entry` = "0"']);
