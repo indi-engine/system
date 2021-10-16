@@ -1967,18 +1967,65 @@ function thumb($table, $field, $alias, $ctor = false) {
 }
 
 /**
- * Short-hand function for getting `element` entry by it's `alias`
+ * Get `element` entry either by alias or by ID, or create/update it
  *
- * @param string $alias
+ * @param string|int $alias Element ID or alias
+ * @param array $ctor Props to be involved in insert/update
  * @return Indi_Db_Table_Row|null
  */
-function element($alias) {
+function element($alias, array $ctor = []) {
 
-    // If $alias arg is an integer - assume it's an `element` entry's `id`, otherwise assume it's a `type`
+    // If $alias arg is an integer - assume it's an entry's `id`, otherwise assume it's a `alias`
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
-    // Return `element` entry
-    return Indi::model('Element')->fetchRow('`' . $byprop . '` = "' . $alias . '"');
+    // Get entry
+    $entry = m('element')->row('`' . $byprop . '` = "' . $alias . '"');
+
+    // If $ctor arg is an empty array - return entry, if found, or null otherwise.
+    if (!$ctor) return $entry;
+
+    // If `alias` prop is not defined within $ctor arg - use value given by $alias arg
+    if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
+
+    // If `role` entry was not found - create it
+    if (!$entry) $entry = m('element')->new();
+
+    // Assign other props and save
+    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return entry (newly created, or existing but updated)
+    return $entry;
+}
+
+/**
+ * Get `admin` entry either by login or by ID, or create/update it
+ *
+ * @param string|int $alias Element ID or alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Indi_Db_Table_Row|null
+ */
+function admin($login, array $ctor = []) {
+
+    // If $login arg is an integer - assume it's an entry's `id`, otherwise assume it's a `email`
+    $byprop = Indi::rexm('int11', $login) ? 'id' : 'email';
+
+    // Get entry
+    $entry = m('admin')->row('`' . $byprop . '` = "' . $login . '"');
+
+    // If $ctor arg is an empty array - return entry, if found, or null otherwise.
+    if (!$ctor) return $entry;
+
+    // If `email` prop is not defined within $ctor arg - use value given by $login arg
+    if (!array_key_exists('email', $ctor)) $ctor['email'] = $login;
+
+    // If `role` entry was not found - create it
+    if (!$entry) $entry = m('admin')->new();
+
+    // Assign other props and save
+    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return entry (newly created, or existing but updated)
+    return $entry;
 }
 
 /**
@@ -2071,6 +2118,39 @@ function action($alias, array $ctor = array()) {
 
     // Return `action` entry (newly created, or existing but updated)
     return $actionR;
+}
+
+/**
+ * Get `role` entry either by alias or by ID, or create/update it
+ *
+ * @param string|int $alias Role ID or alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Indi_Db_Table_Row|null
+ */
+function role($alias, array $ctor = []) {
+
+    // If $alias arg is an integer - assume it's an `role` entry's `id`, otherwise assume it's a `alias`
+    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+    // Get `role` entry
+    $roleR = m('Profile')->fetchRow('`' . $byprop . '` = "' . $alias . '"');
+
+    // If $ctor arg is an empty array - return `role` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $alias - is not enough for `role` entry to be created
+    if (!$ctor) return $roleR;
+
+    // If `alias` prop is not defined within $ctor arg - use value given by $alias arg
+    if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
+
+    // If `role` entry was not found - create it
+    if (!$roleR) $roleR = m('Profile')->new();
+
+    // Assign other props and save
+    $roleR->assign($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `role` entry (newly created, or existing but updated)
+    return $roleR;
 }
 
 /**

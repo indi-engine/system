@@ -1908,7 +1908,7 @@ class Indi_Db_Table
      * @param $data
      * @return Indi_Db_Table_Row
      */
-    public function new($data) {
+    public function new($data = []) {
         return $this->createRow($data, true);
     }
 }

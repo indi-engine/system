@@ -70,6 +70,22 @@ class Indi_Controller_Migrate extends Indi_Controller {
                 consider('param', 'title', 'cfgField', ['foreign' => 'title', 'required' => 'y']);
             }
         }
+        field('profile', 'alias', [
+            'title' => 'Псевдоним',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'type',
+            'mode' => 'required',
+        ]);
+        grid('profiles', 'alias', ['move' => 'title']);
+        Indi::db()->query('UPDATE `profile` SET `alias` = "dev" WHERE `id` = "1"');
+        Indi::db()->query('UPDATE `profile` SET `alias` = "admin" WHERE `id` = "12"');
+        section('profiles', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
+        section2action('profiles','export', ['move' => 'toggle', 'profileIds' => '1']);
+        section('controlElements', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
+        section2action('controlElements','export', ['move' => 'form', 'profileIds' => '1']);
+        section('admins', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
+        section2action('admins','export', ['move' => 'toggle', 'profileIds' => '1']);
         die('ok');
     }
     public function cfgFieldMissingAction() {
