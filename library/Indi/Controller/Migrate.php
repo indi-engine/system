@@ -69,6 +69,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
                 field('param', 'title')->toggleL10n('qy', 'ru', false);
                 consider('param', 'title', 'cfgField', ['foreign' => 'title', 'required' => 'y']);
             }
+            if (field('consider', 'title')->l10n != 'y') {
+                if ($_ = consider('consider', 'title', 'consider')) $_->delete();
+                field('consider', 'title')->toggleL10n('qy', 'ru', false);;
+                consider('consider', 'title', 'consider', ['foreign' => 'title', 'required' => 'y']);
+            }
         }
         field('profile', 'alias', [
             'title' => 'Псевдоним',
