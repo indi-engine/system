@@ -460,7 +460,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
     protected function _dict($queueTaskId) {
 
         // Get `queueChunk` entries
-        $rs = m('QueueChunk')->fetchAll('`queueTaskId` = "' . $queueTaskId . '"');
+        $rs = m('QueueChunk')->fetchAll('`queueTaskId` = "' . $queueTaskId . '"', '`id` ASC');
 
         // Build dictionary
         $dict = [];
