@@ -2798,8 +2798,21 @@ function _var_export($ctor, $oneLine = 3) {
     // If $ctor is empty - return 'true'
     if (count($ctor) == 0) return 'true';
 
+    // Collect props having newlines in values
+    $nl = [];
+    foreach ($ctor as $prop => $value)
+        if (preg_match('~\n~', $value))
+            $nl [] = $prop;
+
     // Stringify
     $ctorS = var_export($ctor, true);
+
+    // Replace newlines with \n
+    foreach ($nl as $nlI) $ctorS = preg_replace_callback(
+        '~(\'' . $nlI . '\' => )(\')(.*)(\')(,\n)~s',
+        function($m) { return $m[1] . '"' . str_replace(["\r\n", "\n"], '\n', $m[3]) . '"' . $m[5]; },
+        $ctorS
+    );
 
     // Style
     $ctorS = preg_replace('~\)$~', ']', preg_replace('~^array \(~', '[', $ctorS));

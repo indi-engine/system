@@ -86,6 +86,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section2action('controlElements','export', ['move' => 'form', 'profileIds' => '1']);
         section('admins', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
         section2action('admins','export', ['move' => 'toggle', 'profileIds' => '1']);
+        if ($_ = field('columnType', 'title')) $_->delete();
         die('ok');
     }
     public function cfgFieldMissingAction() {
