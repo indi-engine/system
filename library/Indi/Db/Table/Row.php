@@ -179,8 +179,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get localized
         foreach (Indi_Db::l10n($this->_table) ?: array() as $field)
             if (array_key_exists($field, $data))
-                if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data[$field]))
-                    if ($this->_language[$field] = json_decode($data[$field], true))
+                if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data[$field]) || $data[$field] == '{}')
+                    if (($this->_language[$field] = json_decode($data[$field], true)) || $data[$field] == '{}')
                         $data[$field] = $this->_language[$field][
                             array_key_exists(Indi::ini('lang')->admin, $this->_language[$field])
                                 ? Indi::ini('lang')->admin
