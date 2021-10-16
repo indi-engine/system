@@ -71,8 +71,13 @@ class Indi_Controller_Migrate extends Indi_Controller {
             }
             if (field('consider', 'title')->l10n != 'y') {
                 if ($_ = consider('consider', 'title', 'consider')) $_->delete();
-                field('consider', 'title')->toggleL10n('qy', 'ru', false);;
+                field('consider', 'title')->toggleL10n('qy', 'ru', false);
                 consider('consider', 'title', 'consider', ['foreign' => 'title', 'required' => 'y']);
+            }
+            if (field('alteredField', 'rename')->l10n != 'y') {
+                if ($_ = consider('alteredField', 'rename', 'title')) $_->delete();
+                field('alteredField', 'rename')->toggleL10n('qy', 'ru', false);
+                consider('alteredField', 'rename', 'title', ['required' => 'y']);
             }
         }
         field('profile', 'alias', [
