@@ -128,6 +128,12 @@ class Indi_Controller_Migrate extends Indi_Controller {
               AND `foreign` = "0" 
         ');
         field('realtime', 'title', ['columnTypeId' => 'TEXT']);
+        field('section', 'help', [
+            'title' => 'Справка',
+            'columnTypeId' => 'TEXT',
+            'elementId' => 'textarea',
+            'move' => 'params',
+        ]);
         die('ok');
     }
     public function cfgFieldMissingAction() {
