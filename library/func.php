@@ -2827,3 +2827,12 @@ function _var_export($ctor, $oneLine = 3) {
     // Return ctor string
     return $ctorS;
 }
+
+/**
+ * Shortcut to Indi::db()
+ *
+ * @return Indi_Db
+ */
+function db() {
+    return Indi::db();
+}

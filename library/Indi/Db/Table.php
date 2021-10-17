@@ -270,6 +270,22 @@ class Indi_Db_Table
     }
 
     /**
+     * Alias for $this->fetchAll()
+     *
+     * @param null $where
+     * @param null $order
+     * @param null $count
+     * @param null $page
+     * @param null $offset
+     * @param null $split
+     * @param bool $pgupLast
+     * @return Indi_Db_Table_Rowset
+     */
+    public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false) {
+        return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast);
+    }
+
+    /**
      * Fetches all rows, according the given criteria
      *
      * @param null|string|array $where

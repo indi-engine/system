@@ -79,6 +79,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
                 field('alteredField', 'rename')->toggleL10n('qy', 'ru', false);
                 consider('alteredField', 'rename', 'title', ['required' => 'y']);
             }
+            if (field('noticeGetter', 'title')->l10n != 'y') {
+                if ($_ = consider('noticeGetter', 'title', 'profileId')) $_->delete();
+                field('noticeGetter', 'title')->toggleL10n('qy', 'ru', false);
+                consider('noticeGetter', 'title', 'profileId', ['foreign' => 'title', 'required' => 'y']);
+            }
         }
         field('profile', 'alias', [
             'title' => 'Псевдоним',
@@ -97,6 +102,32 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section('admins', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
         section2action('admins','export', ['move' => 'toggle', 'profileIds' => '1']);
         if ($_ = field('columnType', 'title')) $_->delete();
+        $fieldIdA_enumset = im(db()->query('SELECT `id` FROM `field` WHERE `relation` = "6"')->fetchAll(PDO::FETCH_COLUMN));
+        $fieldIdA_dependent = im(db()->query('SELECT DISTINCT `fieldId` FROM `consider`')->fetchAll(PDO::FETCH_COLUMN));
+        $textTypes = im([coltype('TEXT')->id, coltype('VARCHAR(255)')->id]);
+        $fieldIdA_text = im(db()->query('
+            SELECT `id` 
+            FROM `field` 
+            WHERE 1
+              AND `id` IN (' . $fieldIdA_dependent . ') 
+              AND `relation` = "0" 
+              AND `columnTypeId` IN (' . $textTypes . ')
+        ')->fetchAll(PDO::FETCH_COLUMN));
+        $foreign = field('enumset', 'title')->id;
+        d(m('consider')->all([
+            '`fieldId` IN (' . $fieldIdA_text . ')',
+            '`consider` IN (' . $fieldIdA_enumset . ')',
+            '`foreign` = "0"'
+        ]));
+        db()->query('
+            UPDATE `consider` 
+            SET `foreign` = "' . $foreign . '"
+            WHERE 1
+              AND `fieldId` IN (' . $fieldIdA_text . ')
+              AND `consider` IN (' . $fieldIdA_enumset . ')
+              AND `foreign` = "0" 
+        ');
+        field('realtime', 'title', ['columnTypeId' => 'TEXT']);
         die('ok');
     }
     public function cfgFieldMissingAction() {
