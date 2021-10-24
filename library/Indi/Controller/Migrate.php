@@ -134,6 +134,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'elementId' => 'textarea',
             'move' => 'params',
         ]);
+        field('realtime', 'adminId', ['relation' => 0]);
+        field('realtime', 'entries', ['columnTypeId' => 'TEXT']);
+        field('notice', 'sectionId', [
+            'filter' => 'FIND_IN_SET(`sectionId`, "<?=m(\'section\')->all(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
+        ]);
         die('ok');
     }
     public function cfgFieldMissingAction() {
