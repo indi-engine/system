@@ -243,6 +243,8 @@ define('I_LANG_EXPORT_HEADER', 'Select export params');
 define('I_LANG_IMPORT_HEADER', 'Select import params');
 define('I_LANG_NOT_SUPPORTED', 'Not supported so far');
 define('I_LANG_SELECT_CURRENT', 'Select current language of fraction "%s"');
+define('I_LANG_MIGRATE_META', 'Prepare fields');
+define('I_LANG_MIGRATE_DATA', 'Migrate titles');
 define('I_ADD', 'Add');
 define('I_DELETE', 'Delete');
 define('I_SECTION_CLONE_SELECT_PARENT', 'Select the parent section, which should be subordinate to duplicates of the selected sections');

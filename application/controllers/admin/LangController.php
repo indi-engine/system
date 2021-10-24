@@ -460,8 +460,8 @@ class Admin_LangController extends Indi_Controller_Admin {
 
         // Setup possible values
         $settings->nested('enumset', [
-            ['alias' => 'meta', 'title' => 'Подготовка полей'],
-            ['alias' => 'data', 'title' => 'Миграция переводов'],
+            ['alias' => 'meta', 'title' => I_LANG_MIGRATE_META],
+            ['alias' => 'data', 'title' => I_LANG_MIGRATE_DATA],
         ]);
 
         // Append to fields list and set first step to be selected by default

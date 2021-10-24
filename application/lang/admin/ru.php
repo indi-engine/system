@@ -243,6 +243,8 @@ define('I_LANG_EXPORT_HEADER', 'Выберите параметры экспор
 define('I_LANG_IMPORT_HEADER', 'Выберите параметры импорта');
 define('I_LANG_NOT_SUPPORTED', 'Пока не поддерживается');
 define('I_LANG_SELECT_CURRENT', 'Выберите текущий язык фракции "%s"');
+define('I_LANG_MIGRATE_META', 'Подготовка полей');
+define('I_LANG_MIGRATE_DATA', 'Миграция переводов');
 define('I_ADD', 'Добавить');
 define('I_DELETE', 'Удалить');
 define('I_SECTION_CLONE_SELECT_PARENT', 'Выберите родительский раздел, в подчинении у которого должны быть<br>созданы дубликаты выбранных разделов');
