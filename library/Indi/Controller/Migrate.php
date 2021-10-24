@@ -1,5 +1,38 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function dropGridAliasAction() {
+        if ($_ = field('grid', 'alias')) {
+            $hasConflict = false;
+            foreach (m('grid')->fetchAll('`alias` != ""') as $gridR) {
+                $sectionR = $gridR->foreign('sectionId');
+                $entityR = entity($sectionR->entityId);
+                if ($fieldR = field($entityR->table, $gridR->alias)) {
+                    d('grid alias conflict: ' . $entityR->table . '.' . $gridR->alias . ' - ' . $sectionR->alias . '/' . $gridR->alias);
+                    $hasConflict = true;
+                } else {
+                    $fieldR = field($entityR->table, $gridR->alias, [
+                        'elementId' => 'span',
+                        'mode' => 'hidden'
+                    ]);
+                    db()->query('
+                        UPDATE 
+                          `field` `f`, 
+                          `grid` `g`
+                        SET
+                          `f`.`title` = `g`.`alterTitle`,
+                          `g`.`title` = `g`.`alterTitle`,
+                          `g`.`fieldId` = :i,
+                          `g`.`alterTitle` = ""  
+                        WHERE 1
+                          AND `f`.`id` = :i
+                          AND `g`.`id` = :i
+                    ', $fieldR->id, $fieldR->id, $gridR->id);
+                }
+            }
+            if (!$hasConflict) $_->delete();
+        }
+        die('zxc');
+    }
     public function syncMissingAction() {
         consider('realtime', 'title', 'type', ['required' => 'y']);
         filter('lang', 'state', ['defaultValue' => 'smth']);
