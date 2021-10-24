@@ -3,14 +3,15 @@ class Indi_Controller_Migrate extends Indi_Controller {
     public function dropGridAliasAction() {
         if ($_ = field('grid', 'alias')) {
             $hasConflict = false;
-            foreach (m('grid')->fetchAll('`alias` != ""') as $gridR) {
+            foreach (m('grid')->all('`fieldId` = "0"') as $gridR) {
                 $sectionR = $gridR->foreign('sectionId');
                 $entityR = entity($sectionR->entityId);
-                if ($fieldR = field($entityR->table, $gridR->alias)) {
-                    d('grid alias conflict: ' . $entityR->table . '.' . $gridR->alias . ' - ' . $sectionR->alias . '/' . $gridR->alias);
+                $alias = $gridR->alias ?: 'span' . $gridR->id;
+                if ($fieldR = field($entityR->table, $alias)) {
+                    d('grid alias conflict: ' . $entityR->table . '.' . $alias . ' - ' . $sectionR->alias . '/' . $alias);
                     $hasConflict = true;
                 } else {
-                    $fieldR = field($entityR->table, $gridR->alias, [
+                    $fieldR = field($entityR->table, $alias, [
                         'elementId' => 'span',
                         'mode' => 'hidden'
                     ]);
@@ -31,7 +32,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             }
             if (!$hasConflict) $_->delete();
         }
-        die('zxc');
+        die('ok');
     }
     public function syncMissingAction() {
         consider('realtime', 'title', 'type', ['required' => 'y']);
@@ -186,6 +187,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         element('decimal143', ['title' => 'Число .000']);
         grid('queueChunk', 'move', ['move' => 'apply']);
+        grid('sections', 'defaultSortField', ['rowReqIfAffected' => 'y']);
+        if ($e = entity('manager'))
+            if ($r = m('profile')->row('`entityId` = '. $e->id))
+                $r->set('alias', 'manager')->save();
         die('ok');
     }
     public function cfgFieldMissingAction() {
