@@ -84,6 +84,18 @@ class Indi_Controller_Migrate extends Indi_Controller {
                 field('noticeGetter', 'title')->toggleL10n('qy', 'ru', false);
                 consider('noticeGetter', 'title', 'profileId', ['foreign' => 'title', 'required' => 'y']);
             }
+            if (field('queueTask', 'stageState')->l10n != 'y') {
+                if ($_ = consider('queueTask', 'stageState', 'stage')) $_->delete();
+                if ($_ = consider('queueTask', 'stageState', 'state')) $_->delete();
+                field('queueTask', 'stageState')->toggleL10n('qy', 'ru', false);
+                consider('queueTask', 'stageState', 'stage', ['foreign' => 'title', 'required' => 'y']);
+                consider('queueTask', 'stageState', 'state', ['foreign' => 'title', 'required' => 'y']);
+            }
+            if (field('realtime', 'title')->l10n != 'y') {
+                if ($_ = consider('realtime', 'title', 'type')) $_->delete();
+                field('realtime', 'title')->toggleL10n('qy', 'ru', false);
+                consider('realtime', 'title', 'type', ['foreign' => 'title', 'required' => 'y']);
+            }
         }
         field('profile', 'alias', [
             'title' => 'Псевдоним',
