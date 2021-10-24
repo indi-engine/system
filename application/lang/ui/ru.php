@@ -165,6 +165,7 @@ element('check', ['title' => 'Чекбокс']);
 element('color', ['title' => 'Цвет']);
 element('combo', ['title' => 'Список']);
 element('datetime', ['title' => 'Момент']);
+element('decimal143', ['title' => 'Число .000']);
 element('hidden', ['title' => 'Скрытое поле']);
 element('html', ['title' => 'HTML-редактор']);
 element('move', ['title' => 'Порядок']);
