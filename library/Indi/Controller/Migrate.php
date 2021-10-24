@@ -140,6 +140,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'filter' => 'FIND_IN_SET(`sectionId`, "<?=m(\'section\')->all(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
         ]);
         element('decimal143', ['title' => 'Число .000']);
+        grid('queueChunk', 'move', ['move' => 'apply']);
         die('ok');
     }
     public function cfgFieldMissingAction() {
