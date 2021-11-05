@@ -27,6 +27,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             else if ($columnName == 'entityId') $value = entity($value)->id;
             else if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'tileThumb') $value = thumb($this->entityId, $this->tileField, $value)->id;
+            else if ($columnName == 'move') return $this->_system['move'] = $value;
         }
 
         // Standard __set()
@@ -78,7 +79,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         $ctor = $this->_original;
 
         // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['move']);
+        unset($ctor['id']);
 
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('alias') as $arg) unset($ctor[$arg]);
@@ -94,6 +95,10 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value) unset($ctor[$prop]);
+
+            // Else if $prop is 'move' - get alias of the section, that current section is after,
+            // among sections with same parent sectionId
+            else if ($prop == 'move') $value = $this->position();
 
             // Else if prop contains keys - use aliases instead
             else if ($field->storeRelationAbility != 'none') {
@@ -147,6 +152,36 @@ class Section_Row_Base extends Indi_Db_Table_Row {
     }
 
     /**
+     * Get the the alias of the `section` entry,
+     * that current `section` entry is positioned after
+     * among all `section` entries having same `sectionId`
+     * according to the values `move` prop
+     *
+     * @param null|string $after
+     * @param string $withinFields
+     * @return string|Indi_Db_Table_Row
+     */
+    public function position($after = null, $withinFields = 'sectionId') {
+
+        // Build within-fields WHERE clause
+        $wfw = [];
+        foreach (ar($withinFields) as $withinField)
+            if (array_key_exists($withinField, $this->_original))
+                $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+
+        // Get ordered fields aliases
+        $sectionA_alias = db()->query(
+            'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
+        )->fetchAll(PDO::FETCH_COLUMN);
+
+        // Get current position
+        $currentIdx = array_flip($sectionA_alias)[$this->alias];
+
+        // Do positioning
+        return $this->_position($after, $sectionA_alias, $currentIdx, $within);
+    }
+
+    /**
      * Prevent `extendsPhp` and `extendsJs` props from being empty
      */
     public function onBeforeSave() {
@@ -164,6 +199,18 @@ class Section_Row_Base extends Indi_Db_Table_Row {
      *
      */
     public function onSave() {
+
+        // If _system['move'] is defined
+        if (array_key_exists('move', $this->_system)) {
+
+            // Get field, that current field should be moved after
+            $after = $this->_system['move']; unset($this->_system['move']);
+
+            // Position field for it to be after field, specified by $this->_system['move']
+            $this->position($after);
+        }
+
+        // Send signal for menu to be reloaded
         Indi::ws(['type' => 'menu', 'to' => true]);
     }
 
@@ -172,5 +219,22 @@ class Section_Row_Base extends Indi_Db_Table_Row {
      */
     public function onDelete() {
         Indi::ws(['type' => 'menu', 'to' => true]);
+    }
+
+    /**
+     * This method is redefined to setup default value for $within arg,
+     * for current `section` entry to be moved within it's parent `section`
+     *
+     * @param string $direction
+     * @param string $within
+     * @return bool
+     */
+    public function move($direction = 'up', $within = '') {
+
+        // If $within arg is not given - move grid column within the section it belongs to
+        $within = '`sectionId` = "' . $this->sectionId . '"';
+
+        // Call parent
+        return parent::move($direction, $within);
     }
 }
