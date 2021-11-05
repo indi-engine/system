@@ -146,6 +146,13 @@ class Indi_Db_Table
     );
 
     /**
+     * Info about qties and sums, that current entity entries are counted in
+     *
+     * @var array
+     */
+    protected $_inQtySum = [];
+
+    /**
      * Info for l10n-fraction detection
      *
      * @var array
@@ -1926,5 +1933,14 @@ class Indi_Db_Table
      */
     public function new($data = []) {
         return $this->createRow($data, true);
+    }
+
+    /**
+     * Get info about qties and sums, that current entity entries are counted in
+     *
+     * @return mixed
+     */
+    public function inQtySum() {
+        return $this->_inQtySum;
     }
 }

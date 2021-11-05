@@ -95,12 +95,12 @@ class Month extends Indi_Db_Table {
         $yearO = Year::o($y);
 
         // If current month not exists within `month` table
-        if (!$monthI = Indi::db()->query('
+        if (!$monthI = db()->query('
             SELECT * FROM `month` WHERE `month` = "' . $m . '" AND `yearId` = "' . $yearO->id . '"
         ')->fetch()) {
 
             // Build month title
-            $title = Indi::db()->query('
+            $title = db()->query('
                 SELECT `es`.`title`
                 FROM `enumset` `es`, `field` `f`, `entity` `e`
                 WHERE 1
@@ -112,16 +112,16 @@ class Month extends Indi_Db_Table {
               ')->fetchColumn() . ' ' . $yearO->title;
 
             // Create month entry
-            Indi::db()->query('
+            db()->query('
                 INSERT INTO `month`
                 SET
                   `month` = "' . $m . '",
-                  `title` = "' . $title . '",
+                  ' . db()->sql('`title` = :s,', $title) . '
                   `yearId` = "'. $yearO->id . '"
             ');
 
             // Get id
-            $id = Indi::db()->getPDO()->lastInsertId();
+            $id = db()->getPDO()->lastInsertId();
 
             // Get it's id
             $monthI = array(
@@ -132,7 +132,7 @@ class Month extends Indi_Db_Table {
             );
 
             // Set `move`
-            Indi::db()->query('UPDATE `month` SET `move` = "' . $id . '" WHERE `id` = "' . $id . '"');
+            db()->query('UPDATE `month` SET `move` = "' . $id . '" WHERE `id` = "' . $id . '"');
         }
 
         // Return month entry as an instance of stdClass object
@@ -152,7 +152,7 @@ class Month extends Indi_Db_Table {
     public static function monthId($date = null) {
 
         // If self::$_monthIdA is null - fetch key-value pairs
-        if (self::$_monthIdA === null) self::$_monthIdA = Indi::db()->query('
+        if (self::$_monthIdA === null) self::$_monthIdA = db()->query('
             SELECT CONCAT(`y`.`title`, "-", `m`.`month`) AS `Ym`, `m`.`id`
             FROM `month` `m`, `year` `y`
             WHERE `m`.`yearId` = `y`.`id`
@@ -174,7 +174,7 @@ class Month extends Indi_Db_Table {
     public static function monthYm($monthId = null) {
 
         // If self::$_monthYmA is null - fetch key-value pairs
-        if (self::$_monthYmA === null) self::$_monthYmA = Indi::db()->query('
+        if (self::$_monthYmA === null) self::$_monthYmA = db()->query('
             SELECT `m`.`id`, CONCAT(`y`.`title`, "-", `m`.`month`) AS `Ym`
             FROM `month` `m`, `year` `y`
             WHERE `m`.`yearId` = `y`.`id`

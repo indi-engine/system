@@ -348,7 +348,8 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($prompt['settings'] == 'meta') {
 
             // Get file containing meta-part of migration, e.g. the code, that is toggling l10n for required fields
-            $meta = DOC . STD . '/' . $dir . '/application/lang/ui.php';
+            $meta = DOC . STD . '/' . $dir . '/application/lang/'
+                . strtolower(preg_replace('~^admin(System|Custom)~', '', $prompt['fraction'])) . '.php';
 
             // Applicable languages WHERE clause
             $langId_filter = '"y" IN (`' . $prompt['fraction'] . '`)';

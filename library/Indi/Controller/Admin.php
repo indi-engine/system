@@ -535,6 +535,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             Indi::trail()->scope->ORDER
         );
 
+        // Array of deleted ids
+        $deleted = [];
+
         // For each row
         foreach ($toBeDeletedRs as $toBeDeletedR) if ($deleted []= (int) $toBeDeletedR->delete()) {
 

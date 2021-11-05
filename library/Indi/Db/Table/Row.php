@@ -692,6 +692,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // For now, only existing entries changes are supported
         $this->realtime($new ? 'inserted' : 'affected');
 
+        // Trigger dependent counters / summaries to be updated
+        $this->_inQtySum($new ? 'inserted' : 'updated');
+
         // Return current row id (in case if it was a new row) or number of affected rows (1 or 0)
         return $return;
     }
@@ -1618,6 +1621,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Force false to be the result of all matches each separate notification's criteria,
         // and compare results with the results of previous check, that was made before any modifications
         $this->_noticesStep2();
+
+        // Trigger dependent counters / summaries to be updated
+        $this->_inQtySum('deleted');
 
         // Return
         return $return;
@@ -7132,5 +7138,74 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Return this
             return $this;
         }
+    }
+
+    /**
+     * Increment/decrement all qties and increase/decrease all sums that current entry is counted in
+     * todo: fix casdade double-decrement/decrease problem
+     *
+     * @param string $event
+     * @throws Exception
+     */
+    protected function _inQtySum($event = 'inserted') {
+
+        // If we don't need to count/summarize this entry anywhere - return
+        if (!$inQtySum = $this->model()->inQtySum()) return;
+
+        // If new entry was inserted
+        if ($event == 'inserted') {
+
+            // Foreach location that we should count/summarize that in
+            foreach ($inQtySum as $info) {
+
+                // Shortcuts
+                $foreign = $this->foreign($info['foreign']);
+                $target = $info['target'];
+                $source = $info['source'];
+
+                // If type is 'qty' - just increment $target prop
+                if ($info['type'] == 'qty') $foreign->$target ++;
+
+                // Else if type is 'sum' - append $source to the $target sum
+                else if ($info['type'] == 'sum') $foreign->$target += $this->$source;
+            }
+
+        // Else if existing entry was deleted
+        } else if ($event == 'deleted') {
+
+            // Foreach location that we should count/summarize that in
+            foreach ($inQtySum as $info) {
+
+                // Shortcuts
+                $foreign = $this->foreign($info['foreign']);
+                $target = $info['target'];
+                $source = $info['source'];
+
+                // If type is 'qty' - just increment $target prop
+                if ($info['type'] == 'qty') $foreign->$target -= ($this->id ? 1 : 0);
+
+                // Else if type is 'sum' - append $source to the $target sum
+                else if ($info['type'] == 'sum') $foreign->$target -= $this->$source;
+            }
+
+        // Else if existing entry was updated
+        } else if ($event == 'updated') {
+
+            // Foreach location that we should count/summarize that in
+            foreach ($inQtySum as $info) {
+
+                // Shortcuts
+                $foreign = $this->foreign($info['foreign']);
+                $target = $info['target'];
+                $source = $info['source'];
+
+                // If type is 'sum' - append $source to the $target sum
+                if ($info['type'] == 'sum') $foreign->$target += $this->adelta($source);
+            }
+        }
+
+        // Save adjusted target-props on foreign entries
+        foreach (array_unique(array_column($inQtySum, 'foreign')) as $foreign)
+            $this->foreign($foreign)->save();
     }
 }
