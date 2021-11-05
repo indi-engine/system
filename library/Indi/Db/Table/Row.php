@@ -7182,7 +7182,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $source = $info['source'];
 
                 // If type is 'qty' - just increment $target prop
-                if ($info['type'] == 'qty') $foreign->$target -= ($this->id ? 1 : 0);
+                if ($info['type'] == 'qty') $foreign->$target --;
 
                 // Else if type is 'sum' - append $source to the $target sum
                 else if ($info['type'] == 'sum') $foreign->$target -= $this->$source;
