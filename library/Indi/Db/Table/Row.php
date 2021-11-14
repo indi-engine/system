@@ -826,6 +826,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Decrement found
                     $scope['found'] --;
 
+                    // Adjust summary if need
+                    foreach (ar($scope['sum']) as $sumCol)
+                        $byChannel[$channel][$context]['sum'][$sumCol]
+                            = -$this->$sumCol;
+
                     // Update scope
                     $realtimeR->scope = json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
 
@@ -881,6 +886,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                             'entry' => $this->id
                         ];
 
+                        // Adjust summary if need
+                        foreach (ar($scope['sum']) as $sumCol)
+                            $byChannel[$channel][$context]['sum'][$sumCol]
+                                = -$this->$sumCol;
+
                         // Decrement found
                         $scope['found'] --;
 
@@ -924,6 +934,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                         'entry' => $this->id,
                         'inserted' => true
                     ];
+
+                    // Adjust summary if need
+                    foreach (ar($scope['sum']) as $sumCol)
+                        $byChannel[$channel][$context]['sum'][$sumCol]
+                            = $this->$sumCol;
 
                     // If there are at least 1 entry on current page
                     if ($realtimeR->entries) {

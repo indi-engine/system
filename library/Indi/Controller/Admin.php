@@ -225,7 +225,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
                             'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
-                            'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true)
+                            'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
+                            'sum' => t()->model->fields()->select(
+                                t()->grid->select('sum', 'summaryType')->column('fieldId')
+                            )->column('alias', ',')
                         ];
 
                         // Create context if need
@@ -2342,8 +2345,14 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Append WHERE clause to that query
         if ($where) $sql .= ' WHERE ' . im($where, ' AND ');
 
+        // Fetch summary
+        $summary = db()->query($sql)->fetchObject();
+
+        // Convert to integer
+        array_walk($summary, fn(&$v) => $v += 0);
+
         // Fetch and return calculated summaries
-        return Indi::db()->query($sql)->fetchObject();
+        return $summary;
     }
 
     /**
@@ -3806,7 +3815,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Prevent `realtime` entry from being created in case of excel-export
         if (Indi::uri()->format == 'excel') return;
-        
+
         // Track involved entries
         if ($_ = m('realtime')->fetchRow([
             '`type` = "context"',
