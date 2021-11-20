@@ -12,6 +12,24 @@ class Section_Row_Base extends Indi_Db_Table_Row {
     }
 
     /**
+     * Provide ability to use `id` column as defaultSortField
+     *
+     * @param $field
+     * @return Indi_Db_Table_Rowset|mixed
+     */
+    public function getComboData($field) {
+
+        // Call parent
+        $dataRs = $this->callParent();
+
+        // Prepend data rowset with 'ID' option
+        if ($field == 'defaultSortField') $dataRs->append(array('id' => -1, 'title' => 'ID', 'alias' => 'id'), 'title');
+
+        // Return
+        return $dataRs;
+    }
+
+    /**
      * This method was redefined to provide ability for some field
      * props to be set using aliases rather than ids
      *

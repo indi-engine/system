@@ -126,7 +126,10 @@ class Indi_Trail_Item {
         if ($this->section) {
             $array['section'] = $this->section->toArray();
             if ($this->section->defaultSortField)
-                $array['section']['defaultSortFieldAlias'] = $this->section->foreign('defaultSortField')->alias;
+                $array['section']['defaultSortFieldAlias']
+                    = $this->section->defaultSortField == -1
+                        ? 'id'
+                        : $this->section->foreign('defaultSortField')->alias;
         }
         if ($this->sections) $array['sections'] = $this->sections->toArray();
         if ($this->action) $array['action'] = $this->action->toArray();
