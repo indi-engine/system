@@ -793,8 +793,11 @@ class Indi_Controller {
                 $this->renderGridDataItem($item, $r);
             }
 
-            // If $_GET['required'] given - Flush required entry
-            if ($required = (int) Indi::get('required')) jflush(true,  ['required' => array_pop($data)]);
+            // If $_GET['required'] given as ingeter - flush required entry
+            if ((int) Indi::get('required')) jflush(true,  ['required' => array_pop($data)]);
+
+            // Else if $_GET['required'] given as json-encoded array of integers - flush all found required entries
+            else if (Indi::rexm('int11list', trim(Indi::get('required'), '[]'))) jflush(true, ['required' => $data]);
 
             // Else if data is gonna be used in the excel spreadsheet building process, pass it to a special function
             if (in(Indi::uri('format'), 'excel,pdf')) $this->export($data, Indi::uri('format'));

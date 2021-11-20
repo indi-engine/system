@@ -189,8 +189,18 @@ class Indi_Controller_Admin extends Indi_Controller {
                         ? 'fetchTree'
                         : 'fetchAll';
 
-                    // Else if $_GET['required'] given
-                    if ($required = (int) Indi::get('required')) {
+                    // If $_GET['required'] given and it's a comma-separated list
+                    if (is_array($required = json_decode(Indi::get('required')))
+                        && Indi::rexm('int11list', $required = im($required))) {
+
+                        // Fetch rowset consisting of required rows
+                        $this->rowset = Indi::trail()->model->{$fetchMethod}(
+                            '`id` IN (' . $required . ')' . rif($finalWHERE, ' AND ($1)'),
+                            'FIND_IN_SET(`id`, "' . $required . '")'
+                        );
+
+                    // Else if $_GET['required'] given and it's a integer
+                    } else if ($required = (int) Indi::get('required')) {
 
                         // Fetch rowset consisting of only single row
                         $this->rowset = Indi::trail()->model->{$fetchMethod}('`id` = "' . $required . '"' . rif($finalWHERE, ' AND ($1)'));
