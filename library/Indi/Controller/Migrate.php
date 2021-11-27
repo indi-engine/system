@@ -191,6 +191,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         if ($e = entity('manager'))
             if ($r = m('profile')->row('`entityId` = '. $e->id))
                 $r->set('alias', 'manager')->save();
+        param('realtime', 'spaceUntil', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
         die('ok');
     }
     public function cfgFieldMissingAction() {

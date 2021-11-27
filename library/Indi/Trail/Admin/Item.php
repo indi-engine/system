@@ -640,7 +640,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     public function context() {
 
         // If channel found
-        if ($channel = m('realtime')->fetchRow('`token` = "' . CID . '"')) {
+        if ($channel = m('realtime')->row('`token` = "' . CID . '"')) {
 
             // Get data to be copied
             $data = $channel->original(); unset($data['id'], $data['spaceSince']);

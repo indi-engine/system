@@ -200,6 +200,7 @@ define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_MSG', 'Options are already empt
 
 define('I_ACTION_DELETE_CONFIRM_TITLE', 'Confirm');
 define('I_ACTION_DELETE_CONFIRM_MSG', 'Are you sure you want to delete');
+define('I_ENTRY_TBQ', 'entry,entries,entries');
 
 define('I_SOUTH_PLACEHOLDER_TITLE', 'Contents of this tab is opened in a separate window');
 define('I_SOUTH_PLACEHOLDER_GO', 'Go to');

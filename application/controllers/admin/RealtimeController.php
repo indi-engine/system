@@ -89,7 +89,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             jcheck(['cid' => ['req' => true, 'rex' => 'wskey']], ['cid' => CID]);
 
             // Try to found `realtime` entry having such CID and `type` = 'channel'
-            if ($r = m('Realtime')->fetchRow(['`token` = "' . CID . '"', '`type` = "channel"'])) {
+            if ($r = m('Realtime')->row(['`token` = "' . CID . '"', '`type` = "channel"'])) {
 
                 // Delete
                 Indi::cmd('channel', ['arg' => $r->id]);

@@ -3827,11 +3827,11 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (Indi::uri()->format == 'excel') return;
 
         // Track involved entries
-        if ($_ = m('realtime')->fetchRow([
+        if ($_ = m('realtime')->row([
             '`type` = "context"',
             '`token` = "' . t()->bid() . '"',
-            '`realtimeId` = "' . m('realtime')->fetchRow('`token` = "' . CID . '"')->id . '"'
-        ]) ?: t()->context()) $_->assign([
+            '`realtimeId` = "' . m('realtime')->row('`token` = "' . CID . '"')->id . '"'
+        ]) ?: t()->context()) $_->set([
             'entries' => $this->rowset->column('id', ','),
             'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ])->save();

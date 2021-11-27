@@ -199,7 +199,8 @@ define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_TITLE', 'Сброс всех ф
 define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_MSG', 'Фильтры уже сброшены или на текущий момент не используются вовсе');
 
 define('I_ACTION_DELETE_CONFIRM_TITLE', 'Подтверждение');
-define('I_ACTION_DELETE_CONFIRM_MSG', 'Вы уверены что хотите удалить запись');
+define('I_ACTION_DELETE_CONFIRM_MSG', 'Вы уверены что хотите удалить');
+define('I_ENTRY_TBQ', 'записей,запись,записи');
 
 define('I_SOUTH_PLACEHOLDER_TITLE', 'Содержимое этой панели открыто в отдельном окне');
 define('I_SOUTH_PLACEHOLDER_GO', 'Перейти');
