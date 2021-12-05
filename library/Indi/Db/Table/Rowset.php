@@ -1752,6 +1752,21 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     }
 
     /**
+     * Call *_Row->set($data) for each *_Row instance within current rowset
+     *
+     * @param array $data
+     * @return $this
+     */
+    public function set($assign, $value = null) {
+
+        // If $value arg is given, assumes the first arg is the property name
+        if (func_num_args() > 1) $assign = [$assign => $value];
+
+        // Return rowset itself
+        return $this->assign($assign);
+    }
+
+    /**
      * Call *_Row->basicUpdate($notices, $amerge) for each *_Row instance within current rowset
      *
      * @param bool $notices
