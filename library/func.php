@@ -66,7 +66,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $error = error_get_last();
 
         //if ($error !== null && $error["type"] != E_NOTICE && $error["type"] != E_DEPRECATED) extract($error);
-        if ($error === null || in($error['type'], array(E_NOTICE, E_DEPRECATED))) return;
+        if ($error === null || in($error['type'], [E_NOTICE, E_DEPRECATED])) return;
 
         // Extract error info
         extract($error);
@@ -89,13 +89,13 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
 function jerror($errno, $errstr, $errfile, $errline) {
 
     // Build an array, containing error information
-    $error = array(
+    $error = [
         'code' => $errno,
         'text' => $errstr,
         'file' => $errfile,
         'line' => $errline,
         'trace' => array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2)
-    );
+    ];
 
     // Log this error if logging of 'jerror's is turned On
     if (Indi::logging('jerror')) Indi::log('jerror', $error);
@@ -105,7 +105,7 @@ function jerror($errno, $errstr, $errfile, $errline) {
 
     // If Indi Engine standalone client-app is in use - flush first error
     // todo: collect all non-fatal errors and flush collected either on end on execution or on fatal-error
-    if (APP) jflush(false, array('errors' => array($error)));
+    if (APP) jflush(false, ['errors' => [$error]]);
 
     // Return that info via json encode, wrapped with '<error>' tag, for error to be easy pickable with javascript
     return '<error>' . json_encode($error) . '</error>';
@@ -256,24 +256,24 @@ function ago($date1, $date2 = null, $mode = 'ago', $exact = false) {
     $duration = max($date1, $date2) - min($date1, $date2);
 
     // Build an array of difference levels and their values
-    $levelA = array(
+    $levelA = [
         'Y' => date('Y', $duration) - 1970,
         'n' => date('n', $duration) - 1,
         'j' => date('j', $duration) - 1,
         'G' => date('G', $duration) - 3,
         'i' => ltrim(date('i', $duration), '0'),
         's' => ltrim(date('s', $duration), '0')
-    );
+    ];
 
     // Build an array of difference levels quantity spelling, depends on their values
-    $tbqA = array(
+    $tbqA = [
         'Y' => 'лет,год,года',
         'n' => 'месяцев,месяц,месяца',
         'j' => 'дней,день,дня',
         'G' => 'часов,час,часа',
         'i' => 'минут,минута,минуты',
         's' => 'секунд,секунда,секунды'
-    );
+    ];
 
     // If $exact arg is true
     if ($exact) {
@@ -401,7 +401,7 @@ function ua($uaK) {
     $ua = $_SERVER['HTTP_USER_AGENT'];
 
     // Declare the array of keys and their identifiers
-    $uaA = array('ie8' => 'MSIE 8', 'ipad' => 'iPad');
+    $uaA = ['ie8' => 'MSIE 8', 'ipad' => 'iPad'];
 
     // Detect
     return preg_match('/' . $uaA[$uaK] . '/', $ua) ? true : false;
@@ -420,7 +420,7 @@ function rgb2hsl($rgb) {
     $delMax=$varMax-$varMin;$l=($varMax+$varMin)/2;if($delMax==0){$H=0;$S = 0;}else{if($l<0.5){$s=$delMax/($varMax+$varMin);
     }else{$s=$delMax/(2-$varMax-$varMin);}$delR=((($varMax-$varR)/6)+($delMax/2))/$delMax;$delG=((($varMax-$varG)/6)+($delMax
     /2))/$delMax;$delB=((($varMax-$varB)/6)+($delMax/2))/$delMax;if($varR==$varMax){$h=$delB-$delG;}else if($varG==$varMax)
-    {$h=(1/3)+$delR-$delB;}else if($varB==$varMax){$h=(2/3)+$delG-$delR;}if($h<0){$h++;}if($h>1){$h--;}}return array($h,$s,$l);
+    {$h=(1/3)+$delR-$delB;}else if($varB==$varMax){$h=(2/3)+$delG-$delR;}if($h<0){$h++;}if($h>1){$h--;}}return [$h,$s,$l];
 }
 
 /**
@@ -440,7 +440,7 @@ function hrgb($rgb = '') {
     $b = hexdec(substr($rgb, 4, 2));
 
     // Get the hue value
-    list($hue) = rgb2hsl(array($r, $g, $b));
+    list($hue) = rgb2hsl([$r, $g, $b]);
 
     // Append the hue value to a color and return it
     return str_pad(round($hue*360), 3, '0', STR_PAD_LEFT) . '#' . $rgb;
@@ -456,7 +456,7 @@ function hrgb($rgb = '') {
 function grs($length = 15, $charTypes = 'an') {
 
     // Set of characters
-    $chars = array();
+    $chars = [];
 
     // Strip unsupported values from $charTypes arg
     $charTypes = preg_replace('/[^ans]/', '', $charTypes);
@@ -465,7 +465,7 @@ function grs($length = 15, $charTypes = 'an') {
     if (!$charTypes) $charTypes = 'an';
 
     // If $charTypes arg contains 'a' letter, include alpha-characters in the chars list
-    if (preg_match('/a/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/a/', $charTypes)) $chars = array_merge($chars, [
         'a', 'b', 'c', 'd', 'e', 'f',
         'g', 'h', 'i', 'j', 'k', 'l',
         'm', 'n', 'o', 'p', 'q', 'r',
@@ -475,20 +475,20 @@ function grs($length = 15, $charTypes = 'an') {
         'K', 'L', 'M', 'N', 'O', 'P',
         'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z'
-    ));
+    ]);
 
     // If $charTypes arg contains 'a' letter, include numeric-characters in the chars list
-    if (preg_match('/n/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/n/', $charTypes)) $chars = array_merge($chars, [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
-    ));
+    ]);
 
     // If $charTypes arg contains 's' letter, include special-characters in the chars list
-    if (preg_match('/s/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/s/', $charTypes)) $chars = array_merge($chars, [
         '.', ',', '(', ')', '[', ']',
         '!', '?', '&', '^', '%', '@',
         '*', '$', '<', '>', '/', '|',
         '+', '-', '{', '}', '`', '~'
-    ));
+    ]);
 
     // Generate
     $s = ''; for ($i = 0; $i < $length; $i++) $s .= $chars[rand(0, count($chars) - 1)];
@@ -527,7 +527,7 @@ function ldate($format, $date = '', $when = '') {
         $date = ldate(Indi::date2strftime($format), $date);
 
         // Force Russian-style month name endings
-        if (in('month', $when)) foreach (array('ь' => 'я', 'т' => 'та', 'й' => 'я') as $s => $r) {
+        if (in('month', $when)) foreach (['ь' => 'я', 'т' => 'та', 'й' => 'я'] as $s => $r) {
             $date = preg_replace('/([а-яА-Я]{2,})' . $s . '\b/u', '$1' . $r, $date);
             $date = preg_replace('/' . $s . '(\s)/u', $r . '$1', $date);
             $date = preg_replace('/' . $s . '$/u', $r, $date);
@@ -535,7 +535,7 @@ function ldate($format, $date = '', $when = '') {
 
         // Force Russian-style weekday name endings, suitable for version, spelling-compatible for question 'When?'
         if (in('weekday', $when))
-            foreach (array('а' => 'у') as $s => $r) {
+            foreach (['а' => 'у'] as $s => $r) {
                 $date = preg_replace('/' . $s . '\b/u', $r, $date);
                 $date = preg_replace('/' . $s . '(\s)/u', $r . '$1', $date);
                 $date = preg_replace('/' . $s . '$/u', $r, $date);
@@ -569,7 +569,7 @@ if (!function_exists('mb_lcfirst')) {
  */
 if (!function_exists('array_column')) {
     function array_column(array $array, $column_key, $index_key = null) {
-        $column = array();
+        $column = [];
         foreach ($array as $item) {
             if ($index_key) {
                 $column[$item[$index_key]] = $item[$column_key];
@@ -596,13 +596,13 @@ if (!function_exists('http_parse_headers')) {
  *
  */
 function parsepairs($raw, $delimiter = ':'){
-    $headers = array(); $key = '';
+    $headers = []; $key = '';
     foreach(explode("\n", $raw) as $h) {
         $h = explode($delimiter, $h, 2);
         if (isset($h[1])){
             if (!isset($headers[$h[0]])) $headers[$h[0]] = trim($h[1]);
-            else if (is_array($headers[$h[0]])) $headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1])));
-            else $headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1])));
+            else if (is_array($headers[$h[0]])) $headers[$h[0]] = array_merge($headers[$h[0]], [trim($h[1])]);
+            else $headers[$h[0]] = array_merge([$headers[$h[0]]], [trim($h[1])]);
             $key = $h[0];
         } else {
             if (substr($h[0], 0, 1) == "\t") $headers[$key] .= "\r\n\t".trim($h[0]);
@@ -621,7 +621,7 @@ if (!function_exists('apache_request_headers')) {
     function apache_request_headers() {
         
         // Cased headers
-        $casedHeaderA = array(
+        $casedHeaderA = [
 
             // HTTP
             'Dasl'             => 'DASL',
@@ -636,10 +636,10 @@ if (!function_exists('apache_request_headers')) {
             'Content-Md5'      => 'Content-MD5',
             'Content-Id'       => 'Content-ID',
             'Content-Features' => 'Content-features',
-        );
+        ];
         
         // Headers array
-        $httpHeaderA = array();
+        $httpHeaderA = [];
 
         // Pick headers info from $_SERVER
         foreach($_SERVER as $k => $v) {
@@ -723,10 +723,10 @@ function ar($items, $allowEmpty = false) {
     if (is_array($items)) return $items;
 
     // Else if $items arg is strict null - return array containing that null as a first item
-    if ($items === null) return $allowEmpty ? array(null) : array();
+    if ($items === null) return $allowEmpty ? [null] : [];
 
     // Else if $items arg is a boolean value - return array containing that boolean value as a first item
-    if (is_bool($items)) return array($items);
+    if (is_bool($items)) return [$items];
 
     // Else if $items arg is an object we either return result of toArray() call on that object,
     // or return result, got by php's native '(array)' cast-prefix expression, depending whether
@@ -737,7 +737,7 @@ function ar($items, $allowEmpty = false) {
     if (is_string($items)) {
 
         // If $items is an empty string - return empty array
-        if (!strlen($items) && !$allowEmpty) return array();
+        if (!strlen($items) && !$allowEmpty) return [];
 
         // Explode $items arg by comma
         foreach ($items = explode(',', $items) as $i => $item) {
@@ -753,7 +753,7 @@ function ar($items, $allowEmpty = false) {
     }
 
     // Else return array, containing $items arg as a single item
-    return array($items);
+    return [$items];
 }
 
 /**
@@ -788,22 +788,22 @@ function un($array, $unset, $strict = true, $preserveKeys = false) {
 function num2str($num, $iunit = true, $dunit = true) {
     if(!function_exists('num2str_')){function num2str_($n,$f1,$f2,$f5){$n=abs(intval($n))%100;if($n>10&&$n<20)return$f5;
     $n=$n%10;if($n>1&&$n<5)return$f2;if($n==1)return $f1;return $f5;}}
-    $nul=I_NUM2STR_ZERO; $ten=array(
-        array_merge(array(''), ar(I_NUM2STR_1TO9)),
-        array_merge(array(''), ar(I_NUM2STR_1TO9_2))
-    ,);
+    $nul=I_NUM2STR_ZERO; $ten= [
+        array_merge([''], ar(I_NUM2STR_1TO9)),
+        array_merge([''], ar(I_NUM2STR_1TO9_2))
+    ,];
     $a20 = ar(I_NUM2STR_10TO19);
     $tens = array_combine(array_keys(array_fill(2, 8, '')), ar(I_NUM2STR_20TO90));
-    $hundred=array_merge(array(''), ar(I_NUM2STR_100TO900));
-    $unit=array(
-        array_merge(ar(I_NUM2STR_TBQ_KOP), array(1)),
-        array_merge(ar(I_NUM2STR_TBQ_RUB), array(0)),
-        array_merge(ar(I_NUM2STR_TBQ_THD), array(1)),
-        array_merge(ar(I_NUM2STR_TBQ_MLN), array(0)),
-        array_merge(ar(I_NUM2STR_TBQ_BLN), array(0))
-    ,);
+    $hundred=array_merge([''], ar(I_NUM2STR_100TO900));
+    $unit= [
+        array_merge(ar(I_NUM2STR_TBQ_KOP), [1]),
+        array_merge(ar(I_NUM2STR_TBQ_RUB), [0]),
+        array_merge(ar(I_NUM2STR_TBQ_THD), [1]),
+        array_merge(ar(I_NUM2STR_TBQ_MLN), [0]),
+        array_merge(ar(I_NUM2STR_TBQ_BLN), [0])
+    ,];
 
-    list($rub,$kop)=explode('.',sprintf("%015.2f",floatval($num)));$out=array();
+    list($rub,$kop)=explode('.',sprintf("%015.2f",floatval($num)));$out= [];
     if(intval($rub)>0){foreach(str_split($rub,3)as$uk=>$v){if(!intval($v))continue;$uk=sizeof($unit)-$uk-1;$gender=$unit
     [$uk][3];list($i1,$i2,$i3)=array_map('intval',str_split($v,1));$out[]=$hundred[$i1];if($i2>1)$out[]=$tens[$i2].' '.
     $ten[$gender][$i3];else$out[]=$i2>0?$a20[$i3]:$ten[$gender][$i3];if($uk>1)$out[]=num2str_($v,$unit[$uk][0],$unit[$uk][1],
@@ -822,19 +822,19 @@ function num2str($num, $iunit = true, $dunit = true) {
 function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
 
     // Start building data for flushing
-    $flush = is_array($success) && array_key_exists('success', $success) ? $success : array('success' => $success);
+    $flush = is_array($success) && array_key_exists('success', $success) ? $success : ['success' => $success];
 
     // Deal with first data-argument
     if (func_num_args() > 1 && func_get_arg(1) != null)
         $mrg1 = is_object($msg1)
             ? (in('toArray', get_class_methods($msg1)) ? $msg1->toArray() : (array) $msg1)
-            : (is_array($msg1) ? $msg1 : array('msg' => $msg1));
+            : (is_array($msg1) ? $msg1 : ['msg' => $msg1]);
 
     // Deal with second data-argument
     if (func_num_args() > 2 && func_get_arg(2) != null)
         $mrg2 = is_object($msg2)
             ? (in('toArray', get_class_methods($msg2)) ? $msg2->toArray() : (array) $msg2)
-            : (is_array($msg2) ? $msg2 : array('msg' => $msg2));
+            : (is_array($msg2) ? $msg2 : ['msg' => $msg2]);
 
     // Merge the additional data to the $flush array
     if ($mrg1) $flush = array_merge($flush, $mrg1);
@@ -897,7 +897,7 @@ function isEdge() {
 function mflush($field, $msg = '') {
 
     // Mismatches array
-    $mismatch = array();
+    $mismatch = [];
 
     // If $field arg is a string - add $msg into $mismatch array using $field arg as a key
     if (is_string($field) && $msg) $mismatch[$field] = $msg;
@@ -907,11 +907,11 @@ function mflush($field, $msg = '') {
     else if (is_array($field)) $mismatch = $field;
 
     // Flush
-    jflush(false, array('mismatch' => array(
+    jflush(false, ['mismatch' => [
         'direct' => true,
         'errors' => $mismatch,
         'trace' => array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1)
-    )));
+    ]]);
 }
 /**
  * Flush the json-encoded message, containing `status` property, and other optional properties, especially for confirm
@@ -922,7 +922,7 @@ function mflush($field, $msg = '') {
 function jconfirm($msg, $buttons = 'OKCANCEL') {
 
     // Start building data for flushing
-    $flush = array('confirm' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'buttons' => $buttons);
+    $flush = ['confirm' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'buttons' => $buttons];
 
     // Send content type header
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
@@ -944,7 +944,7 @@ function jconfirm($msg, $buttons = 'OKCANCEL') {
 function jprompt($msg, array $cfg) {
 
     // Start building data for flushing
-    $flush = array('prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg);
+    $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg];
 
     // Append prev prompts data
     if ($flush['prompt'] > 1)
@@ -1018,16 +1018,16 @@ function decimal($value, $precision = 2, $formatted = false) {
 function alias($title){
 
     // Symbols
-    $s = array('а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ',
+    $s = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ',
         'ъ','ы','ь','э','ю','я','№',' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
         't','u','v','w','x','y','z','-','0','1','2','3','4','5','6','7','8','9','Ë','À','Ì','Â','Í','Ã','Î','Ä','Ï',
-        'Ç','Ò','È','Ó','É','Ô','Ê','Õ','Ö','ê','Ù','ë','Ú','î','Û','ï','Ü','ô','Ý','õ','â','û','ã','ÿ','ç','&', '/', '_');
+        'Ç','Ò','È','Ó','É','Ô','Ê','Õ','Ö','ê','Ù','ë','Ú','î','Û','ï','Ü','ô','Ý','õ','â','û','ã','ÿ','ç','&', '/', '_'];
 
     // Replacements
-    $r = array('a','b','v','g','d','e','yo','zh','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','ch','sh','shh',
+    $r = ['a','b','v','g','d','e','yo','zh','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','ch','sh','shh',
         '','y','','e','yu','ya','','-','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
         't','u','v','w','x','y','z','-','0','1','2','3','4','5','6','7','8','9','e','a','i','a','i','a','i','a','i',
-        'c','o','e','o','e','o','e','o','o','e','u','e','u','i','u','i','u','o','u','o','a','u','a','y','c','-and-', '-', '_');
+        'c','o','e','o','e','o','e','o','o','e','u','e','u','i','u','i','u','o','u','o','a','u','a','y','c','-and-', '-', '_'];
 
     // Declare variable for alias
     $alias = '';
@@ -1084,7 +1084,7 @@ function sign($n) {
 function size2str($size) {
 
     // Postixes
-    $postfix = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
+    $postfix = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
 
     // Pow
     $pow = (int) floor(strlen($size)/3);
@@ -1243,7 +1243,7 @@ function phone($str) {
  * @return string
  */
 function when($date, $time = '') {
-    $when = array(); $when_ = '';
+    $when = []; $when_ = '';
 
     // Detect yesterday/today/tomorrow/etc part
     if ($date == date('Y-m-d', time() - 60 * 60 * 24 * 2)) $when_ = I_WHEN_DBY;
@@ -1279,23 +1279,23 @@ function when($date, $time = '') {
  * @author Tamlyn Rhodes <http://tamlyn.org>
  * @license http://creativecommons.org/publicdomain/mark/1.0/ Public Domain
  */
-function xml2ar($xml, $options = array()) {
-    $defaults = array(
+function xml2ar($xml, $options = []) {
+    $defaults = [
         'namespaceSeparator' => ':',//you may want this to be something other than a colon
         'attributePrefix' => '@',   //to distinguish between attributes and nodes with the same name
-        'alwaysArray' => array(),   //array of xml tag names which should always become arrays
+        'alwaysArray' => [],   //array of xml tag names which should always become arrays
         'autoArray' => true,        //only create arrays for tags which appear more than once
         'textContent' => '$',       //key used for the text content of elements
         'autoText' => true,         //skip textContent key if node has no attributes or child nodes
         'keySearch' => false,       //optional search and replace on tag and attribute names
         'keyReplace' => false       //replace values for above search values (as passed to str_replace())
-    );
+    ];
     $options = array_merge($defaults, $options);
     $namespaces = $xml->getDocNamespaces();
     $namespaces[''] = null; //add base (empty) namespace
 
     //get attributes from all namespaces
-    $attributesArray = array();
+    $attributesArray = [];
     foreach ($namespaces as $prefix => $namespace) {
         foreach ($xml->attributes($namespace) as $attributeName => $attribute) {
             //replace characters in attribute name
@@ -1309,7 +1309,7 @@ function xml2ar($xml, $options = array()) {
     }
 
     //get child nodes from all namespaces
-    $tagsArray = array();
+    $tagsArray = [];
     foreach ($namespaces as $prefix => $namespace) {
         foreach ($xml->children($namespace) as $childXml) {
             //recurse into child nodes
@@ -1327,7 +1327,7 @@ function xml2ar($xml, $options = array()) {
                 //test if tags of this type should always be arrays, no matter the element count
                 $tagsArray[$childTagName] =
                     in_array($childTagName, $options['alwaysArray']) || !$options['autoArray']
-                        ? array($childProperties) : $childProperties;
+                        ? [$childProperties] : $childProperties;
             } elseif (
                 is_array($tagsArray[$childTagName]) && array_keys($tagsArray[$childTagName])
                 === range(0, count($tagsArray[$childTagName]) - 1)
@@ -1336,13 +1336,13 @@ function xml2ar($xml, $options = array()) {
                 $tagsArray[$childTagName][] = $childProperties;
             } else {
                 //key exists so convert to integer indexed array with previous value in position 0
-                $tagsArray[$childTagName] = array($tagsArray[$childTagName], $childProperties);
+                $tagsArray[$childTagName] = [$tagsArray[$childTagName], $childProperties];
             }
         }
     }
 
     //get text content of node
-    $textContentArray = array();
+    $textContentArray = [];
     $plainText = trim((string)$xml);
     if ($plainText !== '') $textContentArray[$options['textContent']] = $plainText;
 
@@ -1351,9 +1351,9 @@ function xml2ar($xml, $options = array()) {
         ? array_merge($attributesArray, $tagsArray, $textContentArray) : $plainText;
 
     //return node as array
-    return array(
+    return [
         $xml->getName() => $propertiesArray
-    );
+    ];
 }
 
 function l10n($dataA, $props = '') {
@@ -1389,7 +1389,7 @@ function l10n_dataI($dataI, $props) {
 function jcheck($ruleA, $data, $fn = 'jflush') {
 
     // Declare $rowA array
-    $rowA = array();
+    $rowA = [];
 
     // Foreach prop having mismatch rules
     foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
@@ -1398,7 +1398,7 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
         $value = $data[$prop];
 
         // Get meta
-        $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : array();
+        $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : [];
         
         // Get label, or use $prop if label/meta is not given
         $label = $meta['fieldLabel'] ?: $prop;
@@ -1455,9 +1455,9 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
             $flushFn($arg1, sprintf(constant($c . 'EQL'), $rule['eql'], $value));
         
         // If prop's value should be unique within the whole database table, but it's not - flush error
-        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && Indi::model($_[0])->fetchRow(array(
+        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && Indi::model($_[0])->fetchRow([
             '`' . $_[1] . '` = "' . $value . '"'
-        ))) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
+            ])) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
     }
 
     // Return *_Row objects, collected for props, that have 'key' rule
@@ -1485,7 +1485,7 @@ function _2sec($expr) {
     if (Indi::rexm('time', $expr)) {
 
         // Prepare type mapping
-        $type = array('h', 'm', 's'); $s = 0;
+        $type = ['h', 'm', 's']; $s = 0;
 
         // Foreach type append it's value converted to seconds
         foreach (explode(':', $expr) as $index => $value) $s += _2sec($value . $type[$index]);
@@ -1498,13 +1498,13 @@ function _2sec($expr) {
     if (!preg_match('~^([0-9]+)(s|m|h|d|w)$~', $expr, $m)) jflush(false, 'Incorrect $expr arg format');
 
     // Multipliers for $expr conversion
-    $frame2sec = array(
+    $frame2sec = [
         's' => 1,
         'm' => 60,
         'h' => 60 * 60,
         'd' => 60 * 60 * 24,
         'w' => 60 * 60 * 24 * 7
-    );
+    ];
 
     // Return number of seconds
     return $m[1] * $frame2sec[$m[2]];
@@ -1573,7 +1573,7 @@ function wrap($val, $html, $cond = null) {
  * @param array $ctor Props to be involved in insert/update
  * @return Entity_Row|null
  */
-function entity($table, array $ctor = array()) {
+function entity($table, array $ctor = []) {
 
     // If $table arg is an integer - assume it's an `entity` entry's `id`, otherwise assume it's a `table`
     $byprop = Indi::rexm('int11', $table) ? 'id' : 'table';
@@ -1609,7 +1609,7 @@ function entity($table, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Field_Row|null
  */
-function field($table, $alias, array $ctor = array()) {
+function field($table, $alias, array $ctor = []) {
 
     // Get `entityId` according to $table arg
     $entityId = entity($table)->id;
@@ -1667,7 +1667,7 @@ function field($table, $alias, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Field_Row|null
  */
-function cfgField($table, $entry, $alias, array $ctor = array()) {
+function cfgField($table, $entry, $alias, array $ctor = []) {
 
     // Get `entityId` according to $table arg
     $entityId = entity($table)->id;
@@ -1680,11 +1680,11 @@ function cfgField($table, $entry, $alias, array $ctor = array()) {
     if (!Indi::rexm('int11', $entry)) $entry = m($table)->fetchRow('`alias` = "' . $entry . '"')->id;
 
     // Try to find `field` entry
-    $fieldR = Indi::model('Field')->fetchRow(array(
+    $fieldR = Indi::model('Field')->fetchRow([
         '`entityId` = "' . $entityId . '"',
         '`entry` = "' . $entry . '"',
         '`' . $byprop . '` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1719,7 +1719,7 @@ function cfgField($table, $entry, $alias, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Section_Row|null
  */
-function section($alias, array $ctor = array()) {
+function section($alias, array $ctor = []) {
 
     // If $alias arg is an integer - assume it's a section ID, or assume it's a section alias otherwise
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
@@ -1769,7 +1769,7 @@ function grid($section, $field, $ctor = false) {
     if (!$fieldId) $alias = $field;
 
     // Build WHERE clause
-    $w = array('`sectionId` = "' . $sectionId . '"');
+    $w = ['`sectionId` = "' . $sectionId . '"'];
 
     // If $field arg points to existing `field` entry
     if ($fieldId) {
@@ -1800,7 +1800,7 @@ function grid($section, $field, $ctor = false) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $fields args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId,alias,further') as $prop)
         if (!array_key_exists($prop, $ctor) && isset($$prop))
             $ctor[$prop] = $$prop;
@@ -1841,17 +1841,17 @@ function enumset($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $enumsetR = Indi::model('Enumset')->fetchRow(array(
+    $enumsetR = Indi::model('Enumset')->fetchRow([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not and empty array - return `grid` entry, else
     if (!$ctor && !is_array($ctor)) return $enumsetR;
 
     // If `fieldId` and/or `alias` prop are not defined within $ctor arg
     // - use values given by $table+$field and $alias args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('fieldId,alias') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -1894,17 +1894,17 @@ function cfgEnumset($table, $entry, $field, $alias, $ctor = false) {
     $fieldId = cfgField($table, $entry, $field)->id;
 
     // Try to find `grid` entry
-    $enumsetR = Indi::model('Enumset')->fetchRow(array(
+    $enumsetR = Indi::model('Enumset')->fetchRow([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not and empty array - return `grid` entry, else
     if (!$ctor && !is_array($ctor)) return $enumsetR;
 
     // If `fieldId` and/or `alias` prop are not defined within $ctor arg
     // - use values given by $table+$field and $alias args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('fieldId,alias') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -1944,17 +1944,17 @@ function thumb($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $thumbR = Indi::model('Resize')->fetchRow(array(
+    $thumbR = Indi::model('Resize')->fetchRow([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not an empty array - return `thumb` entry, else
     if (!$ctor && !is_array($ctor)) return $thumbR;
 
     // If `fieldId` and/or `alias` prop are not defined within $ctor arg
     // - use values given by $table+$field and $alias args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('fieldId,alias') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -2063,7 +2063,7 @@ function coltype($type) {
  * @param bool|array $ctor Props to be involved in insert/update
  * @return Section2action_Row|null
  */
-function section2action($section, $action, array $ctor = array()) {
+function section2action($section, $action, array $ctor = []) {
 
     // Get `sectionId` and `actionId` according to $section and $action args
     $sectionR = section($section);
@@ -2071,10 +2071,10 @@ function section2action($section, $action, array $ctor = array()) {
     $actionId = action($action)->id;
 
     // Try to find `section2action` entry
-    $section2actionR = Indi::model('Section2action')->fetchRow(array(
+    $section2actionR = Indi::model('Section2action')->fetchRow([
         '`sectionId` = "' . $sectionId . '"',
         '`actionId` = "' . $actionId . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `section2action` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -2104,7 +2104,7 @@ function section2action($section, $action, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Indi_Db_Table_Row|null
  */
-function action($alias, array $ctor = array()) {
+function action($alias, array $ctor = []) {
 
     // If $alias arg is an integer - assume it's an `action` entry's `id`, otherwise assume it's a `alias`
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
@@ -2173,7 +2173,7 @@ function role($alias, array $ctor = []) {
  * @param bool|array $ctor Props to be involved in insert/update
  * @return AlteredField_Row|null
  */
-function alteredField($section, $field, array $ctor = array()) {
+function alteredField($section, $field, array $ctor = []) {
 
     // Get `sectionId` and `fieldId` according to $section and $field args
     $sectionR = section($section);
@@ -2181,10 +2181,10 @@ function alteredField($section, $field, array $ctor = array()) {
     $fieldId = field($sectionR->foreign('entityId')->table, $field)->id;
 
     // Try to find `alteredField` entry
-    $alteredFieldR = Indi::model('AlteredField')->fetchRow(array(
+    $alteredFieldR = Indi::model('AlteredField')->fetchRow([
         '`sectionId` = "' . $sectionId . '"',
         '`fieldId` = "' . $fieldId . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `alteredField` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -2193,7 +2193,7 @@ function alteredField($section, $field, array $ctor = array()) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $field args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -2231,7 +2231,7 @@ function filter($section, $field, $ctor = false) {
     $fieldId = $fieldR->id;
 
     // Initial WHERE clause
-    $w = array('`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"');
+    $w = ['`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"'];
 
     // Detect $further
     if (func_num_args() > 3) {
@@ -2253,7 +2253,7 @@ function filter($section, $field, $ctor = false) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $fields args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId,further') as $prop)
         if (isset($$prop) && !array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -2323,7 +2323,7 @@ function param($table, $field, $alias, $value = null) {
     if (func_num_args() < 4) return $paramR;
 
     // Build $ctor
-    $ctor = is_array($value) ? $value : array('value' => $value, 'cfgValue' => $cfgValue = $value);
+    $ctor = is_array($value) ? $value : ['value' => $value, 'cfgValue' => $cfgValue = $value];
     foreach (ar('fieldId,possibleParamId,cfgField'
         . rif(!is_array($value), ',value')
         . rif(!is_array($cfgValue), ',cfgValue')) as $prop)
@@ -2363,11 +2363,11 @@ function consider($entity, $field, $consider, $ctor = false) {
     $consider = field($entity, $consider)->id ?: 0;
 
     // Try to find such `consider` entry
-    $considerR = Indi::model('Consider')->fetchRow(array(
+    $considerR = Indi::model('Consider')->fetchRow([
         '`entityId` = "' . $entityId . '"',
         '`fieldId` = "' . $fieldId . '"',
         '`consider` = "' . $consider . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not an empty array - return found `consider` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -2376,7 +2376,7 @@ function consider($entity, $field, $consider, $ctor = false) {
 
     // If any of `sectionId`, `fieldId` and `consider` prop are not defined
     // within $ctor arg - use values given by $entity, $field and $consider args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('entityId,fieldId,consider') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -2477,7 +2477,7 @@ function between($since, $until, $html) {
     $splitFn_until = preg_match($rex, $until) ? 'preg_split' : 'explode';
 
     // Collect items
-    $itemA = array();
+    $itemA = [];
     foreach ($splitFn_since($since, $html) as $i => $_)
         if ($i) $itemA []= array_shift($splitFn_until($until, $_));
 
@@ -2505,9 +2505,9 @@ function innerHtml($node, $html) {
     if (($chunkQty = count($chunkA)) < 2) return;
 
     // Ignore non-pair tags while watching on tag nesting levels
-    $ignore = array_flip(array(
+    $ignore = array_flip([
         'img', 'link', 'meta', 'input', 'br', 'hr', 'base', 'basefont', 'source', 'col', 'embed', 'area', 'param', 'track'
-    ));
+    ]);
 
     // Regular expression for searching tags (opening an closing)
     $rex = '~(</?[a-zA-Z-0-9-:]+(?(?= ) [^>]*|)>)~';
@@ -2536,7 +2536,7 @@ function innerHtml($node, $html) {
     $targetLevel = $level;
 
     // Array for inner html of found nodes
-    $innerHtml = array();
+    $innerHtml = [];
 
     // Foreach chunk since 2nd
     for ($i = 1; $i < $chunkQty; $i++) {
@@ -2594,9 +2594,9 @@ function innerHtml($node, $html) {
 function rootNodes($innerHtml, $debug = false) {
 
     // Ignore non-pair tags while watching on tag nesting levels
-    $ignoreRex = '~^<(' . implode('|', array(
+    $ignoreRex = '~^<(' . implode('|', [
         'img', 'link', 'meta', 'input', 'br', 'hr', 'base', 'basefont', 'source', 'col', 'embed', 'area', 'param', 'track'
-    )) . ')~';
+        ]) . ')~';
 
     // Regular expression for searching tags (opening an closing)
     $rex = '~(</?[a-zA-Z-0-9-:]+(?(?= ) [^>]*|)>)~u';
@@ -2611,7 +2611,7 @@ function rootNodes($innerHtml, $debug = false) {
     $level = 0;
 
     // Root nodes array
-    $rootNodes = array();
+    $rootNodes = [];
 
     // Split html, that appear after target node's opening tag, and capture tags and offsets
     foreach($s = preg_split($rex, $innerHtml, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE) as $chunk) {
@@ -2672,7 +2672,7 @@ function stack() {
  * @param array $fileA
  * @return array list of all files in $dir and it's ALL subdirs
  */
-function scandirr($dir, &$fileA = array()) {
+function scandirr($dir, &$fileA = []) {
 
     // Foreach path-entry inside $dir
     if (is_dir($dir)) foreach (scandir($dir) as $value) {
@@ -2700,7 +2700,7 @@ function scandirr($dir, &$fileA = array()) {
 function appjs($dir = '/js/admin') {
 
     // Collect raw contents
-    $raw = array();
+    $raw = [];
     foreach (ar($dir) as $_dir)
         foreach (scandirr(DOC . STD . '/www' . $_dir) as $file)
             $raw[$file] = file_get_contents($file);

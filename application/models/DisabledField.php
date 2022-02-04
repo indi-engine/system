@@ -5,7 +5,7 @@ class DisabledField extends Indi_Db_Table {
      * Array of fields, which contents will be evaluated with php's eval() function
      * @var array
      */
-    protected $_evalFields = array('defaultValue');
+    protected $_evalFields = ['defaultValue'];
 
     /**
      * Classname for row. Here we setup Indi_Db_Table_Row_Noeval as a row class name for current model

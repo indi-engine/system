@@ -23,13 +23,13 @@ class Indi_Queue_L10n extends Indi_Queue {
         $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
-        foreach ($queueTaskR->nested('queueChunk', array(
+        foreach ($queueTaskR->nested('queueChunk', [
             'where' => '`countState` != "finished"',
             'order' => '`countState` = "progress" DESC, `move`'
-        )) as $queueChunkR) {
+        ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('countState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['countState' => 'progress'])->basicUpdate();
 
             // Get table
             list ($table, $field) = explode(':', $queueChunkR->location);
@@ -40,7 +40,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             )->fetchColumn();
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('countState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['countState' => 'finished'])->basicUpdate();
 
             // Update `queueTask` entry's `countSize` prop
             $queueTaskR->countSize += $queueChunkR->countSize;
@@ -48,7 +48,7 @@ class Indi_Queue_L10n extends Indi_Queue {
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'countState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'countState' => 'finished'])->save();
     }
 
     /**
@@ -72,13 +72,13 @@ class Indi_Queue_L10n extends Indi_Queue {
         $params = json_decode($queueTaskR->params, true);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
-        foreach ($queueTaskR->nested('queueChunk', array(
+        foreach ($queueTaskR->nested('queueChunk', [
             'where' => '`itemsState` != "finished"',
             'order' => '`itemsState` = "progress" DESC, `move`'
-        )) as $queueChunkR) {
+        ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('itemsState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['itemsState' => 'progress'])->basicUpdate();
 
             // Split `location` on $table and $field
             list ($table, $field) = explode(':', $queueChunkR->location);
@@ -90,7 +90,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             $setter = method_exists(m($table)->createRow(), $_ = 'set' . ucfirst($field)) ? $_ : false;
 
             // Build WHERE clause
-            $where = array();
+            $where = [];
             if ($queueChunkR->where) $where []= $queueChunkR->where;
             if ($last) $where []= '`id` > ' . $last;
             $where = $where ? im($where, ' AND ') : null;
@@ -109,12 +109,12 @@ class Indi_Queue_L10n extends Indi_Queue {
                         : $r->language($field, $params['source']) ?: $r->$field);
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->createRow(array(
+                $queueItemR = Indi::model('QueueItem')->createRow([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => $r->id,
                     'value' => $value
-                ), true);
+                ], true);
 
                 // Save `queueItem` entry
                 $queueItemR->save();
@@ -133,11 +133,11 @@ class Indi_Queue_L10n extends Indi_Queue {
             }, $where, '`' . $orderColumn . '` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('itemsState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['itemsState' => 'finished'])->basicUpdate();
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'itemsState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'itemsState' => 'finished'])->save();
     }
 
     public function queue($queueTaskId) {
@@ -151,13 +151,13 @@ class Indi_Queue_L10n extends Indi_Queue {
      * @param $fieldR_having_l10nY
      * @param $where
      */
-    public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = array()) {
+    public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = []) {
 
         // Create `queueChunk` entry and setup basic props
-        $queueChunkR = Indi::model('QueueChunk')->createRow(array(
+        $queueChunkR = Indi::model('QueueChunk')->createRow([
             'queueTaskId' => $queueTaskR->id,
             'queueState' => $queueTaskR->queueState
-        ), true);
+        ], true);
 
         // If $entity arg is really entity
         if ($entityR instanceof Entity_Row) {

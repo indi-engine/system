@@ -34,7 +34,7 @@ class Indi_Trail_Admin_Item_Scope {
      *
      * @var
      */
-    public $lastIds = array();
+    public $lastIds = [];
 
     /**
      * Json-encoded array of filters, that were used to setup scope bounds
@@ -167,7 +167,7 @@ class Indi_Trail_Admin_Item_Scope {
             } else {
 
                 // Declare $assoc array
-                $assoc = array();
+                $assoc = [];
 
                 // Build simple associative array
                 foreach ($filterA as $filterI) $assoc[key($filterI)] = current($filterI);
@@ -177,7 +177,7 @@ class Indi_Trail_Admin_Item_Scope {
             }
 
         // Return
-        return array();
+        return [];
     }
 
     /**
@@ -210,6 +210,6 @@ class Indi_Trail_Admin_Item_Scope {
         if ($this->aix) Indi::trail($this->_level)->section->rowIndex = $this->aix;
 
         if ($this->upperHash && $this->upperAix && Indi::trail($this->_level+1)->scope)
-            Indi::trail($this->_level+1)->scope->apply(array('hash' => $this->upperHash, 'aix' => $this->upperAix));
+            Indi::trail($this->_level+1)->scope->apply(['hash' => $this->upperHash, 'aix' => $this->upperAix]);
     }
 }

@@ -19,7 +19,7 @@ class Field_Base extends Indi_Db_Table {
      * Array of fields, which contents will be evaluated with php's eval() function
      * @var array
      */
-    protected $_evalFields = array('defaultValue', 'filter');
+    protected $_evalFields = ['defaultValue', 'filter'];
 
     /**
      * Default order for combo data
@@ -33,7 +33,7 @@ class Field_Base extends Indi_Db_Table {
      *
      * @var array
      */
-    protected $_fraction = array('field' => 'entityId');
+    protected $_fraction = ['field' => 'entityId'];
 
     /**
      * Create Indi_Db_Table_Rowset object with some data, if passed

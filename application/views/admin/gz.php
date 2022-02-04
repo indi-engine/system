@@ -1,6 +1,6 @@
 <?php
 // Array of js files to be imploded
-$js = array(
+$js = [
     '/js/jquery-1.9.1.min.js',
     '/library/extjs4/ext-all.js',
 
@@ -123,14 +123,14 @@ $js = array(
     '/js/admin/app/lib/controller/action/Print.js',
     '/js/admin/app/lib/controller/action/Call.js',
     '/wrtc.js'
-);
+];
 
 // If google maps API key defined - append GmapPanel.js
 if (Indi::ini('gmap')->key) $js[] = '/library/extjs4/examples/ux/GMapPanel.js';
 if (Indi::ini('ymap')->mode) $js[] = '/library/extjs4/examples/ux/YMapPanel.js';
 
 // Array of css files to be imploded
-$css = array(
+$css = [
     '/library/extjs4/resources/css/ext-all.css',
     '/library/extjs4/examples/ux/css/CheckHeader.css',
     '/library/extjs4/resources/css/colorpicker.css',
@@ -143,9 +143,9 @@ $css = array(
     '/css/admin/indi.combo.default.css',
     '/css/admin/indi.calendar.css',
     '/css/admin/indi.dialer.css'
-);
+];
 // Implode js files
-Indi::implode(array('/application/lang/admin/' . Indi::ini()->lang->admin . '.php:Indi$lang'), Indi::ini()->lang->admin);
+Indi::implode(['/application/lang/admin/' . Indi::ini()->lang->admin . '.php:Indi$lang'], Indi::ini()->lang->admin);
 Indi::implode($js, isIE() ? 'ie' : null);
 
 // Implode css files

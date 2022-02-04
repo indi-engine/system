@@ -38,7 +38,7 @@ class Indi_Controller_Admin_Exportable extends Indi_Controller_Admin {
         $toBeExportedRs = t()->model->fetchAll(['`id` IN (' . im($toBeExportedIdA) . ')', t()->scope->WHERE], $order);
 
         // For each row get export expression
-        $php = array(); foreach ($toBeExportedRs as $toBeExportedR) $php []= $toBeExportedR->export();
+        $php = []; foreach ($toBeExportedRs as $toBeExportedR) $php []= $toBeExportedR->export();
 
         // Apply new index
         $this->setScopeRow(false, null, $toBeExportedRs->column('id'));

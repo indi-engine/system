@@ -90,7 +90,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
     public function adjustGridData(&$data) {
 
         // Collect shaded fields
-        if (($shade = array()) || Indi::demo(false))
+        if (($shade = []) || Indi::demo(false))
             foreach(Indi::model(Indi::trail(1)->section->entityId)->fields() as $fieldR)
                 if ($fieldR->param('shade'))
                     $shade[$fieldR->id] = true;
@@ -143,9 +143,9 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         }
 
         // Fetch rows that should be moved
-        $toBeRevertedRs = Indi::trail()->model->fetchAll(array(
+        $toBeRevertedRs = Indi::trail()->model->fetchAll([
             '`id` IN (' . im($toBeRevertedIdA) . ')', Indi::trail()->scope->WHERE
-        ));
+        ]);
 
         // For each row
         foreach ($toBeRevertedRs as $toBeRevertedR) $toBeRevertedR->revert();

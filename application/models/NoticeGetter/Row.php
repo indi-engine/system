@@ -37,7 +37,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         if ($this->criteriaRelyOn == 'event') $this->_notify($diff);
 
         // 2.2 Else separately notify two groups of recipients: ones for 'dec' and others for 'inc'
-        else foreach (array(-1, 1) as $diff) $this->_notify($diff);
+        else foreach ([-1, 1] as $diff) $this->_notify($diff);
     }
 
     /**
@@ -51,7 +51,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     protected function _notify($diff) {
 
         // Setup possible directions
-        $dirs = array(-1 => 'Dec', 0 => 'Evt', 1 => 'Inc');
+        $dirs = [-1 => 'Dec', 0 => 'Evt', 1 => 'Inc'];
 
         // Get direction, for being used as a part of field names
         $dir = $dirs[$diff];
@@ -86,10 +86,10 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     private function _ws($rs, $field, $subj, $body, $diff, $audio = false) {
 
         // Prepare msg
-        $msg = array(
+        $msg = [
             'header' => $this->wsmsg != 'n' ? $subj : '',
             'body' => $this->wsmsg != 'n' ? preg_replace('~jump=".*?,([^,"]+)"~', 'jump="$1"', $body) : ''
-        );
+        ];
     
         // Append audio if need
         if ($audio) $msg['audio'] = $audio;
@@ -98,16 +98,16 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         $msg['body'] = usubstr($msg['body'], 350);
     
         // Send web-socket messages
-        Indi::ws(array(
+        Indi::ws([
             'type' => 'notice',
             'mode' => 'menu-qty',
             'qtyReload' => $this->foreign('noticeId')->qtyReload,
             'noticeId' => $this->noticeId,
             'diff' => $diff,
             'row' => $this->row->id,
-            'to' => array($this->profileId => array_column($rs, $field)),
+            'to' => [$this->profileId => array_column($rs, $field)],
             'msg' => $msg
-        ));
+        ]);
     }
 
     /**
@@ -125,7 +125,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         if (!$body) return;
 
         // Collect unique valid emails
-        $__ = array(); foreach ($rs as $r) if (Indi::rexm('email', $_ = $r[$field])) $__[$_] = true;
+        $__ = []; foreach ($rs as $r) if (Indi::rexm('email', $_ = $r[$field])) $__[$_] = true;
 
         // If no valid emails collected - return
         if (!$emailA = array_keys($__)) return;
@@ -195,7 +195,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         if (!$body) return;
 
         // Collect unique valid emails
-        $vkA = array(); foreach ($rs as $r) if ($vk = Indi::rexm('vk', $_ = $r[$field], 1)) $vkA[$vk] = $r['title'];
+        $vkA = []; foreach ($rs as $r) if ($vk = Indi::rexm('vk', $_ = $r[$field], 1)) $vkA[$vk] = $r['title'];
 
         // If no valid VK uids collected - return
         if (!$vkA) return;
@@ -217,7 +217,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     public function users($criteriaProp) {
 
         // Start building WHERE clauses array
-        $where = array('`toggle` = "y"');
+        $where = ['`toggle` = "y"'];
 
         // Find the name of database table, where recipients should be found within
         foreach (Indi_Db::role() as $profileIds => $entityId)
@@ -239,14 +239,14 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Ways of notifications delivery and fields to be used as destination addresses
-        $_wayA = array(
+        $_wayA = [
             'email' => 'email',
             'vk' => 'vk',
             'sms' => 'phone'
-        );
+        ];
 
         // Foreach way, check if such a way is turned On, and such a field exists, and if so - append field to $fieldA array
-        $wayA = array('ws' => 'id');
+        $wayA = ['ws' => 'id'];
         foreach ($_wayA as $way => $field)
             if ($this->$way == 'y' && $model->fields($field))
                 $wayA[$way] = $field;
@@ -262,7 +262,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         foreach ($rs as &$r) $r['id'] = (int) $r['id'];
 
         // Return array containing applicable ways and found recipients
-        return array('wayA' => $wayA, 'rs' => $rs);
+        return ['wayA' => $wayA, 'rs' => $rs];
     }
 
     /**

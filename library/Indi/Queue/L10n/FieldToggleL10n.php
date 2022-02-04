@@ -4,7 +4,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
     /**
      * @var array
      */
-    public static $l10n = array();
+    public static $l10n = [];
 
     /**
      * Create queue chunks
@@ -14,11 +14,11 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->createRow(array(
+        $queueTaskR = Indi::model('QueueTask')->createRow([
             'title' => 'L10n_' . array_pop(explode('_', __CLASS__)),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-        ), true);
+        ], true);
 
         // Save `queueTask` entries
         $queueTaskR->save();
@@ -31,7 +31,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
 
         // Create separate `queueChunk`-trees for each fraction
         foreach ($params['target'] as $fraction => $targets)
-            $this->appendChunk($queueTaskR, entity($table), $fieldR, array(), $fraction);
+            $this->appendChunk($queueTaskR, entity($table), $fieldR, [], $fraction);
 
         // Return
         return $queueTaskR;
@@ -51,7 +51,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => Indi::ini('lang')->gapi->key]);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
@@ -65,10 +65,10 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         $target = $params->target;
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
-        foreach ($queueTaskR->nested('queueChunk', array(
+        foreach ($queueTaskR->nested('queueChunk', [
             'where' => '`queueState` != "finished"',
             'order' => '`queueState` = "progress" DESC, `move`'
-        )) as $queueChunkR) {
+        ]) as $queueChunkR) {
 
             // Split `location` on $table and $field
             list ($table, $field) = explode(':', $queueChunkR->location);
@@ -89,7 +89,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             if ($queueChunkR->system('disabled')) continue;
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('queueState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
@@ -145,10 +145,10 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
 
                         // Foreach target language - make api call to google passing source values
                         foreach (ar($targets) as $target)
-                            $resultByLang[$target] = array_column($gapi->translateBatch($values, array(
+                            $resultByLang[$target] = array_column($gapi->translateBatch($values, [
                                 'source' => $source,
                                 'target' => $target,
-                            )), 'text');
+                            ]), 'text');
 
                     // Catch exception
                     } catch (Exception $e) {
@@ -165,12 +165,12 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 foreach ($rs as $idx => $r) {
 
                     // Collect result for each target language
-                    $result = new stdClass(); foreach ($targets ? $resultByLang : array() as $target => $byIdx) {
+                    $result = new stdClass(); foreach ($targets ? $resultByLang : [] as $target => $byIdx) {
                         $result->$target = $byIdx[$idx]; $this->amendResult($result->$target, $r);
                     }
 
                     // Write translation result
-                    $r->assign(array('result' => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT), 'stage' => 'queue'))->basicUpdate();
+                    $r->assign(['result' => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT), 'stage' => 'queue'])->basicUpdate();
 
                     // Increment `queueSize` prop on `queueChunk` entry and save it
                     $queueChunkR->queueSize ++; $queueChunkR->basicUpdate();
@@ -185,11 +185,11 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             }, $where, '`id` ASC', 10, true);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('queueState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'queueState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -212,16 +212,16 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         $params = json_decode($queueTaskR->params, true);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
-        foreach ($queueTaskR->nested('queueChunk', array(
+        foreach ($queueTaskR->nested('queueChunk', [
             'where' => '`applyState` != "finished"',
             'order' => '`applyState` = "progress" DESC, `move`'
-        )) as $queueChunkR) {
+        ]) as $queueChunkR) {
 
             // Skip parent entries
             if ($queueChunkR->system('disabled')) continue;
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('applyState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
@@ -240,7 +240,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                     list ($_table, $_field, $_entry) = explode(':', $params['field']);
                     $fieldR = cfgField($_table, $_entry, $_field, ['columnTypeId' => 'TEXT']);
                 } else if ($table != 'enumset') {
-                    field($table, $field, array('columnTypeId' => 'TEXT'));
+                    field($table, $field, ['columnTypeId' => 'TEXT']);
                 }
             }
 
@@ -257,7 +257,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                     $json = Indi::db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
 
                     // If cell value is not an empty string, but is not a json - force it to be json
-                    if (!preg_match('~^{"~', $json)) $json = json_encode(array($params['source'] => $json), JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
+                    if (!preg_match('~^{"~', $json)) $json = json_encode([$params['source'] => $json], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
 
                     // Temporary thing
                     if (!is_array($result = json_decode($r->result, true)))
@@ -276,7 +276,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $table, $field, $value, $r->target);
 
                 // Write translation result
-                $r->assign(array('stage' => 'apply'))->basicUpdate();
+                $r->assign(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct ++;
@@ -299,18 +299,18 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             // Convert column type to TEXT
             if ($table != 'enumset' && $params['toggle'] == 'n' && !($table == 'param' && $field == 'cfgValue'))
                 if (!$queueChunkR->queueChunkId || !$hasLD)
-                    field($table, $field, array('columnTypeId' => 'VARCHAR(255)'));
+                    field($table, $field, ['columnTypeId' => 'VARCHAR(255)']);
 
             // Switch field's l10n-prop from intermediate to final value
             if ($params['toggle'] != 'n' || !$queueChunkR->queueChunkId || !$hasLD)
-                $fieldR->assign(array('l10n' => $params['toggle'] ?: 'y'))->save();
+                $fieldR->assign(['l10n' => $params['toggle'] ?: 'y'])->save();
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'applyState' => 'finished'])->save();
     }
 
     /**
@@ -359,16 +359,16 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
      * @param $fieldR_having_l10nY
      * @param $where
      */
-    public function appendChunk(&$queueTaskR, $entityR, $fieldR, $where = array(), $fraction = 'none') {
+    public function appendChunk(&$queueTaskR, $entityR, $fieldR, $where = [], $fraction = 'none') {
 
         // Create parent `queueChunk` entry and setup basic props
         $queueChunkR = parent::appendChunk($queueTaskR, $entityR, $fieldR, $where);
 
         // Setup `fraction` and `where` props
-        $queueChunkR->assign(array(
+        $queueChunkR->assign([
             'fraction' => $fraction,
             'where' => $this->getFractionChunkWHERE($fraction, $fieldR->id)
-        ))->save();
+        ])->save();
 
         foreach (m('Consider')->fetchAll('"' . $fieldR->id . '" = IF(`foreign` = "0", `consider`, `foreign`)') as $considerR) {
 
@@ -378,14 +378,14 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             // Create `queueChunk` entries for dependent fields
             $dependent = $this->appendChunk($queueTaskR,
                 $considerR->foreign('fieldId')->foreign('entityId'),
-                $considerR->foreign('fieldId'), array(), $fraction);
+                $considerR->foreign('fieldId'), [], $fraction);
 
             // Make those to be child under parent `queueChunk` entry and setup `fraction` and `where` props
-            $dependent->assign(array(
+            $dependent->assign([
                 'queueChunkId' => $queueChunkR->id,
                 'fraction' => $fraction,
                 'where' => $this->getFractionChunkWHERE($fraction, $considerR->fieldId)
-            ))->save();
+            ])->save();
         }
 
         // Return `queueChunk` entry

@@ -129,7 +129,7 @@ class Db {
         $mr = self::query($sql);
 
         // Setup the array representation of a fetched rowset
-        $rs = array(); while ($r = mysqli_fetch_object($mr)) $rs[] = (array) $r;
+        $rs = []; while ($r = mysqli_fetch_object($mr)) $rs[] = (array) $r;
 
         // Return that array
         return $rs;

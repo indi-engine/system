@@ -23,7 +23,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         $dataRs = $this->callParent();
 
         // Prepend data rowset with 'ID' option
-        if ($field == 'defaultSortField') $dataRs->append(array('id' => -1, 'title' => 'ID', 'alias' => 'id'), 'title');
+        if ($field == 'defaultSortField') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 'title');
 
         // Return
         return $dataRs;
@@ -65,21 +65,21 @@ class Section_Row_Base extends Indi_Db_Table_Row {
     public function jsonSort() {
 
         // Blank array
-        $json = array();
+        $json = [];
 
         // Mind grouping, as it also should be involved while building ORDER clause
         if ($this->groupBy && $this->foreign('groupBy'))
-            $json[] = array(
+            $json[] = [
                 'property' => $this->foreign('groupBy')->alias,
                 'direction' => 'ASC'
-            );
+            ];
 
         // Ming sorting
         if ($this->foreign('defaultSortField'))
-            $json[] = array(
+            $json[] = [
                 'property' => $this->foreign('defaultSortField')->alias,
                 'direction' => $this->defaultSortDirection,
-            );
+            ];
 
         // Return json-encoded sort params
         return json_encode($json);
@@ -147,12 +147,12 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
         // Foreach `section2action` entry, nested within current `section` entry
         // - build `section2action` entry's creation expression
-        foreach ($this->nested('section2action', array('order' => 'move')) as $section2actionR)
+        foreach ($this->nested('section2action', ['order' => 'move']) as $section2actionR)
             $lineA[] = $section2actionR->export();
 
         // Foreach `grid` entry, nested within current `section` entry
         // - build `grid` entry's creation expression
-        foreach ($this->nested('grid', array('order' => 'move')) as $gridR)
+        foreach ($this->nested('grid', ['order' => 'move']) as $gridR)
             $lineA[] = $gridR->export();
 
         // Foreach `alteredField` entry, nested within current `section` entry
@@ -162,7 +162,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
         // Foreach `filter` entry, nested within current `section` entry
         // - build `filter` entry's creation expression
-        foreach ($this->nested('search', array('order' => 'move')) as $filterR)
+        foreach ($this->nested('search', ['order' => 'move']) as $filterR)
             $lineA[] = $filterR->export();
 
         // Return newline-separated list of creation expressions

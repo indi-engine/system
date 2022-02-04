@@ -10,7 +10,7 @@ class Indi {
      *
      * @var array
      */
-    protected static $_registry = array();
+    protected static $_registry = [];
 
     /**
      * An internal array, containing info related to what kind of suspicious events should be logged.
@@ -26,11 +26,11 @@ class Indi {
      *
      * @var array
      */
-    protected static $_logging = array(
+    protected static $_logging = [
         'jerror' => true,
         'jflush' => false,
         'mflush' => false
-    );
+    ];
 
     /**
      * jflush-redirect. If not empty, all jflush() calls will be logged despite Indi::logging('flush') may be `false`,
@@ -62,14 +62,14 @@ class Indi {
      *
      * @var string
      */
-    public static $cmpOut = array();
+    public static $cmpOut = [];
 
     /**
      * Array of prompt answers
      *
      * @var array
      */
-    public static $answer = array();
+    public static $answer = [];
 
     /**
      * @var null
@@ -86,7 +86,7 @@ class Indi {
      *
      * @var array
      */
-    protected static $_rex = array(
+    protected static $_rex = [
         'email' => '/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,6}|[0-9]{1,3})(\]?)$/',
         'date' => '/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',
         'zerodate' => '/^[0\.\-\/ ]*$/',
@@ -130,16 +130,16 @@ class Indi {
           )
           \A (?&json) \Z
           /six'
-    );
+    ];
 
     /**
      * Mime types dictionary
      *
      * @var array
      */
-    protected static $_mime = array(
+    protected static $_mime = [
 
-        'definitive' => array (
+        'definitive' => [
             'application/x-authorware-bin' => 'aab',
             'application/x-authorware-map' => 'aam',
             'application/x-authorware-seg' => 'aas',
@@ -447,118 +447,118 @@ class Indi {
             'application/zip' => 'zip',
             'multipart/x-zip' => 'zip',
             'text/x-script.zsh' => 'zsh'
-        ),
+        ],
 
-        'ambiguous' => array(
-            'x-world/x-3dmf' => array('3dm', '3dmf', 'qd3', 'qd3d'),
-            'application/octet-stream' => array(
+        'ambiguous' => [
+            'x-world/x-3dmf' => ['3dm', '3dmf', 'qd3', 'qd3d'],
+            'application/octet-stream' => [
                 'a', 'arc', 'arj', 'bin', 'com', 'dump', 'exe', 'lha',
-                'lhx', 'lzh', 'lzx', 'o', 'psd', 'saveme', 'uu', 'zoo'),
-            'text/html' => array('html', 'acgi', 'htm', 'htmls', 'htx', 'shtml'),
-            'application/postscript' => array('ps','ai', 'eps'),
-            'audio/aiff' => array('aif', 'aifc', 'aiff'),
-            'audio/x-aiff' => array('aiff', 'aifc', 'aif'),
-            'video/x-ms-asf' => array('asf', 'asx'),
-            'text/x-asm' => array('asm', 's'),
-            'audio/basic' => array('au', 'snd'),
-            'image/bmp' => array('bmp', 'bm'),
-            'application/book' => array('boo', 'book'),
-            'application/x-bzip2' => array('bz2','boz'),
-            'application/x-bsh' => array('bsh','sh','shar'),
-            'text/plain' => array('txt','c','c++','cc','conf','cxx','def','f','f90','for','g','h','hh','idc','jav','java','list','log','lst','m','mar','pl','sdml','text'),
-            'text/x-c' => array('c','cc','cpp'),
-            'application/x-netcdf' => array('cdf','nc'),
-            'application/pkix-cert' => array('cer','crt'),
-            'application/x-x509-ca-cert' => array('cer','crt','der'),
-            'application/x-chat' => array('cha','chat'),
-            'application/x-director' => array('dcr','dir','dxr'),
-            'video/x-dv' => array('dif','dv'),
-            'application/msword' => array('doc','dot','w6w','wiz','word'),
-            'image/vnd.dwg' => array('dwg','dxf','svf'),
-            'image/x-dwg' => array('dwg','dxf','svf'),
-            'application/x-envoy' => array('env','evy'),
-            'text/x-fortran' => array('f','f77','f90','for'),
-            'image/florian' => array('flo','turbot'),
-            'audio/make' => array('funk','my','pfunk'),
-            'audio/x-gsm' => array('gsd','gsm'),
-            'application/x-compressed' => array('gz','tgz','z','zip'),
-            'application/x-gzip' => array('gz','gzip'),
-            'text/x-h' => array('h','hh'),
-            'application/x-helpfile' => array('help','hlp'),
-            'application/vnd.hp-hpgl' => array('hgl','hpg','hpgl'),
-            'image/ief' => array('ief','iefs'),
-            'application/iges' => array('iges','igs'),
-            'model/iges' => array('iges','igs'),
-            'text/x-java-source' => array('java','jav'),
-            'image/jpeg' => array('jpg','jfif','jfif-tbnl','jpe','jpeg'),
-            'image/pjpeg' => array('jfif','jpe','jpeg','jpg'),
-            'audio/midi' => array('kar','mid','midi'),
-            'audio/nspaudio' => array('la','lma'),
-            'audio/x-nspaudio' => array('la','lma'),
-            'application/x-latex' => array('latex ','ltx'),
-            'video/mpeg' => array('mpeg','m1v','m2v','mp2','mp3','mpa','mpe','mpg','mpeg4'),
-            'audio/mpeg' => array('m2a','mp2','mpa','mpg','mpga'),
-            'message/rfc822' => array('mime','mht','mhtml'),
-            'application/x-midi' => array('mid','midi'),
-            'audio/x-mid' => array('mid','midi'),
-            'audio/x-midi' => array('mid','midi'),
-            'music/crescendo' => array('mid','midi'),
-            'x-music/x-midi' => array('mid','midi'),
-            'application/base64' => array('mm','mme'),
-            'video/quicktime' => array('mov','moov','qt'),
-            'video/x-sgi-movie' => array('movie','mv'),
-            'video/x-mpeg' => array('mp4', 'mp2', 'mp3'),
-            'application/x-project' => array ('mpt','mpv','mpx'),
-            'image/naplps' => array('nap','naplps'),
-            'image/x-niff' => array ('niff'),
-            'application/pkcs7-mime' => array('p7c'),
-            'application/x-pkcs7-mime' => array('p7c','p7m'),
-            'application/pro_eng' => array('part','prt'),
-            'chemical/x-pdb' => array('pdb','xyz'),
-            'image/pict' => array('pic','pict'),
-            'image/x-xpixmap' => array('pm','xpm'),
-            'application/x-pagemaker' => array('pm4','pm5'),
-            'image/png' => array('png','x-png'),
-            'application/mspowerpoint' => array('ppt','pot','pps','ppz'),
-            'application/vnd.ms-powerpoint' => array('ppt','pot','ppa','pps','pwz'),
-            'image/x-quicktime' => array('qtif'),
-            'audio/x-pn-realaudio' => array('ra','ram','rm','rmm','rmp'),
-            'audio/x-pn-realaudio-plugin' => array('ra','rmp','rpm'),
-            'image/cmu-raster' => array('ras','rast'),
-            'application/x-troff' => array ('t','tr'),
-            'text/richtext' => array('rtf','rt','rtx'),
-            'application/rtf' => array('rtf','rtx'),
-            'application/x-tbook' => array('sbk ','tbk'),
-            'text/sgml' => array('sgml'),
-            'text/x-sgml' => array('sgm','sgml'),
-            'application/x-shar' => array('sh','shar'),
-            'text/x-server-parsed-html' => array('shtml','ssi'),
-            'application/x-koan' => array('skd','skm','skt'),
-            'application/smil' => array('smi','smil'),
-            'text/x-speech' => array('spc','talk'),
-            'application/x-sprite' => array('spr','sprite'),
-            'application/x-wais-source' => array('src'),
-            'application/step' => array('step','stp'),
-            'application/x-world' => array('svr','wrl'),
-            'application/x-texinfo' => array('texi','texinfo'),
-            'image/tiff' => array('tif','tiff'),
-            'image/x-tiff' => array('tif','tiff'),
-            'text/uri-list' => array('uni','unis','uri','uris'),
-            'text/x-uuencode' => array('uu','uue'),
-            'video/vivo' => array('viv','vivo'),
-            'video/vnd.vivo' => array('viv','vivo'),
-            'audio/x-twinvq-plugin' => array('vqe','vql'),
-            'model/vrml' => array('vrml','wrl','wrz'),
-            'x-world/x-vrml' => array('vrml','wrl','wrz'),
-            'application/x-visio' => array('vsd','vst','vsw'),
-            'application/wordperfect6.0' => array('w60','wp5'),
-            'application/wordperfect' => array('wp','wp5','wp6','wpd'),
-            'application/excel' => array('xls','xl','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'),
-            'application/x-excel' => array('xls','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'),
-            'application/x-msexcel' => array('xls','xla','xlw'),
-            'application/vnd.ms-excel' => array('xls','xlb','xlc','xll','xlm','xlw')
-        )
-    );
+                'lhx', 'lzh', 'lzx', 'o', 'psd', 'saveme', 'uu', 'zoo'],
+            'text/html' => ['html', 'acgi', 'htm', 'htmls', 'htx', 'shtml'],
+            'application/postscript' => ['ps','ai', 'eps'],
+            'audio/aiff' => ['aif', 'aifc', 'aiff'],
+            'audio/x-aiff' => ['aiff', 'aifc', 'aif'],
+            'video/x-ms-asf' => ['asf', 'asx'],
+            'text/x-asm' => ['asm', 's'],
+            'audio/basic' => ['au', 'snd'],
+            'image/bmp' => ['bmp', 'bm'],
+            'application/book' => ['boo', 'book'],
+            'application/x-bzip2' => ['bz2','boz'],
+            'application/x-bsh' => ['bsh','sh','shar'],
+            'text/plain' => ['txt','c','c++','cc','conf','cxx','def','f','f90','for','g','h','hh','idc','jav','java','list','log','lst','m','mar','pl','sdml','text'],
+            'text/x-c' => ['c','cc','cpp'],
+            'application/x-netcdf' => ['cdf','nc'],
+            'application/pkix-cert' => ['cer','crt'],
+            'application/x-x509-ca-cert' => ['cer','crt','der'],
+            'application/x-chat' => ['cha','chat'],
+            'application/x-director' => ['dcr','dir','dxr'],
+            'video/x-dv' => ['dif','dv'],
+            'application/msword' => ['doc','dot','w6w','wiz','word'],
+            'image/vnd.dwg' => ['dwg','dxf','svf'],
+            'image/x-dwg' => ['dwg','dxf','svf'],
+            'application/x-envoy' => ['env','evy'],
+            'text/x-fortran' => ['f','f77','f90','for'],
+            'image/florian' => ['flo','turbot'],
+            'audio/make' => ['funk','my','pfunk'],
+            'audio/x-gsm' => ['gsd','gsm'],
+            'application/x-compressed' => ['gz','tgz','z','zip'],
+            'application/x-gzip' => ['gz','gzip'],
+            'text/x-h' => ['h','hh'],
+            'application/x-helpfile' => ['help','hlp'],
+            'application/vnd.hp-hpgl' => ['hgl','hpg','hpgl'],
+            'image/ief' => ['ief','iefs'],
+            'application/iges' => ['iges','igs'],
+            'model/iges' => ['iges','igs'],
+            'text/x-java-source' => ['java','jav'],
+            'image/jpeg' => ['jpg','jfif','jfif-tbnl','jpe','jpeg'],
+            'image/pjpeg' => ['jfif','jpe','jpeg','jpg'],
+            'audio/midi' => ['kar','mid','midi'],
+            'audio/nspaudio' => ['la','lma'],
+            'audio/x-nspaudio' => ['la','lma'],
+            'application/x-latex' => ['latex ','ltx'],
+            'video/mpeg' => ['mpeg','m1v','m2v','mp2','mp3','mpa','mpe','mpg','mpeg4'],
+            'audio/mpeg' => ['m2a','mp2','mpa','mpg','mpga'],
+            'message/rfc822' => ['mime','mht','mhtml'],
+            'application/x-midi' => ['mid','midi'],
+            'audio/x-mid' => ['mid','midi'],
+            'audio/x-midi' => ['mid','midi'],
+            'music/crescendo' => ['mid','midi'],
+            'x-music/x-midi' => ['mid','midi'],
+            'application/base64' => ['mm','mme'],
+            'video/quicktime' => ['mov','moov','qt'],
+            'video/x-sgi-movie' => ['movie','mv'],
+            'video/x-mpeg' => ['mp4', 'mp2', 'mp3'],
+            'application/x-project' => ['mpt','mpv','mpx'],
+            'image/naplps' => ['nap','naplps'],
+            'image/x-niff' => ['niff'],
+            'application/pkcs7-mime' => ['p7c'],
+            'application/x-pkcs7-mime' => ['p7c','p7m'],
+            'application/pro_eng' => ['part','prt'],
+            'chemical/x-pdb' => ['pdb','xyz'],
+            'image/pict' => ['pic','pict'],
+            'image/x-xpixmap' => ['pm','xpm'],
+            'application/x-pagemaker' => ['pm4','pm5'],
+            'image/png' => ['png','x-png'],
+            'application/mspowerpoint' => ['ppt','pot','pps','ppz'],
+            'application/vnd.ms-powerpoint' => ['ppt','pot','ppa','pps','pwz'],
+            'image/x-quicktime' => ['qtif'],
+            'audio/x-pn-realaudio' => ['ra','ram','rm','rmm','rmp'],
+            'audio/x-pn-realaudio-plugin' => ['ra','rmp','rpm'],
+            'image/cmu-raster' => ['ras','rast'],
+            'application/x-troff' => ['t','tr'],
+            'text/richtext' => ['rtf','rt','rtx'],
+            'application/rtf' => ['rtf','rtx'],
+            'application/x-tbook' => ['sbk ','tbk'],
+            'text/sgml' => ['sgml'],
+            'text/x-sgml' => ['sgm','sgml'],
+            'application/x-shar' => ['sh','shar'],
+            'text/x-server-parsed-html' => ['shtml','ssi'],
+            'application/x-koan' => ['skd','skm','skt'],
+            'application/smil' => ['smi','smil'],
+            'text/x-speech' => ['spc','talk'],
+            'application/x-sprite' => ['spr','sprite'],
+            'application/x-wais-source' => ['src'],
+            'application/step' => ['step','stp'],
+            'application/x-world' => ['svr','wrl'],
+            'application/x-texinfo' => ['texi','texinfo'],
+            'image/tiff' => ['tif','tiff'],
+            'image/x-tiff' => ['tif','tiff'],
+            'text/uri-list' => ['uni','unis','uri','uris'],
+            'text/x-uuencode' => ['uu','uue'],
+            'video/vivo' => ['viv','vivo'],
+            'video/vnd.vivo' => ['viv','vivo'],
+            'audio/x-twinvq-plugin' => ['vqe','vql'],
+            'model/vrml' => ['vrml','wrl','wrz'],
+            'x-world/x-vrml' => ['vrml','wrl','wrz'],
+            'application/x-visio' => ['vsd','vst','vsw'],
+            'application/wordperfect6.0' => ['w60','wp5'],
+            'application/wordperfect' => ['wp','wp5','wp6','wpd'],
+            'application/excel' => ['xls','xl','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'],
+            'application/x-excel' => ['xls','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'],
+            'application/x-msexcel' => ['xls','xla','xlw'],
+            'application/vnd.ms-excel' => ['xls','xlb','xlc','xll','xlm','xlw']
+        ]
+    ];
 
 
     /**
@@ -566,7 +566,7 @@ class Indi {
      *
      * @var array
      */
-    public static $colorNameA = array(
+    public static $colorNameA = [
         'aliceblue'=>'F0F8FF',
         'antiquewhite'=>'FAEBD7',
         'aqua'=>'00FFFF',
@@ -714,14 +714,14 @@ class Indi {
         'whitesmoke'=>'F5F5F5',
         'yellow'=>'FFFF00',
         'yellowgreen'=>'9ACD32'
-    );
+    ];
 
     /**
      * Matches between recognized characters by date() and strftime() functions
      *
      * @var array
      */
-    public static $date2strftime = array(
+    public static $date2strftime = [
         'd' => '%d',
         'D' => '%a',
         'j' => '%e',
@@ -759,7 +759,7 @@ class Indi {
         'c' => '', // 'c' - ISO 8601 date. There is no corresponding strftime-compatible character
         'r' => '', // 'r' - RFC 2822 formatted date. There is no corresponding strftime-compatible character
         'U' => ''// 'U' - Seconds since the Unix Epoch (January 1 1970 00:00:00 GMT). There is no corresponding strftime-compatible character
-    );
+    ];
 
     /**
      * Compilation function source code, that will be passed to eval() function. Usage:
@@ -1056,7 +1056,7 @@ class Indi {
      * @param string $alias
      * @return int
      */
-    public static function implode($files = array(), $alias = '') {
+    public static function implode($files = [], $alias = '') {
 
         // Get the type of files, here we assume that all files in $files argument have same type
         preg_match('/\.(css|js)$/', $files[0], $ext); $ext = $ext[1] ?: 'js';
@@ -1071,7 +1071,7 @@ class Indi {
         $mtime = DOC . STD . '/core' . (Indi::uri()->module == 'front' ? 'f' : '') . '/' . $rel . '/' . Indi::uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . '.mtime';
 
         // Append mirror files
-        $mirrorA = array();
+        $mirrorA = [];
         for($i = 0; $i < count($files); $i++)
             foreach (ar('core,coref,www') as $place)
                 if (is_file(DOC . STD . '/' . $place . preg_replace('/:[a-zA-Z\.$]+$/', '', $files[$i])))
@@ -1113,7 +1113,7 @@ class Indi {
         if ($refresh) {
 
             // Empty $json array
-            $json = array();
+            $json = [];
 
             // Start output buffering
             ob_start();
@@ -1141,7 +1141,7 @@ class Indi {
                     preg_match_all('/define\(\'([A-Z0-9_]+)\', \'(.*)\'\);/', $php, $const);
 
                     // Define key-value-pairs $kvp array
-                    $kvp = array();
+                    $kvp = [];
 
                     // Fulfil $kvp array
                     for ($j = 0; $j < count($const[1]); $j++) $kvp[$const[1][$j]] = str_replace("\'", "'", $const[2][$j]);
@@ -1172,7 +1172,7 @@ class Indi {
                     $txt = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $txt);
 
                     // Remove tabs, excessive spaces and newlines
-                    $txt = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '   '), '', $txt);
+                    $txt = str_replace(["\r\n", "\r", "\n", "\t", '  ', '   '], '', $txt);
                     
                     // Flush
                     echo $txt;
@@ -1196,7 +1196,7 @@ class Indi {
                 // Remove comments, return-carets, tabs and pseudo tabs (4 spaces) from js
                 $txt = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $txt);
                 $txt = preg_replace('!// .*!', '', $txt);
-                $txt = str_replace(array("\r", '    ', "\t"), '', $txt);
+                $txt = str_replace(["\r", '    ', "\t"], '', $txt);
             }
 
             // Compress compilation
@@ -1340,7 +1340,7 @@ class Indi {
         $columnA = $model->fields(null, 'aliases');
 
         // Determine title column name
-        if ($titleColumn = $model->comboDataOrder ?: current(array_intersect($columnA, array('title', '_title')))) {
+        if ($titleColumn = $model->comboDataOrder ?: current(array_intersect($columnA, ['title', '_title']))) {
 
             // Check whether $titleColumn contains some expression rather than just some column name,
             // and if so - use it as is but strip '$dir' from it or replace with actual direction ($dir)
@@ -1372,7 +1372,7 @@ class Indi {
 	public static function lang($json = false) {
 
         // Define $langA array
-        $langA = array();
+        $langA = [];
 
         // Foreach defined constants check if constant name starts with 'I_', and if so - append it to $langA array
 		foreach (get_defined_constants() as $name => $value)
@@ -1404,20 +1404,20 @@ class Indi {
         if ($from == 'ru' && $to == 'en') {
 
             // Symbols
-            $ru = array(
+            $ru = [
                 'а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п',
                 'р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я',
                 'А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П',
                 'Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я'
-            );
+            ];
 
             // Replacements
-            $en = array(
+            $en = [
                 'a','b','v','g','d','e','yo','zh','z','i','i','k','l','m','n','o','p',
                 'r','s','t','u','f','h','c','ch','sh','shh','','y','','e','yu','ya',
                 'A','B','V','G','D','E','Yo','Zh','Z','I','I','K','L','M','N','O','P',
                 'R','S','T','U','F','H','C','Ch','Sh','Shh','','Y','','E','Yu','Ya',
-            );
+            ];
 
             // Combine
             $ex = array_combine($ru, $en);
@@ -1431,17 +1431,17 @@ class Indi {
         } else if ($from == 'en' && $to == 'ru') {
 
             // Replacements
-            $en = array(
+            $en = [
                 'sh','shh',/*'',*/'uy',/*'',*/'ye','yu','ya','j','sch','sck','ch','hn','th',
                 'a','b','v','g','d','e','yo','zh','z','i','y','k','l','m','n','o','p',
                 'r','s','t','u','f','h','c',
                 'Sh','Shh',/*'',*/'Uy',/*'',*/'Ye','Yu','Ya','J','Sch','Sck','Ch','Hn','Th',
                 'A','B','V','G','D','E','Yo','Zh','Z','I','Y','K','L','M','N','O','P',
                 'R','S','T','U','F','H','C',
-            );
+            ];
 
             // Symbols
-            $ru = array(
+            $ru = [
                 'ш','щ',/*'ъ',*/'ы',/*'ь',*/'э','ю','я','дж','шк','шк','ч','н','т',
                 'а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п',
                 'р','с','т','у','ф','х','ц',
@@ -1449,7 +1449,7 @@ class Indi {
                 'Ш','Щ',/*'Ъ',*/'Ы',/*'Ь',*/'Э','Ю','Я','Дж','Шк','Шк','Ч','Н','Т',
                 'А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П',
                 'Р','С','Т','У','Ф','Х','Ц',
-            );
+            ];
 
             // Combine
             $ex = array_combine($en, $ru);
@@ -1509,7 +1509,7 @@ class Indi {
 		if (self::$_blockA === null) {
 
 			// Setup self::$_blockA as an empty array at first
-			self::$_blockA = array();
+			self::$_blockA = [];
 
 			// Fetch rowset
             $w = Indi::uri()->staticpageAdditionalWHERE; $w[] = '`toggle` = "y"';
@@ -1531,7 +1531,7 @@ class Indi {
                     $blockA[$alias] = Indi::blocks($alias);
 
             // Return array of values
-            return $blockA ?: array();
+            return $blockA ?: [];
         }
 
         // Check whether current block's content contains other blocks placeholders, and if found
@@ -1732,7 +1732,7 @@ class Indi {
      * @param array $attr
      * @return string
      */
-    public static function img($entity, $id, $field, $copy = '', $attr = array()) {
+    public static function img($entity, $id, $field, $copy = '', $attr = []) {
 
         // If $copy argument is an array, we assume that it is used as $attr argument.
         // Such implementation is bit more short-handy, because expression
@@ -1762,7 +1762,7 @@ class Indi {
         if (!isset($attr['alt'])) $attr['alt'] = '';
 
         // Build attributes string
-        $attrA = array(); foreach ($attr as $a => $v) $attrA[] = $a . '="' . str_replace('"', '\"', $v) . '"';
+        $attrA = []; foreach ($attr as $a => $v) $attrA[] = $a . '="' . str_replace('"', '\"', $v) . '"';
 
         // Build and return img tag
         return '<img ' . implode(' ', $attrA) . '/>';
@@ -1778,7 +1778,7 @@ class Indi {
      * @param array $attr
      * @return string
      */
-    public static function swf($entity, $id, $field, $attr = array()) {
+    public static function swf($entity, $id, $field, $attr = []) {
 
         // Get the directory name
         $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $entity . '/';
@@ -1819,7 +1819,7 @@ class Indi {
         }
 
         // Build attributes string
-        $attrA = array(); foreach ($attr as $a => $v) $attrA[] = $a . '="' . str_replace('"', '\"', $v) . '"';
+        $attrA = []; foreach ($attr as $a => $v) $attrA[] = $a . '="' . str_replace('"', '\"', $v) . '"';
 
         // Build and return img tag
         return '<embed ' . implode(' ', $attrA) . '/>';
@@ -1947,7 +1947,7 @@ class Indi {
         if (!$ext) $ext = Indi::ext($mime);
 
         // Return info
-        return array('size' => $size, 'mime' => $mime, 'ext' => $ext);
+        return ['size' => $size, 'mime' => $mime, 'ext' => $ext];
     }
 
     /**
@@ -1962,7 +1962,7 @@ class Indi {
     public static function obar($arg1 = null, $arg2 = null) {
 
         // Define $obar array, that will contain key->value pairs for all involved filters
-        $obar = array();
+        $obar = [];
 
         // If there is no 'search' param within query string - set up it as json-encoded empty array
         if (!Indi::get('search')) Indi::get('search', json_encode($obar));
@@ -1971,7 +1971,7 @@ class Indi {
         $rawA = json_decode(Indi::get('search'), true);
 
         // If Json-encoded string was invalid - return empty array
-        if (!is_array($rawA)) return array();
+        if (!is_array($rawA)) return [];
 
         // Build the $obar array
         foreach ($rawA as $rawI) $obar[key($rawI)] = current($rawI);
@@ -1989,7 +1989,7 @@ class Indi {
             $obar[$arg1] = $arg2;
 
             // Prepare a new array, that will be used a replacement for $_GET's 'search' param
-            $rawA = array(); foreach ($obar as $k => $v) $rawA[] = array($k => $v);
+            $rawA = []; foreach ($obar as $k => $v) $rawA[] = [$k => $v];
 
             // Replace, so Indi::get()->search will reflect new value ($arg2 argument)
             // assignment for a given key ($arg1 argument)
@@ -2013,26 +2013,26 @@ class Indi {
 
         // Define object, containing characters that are located on the
         // same keyboard buttons, but within another keyboard layouts
-        $kl = array(
+        $kl = [
 
             // Define an array for english alphabetic characters
-            'en' => array('~','Q','W','E','R','T','Y','U','I','O','P','{','}',
+            'en' => ['~','Q','W','E','R','T','Y','U','I','O','P','{','}',
                 'A','S','D','F','G','H','J','K','L',':','"',
                 'Z','X','C','V','B','N','M','<','>',
 
                 '`','q','w','e','r','t','y','u','i','o','p','[',']',
                 'a','s','d','f','g','h','j','k','l',';',"'",
-                'z','x','c','v','b','n','m',',','.'),
+                'z','x','c','v','b','n','m',',','.'],
 
             // Define an array for russian alphabetic characters
-            'ru' =>  array('Ё','Й','Ц','У','К','Е','Н','Г','Ш','Щ','З','Х','Ъ',
+            'ru' =>  ['Ё','Й','Ц','У','К','Е','Н','Г','Ш','Щ','З','Х','Ъ',
                 'Ф','Ы','В','А','П','Р','О','Л','Д','Ж','Э',
                 'Я','Ч','С','М','И','Т','Ь','Б','Ю',
 
                 'ё','й','ц','у','к','е','н','г','ш','щ','з','х','ъ',
                 'ф','ы','в','а','п','р','о','л','д','ж','э',
-                'я','ч','с','м','и','т','ь','б','ю')
-        );
+                'я','ч','с','м','и','т','ь','б','ю']
+        ];
 
         // Define a variable for converted equivalent, and index variable
         $converted = ''; $names = array_keys($kl);
@@ -2169,10 +2169,10 @@ class Indi {
         foreach ($hdrA as $n => $v) $hdrS .= $n . ': ' . $v . "\r\n";
 
         // Prepare context options
-        $opt = array('http'=> array('method'=> 'GET', 'header'=> $hdrS));
+        $opt = ['http'=> ['method'=> 'GET', 'header'=> $hdrS]];
         
         // Append ssl settings
-        if ($_SERVER['REQUEST_SCHEME'] == 'https') $opt['ssl'] = array('verify_peer' => false, 'verify_peer_name' => false);
+        if ($_SERVER['REQUEST_SCHEME'] == 'https') $opt['ssl'] = ['verify_peer' => false, 'verify_peer_name' => false];
 
         // Create context, for passing as a third argument within file_get_contents() call
         $ctx = stream_context_create($opt);
@@ -2221,7 +2221,7 @@ class Indi {
         $msg .= '--------------------------------------<br><br>';
 
         // Empty
-        Indi_Db::$DELETEQueryA = array();
+        Indi_Db::$DELETEQueryA = [];
 
         // Mail
         @mail('indi.engine@gmail.com', 'DELETE query at ' . $_SERVER['HTTP_HOST'], $msg, 'Content-Type: text/html; charset=utf-8');
@@ -2317,7 +2317,7 @@ class Indi {
         Indi::iflush(true);
 
         // Explode css
-        $rawA = explode('/* i-style-splitter */', $raw); $outA = array();
+        $rawA = explode('/* i-style-splitter */', $raw); $outA = [];
 
         // Info message
         d('Css parts: ' . count($rawA));
@@ -2615,7 +2615,7 @@ class Indi {
      * @param $method
      * @param array $args
      */
-    public static function cmd($method, $args = array()) {
+    public static function cmd($method, $args = []) {
 
         // Default temp dir
         $dir = sys_get_temp_dir();
@@ -2634,11 +2634,11 @@ class Indi {
         $cmd = Indi::ini('general')->phpdir . "php ../core/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
-        file_put_contents($env, json_encode(array(
+        file_put_contents($env, json_encode([
             '_SERVER' => $_SERVER,
             '_COOKIE' => $_COOKIE,
             'args' => $args
-        )));
+        ]));
 
         // If OS is Windows - start new process using 'start' command
         if (Indi::rexm('/^WIN/i', PHP_OS)) pclose(popen('start /B ' . $cmd, 'r'));

@@ -18,8 +18,8 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         parent::__construct();
 
         // Setup $this->section
-        $config = array();
-        $dataTypeA = array('original', 'temporary', 'compiled', 'foreign');
+        $config = [];
+        $dataTypeA = ['original', 'temporary', 'compiled', 'foreign'];
         foreach ($dataTypeA as $dataTypeI) $config[$dataTypeI] = $sectionR->$dataTypeI();
         $this->section = Indi::model('Section')->createRow($config);
 
@@ -37,7 +37,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $actionI['id'] = $section2actionR->id;
             $actionI['south'] = $section2actionR->south;
             $actionI['fitWindow'] = $section2actionR->fitWindow;
-            $actionI['indi'] = array('ui' => 'section2action', 'id' => $section2actionR->id);
+            $actionI['indi'] = ['ui' => 'section2action', 'id' => $section2actionR->id];
             $actionI['l10n'] = $section2actionR->l10n;
             $actionR = m('Action')->createRow()->assign($actionI);
             $this->actions->append($actionR);
@@ -47,16 +47,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $this->sections = $sectionR->nested('section');
 
         // Setup nested section2action-s for subsections
-        $sectionR->nested('section')->nested('section2action', array(
-            'where' => array(
+        $sectionR->nested('section')->nested('section2action', [
+            'where' => [
                 '`toggle` = "y"',
                 'FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `profileIds`)',
                 'FIND_IN_SET(`actionId`, "' . implode(',', Indi_Trail_Admin::$toggledActionIdA) . '")',
                 '`actionId` IN (1, 2, 3)'
-            ),
+            ],
             'order' => 'move',
             'foreign' => 'actionId'
-        ));
+        ]);
 
         // Collect inaccessbile subsections ids from subsections list
         foreach ($sectionR->nested('section') as $subsection)
@@ -98,11 +98,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if ($this->action->rowRequired == 'n' || Indi::uri()->phantom) $this->gridFields($sectionR);
 
             // Alter fields
-            $originalDefaults = array();
+            $originalDefaults = [];
             foreach ($sectionR->nested(entity('alteredField') ? 'alteredField' : 'disabledField') as $_) {
 
                 // Prepare modifications
-                $modify = array();
+                $modify = [];
                 if (strlen($_->rename)) $modify['title'] = $_->rename;
                 if (strlen($_->defaultValue)) $modify['defaultValue'] = $_->defaultValue;
                 if (!$_->mode) $modify['mode'] = $_->displayInForm ? 'readonly' : 'hidden';
@@ -145,11 +145,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If `groupBy` is non-zero, and there is no such grid column yet - append
         if ($sectionR->groupBy && !$this->grid->gb($sectionR->groupBy, 'fieldId'))
-            $this->grid->append(array('fieldId' => $sectionR->groupBy));
+            $this->grid->append(['fieldId' => $sectionR->groupBy]);
 
         // If `tileField` is non-zero, and there is no such grid column yet - append
         if ($sectionR->tileField && !$this->grid->gb($sectionR->tileField, 'fieldId'))
-            $this->grid->append(array('fieldId' => $sectionR->tileField));
+            $this->grid->append(['fieldId' => $sectionR->tileField]);
 
         // Build and assign `gridFields` prop
         $this->gridFields = Indi::model('Field')->createRowset();
@@ -293,7 +293,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         } else {
 
             // Declare array for WHERE clause
-            $where = array();
+            $where = [];
 
             // Determine the connector field
             $connector = Indi::trail($index-1)->section->parentSectionConnector
@@ -356,24 +356,24 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'])) {
                 $tabA = array_unique(ar($tabs));
                 if ($tabIdA = array_filter($tabA)) {
-                    $where = array('`id` IN (' . implode(',', $tabIdA) . ')');
+                    $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
                     if (strlen($array['scope']['WHERE'])) $where[] = $array['scope']['WHERE'];
                     $tabRs = $this->model->fetchAll($where);
                 }
                 foreach ($tabA as $i => $id) {
                     if ($id) {
                         if ($tabRs && $r = $tabRs->gb($id)) {
-                            $tabA[$i] = array(
+                            $tabA[$i] = [
                                 'id' => $id,
                                 'title' => $r->title(),
                                 'aix' => $this->model->detectOffset(
                                     $array['scope']['WHERE'], $array['scope']['ORDER'], $id
                                 )
-                            );
+                            ];
                         } else {
                             unset($tabA[$i]);
                         }
-                    } else if ($id == '0') $tabA[$i] = array('id' => $id, 'title' => I_CREATE);
+                    } else if ($id == '0') $tabA[$i] = ['id' => $id, 'title' => I_CREATE];
                     else unset($tabA[$i]);
                 }
                 $array['scope']['actionrowset']['south']['tabs'] = $tabA;
@@ -392,7 +392,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     public function jsonDefaultFilters() {
 
         // Json
-        $json = array();
+        $json = [];
 
         // Array of range-filters
         $rangeA = ar('number,calendar,datetime');
@@ -421,10 +421,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $boundA = json_decode(str_replace('\'', '"', $compiled));
                 foreach ($boundA as $bound => $value)
                     if (in($bound, ar('lte,gte')))
-                        $json[] = array($fieldR->alias . '-' . $bound => $value);
+                        $json[] = [$fieldR->alias . '-' . $bound => $value];
 
             // Append filter's default value as an array, containing single kay and value
-            } else $json[] = array($fieldR->alias => $compiled);
+            } else $json[] = [$fieldR->alias => $compiled];
         }
 
         // Return json-encoded default filters values
@@ -623,7 +623,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if ($summary = Indi::get('summary')) return $json ? $summary : json_decode($summary);
 
         // Else collect default definitions
-        $summary = array();
+        $summary = [];
         foreach ($this->grid as $gridR)
             if ($gridR->summaryType != 'none')
                 $summary[$gridR->summaryType] []= $gridR->foreign('fieldId')->alias;

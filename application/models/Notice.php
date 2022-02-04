@@ -12,18 +12,18 @@ class Notice extends Indi_Db_Table {
      * Array of fields, which contents will be evaluated with php's eval() function
      * @var array
      */
-    protected $_evalFields = array('event', 'qtySql', 'tplIncBody', 'tplDecBody', 'tplEvtBody');
+    protected $_evalFields = ['event', 'qtySql', 'tplIncBody', 'tplDecBody', 'tplEvtBody'];
 
     /**
      * Info for l10n-fraction detection
      *
      * @var array
      */
-    protected $_fraction = array(
+    protected $_fraction = [
         'field' => 'type',
-        'value' => array(
+        'value' => [
             's' => 'adminSystemUi',
             'p' => 'adminCustomUi'
-        )
-    );
+        ]
+    ];
 }

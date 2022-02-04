@@ -45,6 +45,6 @@ class Indi_View_Action_Admin implements Indi_View_Action_Interface {
         ])) t()->context();
 
         // Return json-encoded trail data
-        return json_encode(array('route' =>Indi::trail(true)->toArray(), 'plain' => $this->plain), JSON_UNESCAPED_UNICODE);
+        return json_encode(['route' =>Indi::trail(true)->toArray(), 'plain' => $this->plain], JSON_UNESCAPED_UNICODE);
     }
 }

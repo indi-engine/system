@@ -6,14 +6,14 @@ class Indi_Trail_Admin {
      *
      * @var array
      */
-    public static $items = array();
+    public static $items = [];
 
     /**
      * Array of actions that are toggled on
      *
      * @var array
      */
-    public static $toggledActionIdA = array();
+    public static $toggledActionIdA = [];
 
     /**
      * Indi_Controller_Admin object, by reference
@@ -34,7 +34,7 @@ class Indi_Trail_Admin {
         self::$controller = &$controller;
 
         // Reset items
-        self::$items = array();
+        self::$items = [];
 
         // Get all sections, starting from current and up to the most top
         $sectionRs = Indi::model('Section')->fetchAll(
@@ -51,77 +51,77 @@ class Indi_Trail_Admin {
             ->fetchAll(PDO::FETCH_COLUMN);
 
         // Setup accessible actions
-        $sectionRs->nested('section2action', array(
-            'where' => array(
+        $sectionRs->nested('section2action', [
+            'where' => [
                 '`sectionId` != "' . $top . '"',
                 '`toggle` = "y"',
                 'FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `profileIds`)',
                 'FIND_IN_SET(`actionId`, "' . implode(',', self::$toggledActionIdA) . '")'
-            ),
+            ],
             'order' => 'move',
             'foreign' => 'actionId'
-        ));
+        ]);
 
         // Get the array of accessible sections ids
-        $accessibleSectionIdA = array();
+        $accessibleSectionIdA = [];
         foreach ($sectionRs->nested('section2action') as $sectionId => $section2actionRs)
             foreach ($section2actionRs as $section2actionR)
                 if ($section2actionR->actionId == 1)
                     $accessibleSectionIdA[] = $sectionId;
 
         // Get accessible nested sections for each section within the trail
-        $sectionRs->nested('section', array(
-            'where' => array(
+        $sectionRs->nested('section', [
+            'where' => [
                 '`sectionId` IN ("' . implode('","', $accessibleSectionIdA) . '")',
                 '`toggle` != "n"'
-            ),
+            ],
             'order' => 'move'
-        ));
+        ]);
 
         // Get filters
-        $searchWHERE = array('`sectionId` = "' . $routeA[0] . '"', '`toggle` = "y"');
+        $searchWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` = "y"'];
         if (Indi::model('Search')->fields('access') && Indi::model('Search')->fields('profileIds')) {
-            $searchWHERE[] = '(' . im(array(
+            $searchWHERE[] = '(' . im([
                 '`access` = "all"',
                 '(`access` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
                 '(`access` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-            ), ' OR ') . ')';
+                ], ' OR ') . ')';
         }
 
         // Setup filters
-        $sectionRs->nested('search', array(
+        $sectionRs->nested('search', [
             'where' => $searchWHERE,
             'order' => 'move'
-        ));
+        ]);
 
         // Grid columns WHERE clause
-        $gridWHERE = array('`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"');
+        $gridWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"'];
         if (Indi::model('Grid')->fields('access') && Indi::model('Grid')->fields('profileIds')) {
-            $gridWHERE[] = '(' . im(array(
+            $gridWHERE[] = '(' . im([
                 '`access` = "all"',
                 '(`access` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
                 '(`access` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-            ), ' OR ') . ')';
+                ], ' OR ') . ')';
         }
 
         // Setup grid columns
-        $sectionRs->nested('grid', array(
+        $sectionRs->nested('grid', [
             'where' => $gridWHERE,
             'order' => '`group` = "locked" DESC, `move`'
-        ));
+        ]);
 
         // Altered field WHERE clause
-        $alteredFieldsWHERE = array('`sectionId` = "' . $routeA[0] . '"');
-        $alteredFieldsWHERE[] = '(' . im(array(
+        $alteredFieldsWHERE = ['`sectionId` = "' . $routeA[0] . '"'];
+        $alteredFieldsWHERE[] = '(' . im([
             '`impact` = "all"',
             '(`impact` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
             '(`impact` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-        ), ' OR ') . ')';
+            ], ' OR ') . ')';
 
         // Setup disabled fields
-        $sectionRs->nested(entity('alteredField') ? 'alteredField' : 'disabledField', array(
+        $sectionRs->nested(entity('alteredField') ? 'alteredField' : 'disabledField', [
             'where' => $alteredFieldsWHERE
-        ));
+        ]);
 
         // Setup initial set of properties
         foreach ($sectionRs as $sectionR)
@@ -147,7 +147,7 @@ class Indi_Trail_Admin {
 
             // If there is no info about nesting yet, we create an array, where it will be stored
             if (!is_array($_SESSION['indi']['admin']['trail']['parentId']))
-                $_SESSION['indi']['admin']['trail']['parentId'] = array();
+                $_SESSION['indi']['admin']['trail']['parentId'] = [];
 
             // Save id
             $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = Indi::uri('id');
@@ -226,7 +226,7 @@ class Indi_Trail_Admin {
     public function toString($imploded = true) {
 
          // Declare crumbs array and push the first item - section group
-        $crumbA = array(self::$items[0]->section->title());
+        $crumbA = [self::$items[0]->section->title()];
 
         // For each remaining trail items
         for ($i = 1; $i < count(self::$items); $i++) {
@@ -279,7 +279,7 @@ class Indi_Trail_Admin {
      * @return array
      */
     public function toArray() {
-        $array = array();
+        $array = [];
         foreach (self::$items as $item) {
             $array[] = $item->toArray();
         }
@@ -296,7 +296,7 @@ class Indi_Trail_Admin {
     public function nav() {
 
         // Declare $nav array
-        $nav = array();
+        $nav = [];
 
         // Build $nav array
         for ($i = 1; $i < count(self::$items); $i++)

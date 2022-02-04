@@ -74,7 +74,7 @@ class Consider_Row extends Indi_Db_Table_Row {
         $dataRs = $this->callParent();
 
         // Prepend data rowset with 'ID' option
-        if ($field == 'connector') $dataRs->append(array('id' => -1, 'title' => 'ID', 'alias' => 'id'), 'title');
+        if ($field == 'connector') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 'title');
 
         // Return
         return $dataRs;

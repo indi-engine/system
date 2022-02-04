@@ -7,16 +7,16 @@ class Entity_Row extends Indi_Db_Table_Row {
     public function validate() {
 
         // Check
-        $this->vcheck(array(
-            'title' => array(
+        $this->vcheck([
+            'title' => [
                 'req' => true
-            ),
-            'table' => array(
+            ],
+            'table' => [
                 'req' => true,
                 'rex' => '/^[a-zA-Z0-9]+$/',
                 'unq' => true
-            )
-        ));
+            ]
+        ]);
 
         // Return
         return $this->callParent();
@@ -263,31 +263,31 @@ class Entity_Row extends Indi_Db_Table_Row {
             $columnTypeIdA = Indi::db()->query('SELECT `type`, `id` FROM `columnType`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
             // Prepare fields configs
-            $fieldA = array(
-                'space' => array(
+            $fieldA = [
+                'space' => [
                     'title' => 'Расписание',
                     'elementId' => $elementIdA['span'],
                     'mode' => 'hidden'
-                ),
-                'spaceSince' => array(
+                ],
+                'spaceSince' => [
                     'title' => 'Начало',
                     'elementId' => $elementIdA['datetime'],
                     'columnTypeId' => $columnTypeIdA['DATETIME'],
                     'mode' => 'hidden'
-                ),
-                'spaceUntil' => array(
+                ],
+                'spaceUntil' => [
                     'title' => 'Конец',
                     'elementId' => $elementIdA['datetime'],
                     'columnTypeId' => $columnTypeIdA['DATETIME'],
                     'mode' => 'hidden'
-                ),
-                'spaceFrame' => array(
+                ],
+                'spaceFrame' => [
                     'title' => 'Длительность',
                     'elementId' => $elementIdA['number'],
                     'columnTypeId' => $columnTypeIdA['INT(11)'],
                     'mode' => 'hidden'
-                )
-            );
+                ]
+            ];
 
             // Foreach fields configs
             foreach ($fieldA as $alias => $fieldI) {
@@ -428,7 +428,7 @@ class Entity_Row extends Indi_Db_Table_Row {
             if ($columnName == 'titleFieldId' || $columnName == 'filesGroupBy') $value = field($this->table, $value)->id;
             else if ($columnName == 'spaceFields') {
                 if ($value && !Indi::rexm('int11list', $value)) {
-                    $fieldIdA = array();
+                    $fieldIdA = [];
                     foreach(ar($value) as $field) $fieldIdA[] = field($this->id, $field)->id;
                     $value = im($fieldIdA);
                 }
@@ -504,7 +504,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $lineA[] = "entity('" . $this->table . "', " . $this->_ctor($deferred) . ");";
 
         // Foreach `field` entry, nested within current `entity` entry
-        foreach ($this->nested('field', array('order' => 'move')) as $fieldR)
+        foreach ($this->nested('field', ['order' => 'move']) as $fieldR)
 
             // Build `field` entry's creation expression
             $lineA[] = $fieldR->export();
@@ -567,7 +567,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $dir = $m->dir();
 
         // Created group-dirs
-        $mkdirA = array();
+        $mkdirA = [];
 
         // Foreach file
         foreach (glob($dir . '*.*', GLOB_NOSORT) as $abs) {

@@ -48,10 +48,10 @@ class Indi_Db_Table_Foto extends Indi_Db_Table {
         ')->fetchAll();
 
         // For each foto update `title` prop
-        for ($i = 0; $i < count($_fotoA); $i++) if ($r = $this->fetchRow(array(
+        for ($i = 0; $i < count($_fotoA); $i++) if ($r = $this->fetchRow([
             '`id` = "' . $_fotoA[$i]['id'] . '"',
             '`title` RLIKE "' . sprintf($this->_titlePref, '[0-9]+') . '"',
             '`toggle` = "y"'
-        ))) $r->assign(array('title' => sprintf($this->_titlePref, $i+1)))->basicUpdate();
+        ])) $r->assign(['title' => sprintf($this->_titlePref, $i+1)])->basicUpdate();
     }
 }

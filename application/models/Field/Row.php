@@ -6,7 +6,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param array $config
      */
-    public function __construct(array $config = array()) {
+    public function __construct(array $config = []) {
 
         // Explicitly set table name
         $config['table'] = 'field';
@@ -243,7 +243,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     public function save() {
 
         // Declare the array of properties, who's modification leads to necessity of sql ALTER query to be executed
-        $affect = array('entityId', 'alias', 'columnTypeId', 'defaultValue', 'storeRelationAbility');
+        $affect = ['entityId', 'alias', 'columnTypeId', 'defaultValue', 'storeRelationAbility'];
 
         // If field's control element was 'upload', but now it is not - set $deleteUploadedFiles to true
         $uploadElementId = Indi::model('Element')->fetchRow('`alias` = "upload"')->id;
@@ -448,7 +448,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Add the collation definition, if column type supports it
-        $collatedColumnTypeA = array('CHAR', 'VARCHAR', 'TEXT', 'ENUM', 'SET');
+        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT', 'ENUM', 'SET'];
         foreach ($collatedColumnTypeA as $collatedColumnTypeI)
             if (preg_match('/^' . $collatedColumnTypeI . '/', $columnTypeR->type))
                 $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci';
@@ -537,11 +537,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $curTypeR = coltype($this->_original['columnTypeId']);
 
         // Get the existing enumset values
-        $enumsetA = $this->id ? $this->nested('enumset')->column('alias'): array();
+        $enumsetA = $this->id ? $this->nested('enumset')->column('alias'): [];
 
         // Get the array of default values
         $defaultValueA = preg_match(Indi::rex('php'), $this->defaultValue)
-            ? array('')
+            ? ['']
             : explode(',', $this->defaultValue);
 
         // Get the values, that should be added to the list of possible values
@@ -550,7 +550,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // If we are converting BOOLEAN to ENUM|SET, ensure both 0 and 1 will be
         // 1. mentioned in ALTER TABLE query
         // 2. insterted into `enumset` table
-        if ($curTypeR->type == 'BOOLEAN') $enumsetAppendA = array(I_NO => 0, I_YES => 1);
+        if ($curTypeR->type == 'BOOLEAN') $enumsetAppendA = [I_NO => 0, I_YES => 1];
 
         // Else
         else if ($curTypeR->id && !in($curTypeR->type, 'ENUM,SET') && $columnTypeR->type == 'ENUM') {
@@ -997,11 +997,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $col = $this->_original['alias'];
 
         // Define array of rex-names, related to their mysql data types
-        $rex = array(
+        $rex = [
             'VARCHAR(255)' => 'varchar255', 'INT(11)' => 'int11', 'DECIMAL(11,2)' => 'decimal112',
             'DECIMAL(14,3)' => 'decimal143', 'DATE' => 'date', 'YEAR' => 'year', 'TIME' => 'time',
             'DATETIME' => 'datetime', 'ENUM' => 'enum', 'SET' => 'set', 'BOOLEAN' => 'bool', 'VARCHAR(10)' => 'hrgb'
-        );
+        ];
 
         // Prepare regular expression for usage in WHERE clause in
         // UPDATE query, for detecting and fixing incompatible values
@@ -1327,7 +1327,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $compiled = $this->_compiled;
 
             // Reset $this->_compiled property
-            $this->_compiled = array();
+            $this->_compiled = [];
         }
 
         // Do regular conversion
@@ -1453,10 +1453,10 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else {
 
                 // Setup an array with several column types and possible characters sets for each type.
-                $reg = array(
+                $reg = [
                     'YEAR' => '[0-9]', 'DATE' => '[0-9\-]', 'DATETIME' => '[0-9\- :]',
                     'TIME' => '[0-9:]', 'INT' => '[\-0-9]', 'DOUBLE' => '[0-9\.]', 'DECIMAL' => '[\-0-9\.]'
-                );
+                ];
 
                 // We check if db table column type is presented within a keys of $reg array, and if so, we check
                 // if $keyword consists from characters, that are within a column's type's allowed character set.
@@ -1504,7 +1504,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $relatedM = Indi::model($this->relation);
 
             // Declare empty $idA array
-            $idA = array();
+            $idA = [];
 
             // If title column is `id` and
             if ($relatedM->titleColumn() == 'id') {
@@ -1708,7 +1708,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Foreach `enumset` entry, nested within current `field` entry
         // - build `enumset` entry's creation expression
-        foreach ($this->nested('enumset', array('order' => 'move')) as $enumsetR)
+        foreach ($this->nested('enumset', ['order' => 'move']) as $enumsetR)
             $lineA[] = $enumsetR->export();
 
         // Foreach `param` entry, nested within current `field` entry - do same
@@ -1741,17 +1741,17 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $element = $this->foreign('elementId')->alias;
 
             // Setup $allowed flag, inciating whether or not field has a type that is allowed for localization
-            $allowed = in($element . ':' . $columnType, array(
+            $allowed = in($element . ':' . $columnType, [
                 'string:VARCHAR(255)',
                 'string:TEXT',
                 'textarea:TEXT',
                 'textarea:VARCHAR(255)',
                 'upload:',
                 'html:TEXT'
-            ));
+            ]);
 
             // Setup array of fields, that should not be localized
-            $_exclude = array(
+            $_exclude = [
                 'year' => 'title',
                 'action' => 'alias',
                 'enumset' => 'title,alias',
@@ -1774,7 +1774,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 'queueTask' => 'title',
                 'queueItem' => 'target,value,result',
                 'queueChunk' => 'where,location'
-            );
+            ];
 
             // Setup $exclude flag, indicating whether or not field should not be localized despite it's type is ok
             $exclude = in($this->alias, $_exclude[$this->foreign('entityId')->table]);

@@ -19,8 +19,8 @@ class Sms {
      *
      * @var array
      */
-    protected static $_codeA = array(
-        'sms/send' => array(
+    protected static $_codeA = [
+        'sms/send' => [
             100 => 'Cообщение принято к отправке. На следующих строчках вы найдете идентификаторы отправленных сообщений в том же порядке, в котором вы указали номера, на которых совершалась отправка.',
             201 => 'Не хватает средств на лицевом счету',
             203 => 'Нет текста сообщения',
@@ -32,8 +32,8 @@ class Sms {
             209 => 'Вы добавили этот номер (или один из номеров) в стоп-лист',
             212 => 'Текст сообщения необходимо передать в кодировке UTF-8 (вы передали в другой кодировке)',
             230 => 'Сообщение не принято к отправке, так как на один номер в день нельзя отправлять более 60 сообщений.',
-        ),
-        'sms/status' => array(
+        ],
+        'sms/status' => [
             -1 => '	Сообщение не найдено.',
             100 => 'Сообщение находится в нашей очереди',
             101 => 'Сообщение передается оператору',
@@ -44,35 +44,35 @@ class Sms {
             106 => 'Не может быть доставлено: сбой в телефоне',
             107 => 'Не может быть доставлено: неизвестная причина',
             108 => 'Не может быть доставлено: отклонено',
-        ),
-        'sms/cost' => array(
+        ],
+        'sms/cost' => [
             100 => 'Запрос выполнен. На второй строчке указана стоимость сообщения. На третьей строчке указана его длина.',
             207 => 'На этот номер нельзя отправлять сообщения',
-        ),
-        'my/balance' => array(
+        ],
+        'my/balance' => [
             100 => 'Запрос выполнен. На второй строчке вы найдете ваше текущее состояние баланса.',
-        ),
-        'my/limit' => array(
+        ],
+        'my/limit' => [
             100 => 'Запрос выполнен. На второй строчке вы найдете количество номеров, на которое вы можете отправлять сообщения внутри дня. На третьей строчке - количество номеров, на которые вы уже отправили сообщения внутри текущего дня.',
-        ),
-        'my/senders' => array(
+        ],
+        'my/senders' => [
             100 => 'Запрос выполнен. На второй и последующих строчках вы найдете ваших одобренных отправителей, которые можно использовать в параметре &from= метода sms/send.',
-        ),
-        'auth/check' => array(
+        ],
+        'auth/check' => [
             100 => 'ОК, номер телефона и пароль совпадают.',
-        ),
-        'stoplist/add' => array(
+        ],
+        'stoplist/add' => [
             100 => 'Номер добавлен в стоплист.',
             202 => 'Номер телефона в неправильном формате'
-        ),
-        'stoplist/del' => array(
+        ],
+        'stoplist/del' => [
             100 => 'Номер удален из стоплиста.',
             202 => 'Номер телефона в неправильном формате'
-        ),
-        'stoplist/get' => array(
+        ],
+        'stoplist/get' => [
             100	=> 'Запрос обработан. На последующих строчках будут идти номера телефонов, указанных в стоплисте в формате номер;примечание.'
-        ),
-        'shared' => array(
+        ],
+        'shared' => [
             200 => 'Неправильный api_id',
             202 => 'Неправильно указан получатель',
             210 => 'Используется GET, где необходимо использовать POST',
@@ -81,8 +81,8 @@ class Sms {
             300 => 'Неправильный token (возможно истек срок действия, либо ваш IP изменился)',
             301 => 'Неправильный пароль, либо пользователь не найден',
             302 => 'Пользователь авторизован, но аккаунт не подтвержден (пользователь не ввел код, присланный в регистрационной смс)'
-        )
-    );
+        ]
+    ];
 
     /**
      * Get the response
@@ -121,7 +121,7 @@ class Sms {
         }
 
         // Return complete info related to request and it's response
-        return array('request' => array('url' => $url, 'data' => $data), 'response' => $response);
+        return ['request' => ['url' => $url, 'data' => $data], 'response' => $response];
     }
 
     /**
@@ -137,10 +137,10 @@ class Sms {
         $raw = $response['response'];
 
         // If cURL response is empty
-        if (empty($raw)) $result = array('success' => false, 'msg' => 'Empty cURL raw response');
+        if (empty($raw)) $result = ['success' => false, 'msg' => 'Empty cURL raw response'];
 
         // Else if cURL error occured
-        else if (preg_match('/^curl/', $raw)) $result = array('success' => false, 'msg' => $raw);
+        else if (preg_match('/^curl/', $raw)) $result = ['success' => false, 'msg' => $raw];
 
         // Else
         else {
@@ -152,11 +152,11 @@ class Sms {
             $code = trim($rawA[0]);
 
             // If $code is one of 100,101,102,103
-            $result = array(
+            $result = [
                 'success' => in($code, '100,101,102,103'),
                 'msg' => self::$_codeA[$method][$code] ?: self::$_codeA['shared'][$code],
                 'raw' => $raw
-            );
+            ];
         }
 
         // Start building result
@@ -190,7 +190,7 @@ class Sms {
         $method = 'sms/send';
 
         // Check phone numbers validity
-        $phoneA = array();
+        $phoneA = [];
         foreach ($_ = ar($to) as $phone)
             if ($phone = preg_replace('/[^0-9]/', '', $phone))
                 if (strlen($phone) >= 11)
@@ -200,12 +200,12 @@ class Sms {
         if (!$phoneA) return;
 
         // Prepare data
-        $data = array(
+        $data = [
             'from' => Indi::ini('sms')->from,
             'to' => im(array_keys($phoneA)),
             'text' => $text,
             //'translit' => 1
-        );
+        ];
 
         // Get response
         $response = self::response($method, $data);

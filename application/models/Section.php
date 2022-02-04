@@ -12,21 +12,21 @@ class Section extends Indi_Db_Table {
      * Array of fields, which contents will be evaluated with php's eval() function
      * @var array
      */
-    protected $_evalFields = array('filter');
+    protected $_evalFields = ['filter'];
 
     /**
      * Info for l10n-fraction detection
      *
      * @var array
      */
-    protected $_fraction = array(
+    protected $_fraction = [
         'field' => 'type',
-        'value' => array(
+        'value' => [
             's' => 'adminSystemUi',
             'p' => 'adminCustomUi',
             'o' => 'adminPublicUi'
-        )
-    );
+        ]
+    ];
 
     /**
      * Get left menu data cms user
@@ -50,7 +50,7 @@ class Section extends Indi_Db_Table {
         $tmpA = l10n($tmpA, 'title');
 
         // Convert that temporary data to an array, that is using items ids as items keys, and unset $tmpA array
-        $rootA = array(); for ($i = 0; $i < count($tmpA); $i++) $rootA[$tmpA[$i]['id']] = $tmpA[$i]; unset($tmpA);
+        $rootA = []; for ($i = 0; $i < count($tmpA); $i++) $rootA[$tmpA[$i]['id']] = $tmpA[$i]; unset($tmpA);
 
         // Fetch menu items, that are 1st-level children for root items
         $nestedA = Indi::db()->query('
@@ -70,7 +70,7 @@ class Section extends Indi_Db_Table {
         $nestedA = l10n($nestedA, 'title');
 
         // Declare an array for function return
-        $menu = array();
+        $menu = [];
 
         // Build the menu data
         foreach ($rootA as $rootId => $rootSection) {

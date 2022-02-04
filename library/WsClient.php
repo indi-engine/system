@@ -3,14 +3,14 @@ class WsClient {
   protected $socket, $is_connected = false, $is_closing = false, $last_opcode = null,
     $close_status = null, $huge_payload = null, $socket_uri;
 
-  protected static $opcodes = array(
+  protected static $opcodes = [
     'continuation' => 0,
     'text'         => 1,
     'binary'       => 2,
     'close'        => 8,
     'ping'         => 9,
     'pong'         => 10,
-  );
+  ];
 
   public function getLastOpcode()  { return $this->last_opcode;  }
   public function getCloseStatus() { return $this->close_status; }
@@ -281,7 +281,7 @@ class WsClient {
      *   - timeout:      Set the socket timeout in seconds.  Default: 5
      *   - headers:      Associative array of headers to set/override.
      */
-    public function __construct($uri, $options = array()) {
+    public function __construct($uri, $options = []) {
         $this->options = $options;
 
         if (!array_key_exists('timeout', $this->options)) $this->options['timeout'] = 5;
@@ -318,7 +318,7 @@ class WsClient {
         if (!empty($query))    $path_with_query .= '?' . $query;
         if (!empty($fragment)) $path_with_query .= '#' . $fragment;
 
-        if (!in_array($scheme, array('ws', 'wss'))) {
+        if (!in_array($scheme, ['ws', 'wss'])) {
             throw new Exception(
                 "Url should have scheme ws or wss, not '$scheme' from URI '$this->socket_uri' ."
             );
@@ -366,14 +366,14 @@ class WsClient {
         $key = self::generateKey();
 
         // Default headers (using lowercase for simpler array_merge below).
-        $headers = array(
+        $headers = [
             'host'                  => $host . ":" . $port,
             'user-agent'            => 'websocket-client-php',
             'connection'            => 'Upgrade',
             'Upgrade'               => 'websocket',
             'Sec-WebSocket-Key'     => $key,
             'Sec-webSocket-Version' => '13',
-        );
+        ];
 
         // Handle basic authentication.
         if ($user || $pass) {

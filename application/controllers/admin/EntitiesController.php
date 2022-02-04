@@ -8,7 +8,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // PHP class files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
         // 'often' - in '/coref', 'project' - in '/www'
-        $repositoryDirA = array('y' => 'core', 'o' => 'coref', 'n' => 'www');
+        $repositoryDirA = ['y' => 'core', 'o' => 'coref', 'n' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->system, array_keys($repositoryDirA)))
@@ -95,12 +95,12 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $elementRs = Indi::model('Element')->fetchAll('FIND_IN_SET(`alias`, "span,combo,datetime")');
 
         // Prepare fields config
-        $fieldA = array(
-            'author' => array(
+        $fieldA = [
+            'author' => [
                 'title' => 'Создание',
                 'elementId' => $elementRs->gb('span', 'alias')->id
-            ),
-            'authorType' => array(
+            ],
+            'authorType' => [
                 'title' => 'Кто создал',
                 'storeRelationAbility' => 'one',
                 'elementId' => $elementRs->gb('combo', 'alias')->id,
@@ -110,21 +110,21 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 'filter' => '`id` IN (' . Indi::db()->query('
                     SELECT GROUP_CONCAT(DISTINCT IF(`entityId`, `entityId`, 11)) FROM `profile` WHERE `toggle` = "y"
                 ')->fetchColumn() . ')'
-            ),
-            'authorId' => array(
+            ],
+            'authorId' => [
                 'title' => 'Кто именно',
                 'storeRelationAbility' => 'one',
                 'elementId' => $elementRs->gb('combo', 'alias')->id,
                 'columnTypeId' => 3,
                 'defaultValue' => '<?=Indi::me(\'id\')?>',
-            ),
-            'authorTs' => array(
+            ],
+            'authorTs' => [
                 'title' => 'Когда',
                 'elementId' => $elementRs->gb('datetime', 'alias')->id,
                 'columnTypeId' => 9,
                 'defaultValue' => '<?=date(\'Y-m-d H:i:s\')?>'
-            )
-        );
+            ]
+        ];
 
         // Create fields
         foreach ($fieldA as $alias => $fieldI) {
@@ -136,7 +136,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         //$fieldRA[$alias]->satellite = $fieldRA['authorType']->id;
-        consider($this->row->id, 'authorId', 'authorType', array('required' => 'y'));
+        consider($this->row->id, 'authorId', 'authorType', ['required' => 'y']);
 
         // Flush success
         jflush(true, 'Группа полей "Создание" была добавлена в структуру сущности "' . $this->row->title . '"');
@@ -161,7 +161,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($this->row->table == 'action') Indi::db()->query('ALTER TABLE `action` DROP `toggle`');
 
         // Create field
-        $fieldR = Indi::model('Field')->createRow(array(
+        $fieldR = Indi::model('Field')->createRow([
             'entityId' => $this->row->id,
             'title' => 'Статус',
             'alias' => 'toggle',
@@ -169,7 +169,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             'elementId' => Indi::model('Element')->fetchRow('`alias` = "combo"')->id,
             'columnTypeId' => Indi::model('ColumnType')->fetchRow('`type` = "ENUM"')->id,
             'defaultValue' => 'y'
-        ), true);
+        ], true);
 
         // Save field
         $fieldR->save();
@@ -180,11 +180,11 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $y->save();
 
         // Create one more enumset option within this field
-        Indi::model('Enumset')->createRow(array(
+        Indi::model('Enumset')->createRow([
             'fieldId' => $y->fieldId,
             'title' => '<span class="i-color-box" style="background: red;"></span>Выключен',
             'alias' => 'n'
-        ), true)->save();
+        ], true)->save();
 
         // Flush success
         jflush(true, 'Поле "Статус" было добавлено в структуру сущности "' . $this->row->title . '"');

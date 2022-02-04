@@ -57,12 +57,12 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         }
 
         // Append filter
-        Indi::trail()->filters->append(array(
+        Indi::trail()->filters->append([
             'sectionId' => Indi::trail()->section->id,
             'fieldId' => $fieldR_spaceSince->id,
             'title' => $fieldR_spaceSince->title,
             'toolbar' => 'master'
-        ));
+        ]);
 
         // Define colors
         Indi::trail()->section->colors = $this->defineColors();
@@ -74,11 +74,11 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
             $combo = t()->filtersSharedRow->combo($fieldId_kanban);
 
             // Setup kanban props
-            t()->section->kanban = array(
+            t()->section->kanban = [
                 'prop' => $combo['name'],
                 'values' => $combo['store']['ids'],
                 'titles' => array_column($combo['store']['data'], 'title')
-            );
+            ];
         }
 
         // Check whether 'since' uri-param is given, and if yes - prefill current entry's
@@ -275,7 +275,7 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         $ENUM_fieldRs = Indi::trail()->model->fields()->select($ENUM_columnTypeId, 'columnTypeId');
 
         // Try to find color definitions
-        $found = array();
+        $found = [];
         foreach ($ENUM_fieldRs as $ENUM_fieldR)
             foreach ($ENUM_fieldR->nested('enumset') as $enumsetR)
                 if ($color = Indi::rexm('/(background|color):([^;]+);?/', $enumsetR->title, 2))
@@ -287,16 +287,16 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         // If major-color field and/or point-color field are explicitly defined - setup info
         foreach (ar('major,point') as $kind)
             if ($$kind = t()->model->space('fields.colors.' . $kind))
-                $info[$kind] = array(
+                $info[$kind] = [
                     'field' => $$kind,
                     'colors' => $found[$$kind]
-                );
+                ];
 
         // If $info was set up - return it
         if ($info) return $info;
 
         // Else auto-choose field having bigger qty of colored enum values
-        $info['major'] = array('field' => '', 'colors' => array());
+        $info['major'] = ['field' => '', 'colors' => []];
         foreach ($found as $field => $colors)
             if (count($colors) > count($info['major']['colors']) && $info['major']['field'] = $field)
                 $info['major']['colors'] = $colors;
@@ -341,13 +341,13 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
                     hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))) : '';
 
             // Build css
-            $css = array(
+            $css = [
                 'color' => sprintf('rgb(%d, %d, %d)', hexdec(substr($hex, 0, 2)) - 50,
                     hexdec(substr($hex, 2, 2)) - 50, hexdec(substr($hex, 4, 2)) - 50),
                 'border-color' => $color,
                 'background-color' => $background,
                 'background-color-selected' => $backgroundSelected
-            );
+            ];
 
             // Adjust it for custom needs
             $this->adjustColorsCss($option, $color, $css);
@@ -368,10 +368,10 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
     public function adjustColors(&$info) {
 
         // Set empty info
-        if (!$info) $info = array(
-            'major' => array('field' => '', 'colors' => array()),
-            'point' => array('field' => '', 'colors' => array())
-        );
+        if (!$info) $info = [
+            'major' => ['field' => '', 'colors' => []],
+            'point' => ['field' => '', 'colors' => []]
+        ];
 
         // Append one more color definition
         $info['major']['colors']['default'] = 'lime';

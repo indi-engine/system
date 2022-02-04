@@ -13,6 +13,6 @@ class Consider_Rowset extends Indi_Db_Table_Rowset {
         if ($key != 'connector') return;
 
         // Append 'ID' pseudo entry
-        $rowset->append(array('id' => -1, 'title' => 'ID', 'alias' => 'id'), 0);
+        $rowset->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 0);
     }
 }

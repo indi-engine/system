@@ -66,14 +66,14 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
     }
 
     public function extjs($options) {
-        $this->getRow()->view($this->field->alias, array(
-            'subTplData' => array(
+        $this->getRow()->view($this->field->alias, [
+            'subTplData' => [
                 'attrs' => $this->attrs,
                 'pageUpDisabled' => $this->getRow()->id ? 'false' : 'true',
                 'selected' => self::detectColor($this->selected)
-            ),
+            ],
             'store' => $options,
             'field' => $this->field->toArray()
-        ));
+        ]);
     }
 }

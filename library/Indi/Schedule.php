@@ -36,7 +36,7 @@ class Indi_Schedule {
      *
      * @var array
      */
-    protected $_shift = array(
+    protected $_shift = [
 
         // This param is used within $this->bounds() method as a number of seconds within 24 hours
         // Also, it's used in $this->until() method, for deducting from actual value of $this->_until,
@@ -56,7 +56,7 @@ class Indi_Schedule {
         // that WHERE clause, built for fetching events (converted into busy spaces) from db - will cover as more wider
         // time-range as we need to have the info.
         'frame' => 0
-    );
+    ];
 
     /**
      * Indexes, used for omitting unneeded iterations performed on $this->_spaces array.
@@ -64,7 +64,7 @@ class Indi_Schedule {
      *
      * @var array
      */
-    protected $_seek = array(
+    protected $_seek = [
 
         // This index is used as a start point for walking through $this->_spaces' items in $this->busy() method
         'from' => 0,
@@ -72,17 +72,17 @@ class Indi_Schedule {
         // This index is being auto-updated automatically while walking through $this->_spaces' items in $this->busy()
         // method, and contains the index of the last iterated item
         'last' => 0
-    );
+    ];
 
     /**
      * Iterations counter
      *
      * @var bool
      */
-    protected $_counter = array(
+    protected $_counter = [
         'state' => false,
         'value' => 0
-    );
+    ];
 
     /**
      * Spaces counter
@@ -96,27 +96,27 @@ class Indi_Schedule {
      *
      * @var array
      */
-    protected $_spaces = array();
+    protected $_spaces = [];
 
     /**
      * Backed up $this->_spaces and $this->total
      *
      * @var array
      */
-    protected $_backup = array(
-        'spaces' => array(),
+    protected $_backup = [
+        'spaces' => [],
         'total' => 0
-    );
+    ];
 
     /**
      * Daily working hours timestamps
      *
      * @var array
      */
-    protected $_daily = array(
+    protected $_daily = [
         'since' => 0,
         'until' => 0
-    );
+    ];
 
     /**
      * Array of distinct values of props, faced within $this->_rs.
@@ -126,7 +126,7 @@ class Indi_Schedule {
      *
      * @var array
      */
-    public $_distinct = array();
+    public $_distinct = [];
 
     /**
      * Rowset, that will be used for refilling the schedule.
@@ -290,7 +290,7 @@ class Indi_Schedule {
             } else if ($existing) {
 
                 // Detect whether there are enough subsequent quantity of non-busy spaces having enough summarily duration
-                $chunk = array(); $chunkSum = 0;
+                $chunk = []; $chunkSum = 0;
                 for ($j = $i; $j < $this->_total; $j++) {
                     if ($this->_spaces[$j]->avail == 'busy') break;
                     $chunk[$j]['since'] = max($this->_spaces[$j]->since, $since);
@@ -349,7 +349,7 @@ class Indi_Schedule {
     protected function _busy(Indi_Schedule_Space $space, $i, $since, $duration, $avail, $entry, $chunk = false) {
 
         // Array for spaces to be injected $this->_spaces
-        $inject = array();
+        $inject = [];
 
         // If free space starts earlier than busy space we want to inject
         if ($space->since < $since) {
@@ -423,11 +423,11 @@ class Indi_Schedule {
         if (!$date) $date = date('Y-m-d H:i:s');
 
         // Config for different wrap kinds
-        $wrapCfg = array(
-            'month' => array('format' => 'Y-m-01', 'days' => 7 * 6),
-            'week'  => array('format' => 'Y-m-d',  'days' => 7 * 1),
-            'day'   => array('format' => 'Y-m-d',  'days' => 1)
-        );
+        $wrapCfg = [
+            'month' => ['format' => 'Y-m-01', 'days' => 7 * 6],
+            'week'  => ['format' => 'Y-m-d',  'days' => 7 * 1],
+            'day'   => ['format' => 'Y-m-d',  'days' => 1]
+        ];
 
         // Get unix-timestamp
         $ts = strtotime(date($wrapCfg[$wrap]['format'], is_numeric($date) ? $date : strtotime($date)));
@@ -491,7 +491,7 @@ class Indi_Schedule {
      * @param callable $pre
      * @return Indi_Schedule
      */
-    public function load($table, $where = array(), $pre = null) {
+    public function load($table, $where = [], $pre = null) {
 
         // Get rowset
         $rs = $this->rowset($table, $where, $pre);
@@ -513,7 +513,7 @@ class Indi_Schedule {
      * @param null $pre
      * @return Indi_Schedule
      */
-    public function preload($table, $where = array(), $pre = null) {
+    public function preload($table, $where = [], $pre = null) {
 
         // Get rowset
         $this->_rs = $this->rowset($table, $where, $pre);
@@ -525,15 +525,15 @@ class Indi_Schedule {
     /**
      * Get rowset of entries, that current schedule is in intersection with
      */
-    public function rowset($table, $where = array(), $pre = null) {
+    public function rowset($table, $where = [], $pre = null) {
 
         // Get model
         $model = Indi::model($table);
 
         // Normalize $where arg
-        if (is_array($where)) $where = un($where, array(null, ''));
-        else if (is_string($where) && strlen($where)) $where = array($where);
-        else $where = array();
+        if (is_array($where)) $where = un($where, [null, '']);
+        else if (is_string($where) && strlen($where)) $where = [$where];
+        else $where = [];
 
         // Convert `_since` and `_until` timestamps into datetime format
         $since = date('Y-m-d H:i:s', $this->_since);
@@ -563,10 +563,10 @@ class Indi_Schedule {
      * @return string
      */
     public static function where($since, $until) {
-        return '(' . im(array(
+        return '(' . im([
             '(`spaceSince` <= "' . $since . '" AND `spaceUntil` >  "' . $since . '")',
             '(`spaceSince` <  "' . $until . '" AND `spaceUntil` >= "' . $until . '")',
-            '(`spaceSince` >= "' . $since . '" AND `spaceUntil` <= "' . $until . '")'), ' OR ') . ')';
+            '(`spaceSince` >= "' . $since . '" AND `spaceUntil` <= "' . $until . '")'], ' OR ') . ')';
     }
 
     /**
@@ -722,7 +722,7 @@ class Indi_Schedule {
         $frame = _2sec($frame);
 
         // Array of busy dates
-        $busy = array();
+        $busy = [];
 
         // Set initial mark to be same as schedule's left bound
         $mark = $this->_since;
@@ -731,7 +731,7 @@ class Indi_Schedule {
         // If $stop is `false` - we'll use $both arg as an array for fulfilling it with dates, having both free and busy
         // spaces(s), e.g. having not only at least one free space suitable for desired frame injection, but also
         // at least one busy space, so there will be a collection of dates that are partially busy
-        $stop = $both === false; if (!$stop) $both = array();
+        $stop = $both === false; if (!$stop) $both = [];
 
         // Set index of space, that we should start searching from within each $mark's date
         $idx = 0;
@@ -754,7 +754,7 @@ class Indi_Schedule {
             $date = date('Y-m-d', $mark);
 
             // Reset $timeA
-            $timeA = array();
+            $timeA = [];
 
             // If $timeA arg is not `false`, and $timeA['idsFn'] is callable
             if (is_callable($hours['idsFn'])) {
@@ -840,7 +840,7 @@ class Indi_Schedule {
     public function busyHours($date, $step = '1h', $seekFromLast = false, $hours = false) {
 
         // Array of busy hours
-        $busy = array();
+        $busy = [];
 
         // Get timestamp
         $time = strtotime($date);
@@ -954,13 +954,13 @@ class Indi_Schedule {
      * @param callable $pre
      * @return Indi_Schedule
      */
-    public function refill($keys, $type = 'id', $daily = array(), $pre = null) {
+    public function refill($keys, $type = 'id', $daily = [], $pre = null) {
 
         // If $type arg is null - restore spaces from backup (if it was previously created), else
         if ($daily === null && $this->_backup['spaces']) $this->restore(); else {
 
             // Drop all existing spaces and insert a new free one, matching schedule bounds
-            $this->_spaces = array(new Indi_Schedule_Space($this->_since, $this->_until, 'free'));
+            $this->_spaces = [new Indi_Schedule_Space($this->_since, $this->_until, 'free')];
 
             // Reset spaces counter
             $this->_total = 1;
@@ -1011,7 +1011,7 @@ class Indi_Schedule {
         if (!func_num_args() || (!is_string($prop) && !is_array($prop))) return $this->_distinct;
 
         // If $prop arg is given and it's a string
-        if (is_string($prop)) return $this->_distinct[$prop] ?: array();
+        if (is_string($prop)) return $this->_distinct[$prop] ?: [];
 
         // Foreach prop that we need to collect distinct values for
         foreach ($prop as $propI => $ruleA) {
@@ -1036,7 +1036,7 @@ class Indi_Schedule {
             if ($self->$propI)
                 foreach (ar($self->$propI) as $v)
                     if (!$this->_distinct[$propI][$v])
-                        $this->_distinct[$propI][$v]['idxA'] = array();
+                        $this->_distinct[$propI][$v]['idxA'] = [];
 
             // If $strict arg is false, this means that current distinct() call was NOT made within $self->validate() call,
             // and this, in it's turn, means that we're in the process of detecting disabled values for space fields, so
@@ -1051,10 +1051,10 @@ class Indi_Schedule {
             if (!$strict && $self->system('purpose') != 'drag')
                 foreach ($self->getComboData($propI)->column('id') as $v)
                     if (!$this->_distinct[$propI][$v])
-                        $this->_distinct[$propI][$v]['idxA'] = array();
+                        $this->_distinct[$propI][$v]['idxA'] = [];
 
             // If no distinct values collected - skip
-            if (!$vA = array_keys($this->_distinct[$spaceOwnerProp] ?: array())) continue;
+            if (!$vA = array_keys($this->_distinct[$spaceOwnerProp] ?: [])) continue;
 
             // Get model, that space owner prop relates to
             $spaceOwnerModelId = $this->_rs->model()->fields($spaceOwnerProp)->relation;
@@ -1090,7 +1090,7 @@ class Indi_Schedule {
     public function restore() {
 
         // Reset $this->_spaces to an empty array
-        $this->_spaces = array();
+        $this->_spaces = [];
 
         // Foreach backed up instance of Indi_Schedule_Space - make a clone and add into $this->_spaces
         foreach ($this->_backup['spaces'] as $space) $this->_spaces[] = clone $space;
@@ -1180,7 +1180,7 @@ class Indi_Schedule {
             $date = date('Y-m-d', $daystamp);
 
             // Reset $timeA
-            $timeA = array();
+            $timeA = [];
 
             // If $timeA arg is not `false`, and $timeA['idsFn'] is callable
             if (is_callable($hours['idsFn'])) {

@@ -69,7 +69,7 @@ class Indi_Db_Table
      *
      * @var array
      */
-    protected $_fields = array();
+    protected $_fields = [];
 
     /**
      * Store column name, which is used to detect parent-child relationship between
@@ -84,7 +84,7 @@ class Indi_Db_Table
      *
      * @var array
      */
-    protected $_evalFields = array();
+    protected $_evalFields = [];
 
     /**
      * Store array of aliases, related to fields, that are fileupload fields.
@@ -104,7 +104,7 @@ class Indi_Db_Table
      *
      * @var Indi_Db_Table_Rowset|array
      */
-    protected $_notices = array();
+    protected $_notices = [];
 
     /**
      * Class name for row
@@ -130,7 +130,7 @@ class Indi_Db_Table
      *
      * @var array
      */
-    protected $_changeLog = array();
+    protected $_changeLog = [];
 
     /**
      * Daily time. This can be used to setup working hours, for example since '10:00:00 until '20:00:00'.
@@ -140,10 +140,10 @@ class Indi_Db_Table
      *
      * @var array
      */
-    protected $_daily = array(
+    protected $_daily = [
         'since' => false,
         'until' => false
-    );
+    ];
 
     /**
      * Info about qties and sums, that current entity entries are counted in
@@ -267,11 +267,11 @@ class Indi_Db_Table
                 // 3.Binding a listener on 'boundchange' event on datepicker-field, because user
                 //   may change datepicker's month to any other month, so the collection of
                 //   disabled dates within datepicker's calendar widget - should also be refreshed
-                $this->_space['fields']['events'] = array(
+                $this->_space['fields']['events'] = [
                     'change' => $change,
                     'afterrender' => $this->_space['coords'][$frameCoord],
                     'boundchange' => $this->_space['coords'][$dpickCoord],
-                );
+                ];
             }
         }
     }
@@ -306,8 +306,8 @@ class Indi_Db_Table
      */
     public function fetchAll($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false) {
         // Build WHERE and ORDER clauses
-        if (is_array($where) && count($where = un($where, array(null, '')))) $where = implode(' AND ', $where);
-        if (is_array($order) && count($order = un($order, array(null, '')))) $order = implode(', ', $order);
+        if (is_array($where) && count($where = un($where, [null, '']))) $where = implode(' AND ', $where);
+        if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
 
         // Build LIMIT clause
         if ($count !== null || $page !== null) {
@@ -343,7 +343,7 @@ class Indi_Db_Table
 
         // If $split arg is given - prepare UNION query chunks
         if ($split) {
-            $union = array();
+            $union = [];
             foreach ($this->enumset($split) as $idx => $enumsetR) {
                 $sw = '`' . $split .'` = "' . $enumsetR->alias . '"';
                 $su = $where 
@@ -359,7 +359,7 @@ class Indi_Db_Table
         $data = Indi::db()->query($sql)->fetchAll();
 
         // Prepare data for Indi_Db_Table_Rowset object construction
-        $data = array(
+        $data = [
             'table'   => $this->_table,
             'data' => $data,
             'rowClass' => $this->_rowClass,
@@ -367,7 +367,7 @@ class Indi_Db_Table
             'page' => $page,
             'pgupLast' => $pgupLast,
             'query' => $sql
-        );
+        ];
 
         // Return Indi_Db_Table_Rowset object
         return new $this->_rowsetClass($data);
@@ -451,7 +451,7 @@ class Indi_Db_Table
             $foundA = $foundRs->toArray();
 
             // We replace indexes with actual ids in $foundA array
-            $tmp = array(); foreach ($foundA as $foundI) {
+            $tmp = []; foreach ($foundA as $foundI) {
                 $tmp[$foundI['id']] = $foundI;
                 unset($foundI);
             }
@@ -497,8 +497,8 @@ class Indi_Db_Table
 
             // Get the final list of needed ids
             $i = 0;
-            $ids = array();
-            $disabledA = array();
+            $ids = [];
+            $disabledA = [];
             foreach ($tree as $id => $info) {
                 if ($info[2]) {
 
@@ -577,11 +577,11 @@ class Indi_Db_Table
                 }
             }
 
-            $ids = array();
+            $ids = [];
             $i = 0;
 
             // Declare ids history
-            $idsHistory = array();
+            $idsHistory = [];
 
             foreach ($tree as $id => $info) {
                 // Push in idsHistory
@@ -659,7 +659,7 @@ class Indi_Db_Table
         $rowset = $this->fetchAll($wo, $wo);
         $sql = $rowset->query();
         $data = $rowset->toArray();
-        $assocDataA = array();
+        $assocDataA = [];
         for ($i = 0; $i < count($data); $i++) {
             $assocDataI = $data[$i];
             $assocDataI['_system']['level'] = $level[$data[$i]['id']];
@@ -687,7 +687,7 @@ class Indi_Db_Table
         foreach ($data as $id => $props) $data[$id]['_system']['parentId'] = $props[$this->_treeColumn];
 
         // Setup rowset info
-        $data = array (
+        $data = [
             'table' => $this->_table,
             'data' => array_values($data),
             'rowClass' => $this->_rowClass,
@@ -695,7 +695,7 @@ class Indi_Db_Table
             'page' => $page,
             'pgupLast' => $pgupLast,
             'query' => $sql
-        );
+        ];
 
         // Return rowset/offset
         return $offsetDetection ? $start : new $this->_rowsetClass($data);
@@ -729,7 +729,7 @@ class Indi_Db_Table
 
         // Get general tree data for whole table, but only `id` and `treeColumn` columns
         $tree = Indi::db()->query($query)->fetchAll();
-        $nested = array();
+        $nested = [];
         foreach ($tree as $item) {
             $nested[$item[$tc]][] = $item;
             unset($item);
@@ -739,13 +739,13 @@ class Indi_Db_Table
         unset($tree);
 
         // Re-setup tree
-        $tree = $this->_append(0, array(), $nested, 0);
+        $tree = $this->_append(0, [], $nested, 0);
 
         // Release memory
         unset($nested);
 
         // Then we get an associative array, where keys are ids, and values are arrays containing from parent ids and levels
-        $return = array(); for ($i = 0; $i < count($tree); $i++) $return[$tree[$i]['id']] = array($tree[$i][$tc], $tree[$i]['level']);
+        $return = []; for ($i = 0; $i < count($tree); $i++) $return[$tree[$i]['id']] = [$tree[$i][$tc], $tree[$i]['level']];
 
         // Release memory
         unset($tree);
@@ -758,7 +758,7 @@ class Indi_Db_Table
             // 2. Branches that do not, but that are parent to branches mentioned in point 1 (disabled results)
 
             // First we should find primary results
-            $primary = array();
+            $primary = [];
             if (is_array($where) && count($where = un($where, null))) $where = implode(' AND ', $where);
             $foundA = Indi::db()->query('SELECT `id` FROM `' . $this->_table . '` WHERE ' . $where)->fetchAll();
             foreach ($foundA as $foundI) {
@@ -770,7 +770,7 @@ class Indi_Db_Table
             $found = count($primary);
 
             // Then we should find disabled results
-            $disabled = array();
+            $disabled = [];
             foreach ($primary as $id => $true) {
                 $parentId = $return[$id][0];
                 while ($parentId) {
@@ -784,7 +784,7 @@ class Indi_Db_Table
             }
 
             // Get final tree
-            $tmp = array();
+            $tmp = [];
             foreach ($return as $id => $data) if ($primary[$id] || $disabled[$id]) {
                 $tmp[$id] = $data;
                 unset($id, $data);
@@ -794,7 +794,7 @@ class Indi_Db_Table
             unset($return, $primary);
 
             // Return array(data, foundRows)
-            return array('tree' => $tmp, 'found' => $found, 'disabledA' => $disabled);
+            return ['tree' => $tmp, 'found' => $found, 'disabledA' => $disabled];
         } else {
 
             // Return array
@@ -920,7 +920,7 @@ class Indi_Db_Table
      * @param array $evalFields
      * @return array
      */
-    public function setEvalFields($evalFields = array()) {
+    public function setEvalFields($evalFields = []) {
         return $this->_evalFields = $evalFields;
     }
 
@@ -977,7 +977,7 @@ class Indi_Db_Table
             else if ($format == 'columns') {
 
                 // Declare array for columns
-                $columnA = array();
+                $columnA = [];
 
                 // For each field check whether it have columnTypeId != 0, and if so, append field alias to columns array
                 foreach ($this->_fields as $field) if ($field->columnTypeId) $columnA[] = $field->alias;
@@ -1107,10 +1107,10 @@ class Indi_Db_Table
             unset($where, $order, $offset);
 
             // Prepare data for Indi_Db_Table_Row object construction
-            $constructData = array(
+            $constructData = [
                 'table'    => $this->_table,
                 'original' => $data,
-            );
+            ];
 
             // Release memory
             unset($data);
@@ -1154,22 +1154,22 @@ class Indi_Db_Table
      * @param bool $assign
      * @return Indi_Db_Table_Row
      */
-    public function createRow($input = array(), $assign = false) {
+    public function createRow($input = [], $assign = false) {
 
         // If non-false $assign argument is given - we assume that $input arg should not be used
         // be used for construction, but should be used for $this->assign() call
-        if ($assign) { $assign = $input; $input = array(); }
+        if ($assign) { $assign = $input; $input = []; }
 
         // Prepare data for construction
-        $constructData = array(
+        $constructData = [
             'table'   => $this->_table,
-            'original'     => is_array($input['original']) ? $input['original'] : array(),
-            'modified' => is_array($input['modified']) ? $input['modified'] : array(),
-            'system' => is_array($input['system']) ? $input['system'] : array(),
-            'temporary' => is_array($input['temporary']) ? $input['temporary'] : array(),
-            'foreign' => is_array($input['foreign']) ? $input['foreign'] : array(),
-            'nested' => is_array($input['nested']) ? $input['nested'] : array(),
-        );
+            'original'     => is_array($input['original']) ? $input['original'] : [],
+            'modified' => is_array($input['modified']) ? $input['modified'] : [],
+            'system' => is_array($input['system']) ? $input['system'] : [],
+            'temporary' => is_array($input['temporary']) ? $input['temporary'] : [],
+            'foreign' => is_array($input['foreign']) ? $input['foreign'] : [],
+            'nested' => is_array($input['nested']) ? $input['nested'] : [],
+        ];
 
         // If $constructData['original'] is an empty array, we setup it according to model structure
         if (count($constructData['original']) == 0) {
@@ -1205,20 +1205,20 @@ class Indi_Db_Table
      * @param array $input
      * @return Indi_Db_Table_Rowset
      */
-    public function createRowset($input = array()) {
+    public function createRowset($input = []) {
 
         // Get the type of construction
         $index = isset($input['rows']) ? 'rows' : 'data';
 
         // Prepare data for Indi_Db_Table_Rowset object construction
-        $data = array(
+        $data = [
             'table'   => $this->_table,
-            $index     => is_array($input[$index]) ? $input[$index] : array(),
+            $index     => is_array($input[$index]) ? $input[$index] : [],
             'rowClass' => $this->_rowClass,
             'found'=> isset($input['found'])
                 ? $input['found']
                 : (is_array($input[$index]) ? count($input[$index]) : 0)
-        );
+        ];
 
         // Construct and return Indi_Db_Table_Rowset object
         return new $this->_rowsetClass($data);
@@ -1305,7 +1305,7 @@ class Indi_Db_Table
         $sql = 'INSERT INTO `' . $this->_table . '` SET ';
 
         // Declare array for sql SET statements
-        $setA = array();
+        $setA = [];
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
@@ -1363,7 +1363,7 @@ class Indi_Db_Table
         $sql = 'UPDATE `' . $this->_table . '` SET ';
 
         // Declare array for sql SET statements
-        $setA = array();
+        $setA = [];
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
@@ -1481,7 +1481,7 @@ class Indi_Db_Table
     public function apply(array $modified) {
 
         // Declare array of properties, that are allowed for change
-        $allowedPropertyA = array('title', 'titleFieldId');
+        $allowedPropertyA = ['title', 'titleFieldId'];
 
         // Apply new values for these properties
         foreach ($modified as $property => $value)
@@ -1649,8 +1649,8 @@ class Indi_Db_Table
         ignore_user_abort(1); set_time_limit(0);
 
         // Build WHERE and ORDER clauses
-        if (is_array($where) && count($where = un($where, array(null, '')))) $where = implode(' AND ', $where);
-        if (is_array($order) && count($order = un($order, array(null, '')))) $order = implode(', ', $order);
+        if (is_array($where) && count($where = un($where, [null, '']))) $where = implode(' AND ', $where);
+        if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
 
         // Get total qty of entries to be processed
         $qty = Indi::db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->fetchColumn();
@@ -1714,7 +1714,7 @@ class Indi_Db_Table
      * inserting it as a new busy space (lesson) within the schedule
      */
     protected function _spaceOwners() {
-        return array();
+        return [];
     }
 
     /**
@@ -1737,24 +1737,24 @@ class Indi_Db_Table
     protected function _spaceCoords() {
 
         // Get space description info, and if space's scheme is 'none' - return empty array
-        $space = $this->space(); $ruleA = array(); if ($space['scheme'] == 'none') return $ruleA;
+        $space = $this->space(); $ruleA = []; if ($space['scheme'] == 'none') return $ruleA;
 
         // Shortcut to coord types array
         $_ = explode('-', $space['scheme']);
 
         // For each duration-responsible space-field append 'required' validation rule, at first
         foreach ($_ as $coord) if (in($coord, 'dayQty,minuteQty,timespan'))
-            $ruleA[$space['coords'][$coord]] = array('req' => true);
+            $ruleA[$space['coords'][$coord]] = ['req' => true];
 
         // For each space-field (including duration-responsible fields) - set/append data-type validation rules
         foreach ($_ as $coord) switch ($coord) {
-            case 'date':      $ruleA[$space['coords'][$coord]]  = array('rex' => 'date'); break;
-            case 'datetime':  $ruleA[$space['coords'][$coord]]  = array('rex' => 'datetime'); break;
-            case 'time':      $ruleA[$space['coords'][$coord]]  = array('rex' => 'time'); break;
-            case 'timeId':    $ruleA[$space['coords'][$coord]]  = array('rex' => 'int11'); break;
-            case 'dayQty':    $ruleA[$space['coords'][$coord]] += array('rex' => 'int11'); break;
-            case 'minuteQty': $ruleA[$space['coords'][$coord]] += array('rex' => 'int11'); break;
-            case 'timespan':  $ruleA[$space['coords'][$coord]] += array('rex' => 'timespan'); break;
+            case 'date':      $ruleA[$space['coords'][$coord]]  = ['rex' => 'date']; break;
+            case 'datetime':  $ruleA[$space['coords'][$coord]]  = ['rex' => 'datetime']; break;
+            case 'time':      $ruleA[$space['coords'][$coord]]  = ['rex' => 'time']; break;
+            case 'timeId':    $ruleA[$space['coords'][$coord]]  = ['rex' => 'int11']; break;
+            case 'dayQty':    $ruleA[$space['coords'][$coord]] += ['rex' => 'int11']; break;
+            case 'minuteQty': $ruleA[$space['coords'][$coord]] += ['rex' => 'int11']; break;
+            case 'timespan':  $ruleA[$space['coords'][$coord]] += ['rex' => 'timespan']; break;
         }
 
         // Return space-coord fields and their validation rules
@@ -1784,7 +1784,7 @@ class Indi_Db_Table
         // data-type-validation, performed by $this->scratchy() call, because $this->scratchy() call
         // is being made prior to $this->validate() call, so we have no need to do data-type validation again
         // So the only validation rule that we should add - is a 'required' validation rule
-        if ($strict) foreach ($coords as &$ruleA) $ruleA = array('req' => true);
+        if ($strict) foreach ($coords as &$ruleA) $ruleA = ['req' => true];
 
         // Return
         return $coords;
@@ -1798,7 +1798,7 @@ class Indi_Db_Table
     protected function _spaceOwnersRelyOn() {
 
         // Declare
-        $ownerRelyOn = array();
+        $ownerRelyOn = [];
 
         // Collect consider-fields for all space-owner fields
         foreach ($this->_space['fields']['owners'] as $owner => $ruleA) {
@@ -1813,7 +1813,7 @@ class Indi_Db_Table
                 $cra = $cFieldR->storeRelationAbility;
 
                 // Setup rules for space-owner field's consider-field
-                $ownerRelyOn[$cFieldR->alias] = array('rex' => $cra == 'many' ? 'int11list' : 'int11');
+                $ownerRelyOn[$cFieldR->alias] = ['rex' => $cra == 'many' ? 'int11list' : 'int11'];
             }
         }
 
@@ -1830,7 +1830,7 @@ class Indi_Db_Table
     protected function _spaceOwnersAuto() {
 
         // Declare
-        $ownerAuto = array();
+        $ownerAuto = [];
 
         // Collect auto-fields aliases
         foreach ($this->_space['fields']['owners'] as $owner => $ruleA)
@@ -1859,7 +1859,7 @@ class Indi_Db_Table
      * @return array
      */
     protected function _spaceColors() {
-        return array('major' => null, 'point' => null);
+        return ['major' => null, 'point' => null];
     }
 
     /**

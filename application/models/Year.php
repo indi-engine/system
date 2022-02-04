@@ -28,10 +28,10 @@ class Year extends Indi_Db_Table {
             Indi::db()->query('INSERT INTO `year` SET `title` = "' . $y . '"');
 
             // Get it's id
-            $yearO = (object) array(
+            $yearO = (object) [
                 'id' => Indi::db()->getPDO()->lastInsertId(),
                 'title' => $y
-            );
+            ];
 
             // Else convert got $yearA into an stdClass instance
         } else $yearO = (object) $yearI;

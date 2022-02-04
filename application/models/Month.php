@@ -52,7 +52,7 @@ class Month extends Indi_Db_Table {
         if (!$yearR = Indi::model('Year')->fetchRow('`title` = "' . $y . '"')) {
 
             // Create it
-            $yearR = Indi::model('Year')->createRow()->assign(array('title' => $y));
+            $yearR = Indi::model('Year')->createRow()->assign(['title' => $y]);
             $yearR->save();
         }
 
@@ -61,7 +61,7 @@ class Month extends Indi_Db_Table {
         if (!$monthR = $this->fetchRow('`month` = "' . $m . '" AND `yearId` = "' . $yearR->id . '"')) {
 
             // Create it
-            $monthR = $this->createRow()->assign(array('month' => $m, 'yearId' => $yearR->id));
+            $monthR = $this->createRow()->assign(['month' => $m, 'yearId' => $yearR->id]);
             $monthR->save();
         }
 
@@ -124,12 +124,12 @@ class Month extends Indi_Db_Table {
             $id = db()->getPDO()->lastInsertId();
 
             // Get it's id
-            $monthI = array(
+            $monthI = [
                 'id' => $id,
                 'yearId' => $yearO->id,
                 'month' => $m,
                 'title' => $title
-            );
+            ];
 
             // Set `move`
             db()->query('UPDATE `month` SET `move` = "' . $id . '" WHERE `id` = "' . $id . '"');

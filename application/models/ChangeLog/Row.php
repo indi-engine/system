@@ -34,6 +34,6 @@ class ChangeLog_Row extends Indi_Db_Table_Row {
         $field = Indi::model($this->entityId)->fields($this->fieldId)->alias;
 
         // Revert value
-        $this->foreign('key')->assign(array($field => $this->was))->save();
+        $this->foreign('key')->assign([$field => $this->was])->save();
     }
 }

@@ -179,22 +179,22 @@ fwrite($pid, getmypid());
 err('socket server started, ws.pid: ' . getmypid() . ' => updated');
 
 // Session ids array
-$sessidA = array();
+$sessidA = [];
 
 // Languages array
-$langidA = array();
+$langidA = [];
 
 // Clients' streams array
-$clientA = array();
+$clientA = [];
 
 // Array, containing URL path mentioned within handshake-headers
-$pathA = array();
+$pathA = [];
 
 // Meta array, containing info about what users the active streams belongs to, and what roles those users are
-$channelA = array();
+$channelA = [];
 
 // RabbitMQ queues array
-$queueA = array();
+$queueA = [];
 
 // Start serving
 while (true) {
@@ -206,7 +206,7 @@ while (true) {
     $listenA[] = $server;
 
     // Define/reset stream_select args
-    $write = $except = array();
+    $write = $except = [];
 
     // Check if something interesting happened
     $changed = stream_select($listenA, $write, $except, $rabbit ? 0 : null, $rabbit ? 200000 : null);
@@ -392,7 +392,7 @@ fclose($server);
 function handshake($clientI) {
 
     // Client's stream info
-    $info = array();
+    $info = [];
 
     // Get request's 1st line
     $line = fgets($clientI);
@@ -419,12 +419,12 @@ function handshake($clientI) {
     $SecWebSocketAccept = base64_encode(pack('H*', sha1($info['Sec-WebSocket-Key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
 
     // Prepare full headers list
-    $upgrade = implode("\r\n", array(
+    $upgrade = implode("\r\n", [
         'HTTP/1.1 101 Web Socket Protocol Handshake',
         'Upgrade: websocket',
         'Connection: Upgrade',
         'Sec-WebSocket-Accept: ' . $SecWebSocketAccept
-    )) . "\r\n\r\n";
+        ]) . "\r\n\r\n";
 
     // Write upgrade headers into client's stream
     fwrite($clientI, $upgrade);
@@ -444,13 +444,13 @@ function handshake($clientI) {
 function encode($payload, $type = 'text', $masked = false) {
 
     // Frame head
-    $fh = array();
+    $fh = [];
 
     // Get payload length
     $payloadLength = strlen($payload);
 
     // Frame types
-    $typeA = array('text' => 129, 'close' => 136, 'ping' => 137, 'pong' => 138);
+    $typeA = ['text' => 129, 'close' => 136, 'ping' => 137, 'pong' => 138];
 
     // Start setting up frame head
     $fh[0] = $typeA[$type];
@@ -463,7 +463,7 @@ function encode($payload, $type = 'text', $masked = false) {
 
         // Finish setting up frame head
         $fh[1] = ($masked === true) ? 255 : 127; for ($i = 0; $i < 8; $i++) $fh[$i + 2] = bindec($payloadLengthBin[$i]);
-        if ($fh[2] > 127) return array('type' => '', 'payload' => '', 'error' => 'frame too large (1004)');
+        if ($fh[2] > 127) return ['type' => '', 'payload' => '', 'error' => 'frame too large (1004)'];
 
     // Else if payload length is greater than 125b
     } else if ($payloadLength > 125) {
@@ -486,7 +486,7 @@ function encode($payload, $type = 'text', $masked = false) {
     if ($masked === true) {
 
         // Generate mask:
-        $mask = array(); for ($i = 0; $i < 4; $i++) $mask[$i] = chr(rand(0, 255));
+        $mask = []; for ($i = 0; $i < 4; $i++) $mask[$i] = chr(rand(0, 255));
 
         // Append
         $fh = array_merge($fh, $mask);
@@ -511,7 +511,7 @@ function encode($payload, $type = 'text', $masked = false) {
 function decode($data) {
 
     // Decoded data array
-    $decoded = array('payload' => '');
+    $decoded = ['payload' => ''];
 
     // Detect opcode using first byte
     $fbb = sprintf('%08b', ord($data[0]));
@@ -525,12 +525,12 @@ function decode($data) {
     $payloadLength = ord($data[1]) & 127;
 
     // If unmasked frame data received - return error msg
-    if (!$masked) return array('type' => '', 'payload' => '', 'error' => 'protocol error (1002)');
+    if (!$masked) return ['type' => '', 'payload' => '', 'error' => 'protocol error (1002)'];
 
     // Try to detect frame type, or return error msg
-    $typeA = array(1 => 'text', 2 => 'binary', 8 => 'close', 9 => 'ping', 10 => 'pong');
+    $typeA = [1 => 'text', 2 => 'binary', 8 => 'close', 9 => 'ping', 10 => 'pong'];
     if (!$decoded['type'] = $typeA[$opcode])
-        return array('type' => '', 'payload' => '', 'error' => 'unknown opcode (1003)');
+        return ['type' => '', 'payload' => '', 'error' => 'unknown opcode (1003)'];
 
     // If payload length is 126
     if ($payloadLength === 126) {
@@ -602,15 +602,15 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
         list($rid, $uid) = explode('-', $data['uid']);
 
         // Organize channels
-        if (!is_array($channelA[$rid])) $channelA[$rid] = array();
-        if (!is_array($channelA[$rid][$uid])) $channelA[$rid][$uid] = array();
+        if (!is_array($channelA[$rid])) $channelA[$rid] = [];
+        if (!is_array($channelA[$rid][$uid])) $channelA[$rid][$uid] = [];
         $channelA[$rid][$uid][$index] = $index;
 
         // Log that open-message is received
         if ($ini['log']) logd('open: ' . $data['uid'] . '-' . $index);
 
         // Write message into channel
-        fwrite($clientA[$channelA[$rid][$uid][$index]], encode(json_encode(array('type' => 'opened', 'cid' => $index))));
+        fwrite($clientA[$channelA[$rid][$uid][$index]], encode(json_encode(['type' => 'opened', 'cid' => $index])));
 
     // Else if previously connected user pings the server
     } else if ($data['type'] == 'ping') {

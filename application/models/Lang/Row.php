@@ -7,16 +7,16 @@ class Lang_Row extends Indi_Db_Table_Row {
     public function validate() {
 
         // Check
-        $this->vcheck(array(
-            'title' => array(
+        $this->vcheck([
+            'title' => [
                 'req' => true
-            ),
-            'alias' => array(
+            ],
+            'alias' => [
                 'req' => true,
                 'rex' => '/^[a-zA-Z0-9_\-]+$/',
                 'unq' => true
-            )
-        ));
+            ]
+        ]);
 
         // Call parent
         return $this->callParent();
@@ -62,11 +62,11 @@ class Lang_Row extends Indi_Db_Table_Row {
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
-                $fieldA []= array(
+                $fieldA []= [
                     'table' => 'enumset',
                     'field' => $field,
                     'where' => '`fieldId` IN (' . im($fieldIdA_enumset) . ')'
-                );
+                ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (Indi::db()->query('
@@ -117,11 +117,11 @@ class Lang_Row extends Indi_Db_Table_Row {
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
-                $fieldA []= array(
+                $fieldA []= [
                     'table' => 'enumset',
                     'field' => $field,
                     'where' => '`fieldId` IN (' . im($fieldIdA_enumset) . ')'
-                );
+                ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (Indi::db()->query('
@@ -166,11 +166,11 @@ class Lang_Row extends Indi_Db_Table_Row {
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
-                $fieldA []= array(
+                $fieldA []= [
                     'table' => 'enumset',
                     'field' => $field,
                     'where' => '`fieldId` IN (' . im($fieldIdA_enumset) . ')'
-                );
+                ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (Indi::db()->query('

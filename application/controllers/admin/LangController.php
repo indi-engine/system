@@ -25,11 +25,11 @@ class Admin_LangController extends Indi_Controller_Admin {
             $l++;
 
             // Create `lang` entry
-            Indi::model('Lang')->createRow(array(
+            Indi::model('Lang')->createRow([
                 'title' => $langI['name'],
                 'alias' => $langI['code'],
                 'toggle' => 'n'
-            ), true)->save();
+            ], true)->save();
         }
 
         // Flush result
@@ -120,7 +120,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process, for now only for *Const-fractions
-        Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+        Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
     }
 
     /**
@@ -144,7 +144,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             $out =  $_ . t()->row->alias . '.php';
 
             // Lines to be written to php-constants file
-            $lineA = array();
+            $lineA = [];
 
             // Both both php ans js wordings
             foreach ([
@@ -217,7 +217,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                         $fidx = 0;
 
                         // Wordings-by-method array, for counting purposes
-                        $methodA = array();
+                        $methodA = [];
 
                         // Foreach regex according to current type
                         foreach ($cfg['rex'] as $rex) {
@@ -326,7 +326,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
 
             // Else auto-start queue as a background process
-            Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+            Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
         }
 
         // Flush ok

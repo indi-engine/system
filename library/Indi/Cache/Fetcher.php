@@ -8,14 +8,14 @@ class Indi_Cache_Fetcher {
      *
      * @var array
      */
-    public $config = array();
+    public $config = [];
 
     /**
      * Array of data, that met all the requirements
      *
      * @var array
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * Constructor. Set $this->config only.
@@ -50,14 +50,14 @@ class Indi_Cache_Fetcher {
                     $indexA = $GLOBALS['cache'][$this->config['table']]['myi'][$criteria[1]][$criteria[2]];
 
                     // If there is a single index found, and it is 0, convert it to array
-                    if ($indexA == 0) $indexA = array(0);
+                    if ($indexA == 0) $indexA = [0];
 
                 // Else if type of current search criteria is sql `IN` or 'FIND_IN_SET(`column`, "valueslist")' clause
                 } else if (preg_match('/^`([a-zA-Z0-9_]+)`\s+IN\s*\(([a-zA-ZА-Яа-я0-9_"\',]+)\)$/', $whereI, $criteria)
                     || preg_match('/^FIND_IN_SET\s*\(`([a-zA-Z0-9_]+)`,\s*"([a-zA-Zа-яА-Я0-9,_]+)"\)$/', $whereI, $criteria)) {
 
                     // Declare $indexA array
-                    $indexA = array();
+                    $indexA = [];
 
                     // For each value within values list
                     foreach(explode(',', $criteria[2]) as $value) {
@@ -69,7 +69,7 @@ class Indi_Cache_Fetcher {
                         $indexA = array_merge($indexA,
                             is_array($GLOBALS['cache'][$this->config['table']]['myi'][$criteria[1]][$value])
                                 ? $GLOBALS['cache'][$this->config['table']]['myi'][$criteria[1]][$value]
-                                : array($GLOBALS['cache'][$this->config['table']]['myi'][$criteria[1]][$value]));
+                                : [$GLOBALS['cache'][$this->config['table']]['myi'][$criteria[1]][$value]]);
 
                     }
 
@@ -80,7 +80,7 @@ class Indi_Cache_Fetcher {
                 } else if (preg_match('/^FIND_IN_SET\s*\("([a-zA-Zа-яА-Я0-9,_]+)",\s*`([a-zA-Z0-9_]+)`\s*\)/', $whereI, $criteria)) {
 
                     // Declare $indexA array
-                    $indexA = array();
+                    $indexA = [];
 
                     // For each possible values of within certain column usage
                     foreach ($GLOBALS['cache'][$this->config['table']]['myi'][$criteria[2]] as $value => $usage)
@@ -89,7 +89,7 @@ class Indi_Cache_Fetcher {
                         if (preg_match('/,' . $criteria[1] . ',/', ',' . $value . ','))
 
                             // Merge arrays if indexes of data items, where current value was found
-                            $indexA = array_merge($indexA, is_array($usage) ? $usage : array($usage));
+                            $indexA = array_merge($indexA, is_array($usage) ? $usage : [$usage]);
 
 
                     // Unset non-unique values within $indexA array
@@ -97,16 +97,16 @@ class Indi_Cache_Fetcher {
                 }
 
                 // If at any step of chech no results were found - stop
-                if (!$indexA) return array();
+                if (!$indexA) return [];
 
                 // If only one index was found - convert it into an array
-                if (!is_array($indexA)) $indexA = array($indexA);
+                if (!is_array($indexA)) $indexA = [$indexA];
 
                 // Find the interception between indexes, found for all search criteria items
                 $sievedA = is_null($sievedA) ? $indexA : array_intersect($sievedA, $indexA);
 
                 // If no indexes found, return empty array
-                if (!count($sievedA)) return array();
+                if (!count($sievedA)) return [];
             }
 
             //d($this->config);
@@ -233,7 +233,7 @@ class Indi_Cache_Fetcher {
                                     if (!preg_replace($l, '', $tail)) {
 
                                         // Prepare and return the whole set of params
-                                        $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                                        $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                                         $config['where'] = preg_split('/ AND /i', $where[1]);
                                         $config['order']['column'] = trim($order[1], '`');
                                         $config['order']['direction'] = $order[2] ? $order[2] : 'ASC';
@@ -246,7 +246,7 @@ class Indi_Cache_Fetcher {
                             } else {
 
                                 // Prepare and return partial params set - all but without LIMIT mention
-                                $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                                $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                                 $config['where'] = preg_split('/ AND /i', $where[1]);
                                 $config['order']['column'] = trim($order[1], '`');
                                 $config['order']['direction'] = $order[2] ? $order[2] : 'ASC';
@@ -260,7 +260,7 @@ class Indi_Cache_Fetcher {
                             if (!preg_replace($l, '', $tail)) {
 
                                 // Prepare and return the whole set of params
-                                $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                                $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                                 $config['where'] = preg_split('/ AND /i', $where[1]);
                                 $config['limit'] = $limit[1];
                                 return $config;
@@ -271,7 +271,7 @@ class Indi_Cache_Fetcher {
                     } else {
 
                         // Prepare and return partial params set - only column names, table name and WHERE clause
-                        $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                        $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                         $config['where'] = preg_split('/ AND /i', $where[1]);
                         return $config;
                     }
@@ -290,7 +290,7 @@ class Indi_Cache_Fetcher {
 
                                 // Prepare return and partial params set, containing info about columns, table,
                                 // ORDER and LIMIT clauses
-                                $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                                $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                                 $config['order']['column'] = trim($order[1], '`');
                                 $config['order']['direction'] = $order[2] ? $order[2] : 'ASC';
                                 $config['limit'] = $limit[1];
@@ -302,7 +302,7 @@ class Indi_Cache_Fetcher {
                     } else {
 
                         // Prepare and return partial params set, containing info about columns, table and ORDER clause
-                        $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                        $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                         $config['order']['column'] = trim($order[1], '`');
                         $config['order']['direction'] = $order[2] ? $order[2] : 'ASC';
                         return $config;
@@ -315,7 +315,7 @@ class Indi_Cache_Fetcher {
                     if (!preg_replace($l, '', $tail)) {
 
                         // Prepare and return partial params set, containing info about columns, table and LIMIT clause
-                        $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                        $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                         $config['limit'] = $limit[1];
                         return $config;
                     }
@@ -323,7 +323,7 @@ class Indi_Cache_Fetcher {
 
             // Else if there is nothing left in query except mentions of columns and table names - return it
             } else {
-                $config = array('field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]);
+                $config = ['field' => preg_split('/`, *`/', trim($fieldtable[1], '`')), 'table' => $fieldtable[3]];
                 return $config;
             }
         }
@@ -403,7 +403,7 @@ class Indi_Cache_Fetcher {
 
             // If $column variable is set, the array of only values within that column will be returned
             if (isset($column)) {
-                $data = array(); foreach ($this->data as $item) $data[] = $item[$column]; return $data;
+                $data = []; foreach ($this->data as $item) $data[] = $item[$column]; return $data;
 
             // Else required data for all found rows will be returned
             } else return $this->data;
@@ -422,13 +422,13 @@ class Indi_Cache_Fetcher {
         // Get the full list of possible properties within any data item
         $fieldA = array_keys($GLOBALS['cache'][$this->config['table']]['myd']);
 
-        if (!is_array($indexA) && strlen($indexA)) $indexA = array($indexA);
+        if (!is_array($indexA) && strlen($indexA)) $indexA = [$indexA];
 
         // Foreach index
         foreach ($indexA as $indexI) {
 
             // Declare data item properties array
-            $dataI = array();
+            $dataI = [];
 
             // Fulfil data item properties array with values, picked from certain keys at certain indexes
             foreach ($fieldA as $fieldI)

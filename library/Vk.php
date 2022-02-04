@@ -29,7 +29,7 @@ class Vk {
      *
      * @var array
      */
-    protected static $_codeA = array(
+    protected static $_codeA = [
         1 => 'Произошла неизвестная ошибка. Попробуйте повторить запрос позже.',
         2 => 'Приложение выключено. Необходимо включить приложение в настройках https://vk.com/editapp?id={Ваш API_ID} или использовать тестовый режим (test_mode=1)',
         3 => 'Передан неизвестный метод. Проверьте, правильно ли указано название вызываемого метода: http://vk.com/dev/methods',
@@ -61,7 +61,7 @@ class Vk {
         500 => 'Действие запрещено. Вы должны включить переводы голосов в настройках приложения. Проверьте настройки приложения: https://vk.com/editapp?id={Ваш API_ID}&section=payments',
         600 => 'Нет прав на выполнение данных операций с рекламным кабинетом.',
         603 => 'Произошла ошибка при работе с рекламным кабинетом.'
-    );
+    ];
 
     /**
      * Get the response
@@ -101,7 +101,7 @@ class Vk {
         }
 
         // Return complete info related to request and it's response
-        return array('request' => array('url' => $url, 'data' => $data), 'response' => $response);
+        return ['request' => ['url' => $url, 'data' => $data], 'response' => $response];
     }
 
     /**
@@ -117,13 +117,13 @@ class Vk {
         $raw = $response['response'];
 
         // If cURL response is empty
-        if (empty($raw)) $result = array('success' => false, 'msg' => 'Empty cURL raw response');
+        if (empty($raw)) $result = ['success' => false, 'msg' => 'Empty cURL raw response'];
 
         // Else if cURL error occured
-        else if (preg_match('/^curl/', $raw)) $result = array('success' => false, 'msg' => $raw);
+        else if (preg_match('/^curl/', $raw)) $result = ['success' => false, 'msg' => $raw];
 
         // Else if raw response can't be json-decoded
-        else if (($json = json_decode($raw, true)) === null) $result = array('success' => false, 'msg' => $raw);
+        else if (($json = json_decode($raw, true)) === null) $result = ['success' => false, 'msg' => $raw];
 
         // Else
         else {
@@ -132,11 +132,11 @@ class Vk {
             $e = $json['error'];
 
             // Build result
-            $result = array(
+            $result = [
                 'success' => $e ? false : true,
                 'msg' => $e ? self::$_codeA[$e['error_code']] . "\n" . $e['error_msg'] : '',
                 'json' => $json
-            );
+            ];
         }
 
         // Start building result
@@ -170,10 +170,10 @@ class Vk {
         $method = 'messages.send';
 
         // Append data
-        $data = array(
+        $data = [
             'domain' => $to,
             'message' => $message
-        );
+        ];
 
         // Get response
         $response = self::response($method, $data);
@@ -195,9 +195,9 @@ class Vk {
         $method = 'utils.resolveScreenName';
 
         // Append data
-        $data = array(
+        $data = [
             'screen_name' => $name
-        );
+        ];
 
         // Get response
         $response = self::response($method, $data);

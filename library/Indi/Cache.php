@@ -25,7 +25,7 @@ class Indi_Cache {
         $php .= "\n(\n";
 
         // Declare array for database table columns values data representation
-        $cacheColumnA = array();
+        $cacheColumnA = [];
 
         // For each column within $columnA array
 		foreach ($columnA as $columnI) {
@@ -34,7 +34,7 @@ class Indi_Cache {
             $cacheColumnI = "    '" . $columnI . "'=>Array(";
 
             // Declare/Reset array for certain column values data representation
-            $cacheColumnDataA = array();
+            $cacheColumnDataA = [];
 
             // For each item within fetched data
 			foreach ($dataA as $dataI)
@@ -56,7 +56,7 @@ class Indi_Cache {
         $php .= "\n(\n";
 
         // Reset array for database table columns values representation
-        $cacheColumnA = array();
+        $cacheColumnA = [];
 
         // For each column within $columnA array
         foreach ($columnA as $columnI) {
@@ -65,7 +65,7 @@ class Indi_Cache {
             $cacheColumnI = "    '" . $columnI . "'=>Array(";
 
             // Declare/Reset array for certain column values usage representation
-            $cacheColumnValueUsageA = array();
+            $cacheColumnValueUsageA = [];
 
             // For each item within fetched data - get the usage
             foreach ($dataA as $i => $dataI)

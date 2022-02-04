@@ -43,7 +43,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!$abs) die(I_DOWNLOAD_ERROR_NO_FILE);
 
         // Declare an array, for containing downloading file title parts
-        $title = array();
+        $title = [];
 
         // Append entity title to filename parts array, if needed
         //if ($fieldR->params['prependEntityTitle'] == 'true') $title[] = Indi::model($fieldR->entityId)->title() . ',';

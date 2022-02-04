@@ -14,7 +14,7 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param array $config
      */
-    public function __construct(array $config = array()) {
+    public function __construct(array $config = []) {
 
         // Explicitly set table name
         $config['table'] = 'notice';

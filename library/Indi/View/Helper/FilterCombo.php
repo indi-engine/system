@@ -36,7 +36,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
         $this->getRow()->$alias = null;
 
         // Declare WHERE array
-        $this->where = array();
+        $this->where = [];
 
         // Append statiс WHERE, defined for filter
         if (strlen($this->filter->filter)) $this->where []= $this->filter->filter;
@@ -186,7 +186,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
     public function getDefaultValue() {
         $gotFromScope = Indi::trail()->scope->filter($this->field->alias);
 
-        if ($gotFromScope || ($this->field->columnTypeId == 12 && $gotFromScope != '' && $gotFromScope !== array())) {
+        if ($gotFromScope || ($this->field->columnTypeId == 12 && $gotFromScope != '' && $gotFromScope !== [])) {
             if ($this->isMultiSelect())
                 if(is_array($gotFromScope))
                     $gotFromScope = implode(',', $gotFromScope);

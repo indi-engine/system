@@ -27,7 +27,7 @@ class Indi_Controller {
         $admin = Indi::admin() ? Indi::admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
-        if (Indi::ini()->general->seoUri) Indi::ini()->design = array();
+        if (Indi::ini()->general->seoUri) Indi::ini()->design = [];
 
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
@@ -139,7 +139,7 @@ class Indi_Controller {
     /**
      * Dispatch the request
      */
-    public function dispatch($args = array()) {
+    public function dispatch($args = []) {
 
         // Setup the Content-Type header
         header('Content-Type: text/html; charset=' . $this->encoding);
@@ -183,8 +183,8 @@ class Indi_Controller {
     /**
      * Call the desired action method
      */
-    public function call($action, $args = array()) {
-        call_user_func_array(array($this, $action . 'Action'), $args);
+    public function call($action, $args = []) {
+        call_user_func_array([$this, $action . 'Action'], $args);
     }
 
     /**
@@ -256,7 +256,7 @@ class Indi_Controller {
         if (!$json || $json == '[]') return null;
 
         // Array for ORDER clauses
-        $orderA = array();
+        $orderA = [];
 
         // Decode json
         $jsonA = json_decode($json, 1);
@@ -316,13 +316,13 @@ class Indi_Controller {
         $model = $FROM ? Indi::model($FROM) : Indi::trail()->model;
 
         // Defined an array for collecting data, that may be used in the process of building an excel spreadsheet
-        $excelA = array();
+        $excelA = [];
 
         // Use Indi::get()->search if $search arg is not given
         $search = $search ?: Indi::get()->search;
 
         // Clauses stack
-        $where = array();
+        $where = [];
 
         // If we have no 'search' param in query string, there is nothing to do here
         if ($search) {
@@ -367,7 +367,7 @@ class Indi_Controller {
                         $alt = Indi::trail()->filters->select($found->id, $lookupBy)->current()->alt;
 
                     // Set excel filter mention title
-                    $excelA[$found->alias] = array('title' => $alt ? $alt : $found->title);
+                    $excelA[$found->alias] = ['title' => $alt ? $alt : $found->title];
                 }
 
                 // If field is not storing foreign keys
@@ -395,7 +395,7 @@ class Indi_Controller {
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['type'] = 'color';
-                        $excelA[$found->alias]['value'] = array($hueFrom, $hueTo);
+                        $excelA[$found->alias]['value'] = [$hueFrom, $hueTo];
                         $excelA[$found->alias]['offset'] = $searchOnField['_xlsLabelWidth'];
 
                     // Else if $found field's control element is 'Check' or 'Combo', we use '=' clause
@@ -524,7 +524,7 @@ class Indi_Controller {
                 } else if ($found->original('storeRelationAbility') == 'many') {
 
                     // Declare array for FIND_IN_SET clauses
-                    $fisA = array();
+                    $fisA = [];
 
                     // Set $any as `false`
                     $any = false;
@@ -590,7 +590,7 @@ class Indi_Controller {
         if (Indi::trail()->filters) $filter = Indi::trail()->filters->select($field->id, 'fieldId')->at(0);
 
         // Declare WHERE array
-        $where = array();
+        $where = [];
 
         // Append statiс WHERE, defined for filter
         if (strlen($filter->filter)) $where[] = $filter->filter;
@@ -673,10 +673,10 @@ class Indi_Controller {
         if (!$field instanceof Field_Row) jflush(false, sprintf(I_COMBO_ODATA_FIELD404, $for));
 
         // Decode consider-fields values
-        $consider = json_decode($post['consider'], true) ?: array();
+        $consider = json_decode($post['consider'], true) ?: [];
 
         // Array for valid values of consider-fields
-        $picked = array();
+        $picked = [];
 
         // Foreach consider-field, linked to current field
         foreach ($field->nested('consider') as $considerR) {
@@ -695,7 +695,7 @@ class Indi_Controller {
                 $picked[$cField->alias] = $consider[$cField->alias];
 
             // Check format, and if ok - assign value
-            $this->row->mcheck(array($cField->alias => array('rex' => '~^[a-zA-Z0-9,]*$~')), $consider);
+            $this->row->mcheck([$cField->alias => ['rex' => '~^[a-zA-Z0-9,]*$~']], $consider);
         }
 
         // Remember picked values within row's system data
@@ -708,12 +708,12 @@ class Indi_Controller {
         if ($post->selected && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
 
             // Check $_POST['selected']
-            jcheck(array(
-                'selected' => array(
+            jcheck([
+                'selected' => [
                     'rex' => 'int11',
                     'key' => $field->relation
-                )
-            ), $post);
+                ]
+            ], $post);
 
             // Assign
             $this->row->$for = $post->selected;
@@ -730,7 +730,7 @@ class Indi_Controller {
         $options = $comboDataA['options'];
         $titleMaxLength = $comboDataA['titleMaxLength'];
 
-        $options = array('ids' => array_keys($options), 'data' => array_values($options));
+        $options = ['ids' => array_keys($options), 'data' => array_values($options)];
 
         // Setup number of found rows
         if ($comboDataRs->found()) $options['found'] = $comboDataRs->found();
@@ -766,7 +766,7 @@ class Indi_Controller {
         $call = array_pop(array_slice(debug_backtrace(), 1, 1));
 
         // Make the call
-        return call_user_func_array(array($this, get_parent_class($call['class']) . '::' .  $call['function']), func_num_args() ? func_get_args() : $call['args']);
+        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
     }
     
     /**
@@ -781,7 +781,7 @@ class Indi_Controller {
             $this->adjustGridDataRowset();
 
             // Build the grid data, based on current rowset
-            $data = $this->rowset->toGridData(Indi::trail()->gridFields ? Indi::trail()->gridFields->column('alias') : array());
+            $data = $this->rowset->toGridData(Indi::trail()->gridFields ? Indi::trail()->gridFields->column('alias') : []);
 
             // Adjust grid data
             $this->adjustGridData($data);
@@ -812,21 +812,21 @@ class Indi_Controller {
                 unset($scope['actionrowset']['south']['tabs']);
 
                 // Setup basic data
-                $pageData = array(
+                $pageData = [
                     'totalCount' => $this->rowset->found(),
                     'blocks' => $data,
-                );
+                ];
 
                 // Setup meta data
-                $metaData = array(
+                $metaData = [
                     'scope' => $scope
-                );
+                ];
 
                 // Append summary data
                 if ($summary = $this->rowsetSummary()) $pageData['summary'] = $summary;
 
                 // Provide combo filters consistence
-                foreach (Indi::trail()->filters ?: array() as $filter) {
+                foreach (Indi::trail()->filters ?: [] as $filter) {
 
                     // If `consistence` flag is Off - skip
                     if (!$filter->consistence) continue;
@@ -877,7 +877,7 @@ class Indi_Controller {
     public function finalWHERE($primaryWHERE, $customWHERE = null, $merge = true) {
 
         // Empty array yet
-        $finalWHERE = array();
+        $finalWHERE = [];
 
         // If there was a primaryHash passed instead of $primaryWHERE param - then we extract all scope params from
         if (is_string($primaryWHERE) && preg_match('/^[0-9a-zA-Z]{10}$/', $primaryWHERE)) {
@@ -986,7 +986,7 @@ class Indi_Controller {
     public function appendDisabledField($alias, $displayInForm = false, $defaultValue = '') {
 
         // Support for $alias arg, containing 'myPrefix*' values
-        $aliasA = array();
+        $aliasA = [];
         foreach (ar($alias) as $a)
             if (!preg_match('#([a-zA-Z0-9]+)\*$#', $a, $prefix)) $aliasA []= $a; else {
                 $selector = ': #^' . trim($a, '*') . '#';
@@ -1136,7 +1136,7 @@ class Indi_Controller {
         if ($fh = Indi::post('fromHour')) $data['fromHour'] = $fh;
 
         // Flush info about disabled options (dates and others)
-        jflush(true, array('disabled' => $this->row->spaceDisabledValues($data)));
+        jflush(true, ['disabled' => $this->row->spaceDisabledValues($data)]);
     }
 
     /**
@@ -1245,7 +1245,7 @@ class Indi_Controller {
             if (is_array($jump)) {
 
                 // Foreach jump - build <span> containing destination, hover title
-                $spanA = array(); foreach ($jump as $dest)
+                $spanA = []; foreach ($jump as $dest)
                     $spanA []= '<span jump="' . $dest['href'] . '"'
                         . rif($dest['over'], ' title="$1"')
                         . rif($dest['ibox'], ' $1')
@@ -1308,7 +1308,7 @@ class Indi_Controller {
      * @param array $cfg
      * @return mixed
      */
-    public function prompt($msg, $cfg = array()) {
+    public function prompt($msg, $cfg = []) {
 
         // Get $_GET['answer']
         $answer = Indi::get()->answer;

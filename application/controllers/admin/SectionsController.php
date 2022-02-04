@@ -18,7 +18,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // created for system sections should be moved from /core/js/admin/app/controller
         // to Indi Engine system app source code into app/controller folder, and then should be
         // compiled by 'sencha app build --production' command, so that admin/classic/app.js bundle to be refreshed
-        $repoDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        $repoDirA = ['s' => 'core', 'o' => 'coref', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -71,7 +71,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
         // 'often' - in '/coref', 'project' - in '/www'
-        $repoDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        $repoDirA = ['s' => 'core', 'o' => 'coref', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -164,7 +164,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         foreach (ar('extendsPhp,extendsJs') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
 
         // Dirs dict by section type
-        $dir = array('s' => 'core', 'p' => 'www', 'o' => 'coref');
+        $dir = ['s' => 'core', 'p' => 'www', 'o' => 'coref'];
 
         // Foreach data item
         foreach ($data as &$item) {
@@ -278,23 +278,23 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $sectionR = t()->model->createRow();
 
             // Get `sectionId` field extjs config
-            $sectionId_field = $sectionR->combo('sectionId') + array('disabledOptions' => $sectionId_disabled);
+            $sectionId_field = $sectionR->combo('sectionId') + ['disabledOptions' => $sectionId_disabled];
 
             // Prompt for timeId
-            jprompt(I_SECTION_CLONE_SELECT_PARENT, array($sectionId_field));
+            jprompt(I_SECTION_CLONE_SELECT_PARENT, [$sectionId_field]);
 
         // If answer is 'ok'
         } else if (Indi::get('answer') == 'ok') {
 
             // Validate prompt data and flush error is something is not ok
-            $_ = jcheck(array(
-                'sectionId' => array(
+            $_ = jcheck([
+                'sectionId' => [
                     'req' => true,
                     'rex' => 'int11',
                     'key' => 'section',
                     'dis' => $sectionId_disabled
-                )
-            ), json_decode(Indi::post('_prompt'), true));
+                ]
+            ], json_decode(Indi::post('_prompt'), true));
 
             // Get prefix
             $prefix = Indi::model($_['sectionId']->entityId)->table();
@@ -329,7 +329,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 foreach (ar('section2action,grid,alteredField,search') as $nested) {
 
                     // Get tree-column, if set
-                    if ($tc = Indi::model($nested)->treeColumn()) $parent[$nested] = array(0 => 0);
+                    if ($tc = Indi::model($nested)->treeColumn()) $parent[$nested] = [0 => 0];
 
                     // Foreach nested entry
                     foreach ($r->nested($nested) as $nestedR) {
@@ -386,7 +386,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!count($fields)) return;
 
         // Declare exclusions array, because not each entity field will have corresponding column in grid
-        $exclusions = array();
+        $exclusions = [];
 
         // Exclude tree column, if exists
         if ($tc = m($this->row->entityId)->treeColumn()) $exclusions[] = $tc;
@@ -394,7 +394,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Exclude columns that have controls of several types, listed below
         for ($i = 0; $i < count($fields); $i++) {
             // 13 - html-editor
-            if (in_array($fields[$i]['elementId'], array(13))) {
+            if (in_array($fields[$i]['elementId'], [13])) {
                 if ($fields[$i]['elementId'] == 6 && $fields[$i]['alias'] == 'title') {} else {
                     $exclusions[] = $fields[$i]['alias'];
                 }

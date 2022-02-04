@@ -44,7 +44,7 @@ trait Indi_Queue_L10n_AdminExport {
         return $return;
     }
 
-    public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = array()) {
+    public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = []) {
 
         // Call parent
         $return = parent::appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where);
@@ -119,7 +119,7 @@ trait Indi_Queue_L10n_AdminExport {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('queueState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
@@ -129,7 +129,7 @@ trait Indi_Queue_L10n_AdminExport {
 
             // Check whether we should use setter method call instead of google translate api call
             if (!$exportable = method_exists(m($table)->createRow(), 'export'))
-                $queueChunkR->assign(array('queueState' => 'noneed'))->basicUpdate();
+                $queueChunkR->assign(['queueState' => 'noneed'])->basicUpdate();
 
             // Get queue items by 50 entries at a time
             Indi::model('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $exportable) {
@@ -159,7 +159,7 @@ trait Indi_Queue_L10n_AdminExport {
                     } else $result = '';
 
                     // Write translation result
-                    $r->assign(array('result' => $result, 'stage' => 'queue'))->basicUpdate();
+                    $r->assign(['result' => $result, 'stage' => 'queue'])->basicUpdate();
 
                     // Increment `queueSize` prop on `queueChunk` entry and save it
                     $queueChunkR->queueSize++;
@@ -177,11 +177,11 @@ trait Indi_Queue_L10n_AdminExport {
             }, $where, '`id` ASC', 50, true);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('queueState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'queueState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -220,7 +220,7 @@ trait Indi_Queue_L10n_AdminExport {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('applyState' => 'progress'))->basicUpdate();
+            $queueChunkR->assign(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "queue"';
@@ -232,7 +232,7 @@ trait Indi_Queue_L10n_AdminExport {
                 if ($r->result) file_put_contents($l10n_target_abs, $r->result . "\n", FILE_APPEND);
 
                 // Write translation result
-                $r->assign(array('stage' => 'apply'))->basicUpdate();
+                $r->assign(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct++;
@@ -248,7 +248,7 @@ trait Indi_Queue_L10n_AdminExport {
             }, $where, '`id` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
+            $queueChunkR->assign(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Get file by lines
@@ -261,7 +261,7 @@ trait Indi_Queue_L10n_AdminExport {
         file_put_contents($l10n_target_abs, join('', $php));
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
+        $queueTaskR->assign(['state' => 'finished', 'applyState' => 'finished'])->save();
     }
 
     /**

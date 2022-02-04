@@ -25,16 +25,16 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
     public function activateAction() {
 
         // Build combo config for that field
-        $combo = array('fieldLabel' => '', 'allowBlank' => 0) + t()->row->combo('mode');
+        $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('mode');
 
         // Get field title
         $title = mb_strtolower($this->row->field('mode')->title);
 
         // Show prompt and obtain data
-        $prompt = $this->prompt('Пожалуйста, выберите ' . $title, array($combo));
+        $prompt = $this->prompt('Пожалуйста, выберите ' . $title, [$combo]);
 
         // Save new mode
-        foreach ($this->selected as $selected) $selected->assign(array('mode' => $prompt['mode']))->save();
+        foreach ($this->selected as $selected) $selected->assign(['mode' => $prompt['mode']])->save();
 
         // Flush success
         jflush(true);

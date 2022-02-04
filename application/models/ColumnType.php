@@ -6,7 +6,7 @@ class ColumnType extends Indi_Db_Table {
      *
      * @var array
      */
-    protected $_zeroValue = array(
+    protected $_zeroValue = [
         'VARCHAR(255)' => '',
         'INT(11)' => '0',
         'TEXT' => '',
@@ -21,7 +21,7 @@ class ColumnType extends Indi_Db_Table {
         'SET' => '',
         'BOOLEAN' => '0',
         'VARCHAR(10)' => '000#000000'
-    );
+    ];
 
     /**
      * Classname for row

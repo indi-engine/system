@@ -8,7 +8,7 @@ class Indi_Uri_Base {
 
         // Include l10n constants
         foreach (ar('www,coref,core') as $fraction)
-            foreach (array('', '/admin') as $_)
+            foreach (['', '/admin'] as $_)
                 if (file_exists($file = DOC . STD . '/'. $fraction . '/application/lang' . $_ . '/' . Indi::ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
                     include_once($file);
 
@@ -86,7 +86,7 @@ class Indi_Uri_Base {
      * @param string $uri
      * @param array $args
      */
-    public function dispatch($uri = '', $args = array()){
+    public function dispatch($uri = '', $args = []){
 
         // If $uri argument is given - parse it
         if ($uri) $this->parse($uri);

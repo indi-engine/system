@@ -106,6 +106,6 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process
-        Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+        Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
     }
 }

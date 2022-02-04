@@ -6,7 +6,7 @@ class Indi_Db_Table_Row_Noeval extends Indi_Db_Table_Row {
      *
      * @param array $config
      */
-    public function __construct(array $config = array()) {
+    public function __construct(array $config = []) {
 
         // Setup initial properties
         $this->_init($config);

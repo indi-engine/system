@@ -8,7 +8,7 @@ class Config_Row extends Indi_Db_Table_Row {
      *
      * @param array $config
      */
-    public function __construct(array $config = array()) {
+    public function __construct(array $config = []) {
 
         // Call parent
         parent::__construct($config);
@@ -32,7 +32,7 @@ class Config_Row extends Indi_Db_Table_Row {
         } else {
 
             // Set up wording versions
-            $versionA = array(
+            $versionA = [
                 'minute' => 'минут,минута,минуты',
                 'hour' => 'часов,час,часа',
                 'day' => 'дней,день,дня',
@@ -41,7 +41,7 @@ class Config_Row extends Indi_Db_Table_Row {
                 'quarter' => 'кварталов,квартал,квартала',
                 'half' => 'полугодий,полугодие,полугодия',
                 'year' => 'лет,год,года',
-            );
+            ];
 
             // Set up `expiryDurationStr` according to `expiryMeasure` and it's duration
             $this->expiryDurationStr = tbq($this->expiryDuration, $versionA[$this->expiryMeasure]);

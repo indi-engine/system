@@ -15,7 +15,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 $data['title'] = $this->_language['title'][Indi::ini('lang')->admin];
 
         // Get localized
-        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: array()  as $field => $l10n)
+        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: [] as $field => $l10n)
             if (array_key_exists($field, $data))
                 if ($this->_language[$field] = json_decode($l10n[$this->id], true))
                     $data[$field] = $this->_language[$field][Indi::ini('lang')->admin];
@@ -35,7 +35,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $fieldR = $this->foreign('fieldId');
 
         // Get the existing possible values
-        $enumsetA = $fieldR->nested('enumset', array('order' => 'move'))->column('alias');
+        $enumsetA = $fieldR->nested('enumset', ['order' => 'move'])->column('alias');
 
         // If modified version of value (or value that's going to be appended) is already exists within list of possible value - set mismatch
         if (array_key_exists('alias', $this->_modified))
@@ -67,7 +67,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $fieldR = $this->foreign('fieldId');
 
         // Get the existing possible values
-        $enumsetA = $fieldR->nested('enumset', array('order' => 'move'))->column('alias');
+        $enumsetA = $fieldR->nested('enumset', ['order' => 'move'])->column('alias');
 
         // Get the database table name
         $table = $fieldR->foreign('entityId')->table;
@@ -186,7 +186,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $fieldR = $this->foreign('fieldId');
 
         // Get the existing possible values
-        $enumsetA = $fieldR->nested('enumset', array('order' => 'move'))->column('alias');
+        $enumsetA = $fieldR->nested('enumset', ['order' => 'move'])->column('alias');
 
         // Get the database table name
         $table = $fieldR->foreign('entityId')->table;
@@ -218,7 +218,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
 
             // If after unset there is no more sql default values left, we should set at least one, so we pick first
             // item from $enumsetA and set it as $defaultValue
-            if (count($defaultValue) == 0) $defaultValue = array(current($enumsetA));
+            if (count($defaultValue) == 0) $defaultValue = [current($enumsetA)];
         }
 
         // Convert $defaultValue back from array to string

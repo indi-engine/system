@@ -12,11 +12,11 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         if (is_array($params)) {
 
             // Create `queueTask` entry
-            $queueTaskR = Indi::model('QueueTask')->createRow(array(
+            $queueTaskR = Indi::model('QueueTask')->createRow([
                 'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
                 'params' => json_encode($params),
                 'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-            ), true);
+            ], true);
 
             // Save `queueTask` entries
             $queueTaskR->save();

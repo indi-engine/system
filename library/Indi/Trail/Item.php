@@ -47,7 +47,7 @@ class Indi_Trail_Item {
      *
      * @var array
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * Constructor
@@ -55,7 +55,7 @@ class Indi_Trail_Item {
     public function __construct() {
 
         // Setup `pseudoFields` prop as an empty instance of Field_Rowset class
-        $this->pseudoFields = new Field_Rowset(array('table' => 'field'));
+        $this->pseudoFields = new Field_Rowset(['table' => 'field']);
     }
     /**
      * Getter. Currently declared only for getting 'model' and 'fields' property
@@ -122,7 +122,7 @@ class Indi_Trail_Item {
      * @return array
      */
     public function toArray() {
-        $array = array();
+        $array = [];
         if ($this->section) {
             $array['section'] = $this->section->toArray();
             if ($this->section->defaultSortField)
@@ -162,7 +162,7 @@ class Indi_Trail_Item {
                 if ($fieldR->param('shade')) $array['row'][$fieldR->alias] = '';
 
             // Collect aliases of all CKEditor-fields
-            $ckeFieldA = array();
+            $ckeFieldA = [];
             foreach ($this->fields as $fieldR)
                 if ($fieldR->foreign('elementId')->alias == 'html')
                     $ckeFieldA[] = $fieldR->alias;
@@ -203,7 +203,7 @@ class Indi_Trail_Item {
                 if (t()->fields($r->fieldId)->relation != 6) continue;
 
                 // Pick store
-                $r->editor = array('store' => $blank->combo($r->fieldId, true));
+                $r->editor = ['store' => $blank->combo($r->fieldId, true)];
             }
 
             // Convert to nesting tree and then to array
@@ -242,7 +242,7 @@ class Indi_Trail_Item {
 
         // Make the call
         return call_user_func_array(
-            array(Indi::model($this->section->entityId), $call['function']),
+            [Indi::model($this->section->entityId), $call['function']],
             func_num_args() ? func_get_args() : $call['args']
         );
     }

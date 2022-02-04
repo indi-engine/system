@@ -32,7 +32,7 @@ Ext.create('Indi', {
         time: <?=time()?>,
         menu: <?=json_encode($this->menu)?>,
         ini: {
-            ws: <?=json_encode(array_merge((array) Indi::ini('ws'), array('pem' => is_file(DOC . STD . '/core/application/ws.pem'))))?>,
+            ws: <?=json_encode(array_merge((array) Indi::ini('ws'), ['pem' => is_file(DOC . STD . '/core/application/ws.pem')]))?>,
             demo: <?=Indi::demo(false) ? 'true' : 'false'?>
         },
         user: {
