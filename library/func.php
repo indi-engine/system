@@ -1427,11 +1427,17 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
         // If prop's value should be an identifier of an existing object, but such object not found - flush error
         if ($rule['key'] && strlen($value) && $value != '0') {
 
+            // Parse key expr
+            preg_match('~^(.+?)(\*)?(:I_[A-Z0-9_]+)?$~', $rule['key'], $expr);
+
             // Get model/table name
-            $m = preg_replace('/\*$/', '', $rule['key']);
+            $m = $expr[1];
+
+            // Get error msg constant name
+            $const = trim($expr[3], ':') ?: $c . 'KEY';
 
             // Setup $s as a flag indicating whether *_Row (single row) or *_Rowset should be fetched
-            $s = $m == $rule['key'];
+            $s = !$expr[2];
 
             // Setup WHERE clause and method name to be used for fetching
             $w = $s ? '`id` = "' . $value . '"' : '`id` IN (' . $value . ')';
@@ -1441,7 +1447,7 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
             $rowA[$prop] = Indi::model($m)->$f($w);
 
             // If no *_Row was fetched, or empty *_Rowset was fetched - flush error
-            if (!($s ? $rowA[$prop] : $rowA[$prop]->count())) $flushFn($arg1, sprintf(constant($c . 'KEY'), $rule['key'], $value));
+            if (!($s ? $rowA[$prop] : $rowA[$prop]->count())) $flushFn($arg1, sprintf(constant($const), $m, $value));
         }
 
         // If prop's value should be equal to some certain value, but it's not equal - flush error
@@ -1539,8 +1545,8 @@ function u() {
 /**
  * Shorthand function for Indi::ini()
  */
-function ini() {
-    return Indi::ini();
+function ini($section = null) {
+    return Indi::ini($section);
 }
 
 /**
@@ -1999,12 +2005,16 @@ function element($alias, array $ctor = []) {
 
 /**
  * Get `admin` entry either by login or by ID, or create/update it
+ * If no args given - currently logged in admin would be returned
  *
  * @param string|int $alias Element ID or alias
  * @param array $ctor Props to be involved in insert/update
  * @return Indi_Db_Table_Row|null
  */
-function admin($login, array $ctor = []) {
+function admin($login = null, array $ctor = []) {
+
+    // If no args given - call Indi::admin() and return current user
+    if (!func_num_args()) return Indi::admin();
 
     // If $login arg is an integer - assume it's an entry's `id`, otherwise assume it's a `email`
     $byprop = Indi::rexm('int11', $login) ? 'id' : 'email';
