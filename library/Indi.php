@@ -1068,7 +1068,7 @@ class Indi {
         $refresh = false;
 
         // Get filename of file, containing modification times for all files that are compiled
-        $mtime = DOC . STD . '/core' . (Indi::uri()->module == 'front' ? 'f' : '') . '/' . $rel . '/' . Indi::uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . '.mtime';
+        $mtime = DOC . STD . '/core' . (uri()->module == 'front' ? 'f' : '') . '/' . $rel . '/' . uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . '.mtime';
 
         // Append mirror files
         $mirrorA = [];
@@ -1203,8 +1203,8 @@ class Indi {
             if ($alias != 'ie') $txt = gzencode($txt, 9);
 
             // Build the filename
-            $gz = DOC . STD . '/core' . (Indi::uri()->module == 'front' ? 'f' : '')
-                . $rel . '/' . Indi::uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . rif($alias != 'ie', '.gz') .'.' . $ext;
+            $gz = DOC . STD . '/core' . (uri()->module == 'front' ? 'f' : '')
+                . $rel . '/' . uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . rif($alias != 'ie', '.gz') .'.' . $ext;
 
             // Refresh compilation file
             $fp = fopen($gz , 'w');
@@ -1512,7 +1512,7 @@ class Indi {
 			self::$_blockA = [];
 
 			// Fetch rowset
-            $w = Indi::uri()->staticpageAdditionalWHERE; $w[] = '`toggle` = "y"';
+            $w = uri()->staticpageAdditionalWHERE; $w[] = '`toggle` = "y"';
             $staticBlockRs = m('Staticblock')->all($w);
 			
 			// Setup values in self::$_blockA array under certain keys
@@ -1684,7 +1684,7 @@ class Indi {
         // If $arg argument is an array, we assume that it's a route stack, so we create a new trail object and store
         // it into the registry
         if (is_array($arg)) {
-            $class = 'Indi_Trail_' . ucfirst(Indi::uri()->module);
+            $class = 'Indi_Trail_' . ucfirst(uri()->module);
             return Indi::registry('trail', new $class($arg, $arg2));
         }
 
@@ -2479,7 +2479,7 @@ class Indi {
         if (!session_id()) {
 
             // Set cookie domain
-            Indi::uri()->setCookieDomain();
+            uri()->setCookieDomain();
 
             // Start session
             session_start();

@@ -96,4 +96,4 @@ Indi::files($_FILES);
 unset($_POST, $_GET, $_FILES);
 
 // Dispatch uri request
-if (!CMD) Indi::uri()->dispatch();
+if (!CMD) uri()->dispatch();

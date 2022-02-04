@@ -14,7 +14,7 @@ class Indi_Controller {
     public function __construct() {
 
         // Set locale
-        if (ini()->lang->{Indi::uri()->module} == 'ru')
+        if (ini()->lang->{uri()->module} == 'ru')
             setlocale(LC_TIME, 'ru_RU.UTF-8', 'ru_utf8', 'Russian_Russia.UTF8', 'ru_RU', 'Russian');
 
         // Create an Indi_View instance
@@ -32,7 +32,7 @@ class Indi_Controller {
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
         // additional paths for both scripts and helpers
-        if (Indi::uri('module') == 'front' && is_array($dsdirA = (array) ini('view')->design))
+        if (uri('module') == 'front' && is_array($dsdirA = (array) ini('view')->design))
             foreach($dsdirA as $dsdirI => $domainS) foreach (explode(' ', $domainS) as $domain) {
 
                 // Split $domain by domain name itself and admin-type, that may be specified
@@ -54,7 +54,7 @@ class Indi_Controller {
             $dir = DOC . STD . '/www/application/views/';
 
             // Build tpl for current action within current section
-            $actionTpl = Indi::uri('section') . '/' . Indi::uri('action');
+            $actionTpl = uri('section') . '/' . uri('action');
 
             // Foreach design
             foreach (ini()->design as $design) {
@@ -73,7 +73,7 @@ class Indi_Controller {
                 }
 
                 // Build name of tpl especially for certain entry
-                $entryTpl = $actionTpl . rif(Indi::uri('id'), '-$1');
+                $entryTpl = $actionTpl . rif(uri('id'), '-$1');
 
                 // Get custom template filename, applicable for section/action/entry combination
                 $tpl = $dir . $design . '/' . $entryTpl . '.php';
@@ -99,9 +99,9 @@ class Indi_Controller {
         for ($i = 0; $i < 2; $i++) {
 
             // Get the module paths and prefixes
-            $mpath =  !$i ? '/' . Indi::uri('module') : '';
-            $mhpp =   !$i ? '/' . ucfirst(Indi::uri('module')) : '';
-            $mhcp =   !$i ? ucfirst(Indi::uri('module')) . '_' : '';
+            $mpath =  !$i ? '/' . uri('module') : '';
+            $mhpp =   !$i ? '/' . ucfirst(uri('module')) : '';
+            $mhcp =   !$i ? ucfirst(uri('module')) . '_' : '';
 
             // Add script paths for certain/current project
             if (is_dir(DOC . STD . '/www/' . $spath)) {
@@ -149,10 +149,10 @@ class Indi_Controller {
 
         // Here we provide an ability for operations, required for
         // a certain item to be performed, instead actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', Indi::uri()->consider)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider)) {
 
             // Call the function, that will do these operations
-            $this->{Indi::uri()->action . 'ActionI' . ucfirst(Indi::uri()->consider)}(Indi::post());
+            $this->{uri()->action . 'ActionI' . ucfirst(uri()->consider)}(Indi::post());
 
             // Force to stop the execution. Usually, execution won't reach this line, as in most cases
             // jflush() is called earlier than here at this line
@@ -160,10 +160,10 @@ class Indi_Controller {
         }
 
         // Here we provide an ability for a combo options data to be fetched instead of actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', Indi::uri()->odata)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata)) {
 
             // Fetch the combo options data
-            $this->{Indi::uri()->action . 'ActionOdata'}(Indi::uri()->odata, Indi::post());
+            $this->{uri()->action . 'ActionOdata'}(uri()->odata, Indi::post());
 
             // Force to stop the execution. Usually, execution won't reach this line, as in most cases
             // execution is stopped earlier than here at this line
@@ -174,7 +174,7 @@ class Indi_Controller {
         if (Indi::get('jump')) return;
 
         // Call the desired action method
-        $this->call(Indi::uri()->action, $args);
+        $this->call(uri()->action, $args);
 
         // Do the post-dispatch maintenance
         $this->postDispatch();
@@ -634,11 +634,11 @@ class Indi_Controller {
             // Create pseudo field for sibling combo
             $field = Indi_View_Helper_Admin_SiblingCombo::createPseudoFieldR(
                 $for, t()->section->entityId, t()->scope->WHERE);
-            $this->row->$for = Indi::uri()->id;
+            $this->row->$for = uri()->id;
             $order = is_array(t()->scope->ORDER) ? end(t()->scope->ORDER) : t()->scope->ORDER;
             $dir = array_pop(explode(' ', $order));
             $order = trim(preg_replace('/ASC|DESC/', '', $order), ' `');
-            if (preg_match('/\(/', $order)) $offset = Indi::uri()->aix - 1;
+            if (preg_match('/\(/', $order)) $offset = uri()->aix - 1;
 
         // Else if options data is for combo, associated with a existing form field - pick that field
         } else $field = m()->fields($for);
@@ -647,7 +647,7 @@ class Indi_Controller {
         if (!$field) $field = t()->pseudoFields->field($for);
 
         // Do some things, custom for certain field, before odata fetch
-        if (($method = 'formActionOdata' . ucfirst(Indi::uri()->odata)) && method_exists($this, $method))
+        if (($method = 'formActionOdata' . ucfirst(uri()->odata)) && method_exists($this, $method))
             $this->$method(json_decode(Indi::post('consider'), true));
 
         // Prepare and flush json-encoded combo options data
@@ -775,7 +775,7 @@ class Indi_Controller {
     public function indexAction() {
 
         // If data should be got as json or excel
-        if (Indi::uri('format') || (!$this->_isRowsetSeparate && t(true))) {
+        if (uri('format') || (!$this->_isRowsetSeparate && t(true))) {
 
             // Adjust rowset, before using it as a basement of grid data
             $this->adjustGridDataRowset();
@@ -800,7 +800,7 @@ class Indi_Controller {
             else if (Indi::rexm('int11list', trim(Indi::get('required'), '[]'))) jflush(true, ['required' => $data]);
 
             // Else if data is gonna be used in the excel spreadsheet building process, pass it to a special function
-            if (in(Indi::uri('format'), 'excel,pdf')) $this->export($data, Indi::uri('format'));
+            if (in(uri('format'), 'excel,pdf')) $this->export($data, uri('format'));
 
             // If data is needed as json for extjs grid store - we convert $data to json with a proper format and flush it
             else {
@@ -856,7 +856,7 @@ class Indi_Controller {
                 $this->adjustJsonExport($pageData);
 
                 // If uri's 'format' param is specified, and it is 'json' - flush json-encoded $pageData
-                if (Indi::uri('format') == 'json') jflush(true, $pageData);
+                if (uri('format') == 'json') jflush(true, $pageData);
 
                 // Else assign that data into scope's `pageData` prop
                 else t()->scope->pageData = $pageData;

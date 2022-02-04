@@ -98,16 +98,16 @@ class Indi_Uri_Base {
         $this->trailingSlash();
 
         // If section name is not valid - throw an error message
-        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', Indi::uri('section'))) die(I_URI_ERROR_SECTION_FORMAT);
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', uri('section'))) die(I_URI_ERROR_SECTION_FORMAT);
 
         // Build the controller class name
-        $controllerClass = 'Admin_' . ucfirst(Indi::uri()->section) . 'Controller';
+        $controllerClass = 'Admin_' . ucfirst(uri()->section) . 'Controller';
 
         // If such controller class does not exist
         if (!class_exists($controllerClass)) {
 
             // Try to find
-            $sectionR = m('Section')->row('`alias` = "' . Indi::uri()->section . '"');
+            $sectionR = m('Section')->row('`alias` = "' . uri()->section . '"');
 
             // If section was found, and it has non-empty `extends` property - set $controllerParentClass as the value
             // of that property, or set it as 'Project_Controller_Admin'

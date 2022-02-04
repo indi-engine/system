@@ -1140,7 +1140,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $cValue = $r->$consider;
 
                         // Get entry, identified by current value of consider-field
-                        $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
+                        $cEntryR = m($cField->relation)->row($cValue);
 
                         // Get it's value
                         $cValueForeign = $cEntryR->{$cField_foreign->alias};

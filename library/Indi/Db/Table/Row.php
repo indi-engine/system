@@ -1790,7 +1790,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $cField_foreign = $considerR->foreign('foreign');
 
                 // Get entry, identified by current value of consider-field
-                $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
+                $cEntryR = m($cField->relation)->row($cValue);
 
                 // Get it's value
                 $cValueForeign = $cEntryR->{$cField_foreign->alias};
@@ -1873,7 +1873,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else {
 
             // Get selected row
-            $selectedR = $relatedM->row('`id` = "' . $selected . '"');
+            $selectedR = $relatedM->row($selected);
 
             // Setup current value of a sorting field as start point
             if (!is_array($order) && $order && !preg_match('/[\(,]/', $orderColumn ?: $order))
@@ -2467,7 +2467,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $cField_foreign = $considerR->foreign('foreign');
 
                             // Get entry, identified by current value of consider-field
-                            $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
+                            $cEntryR = m($cField->relation)->row($cValue);
 
                             // Spoof model
                             $model = $cValue = $cEntryR->{$cField_foreign->alias};
@@ -6056,7 +6056,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
                 if ($rule['key'] && $this->$prop) {
-                    if ($fgn = m($rule['key'])->row('`id` = "' . $this->$prop . '"')) $this->foreign($prop, $fgn);
+                    if ($fgn = m($rule['key'])->row($this->$prop)) $this->foreign($prop, $fgn);
                     else jflush(false, sprintf(I_JCHECK_KEY, $rule['key'], $this->$prop));
                 }
                 

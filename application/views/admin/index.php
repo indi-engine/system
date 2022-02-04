@@ -28,7 +28,7 @@ Ext.create('Indi', {
         std: '<?=STD?>',
         com: '<?=COM ? '' : '/admin'?>',
         pre: '<?=PRE?>',
-        uri: <?=json_encode(Indi::uri()->toArray())?>,
+        uri: <?=json_encode(uri()->toArray())?>,
         time: <?=time()?>,
         menu: <?=json_encode($this->menu)?>,
         ini: {

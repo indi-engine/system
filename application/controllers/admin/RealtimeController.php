@@ -52,7 +52,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch() {
 
         // Prevent `realtime` entry having `type` = "context" from being created for 'restart' action
-        if (Indi::uri()->action == 'restart') $this->restartAction();
+        if (uri()->action == 'restart') $this->restartAction();
 
         // If $_GET['newtab'] exists
         if (array_key_exists('newtab', (array) Indi::get())) {

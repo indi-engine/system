@@ -297,7 +297,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             m($this->_original['entityId'])->fields()->exclude($this->id);
 
             // Get original entity row
-            $entityR = m('Entity')->row('`id` = "' . $this->_original['entityId'] . '"');
+            $entityR = m('Entity')->row($this->_original['entityId']);
 
             // If current field was used as title-field within original entity
             if ($entityR->titleFieldId == $this->id) {
@@ -923,14 +923,14 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
 
         // Check if is was not a TEXT column, and it had no FULLTEXT index, but now it is a TEXT column, - we add a FULLTEXT index
-        if (m('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type != 'TEXT')
+        if (m('ColumnType')->row($original['columnTypeId'])->type != 'TEXT')
             if (!db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch())
                 if ($columnTypeR->type == 'TEXT')
                     db()->query('ALTER TABLE  `' . $table .'` ADD FULLTEXT (`' . $this->alias . '`)');
 
         // Check if is was a TEXT column, and it had a FULLTEXT index, but now it is not a TEXT column, - we remove a FULLTEXT index
-        if (m('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type == 'TEXT')
+        if (m('ColumnType')->row($original['columnTypeId'])->type == 'TEXT')
             if ($index = db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch(PDO::FETCH_OBJ)->Key_name)
                 if ($columnTypeR->type != 'TEXT')
@@ -988,7 +988,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!($this->_original['columnTypeId'] && $this->_modified['columnTypeId'] && !$this->_modified['entityId'])) return;
 
         // Get the column type row, representing field's column before type change (original column)
-        $curTypeR = m('ColumnType')->row('`id` = "' . $this->_original['columnTypeId'] . '"');
+        $curTypeR = m('ColumnType')->row($this->_original['columnTypeId']);
 
         // Get the table name
         $tbl = $this->foreign('entityId')->table;

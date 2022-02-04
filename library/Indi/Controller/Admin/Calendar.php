@@ -100,10 +100,10 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         if (!t()->row || t()->row->id) return;
 
         // If clicked timestamp is not given as an uri-param - return
-        if (!$since = Indi::uri('since')) return;
+        if (!$since = uri('since')) return;
 
         // Get 'until' uri-param, if given
-        $until = Indi::uri('until');
+        $until = uri('until');
 
         // Setup `extraUri`, for 'since' and 'until' uri-params being kept even if entry's form will be reloaded
         t()->action->extraUri = '/since/' . $since . ($until ? '/until/' . $until : '');
@@ -127,7 +127,7 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         }
 
         // Append kanban value into $prefill array
-        if (($k = t()->section->kanban) && ($v = Indi::uri()->kanban)) $prefill[$k['prop']] = $v;
+        if (($k = t()->section->kanban) && ($v = uri()->kanban)) $prefill[$k['prop']] = $v;
 
         // Assign prepared values
         $this->row->set($prefill);

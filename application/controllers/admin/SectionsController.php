@@ -404,7 +404,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Exclude columns that are links to parent sections
         $parentSectionId = $this->row->sectionId;
         do {
-            $parentSection = m()->row('`id` = "' . $parentSectionId . '"');
+            $parentSection = m()->row($parentSectionId);
             if ($parentSection && $parentEntity = $parentSection->foreign('entityId')){
                 for ($i = 0; $i < count($fields); $i++) {
                     if ($fields[$i]['alias'] == $parentEntity->table . 'Id' && $fields[$i]['relation'] == $parentEntity->id) {

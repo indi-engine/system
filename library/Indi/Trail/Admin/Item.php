@@ -91,11 +91,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Setup action
             foreach ($this->actions as $actionR)
-                if ($actionR->alias == Indi::uri('action'))
+                if ($actionR->alias == uri('action'))
                     $this->action = $actionR;
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
-            if ($this->action->rowRequired == 'n' || Indi::uri()->phantom) $this->gridFields($sectionR);
+            if ($this->action->rowRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
 
             // Alter fields
             $originalDefaults = [];
@@ -198,7 +198,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if ($index == 0) {
 
             // If there is an id
-            if (Indi::uri('id')) {
+            if (uri('id')) {
 
                 // If action is not 'index', so it mean that we are dealing with not rowset, but certain row
                 if ($this->action->rowRequired == 'y') {
@@ -208,7 +208,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                     // Prepend an additional part to WHERE clause array, so if row would be found,
                     // it will mean that that row match all necessary requirements
-                    array_unshift($where, db()->sql('`id` = :s', Indi::uri('id')));
+                    array_unshift($where, db()->sql('`id` = :s', uri('id')));
                     //i($where, 'a');
 
                     // Try to find a row by given id, that, hovewer, also match all requirements,
@@ -244,7 +244,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Else there was no id passed within uri, and action is 'form' or 'save', so we assume that
             // user it trying to add a new row within current section
-            } else if (Indi::uri('action') == 'form' || Indi::uri('action') == 'save') {
+            } else if (uri('action') == 'form' || uri('action') == 'save') {
 
                 // Create an empty row object
                 $this->row = $this->model->new();
@@ -301,13 +301,13 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 : t($index)->model->table() . 'Id';
 
             // Create empty row to be used as parent row, if need
-            if (Indi::uri('id') === '0' && t($index-1)->action->rowRequired == 'n' && $index == 1)
+            if (uri('id') === '0' && t($index-1)->action->rowRequired == 'n' && $index == 1)
                 if ($this->row = $this->model->new())
                     return;
 
             // Get the id
             $id = t($index-1)->action->rowRequired == 'n' && $index == 1
-                ? Indi::uri('id')
+                ? uri('id')
                 : (preg_match('/,/', t($index-1)->row->$connector) // ambiguous check
                     ? $_SESSION['indi']['admin']['trail']['parentId'][$this->section->id]
                     : t($index-1)->row->$connector);

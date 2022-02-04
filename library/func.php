@@ -1511,12 +1511,12 @@ function _2sec($expr) {
 }
 
 /**
- * Shortcut for accessing t()
+ * Shortcut for accessing Indi::trail()
  *
  * @return Indi_Trail_Admin/Indi_Trail_Front
  */
-function t($arg = null, $arg2 = null) {
-    return Indi::trail($arg, $arg2);
+function t() {
+    return forward_static_call_array(['Indi', 'trail'], func_get_args());
 }
 
 /**
@@ -1545,8 +1545,8 @@ function u() {
 /**
  * Shorthand function for Indi::ini()
  */
-function ini($section = null) {
-    return Indi::ini($section);
+function ini() {
+    return forward_static_call_array(['Indi', 'ini'], func_get_args());
 }
 
 /**
@@ -2844,5 +2844,14 @@ function _var_export($ctor, $oneLine = 3) {
  * @return Indi_Db
  */
 function db() {
-    return Indi::db();
+    return forward_static_call_array(['Indi', 'db'], func_get_args());
+}
+
+/**
+ * Shortcut to Indi::uri()
+ *
+ * @return Indi_Uri
+ */
+function uri() {
+    return forward_static_call_array(['Indi', 'uri'], func_get_args());
 }

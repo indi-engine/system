@@ -1543,7 +1543,7 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Row|null
      */
     public function entity() {
-        return m('Entity')->row('`id` = "' . $this->_id . '"');
+        return m('Entity')->row($this->_id);
     }
 
     /**

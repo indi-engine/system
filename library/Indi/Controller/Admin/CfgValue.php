@@ -10,7 +10,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         if (!ini('db')->cfgField) return;
 
         //
-        if (Indi::uri()->action != 'form') return;
+        if (uri()->action != 'form') return;
 
         // Preliminary prompt for cfgField
         $data = $this->prompt('Выберите параметр настройки элемента управления', [['fieldLabel' => ''] + $row->combo('cfgField')]);
@@ -72,7 +72,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         ]);
 
         //
-        if (Indi::uri()->action == 'form') $gen->title = t()->fields->field('cfgValue')->title;
+        if (uri()->action == 'form') $gen->title = t()->fields->field('cfgValue')->title;
 
         // Spoof `cfgValue` field
         t()->fields->exclude('cfgValue', 'alias')->append($gen);

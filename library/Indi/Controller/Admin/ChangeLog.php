@@ -74,8 +74,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         $connectorAlias = 'key';
 
         // Get the connector value
-        $connectorValue = Indi::uri('action') == 'index'
-            ? Indi::uri('id')
+        $connectorValue = uri('action') == 'index'
+            ? uri('id')
             : $_SESSION['indi']['admin']['trail']['parentId'][t(1)->section->id];
 
         // Return clause

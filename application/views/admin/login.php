@@ -15,7 +15,7 @@
             std: '<?=STD?>',
             com: '<?=COM ? '' : '/admin'?>',
             pre: '<?=PRE?>',
-            uri: <?=json_encode(Indi::uri()->toArray())?>,
+            uri: <?=json_encode(uri()->toArray())?>,
             title: '<?=ini('general')->title ?: 'Indi Engine'?>',
             throwOutMsg: '<?=$this->throwOutMsg?>',
             lang: <?=json_encode($this->lang)?>

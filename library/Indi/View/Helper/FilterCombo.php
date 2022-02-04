@@ -86,7 +86,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
         $field = $this->getField();
 
         // If filter is non-boolean
-        if (($field->relation || $field->columnTypeId == 12) && (Indi::uri('format') || $this->filter->consistence == 2)) {
+        if (($field->relation || $field->columnTypeId == 12) && (uri('format') || $this->filter->consistence == 2)) {
 
             // Get field's alias
             $alias = $field->alias;

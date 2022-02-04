@@ -10,13 +10,13 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
     public function downloadAction(){
 
         // If 'id' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', Indi::uri('id'))) die(I_DOWNLOAD_ERROR_NO_ID);
+        if (!preg_match('/^[0-9]+$/', uri('id'))) die(I_DOWNLOAD_ERROR_NO_ID);
 
         // If 'field' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', Indi::uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
+        if (!preg_match('/^[0-9]+$/', uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
 
         // Get the field
-        $fieldR = m('Field')->row('`id` = "' . Indi::uri('field') . '"');
+        $fieldR = m('Field')->row(uri('field'));
 
         // If field was not found
         if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
@@ -31,7 +31,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if ($fieldR->foreign('elementId')->alias != 'upload') die(I_DOWNLOAD_ERROR_FIELD_DOESNT_DEAL_WITH_FILES);
 
         // Get the row
-        $r = m($fieldR->entityId)->row('`id` = "' . Indi::uri('id') . '"');
+        $r = m($fieldR->entityId)->row(uri('id'));
 
         // If row was not found
         if (!$r) die(I_DOWNLOAD_ERROR_NO_SUCH_ROW);
@@ -171,7 +171,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         header('Content-Type: application/javascript');
 
         // Check whether `lang` uri-param is given
-        $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', Indi::uri()->lang))
+        $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', uri()->lang))
             ? '/../core/js/admin/app/locale/' . $lang
             : '/js/admin/app/proxy,/js/admin/app/data,/js/admin/app/lib,/js/admin/app/controller';
 

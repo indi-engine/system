@@ -143,18 +143,18 @@ class Indi_Trail_Admin {
         // contain any definition of country, that city should be added under. So, this solution
         // allow to get the id of country
 
-        if (Indi::uri('section') != 'index' && Indi::uri('action') == 'index' && Indi::uri('id')) {
+        if (uri('section') != 'index' && uri('action') == 'index' && uri('id')) {
 
             // If there is no info about nesting yet, we create an array, where it will be stored
             if (!is_array($_SESSION['indi']['admin']['trail']['parentId']))
                 $_SESSION['indi']['admin']['trail']['parentId'] = [];
 
             // Save id
-            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = Indi::uri('id');
+            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = uri('id');
 
         // If we're trying to jump to creation-form in a section, having parent section - setup parent id
-        } else if (Indi::uri('action') == 'form' && Indi::uri('jump') && ($parent = Indi::uri('parent')))
-            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = Indi::uri('parent');
+        } else if (uri('action') == 'form' && uri('jump') && ($parent = uri('parent')))
+            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = uri('parent');
 
         // Reverse items
         self::$items = array_reverse(self::$items);
@@ -166,14 +166,14 @@ class Indi_Trail_Admin {
     public function authLevel3() {
 
         // If user is trying to create row, despite on it's restricted - raise up an error
-        if (((Indi::uri('action') == 'form' && !(Indi::uri('combo') || Indi::uri('filter')))
-            || Indi::uri('action') == 'save') && !Indi::uri('id') && !Indi::uri('aix')
-            && !Indi::uri('check') && $this->item()->section->disableAdd == 1) {
+        if (((uri('action') == 'form' && !(uri('combo') || uri('filter')))
+            || uri('action') == 'save') && !uri('id') && !uri('aix')
+            && !uri('check') && $this->item()->section->disableAdd == 1) {
             $error = I_ACCESS_ERROR_ROW_ADDING_DISABLED;
 
         // Else if 'id' param is mentioned in uri, but it's value either not specified,
         // or does not match allowed format - setup an error
-        } else if (array_key_exists('id', (array) Indi::uri()) && !preg_match('/^[0-9]+$/', Indi::uri()->id))
+        } else if (array_key_exists('id', (array) uri()) && !preg_match('/^[0-9]+$/', uri()->id))
             $error = I_URI_ERROR_ID_FORMAT;
 
         // Setup row for each trail item, or setup an access error
