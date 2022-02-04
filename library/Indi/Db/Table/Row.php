@@ -367,7 +367,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $this->{$coords['date']} = $this->date('spaceSince');
 
                 // Set 'timeId' field
-                $this->{$coords['timeId']} = Indi::model('Time')->fetchRow(
+                $this->{$coords['timeId']} = Indi::model('Time')->row(
                     '`title` = "' . $this->date('spaceSince', 'H:i') . '"'
                 )->id;
             }
@@ -1026,7 +1026,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     }
 
                     // Update `realtime` entry
-                    $realtimeR->assign($data)->basicUpdate();
+                    $realtimeR->set($data)->basicUpdate();
                 }
             }
         }
@@ -1564,7 +1564,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $order = 'move ' . ($direction == 'up' ? 'DE' : 'A') . 'SC';
 
             // Find row, that will be used for `move` property value exchange
-            if ($changeRow = $this->model()->fetchRow($where, $order)) {
+            if ($changeRow = $this->model()->row($where, $order)) {
 
                 // Backup `move` of current row
                 $backup = $this->move;
@@ -1790,7 +1790,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $cField_foreign = $considerR->foreign('foreign');
 
                 // Get entry, identified by current value of consider-field
-                $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+                $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
 
                 // Get it's value
                 $cValueForeign = $cEntryR->{$cField_foreign->alias};
@@ -1873,7 +1873,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else {
 
             // Get selected row
-            $selectedR = $relatedM->fetchRow('`id` = "' . $selected . '"');
+            $selectedR = $relatedM->row('`id` = "' . $selected . '"');
 
             // Setup current value of a sorting field as start point
             if (!is_array($order) && $order && !preg_match('/[\(,]/', $orderColumn ?: $order))
@@ -1881,13 +1881,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Alternate WHERE
-        if (Indi::admin()->alternate && !$fieldR->ignoreAlternate && !$fieldR->params['ignoreAlternate']
-            && ($af = Indi::admin()->alternate($relatedM->table()))
+        if (admin()->alternate && !$fieldR->ignoreAlternate && !$fieldR->params['ignoreAlternate']
+            && ($af = admin()->alternate($relatedM->table()))
             && ($alternateField = $relatedM->fields($af))
             && !array_key_exists('consider:' . $af, $where))
             $where['alternate'] = $alternateField->storeRelationAbility == 'many'
-                ? 'FIND_IN_SET("' . Indi::admin()->id . '", `' . $alternateField->alias . '`)'
-                : '`' . $alternateField->alias . '` = "' . Indi::admin()->id .'"';
+                ? 'FIND_IN_SET("' . admin()->id . '", `' . $alternateField->alias . '`)'
+                : '`' . $alternateField->alias . '` = "' . admin()->id .'"';
 
         // If related entity has tree-structure
         if ($relatedM->treeColumn()) {
@@ -2108,7 +2108,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $distinctGroupByFieldValues[$dataR->{$fieldR->params['groupBy']}] = true;
 
             // Get group field
-            $groupByFieldR = $fieldM->fetchRow([
+            $groupByFieldR = $fieldM->row([
                 '`entityId` = "' . $fieldR->relation . '"',
                 '`alias` = "' . $fieldR->params['groupBy'] . '"'
             ]);
@@ -2356,7 +2356,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($key)) {
 
             // Create a rowset with current row as a single row within that rowset
-            $rowset = Indi::trail()->model->createRowset(['rows' => [$this]]);
+            $rowset = $this->model()->createRowset(['rows' => [$this]]);
 
             // Fetch all required data using rowset's foreign() method instead of row's foreign() method
             $rowset->foreign($key);
@@ -2467,7 +2467,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $cField_foreign = $considerR->foreign('foreign');
 
                             // Get entry, identified by current value of consider-field
-                            $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+                            $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
 
                             // Spoof model
                             $model = $cValue = $cEntryR->{$cField_foreign->alias};
@@ -4323,7 +4323,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($exclude && in($m->table(), ar($exclude))) continue;
 
             // Try to find an account with such a username, and if found
-            if ($m->fetchRow([
+            if ($m->row([
                 '`email` = "' . $this->email . '"',
                 $m->id() == $this->model()->id() ? '`id` != "' . $this->id . '"' : 'TRUE'
             ])) {
@@ -5032,7 +5032,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * as this properties starting with that sign is used for internal features,
      * so they are not allowed for assign and will be ignored if faced.
      *
-     * Example: $row->assign(array('prop1' => 'val1', 'prop2' => 'val2'));
+     * Example: $row->set(array('prop1' => 'val1', 'prop2' => 'val2'));
      * is equal to: $row->prop1 = 'val1'; $row->prop2 = 'val2';
      *
      * @param array $assign
@@ -5123,7 +5123,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($affectedFieldRs as $affectedFieldR) {
 
             // Create the changelog entry object
-            $storageR = $storageM->createRow();
+            $storageR = $storageM->new();
 
             // Setup a link to current row
             $storageR->entityId = $entityId;
@@ -5196,9 +5196,9 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
             if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
-            $storageR->changerType = Indi::model(Indi::admin()->alternate ? Indi::admin()->alternate : 'Admin')->id();
-            $storageR->profileId = Indi::admin()->profileId ?: 0;
-            $storageR->changerId = Indi::admin()->id ?: 0;
+            $storageR->changerType = Indi::model(admin()->alternate ? admin()->alternate : 'Admin')->id();
+            $storageR->profileId = admin()->profileId ?: 0;
+            $storageR->changerId = admin()->id ?: 0;
             $storageR->save();
         }
     }
@@ -5635,9 +5635,9 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $prefix
      */
     public function author($prefix = 'author') {
-        if (Indi::admin()) {
-            $this->{$prefix . 'Type'} = Indi::admin()->model()->id();
-            $this->{$prefix . 'Id'} = Indi::admin()->id;
+        if (admin()) {
+            $this->{$prefix . 'Type'} = admin()->model()->id();
+            $this->{$prefix . 'Id'} = admin()->id;
         } else {
             $this->{$prefix . 'Type'} = Indi::me('aid');
             $this->{$prefix . 'Id'} = Indi::me('id');
@@ -5814,10 +5814,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($new as $id) {
 
             // Create row
-            $r = Indi::model($nested)->createRow();
+            $r = Indi::model($nested)->new();
 
             // Setup main props
-            $r->assign([$this->table() . 'Id' => $this->id, $connector => $id]);
+            $r->set([$this->table() . 'Id' => $this->id, $connector => $id]);
 
             // Setup prop, presented by $ctor arg.
             $_ = is_callable($ctor) ? $ctor($r, $id, $connector) : $ctor;
@@ -5826,7 +5826,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($_ === false) continue;
 
             // Assign additional props
-            if (is_array($_)) $r->assign($_);
+            if (is_array($_)) $r->set($_);
 
             // Save
             $r->save();
@@ -5864,9 +5864,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($ctor == 'check') return true;
 
         // Create new entry
-        $entry = Indi::model($entityId)->createRow(array_merge([
+        $entry = Indi::model($entityId)->new(array_merge([
             'title' => $this->$prop
-        ], $ctor), true);
+        ], $ctor));
 
         // Build WHERE clause to detect whether such entry is already exist
         $where = [];
@@ -5874,7 +5874,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $where[] = Indi::db()->sql('`' . $key . '` = :s', $value);
 
         // Check whether such entry is already exist, and if yes - use existing, or save new otherwise
-        if ($already = Indi::model($entityId)->fetchRow($where)) $entry = $already; else $entry->save();
+        if ($already = Indi::model($entityId)->row($where)) $entry = $already; else $entry->save();
 
         // Assign or append new entry's id, depend of field's storeRelationAbility
         if ($field->storeRelationAbility == 'one') $this->$prop = $entry->id;
@@ -6038,7 +6038,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     : $this->_mismatch[$prop] = sprintf(I_MCHECK_KEY, ucfirst(Indi::model($fieldR->relation)->table()), $this->$prop);
 
                 // If prop's value should be unique within the whole database table, but it's not - flush error
-                else if ($rule['unq'] && !$this->zero($prop) && $this->model()->fetchRow([
+                else if ($rule['unq'] && !$this->zero($prop) && $this->model()->row([
                     '`' . $prop . '` = "' . $this->$prop . '"', '`id` != "' . $this->id . '"'
                     ])) $flush
                     ? mflush($prop, sprintf(I_MCHECK_UNQ, $this->$prop, $fieldR->title))
@@ -6056,7 +6056,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
                 if ($rule['key'] && $this->$prop) {
-                    if ($fgn = Indi::model($rule['key'])->fetchRow('`id` = "' . $this->$prop . '"')) $this->foreign($prop, $fgn);
+                    if ($fgn = Indi::model($rule['key'])->row('`id` = "' . $this->$prop . '"')) $this->foreign($prop, $fgn);
                     else jflush(false, sprintf(I_JCHECK_KEY, $rule['key'], $this->$prop));
                 }
                 
@@ -6341,7 +6341,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Create schedule
         $schedule = !$strict && array_key_exists('since', $this->_temporary)
             ? Indi::schedule($this->since, strtotime($this->until . ' +1 day'))
-            : Indi::schedule($this->_system['bounds'] ?: 'month', $this->fieldIsZero('date') ? null : $this->date);
+            : Indi::schedule($this->_system['bounds'] ?: 'month', $this->zero('date') ? null : $this->date);
 
         // Expand schedule's right bound
         $schedule->frame($frame = $this->_spaceFrame());
@@ -6827,10 +6827,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($field)) {
 
             // Create
-            $fieldR = Indi::model('Field')->createRow();
+            $fieldR = Indi::model('Field')->new();
 
             // Assign config
-            $fieldR->assign($field);
+            $fieldR->set($field);
 
             // Setup `entityId`, if not given within config
             if (!$fieldR->entityId) $fieldR->entityId = $this->model()->id;

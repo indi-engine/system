@@ -49,19 +49,19 @@ class Month extends Indi_Db_Table {
         list($y, $m) = explode('-', $date);
 
         // If there is no such a year entry found
-        if (!$yearR = Indi::model('Year')->fetchRow('`title` = "' . $y . '"')) {
+        if (!$yearR = Indi::model('Year')->row('`title` = "' . $y . '"')) {
 
             // Create it
-            $yearR = Indi::model('Year')->createRow()->assign(['title' => $y]);
+            $yearR = Indi::model('Year')->new()->set(['title' => $y]);
             $yearR->save();
         }
 
 
         // If there is no such a month entry found
-        if (!$monthR = $this->fetchRow('`month` = "' . $m . '" AND `yearId` = "' . $yearR->id . '"')) {
+        if (!$monthR = $this->row('`month` = "' . $m . '" AND `yearId` = "' . $yearR->id . '"')) {
 
             // Create it
-            $monthR = $this->createRow()->assign(['month' => $m, 'yearId' => $yearR->id]);
+            $monthR = $this->new()->set(['month' => $m, 'yearId' => $yearR->id]);
             $monthR->save();
         }
 

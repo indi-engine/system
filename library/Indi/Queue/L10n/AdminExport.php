@@ -32,7 +32,7 @@ trait Indi_Queue_L10n_AdminExport {
             //
             if ($return instanceof Indi_Db_Table_Row
                 && !in('data', $this->params['export']))
-                $return->assign([
+                $return->set([
                     'countState' => 'finished',
                     'itemsState' => 'finished',
                     'queueState' => 'finished',
@@ -82,7 +82,7 @@ trait Indi_Queue_L10n_AdminExport {
         foreach ($chunkIdA as $chunkId) {
 
             // Build line
-            $line = m('field')->fetchRow($this->meta[$chunkId])->export(false) . "->toggleL10n('qy', \$lang, false);";
+            $line = m('field')->row($this->meta[$chunkId])->export(false) . "->toggleL10n('qy', \$lang, false);";
 
             // Append to ui.php
             file_put_contents($abs, $line . "\n", FILE_APPEND);
@@ -97,7 +97,7 @@ trait Indi_Queue_L10n_AdminExport {
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
@@ -119,7 +119,7 @@ trait Indi_Queue_L10n_AdminExport {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(['queueState' => 'progress'])->basicUpdate();
+            $queueChunkR->set(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
@@ -128,8 +128,8 @@ trait Indi_Queue_L10n_AdminExport {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Check whether we should use setter method call instead of google translate api call
-            if (!$exportable = method_exists(m($table)->createRow(), 'export'))
-                $queueChunkR->assign(['queueState' => 'noneed'])->basicUpdate();
+            if (!$exportable = method_exists(m($table)->new(), 'export'))
+                $queueChunkR->set(['queueState' => 'noneed'])->basicUpdate();
 
             // Get queue items by 50 entries at a time
             Indi::model('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $exportable) {
@@ -147,7 +147,7 @@ trait Indi_Queue_L10n_AdminExport {
                         Indi::ini('lang')->admin = $source;
 
                         // Get target entry
-                        $te = m($table)->fetchRow($r->target);
+                        $te = m($table)->row($r->target);
 
                         // Do export
                         $result = $te->export($field);
@@ -159,7 +159,7 @@ trait Indi_Queue_L10n_AdminExport {
                     } else $result = '';
 
                     // Write translation result
-                    $r->assign(['result' => $result, 'stage' => 'queue'])->basicUpdate();
+                    $r->set(['result' => $result, 'stage' => 'queue'])->basicUpdate();
 
                     // Increment `queueSize` prop on `queueChunk` entry and save it
                     $queueChunkR->queueSize++;
@@ -177,11 +177,11 @@ trait Indi_Queue_L10n_AdminExport {
             }, $where, '`id` ASC', 50, true);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(['queueState' => 'finished'])->basicUpdate();
+            $queueChunkR->set(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(['state' => 'finished', 'queueState' => 'finished'])->save();
+        $queueTaskR->set(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -192,7 +192,7 @@ trait Indi_Queue_L10n_AdminExport {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
@@ -220,7 +220,7 @@ trait Indi_Queue_L10n_AdminExport {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(['applyState' => 'progress'])->basicUpdate();
+            $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "queue"';
@@ -232,7 +232,7 @@ trait Indi_Queue_L10n_AdminExport {
                 if ($r->result) file_put_contents($l10n_target_abs, $r->result . "\n", FILE_APPEND);
 
                 // Write translation result
-                $r->assign(['stage' => 'apply'])->basicUpdate();
+                $r->set(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct++;
@@ -248,7 +248,7 @@ trait Indi_Queue_L10n_AdminExport {
             }, $where, '`id` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(['applyState' => 'finished'])->basicUpdate();
+            $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Get file by lines
@@ -261,7 +261,7 @@ trait Indi_Queue_L10n_AdminExport {
         file_put_contents($l10n_target_abs, join('', $php));
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(['state' => 'finished', 'applyState' => 'finished'])->save();
+        $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
     }
 
     /**

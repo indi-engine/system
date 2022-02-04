@@ -48,7 +48,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
         foreach ($this->getField()->nested('consider') as $considerR) {
 
             // Get consider-field's alias
-            $cField = $consider = t()->model->fields($considerR->consider)->alias;
+            $cField = $consider = m()->fields($considerR->consider)->alias;
 
             // Pick consider-field's value from scope and if it's not zero-length - assign to filters shared row
             if (($cValue = t()->scope->filter($cField)) && strlen($cValue)) t()->filtersSharedRow->$cField = $cValue;
@@ -92,7 +92,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
             $alias = $field->alias;
 
             // Get table name
-            $tbl = Indi::trail()->model->table();
+            $tbl = m()->table();
 
             // Get primary WHERE
             $primaryWHERE = $this->primaryWHERE();
@@ -166,7 +166,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
     }
 
     public function getField() {
-        return t()->model->fields($this->filter->further ?: $this->filter->fieldId);
+        return m()->fields($this->filter->further ?: $this->filter->fieldId);
     }
 
     /**
@@ -175,7 +175,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
      * @return Indi_Db_Table_Row
      */
     public function getRow(){
-        return Indi::trail()->filtersSharedRow;
+        return t()->filtersSharedRow;
     }
 
     /**
@@ -184,7 +184,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
      * @return mixed|string
      */
     public function getDefaultValue() {
-        $gotFromScope = Indi::trail()->scope->filter($this->field->alias);
+        $gotFromScope = t()->scope->filter($this->field->alias);
 
         if ($gotFromScope || ($this->field->columnTypeId == 12 && $gotFromScope != '' && $gotFromScope !== [])) {
             if ($this->isMultiSelect())

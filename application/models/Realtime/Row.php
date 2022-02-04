@@ -73,7 +73,7 @@ class Realtime_Row extends Indi_Db_Table_Row {
         if ($this->type == 'channel') {
 
             // If no more channels left for that session - remove parent/session entry
-            if (!$this->model()->fetchRow([
+            if (!$this->model()->row([
                 '`type` = "channel"',
                 '`realtimeId` = "' . $this->realtimeId . '"'
             ])) $this->foreign('realtimeId')->delete();

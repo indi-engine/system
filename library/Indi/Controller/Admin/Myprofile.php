@@ -19,7 +19,7 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
     public function preDispatch() {
 
         // Force redirect to certain row
-        if (Indi::uri()->action == 'index' || Indi::uri()->id != Indi::admin()->id) {
+        if (Indi::uri()->action == 'index' || Indi::uri()->id != admin()->id) {
 
             // Set format to 'json', so scope things will be set up
             Indi::uri()->format = 'json';
@@ -29,9 +29,9 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
 
             // Spoof uri params to force row-action
             Indi::uri()->action = $this->action;
-            Indi::uri()->id = Indi::admin()->id;
-            Indi::uri()->ph = Indi::trail()->scope->hash;
-            Indi::uri()->aix = Indi::trail()->scope->aix;
+            Indi::uri()->id = admin()->id;
+            Indi::uri()->ph = t()->scope->hash;
+            Indi::uri()->aix = t()->scope->aix;
         }
 
         // Call parent
@@ -46,7 +46,7 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
     public function createContextIfNeed($scope) {
 
         // Do nothing for index-action
-        if (Indi::uri()->action == 'index' || Indi::uri()->id != Indi::admin()->id) return;
+        if (Indi::uri()->action == 'index' || Indi::uri()->id != admin()->id) return;
 
         // Call parent
         parent::createContextIfNeed($scope);
@@ -61,7 +61,7 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
     public function adjustPrimaryWHERE($where) {
 
         // Prevent user from accessing someone else's details
-        $where['static'] = '`id` = "' . Indi::admin()->id . '"';
+        $where['static'] = '`id` = "' . admin()->id . '"';
 
         // Return
         return $where;

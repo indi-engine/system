@@ -123,7 +123,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
                 if ($prop == 'sectionId') $value = section($value)->alias;
                 else if ($prop == 'entityId') $value = entity($value)->table;
                 else if (in($prop, 'parentSectionConnector,groupBy,defaultSortField,tileField')) $value = field($this->entityId, $value)->alias;
-                else if ($prop == 'tileThumb') $value = m('Resize')->fetchRow($value)->alias;
+                else if ($prop == 'tileThumb') $value = m('Resize')->row($value)->alias;
             }
         }
 

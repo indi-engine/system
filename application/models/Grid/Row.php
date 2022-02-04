@@ -174,8 +174,8 @@ class Grid_Row extends Indi_Db_Table_Row {
      */
     public function accessible() {
         if (!$this->access || $this->access == 'all') return true;
-        if ($this->access == 'only' && in(Indi::admin()->profileId, $this->profileIds)) return true;
-        if ($this->access == 'except' && !in(Indi::admin()->profileId, $this->profileIds)) return true;
+        if ($this->access == 'only' && in(admin()->profileId, $this->profileIds)) return true;
+        if ($this->access == 'except' && !in(admin()->profileId, $this->profileIds)) return true;
     }
 
     /**

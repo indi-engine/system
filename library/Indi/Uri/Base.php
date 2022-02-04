@@ -107,7 +107,7 @@ class Indi_Uri_Base {
         if (!class_exists($controllerClass)) {
 
             // Try to find
-            $sectionR = Indi::model('Section')->fetchRow('`alias` = "' . Indi::uri()->section . '"');
+            $sectionR = Indi::model('Section')->row('`alias` = "' . Indi::uri()->section . '"');
 
             // If section was found, and it has non-empty `extends` property - set $controllerParentClass as the value
             // of that property, or set it as 'Project_Controller_Admin'

@@ -703,7 +703,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         foreach (m('param')->fetchAll() as $paramR) {
             $possibleR = $paramR->foreign('possibleParamId');
-            if ($cfgField = m('Field')->fetchRow([
+            if ($cfgField = m('Field')->row([
                 '`entityId` = "' . entity('element')->id . '"',
                 '`entry` = "' . $possibleR->elementId . '"',
                 '`alias` = "' . $possibleR->alias . '"'
@@ -4168,18 +4168,18 @@ class Indi_Controller_Migrate extends Indi_Controller {
     }
     public function testAction() {
         mt();
-        //for ($i = 0; $i < 50; $i++) m('Test')->createRow(['title' => 'Test' . str_pad($i+1, 2, '0', STR_PAD_LEFT)], true)->save();
+        //for ($i = 0; $i < 50; $i++) m('Test')->new(['title' => 'Test' . str_pad($i+1, 2, '0', STR_PAD_LEFT)])->save();
         /*for ($i = 0; $i < 10000; $i++) {
             //Indi::db()->query('SELECT * FROM `test` WHERE `id`="169" OR `title` <= "Тест 12111" ORDER BY `title` DESC LIMIT 2')->fetchAll();
             Indi::db()->query('SELECT * FROM `test` ORDER BY `title` ASC LIMIT 25, 1')->fetchAll();
         }*/
-        //m('Test')->createRow(['title' => 'Жопа 2'], true)->save();
-        //m('Test')->fetchRow('`id` = "206"')->delete();
+        //m('Test')->new(['title' => 'Жопа 2'])->save();
+        //m('Test')->row('`id` = "206"')->delete();
         Indi::iflush(true);
         for ($i = 1; $i <= 1000; $i++) {
             break;
             $data = ['title' => 'Test ' . $i]; d($data);
-            m('Test')->createRow($data, true)->save();
+            m('Test')->new($data)->save();
         }
         m('Test')->fetchAll()->delete();
         Indi::ws(false);

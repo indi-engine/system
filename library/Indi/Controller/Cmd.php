@@ -16,7 +16,7 @@ class Indi_Controller_Cmd extends Indi_Controller {
      * @param $queueTaskId
      */
     public function queueAction($queueTaskId) {
-        Indi::model('QueueTask')->fetchRow($queueTaskId)->start();
+        Indi::model('QueueTask')->row($queueTaskId)->start();
     }
 
     /**
@@ -29,19 +29,19 @@ class Indi_Controller_Cmd extends Indi_Controller {
 
             // If $_COOKIE['prevcid'] given and such channel exists
             if (Indi::rexm('wskey', $prevcid = str_replace(' ', '+', $_COOKIE['prevcid']))
-                && $r = m('Realtime')->fetchRow([
+                && $r = m('Realtime')->row([
                     '`realtimeId` = "' . $arg['realtimeId'] . '"',
                     '`token` = "' . $prevcid . '"'
                 ])) {
                 i('spoof ' . $prevcid . ' with ' . $arg['token'], 'a');
 
                 // Spoof `token` of an existing `realtime` entry of `type` = 'channel'
-                $r->assign($arg)->save();
+                $r->set($arg)->save();
 
             // Else create new `realtime` entry of `type` = 'channel'
             } else {
                 i('newtab ' . $arg['token']  . ' done', 'a');
-                m('Realtime')->createRow($arg, true)->save();
+                m('Realtime')->new($arg)->save();
             }
         }
 

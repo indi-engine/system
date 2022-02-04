@@ -246,7 +246,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $affect = ['entityId', 'alias', 'columnTypeId', 'defaultValue', 'storeRelationAbility'];
 
         // If field's control element was 'upload', but now it is not - set $deleteUploadedFiles to true
-        $uploadElementId = Indi::model('Element')->fetchRow('`alias` = "upload"')->id;
+        $uploadElementId = Indi::model('Element')->row('`alias` = "upload"')->id;
         if ($this->_original['elementId'] == $uploadElementId && array_key_exists('elementId', $this->_modified))
             $deleteUploadedFiles = true;
 
@@ -297,7 +297,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             Indi::model($this->_original['entityId'])->fields()->exclude($this->id);
 
             // Get original entity row
-            $entityR = Indi::model('Entity')->fetchRow('`id` = "' . $this->_original['entityId'] . '"');
+            $entityR = Indi::model('Entity')->row('`id` = "' . $this->_original['entityId'] . '"');
 
             // If current field was used as title-field within original entity
             if ($entityR->titleFieldId == $this->id) {
@@ -923,14 +923,14 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 Indi::db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
 
         // Check if is was not a TEXT column, and it had no FULLTEXT index, but now it is a TEXT column, - we add a FULLTEXT index
-        if (Indi::model('ColumnType')->fetchRow('`id` = "' . $original['columnTypeId'] . '"')->type != 'TEXT')
+        if (Indi::model('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type != 'TEXT')
             if (!Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch())
                 if ($columnTypeR->type == 'TEXT')
                     Indi::db()->query('ALTER TABLE  `' . $table .'` ADD FULLTEXT (`' . $this->alias . '`)');
 
         // Check if is was a TEXT column, and it had a FULLTEXT index, but now it is not a TEXT column, - we remove a FULLTEXT index
-        if (Indi::model('ColumnType')->fetchRow('`id` = "' . $original['columnTypeId'] . '"')->type == 'TEXT')
+        if (Indi::model('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type == 'TEXT')
             if ($index = Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch(PDO::FETCH_OBJ)->Key_name)
                 if ($columnTypeR->type != 'TEXT')
@@ -988,7 +988,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!($this->_original['columnTypeId'] && $this->_modified['columnTypeId'] && !$this->_modified['entityId'])) return;
 
         // Get the column type row, representing field's column before type change (original column)
-        $curTypeR = Indi::model('ColumnType')->fetchRow('`id` = "' . $this->_original['columnTypeId'] . '"');
+        $curTypeR = Indi::model('ColumnType')->row('`id` = "' . $this->_original['columnTypeId'] . '"');
 
         // Get the table name
         $tbl = $this->foreign('entityId')->table;
@@ -1914,7 +1914,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         else {
 
             // Update value of `l10n` prop
-            $this->assign(['l10n' => $value])->basicUpdate();
+            $this->set(['l10n' => $value])->basicUpdate();
 
             // Start queue in synchronous mode
             $queueTaskR->start();

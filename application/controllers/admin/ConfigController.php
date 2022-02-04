@@ -24,7 +24,7 @@ class Admin_ConfigController extends Indi_Controller_Admin {
     public function adjustAccess() {
 
         // If current admin is not a Configurator
-        if (Indi::admin()->profileId != 1) {
+        if (admin()->profileId != 1) {
 
             // Deny config entries creation
             $this->deny('create');

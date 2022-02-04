@@ -945,7 +945,7 @@ class Indi_Db_Table
      * @return int
      */
     public function getNextMove() {
-        return $this->fetchRow('`move` != "0"', '`move` DESC')->move + 1;
+        return $this->row('`move` != "0"', '`move` DESC')->move + 1;
     }
 
     /**
@@ -1138,17 +1138,17 @@ class Indi_Db_Table
 
     /**
      * Create empty row. If non-false $assign argument is given - we assume that $input arg should not be used
-     * be used for construction, but should be used for $this->assign() call. This may me useful
+     * be used for construction, but should be used for $this->set() call. This may me useful
      * in case when we need to create an instance of a row and assign a values into it - and all
      * this within a single call. So, without $assign arg usage, the desired effect would require:
      *
-     *   Indi::model('SomeModel')->createRow()->assign(array('prop1' => 'value1', 'prop2' => 'value2'));
+     *   Indi::model('SomeModel')->new()->set(['prop1' => 'value1', 'prop2' => 'value2']);
      *
      * But not, with $assign arg usage, same effect would require
      *
-     *   Indi::model('SomeModel')->createRow(array('prop1' => 'value1', 'prop2' => 'value2'));
+     *   Indi::model('SomeModel')->createRow(['prop1' => 'value1', 'prop2' => 'value2']);
      *
-     * So, with $assign arg usage, we can omit the additional 'assign(..)' cal
+     * So, with $assign arg usage, we can omit the additional 'assign(..)' call
      *
      * @param array $input
      * @param bool $assign
@@ -1157,7 +1157,7 @@ class Indi_Db_Table
     public function createRow($input = [], $assign = false) {
 
         // If non-false $assign argument is given - we assume that $input arg should not be used
-        // be used for construction, but should be used for $this->assign() call
+        // be used for construction, but should be used for $this->set() call
         if ($assign) { $assign = $input; $input = []; }
 
         // Prepare data for construction
@@ -1196,7 +1196,7 @@ class Indi_Db_Table
 
         // Construct and return Indi_Db_Table_Row object,
         // but, if $assign arg is given - preliminary assign data
-        return is_array($assign) ? $row->assign($assign) : $row;
+        return is_array($assign) ? $row->set($assign) : $row;
     }
 
     /**
@@ -1543,7 +1543,7 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Row|null
      */
     public function entity() {
-        return Indi::model('Entity')->fetchRow('`id` = "' . $this->_id . '"');
+        return Indi::model('Entity')->row('`id` = "' . $this->_id . '"');
     }
 
     /**

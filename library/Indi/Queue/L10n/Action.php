@@ -9,11 +9,11 @@ class Indi_Queue_L10n_Action extends Indi_Queue_L10n_FieldToggleL10nUpload {
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->createRow([
+        $queueTaskR = Indi::model('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-        ], true);
+        ]);
 
         // Save `queueTask` entries
         $queueTaskR->save();
@@ -43,7 +43,7 @@ class Indi_Queue_L10n_Action extends Indi_Queue_L10n_FieldToggleL10nUpload {
         $queueChunkR = Indi_Queue_L10n::appendChunk($queueTaskR, $sectionR, $actionR, $where);
 
         // Setup `fraction` and `where` props
-        $queueChunkR->assign(['fraction' => $fraction])->save();
+        $queueChunkR->set(['fraction' => $fraction])->save();
 
         // Return `queueChunk` entry
         return $queueChunkR;

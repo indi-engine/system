@@ -28,7 +28,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         t()->fields->field('cfgField')->filter = '`id` = "' . $row->cfgField . '"';
 
         // Prepare field for spoofing `cfgValue` field
-        $gen = $row->foreign('cfgField')->assign([
+        $gen = $row->foreign('cfgField')->set([
             'filter' => '`entityId` = "' . $row->foreign('fieldId')->relation . '"',
             'entityId' => t()->section->entityId,
             'alias' => 'cfgValue',
@@ -65,7 +65,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         if (!$row->cfgField || !Indi::ini('db')->cfgField) return;
 
         // Prepare field for spoofing `cfgValue` field
-        $gen = $row->foreign('cfgField')->assign([
+        $gen = $row->foreign('cfgField')->set([
             'filter' => '`entityId` = "' . $row->foreign('fieldId')->relation . '"',
             'entityId' => t()->section->entityId,
             'alias' => 'cfgValue'

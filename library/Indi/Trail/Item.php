@@ -82,17 +82,17 @@ class Indi_Trail_Item {
         if (!$this->model) return;
 
         // Setup filters shared row
-        $this->filtersSharedRow = $this->model->createRow();
+        $this->filtersSharedRow = $this->model->new();
 
         // Prevent non-zero values
         foreach ($this->filtersSharedRow->original() as $prop => $value)
             if ($prop != 'id') $this->filtersSharedRow->zero($prop, true);
 
         // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-        if (Indi::admin()->alternate && in($aid = Indi::admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
+        if (admin()->alternate && in($aid = admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
 
             // Force setup of that field value as id of current cms user, within filters shared row
-            $this->filtersSharedRow->$aid = Indi::admin()->id;
+            $this->filtersSharedRow->$aid = admin()->id;
 
         // Setup several temporary properties within the existing row, as these may be involved in the
         // process of parent trail items rows retrieving
@@ -103,16 +103,16 @@ class Indi_Trail_Item {
             // field autosetup only if it was set and only in case of one-level-up parent section. This
             // mean that if we have 'Continents' as upper level, and we are creating city, city's property
             // name will be determined as `continentId` mean parentSectionConnector logic won't be used for that
-            $connector = $i == 1 && Indi::trail($i-1)->section->parentSectionConnector
-                ? Indi::trail($i-1)->section->foreign('parentSectionConnector')->alias
-                : Indi::trail($i)->model->table() . 'Id';
+            $connector = $i == 1 && t($i-1)->section->parentSectionConnector
+                ? t($i-1)->section->foreign('parentSectionConnector')->alias
+                : t($i)->model->table() . 'Id';
 
 
             // Get the connector value from session special place and assign it to current row, but only
             // in case if that connector is not a one of existing fields
             if ($this->model->fields($connector))
                 $this->filtersSharedRow->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                [Indi::trail($i)->section->id];
+                [t($i)->section->id];
         }
     }
 
@@ -139,7 +139,7 @@ class Indi_Trail_Item {
             $array['row']['_system']['title'] = $this->row->title();
 
             // Append original values for fields that are modified by calendar space pre-selection
-            $space = t()->model->space();
+            $space = m()->space();
             if ($space['scheme'] != 'none')
                 foreach (explode('-', $space['scheme']) as $coord)
                     if ($this->row->isModified($space['coords'][$coord]))
@@ -191,7 +191,7 @@ class Indi_Trail_Item {
         if ($this->grid) {
 
             // Create blank row
-            $blank = t()->model->createRow();
+            $blank = m()->new();
 
             // Foreach grid column
             foreach (t()->grid as $r) {

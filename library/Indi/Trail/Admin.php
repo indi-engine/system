@@ -83,8 +83,8 @@ class Indi_Trail_Admin {
         if (Indi::model('Search')->fields('access') && Indi::model('Search')->fields('profileIds')) {
             $searchWHERE[] = '(' . im([
                 '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
+                '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
                 ], ' OR ') . ')';
         }
 
@@ -99,8 +99,8 @@ class Indi_Trail_Admin {
         if (Indi::model('Grid')->fields('access') && Indi::model('Grid')->fields('profileIds')) {
             $gridWHERE[] = '(' . im([
                 '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
+                '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
                 ], ' OR ') . ')';
         }
 
@@ -114,8 +114,8 @@ class Indi_Trail_Admin {
         $alteredFieldsWHERE = ['`sectionId` = "' . $routeA[0] . '"'];
         $alteredFieldsWHERE[] = '(' . im([
             '`impact` = "all"',
-            '(`impact` = "only" AND FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
-            '(`impact` = "except" AND NOT FIND_IN_SET("' . Indi::admin()->profileId . '", `profileIds`))',
+            '(`impact` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+            '(`impact` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
             ], ' OR ') . ')';
 
         // Setup disabled fields
@@ -179,7 +179,7 @@ class Indi_Trail_Admin {
         // Setup row for each trail item, or setup an access error
         else
             for ($i = 0; $i < count(self::$items) - 1; $i++)
-                if ($error = Indi::trail($i)->row($i))
+                if ($error = t($i)->row($i))
                     break;
 
         // Flush an error in json format, if error was met
@@ -187,10 +187,10 @@ class Indi_Trail_Admin {
 
         // Setup blank scope object for each trail item
         for ($i = 0; $i < count(self::$items) - 1; $i++)
-            if (Indi::trail($i)->section->sectionId) {
-                if (Indi::trail($i)->row) Indi::trail($i)->row->compileDefaults($level = 'trail');
-                Indi::trail($i)->scope = new Indi_Trail_Admin_Item_Scope($i);
-                Indi::trail($i)->filtersSharedRow($i);
+            if (t($i)->section->sectionId) {
+                if (t($i)->row) t($i)->row->compileDefaults($level = 'trail');
+                t($i)->scope = new Indi_Trail_Admin_Item_Scope($i);
+                t($i)->filtersSharedRow($i);
             }
 
         // Adjust disabled fields

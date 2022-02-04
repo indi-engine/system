@@ -123,7 +123,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function indexAction() {
 
         //
-        Indi::trail()->model->fields('roleIds')->storeRelationAbility = 'one';
+        m()->fields('roleIds')->storeRelationAbility = 'one';
 
         // Call parent
         $this->callParent();
@@ -275,7 +275,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!Indi::get('answer')) {
 
             // Create blank `section` entry
-            $sectionR = t()->model->createRow();
+            $sectionR = m()->new();
 
             // Get `sectionId` field extjs config
             $sectionId_field = $sectionR->combo('sectionId') + ['disabledOptions' => $sectionId_disabled];
@@ -316,7 +316,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 $config['alias'] = $prefix .= ucfirst($r->foreign('entityId')->table);
 
                 // Create new entry, assign props and save
-                $new = Indi::model('Section')->createRow($config, true);
+                $new = Indi::model('Section')->new($config);
                 $new->save();
 
                 // Use new entry's id as parent for next iteration
@@ -344,7 +344,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                         $values['sectionId'] = $new->id;
 
                         // Create new nested entry, assign props and save
-                        $clone = $nestedR->model()->createRow($values, true);
+                        $clone = $nestedR->model()->new($values);
 
                         // If have tree-column - assign value
                         if ($tc) $clone->$tc = $parent[$nested][$nestedR->system('level')];
@@ -404,7 +404,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Exclude columns that are links to parent sections
         $parentSectionId = $this->row->sectionId;
         do {
-            $parentSection = t()->model->fetchRow('`id` = "' . $parentSectionId . '"');
+            $parentSection = m()->row('`id` = "' . $parentSectionId . '"');
             if ($parentSection && $parentEntity = $parentSection->foreign('entityId')){
                 for ($i = 0; $i < count($fields); $i++) {
                     if ($fields[$i]['alias'] == $parentEntity->table . 'Id' && $fields[$i]['relation'] == $parentEntity->id) {
@@ -419,7 +419,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         $j = 0; $gridId = 0;
         for ($i = 0; $i < count($fields); $i++) {
             if (!in_array($fields[$i]['alias'], $exclusions)) {
-                $gridR = m('Grid')->createRow();
+                $gridR = m('Grid')->new();
                 $gridR->gridId = $fields[$i]['elementId'] == 16 ? 0 : $gridId;
                 $gridR->sectionId = $this->row->id;
                 $gridR->fieldId = $fields[$i]['id'];

@@ -36,11 +36,11 @@ Ext.create('Indi', {
             demo: <?=Indi::demo(false) ? 'true' : 'false'?>
         },
         user: {
-            title: '<?=Indi::admin()->title()?>',
-            uid: '<?=Indi::admin()->profileId . '-' . Indi::admin()->id?>',
-            role: '<?=Indi::admin()->foreign('profileId')->title?>',
-            dashboard: <?=($d=Indi::admin()->foreign('profileId')->dashboard) ? '\'' . $d . '\'': 'false'?>,
-            maxWindows: <?=Indi::admin()->foreign('profileId')->maxWindows ?: 15?>
+            title: '<?=admin()->title()?>',
+            uid: '<?=admin()->profileId . '-' . admin()->id?>',
+            role: '<?=admin()->foreign('profileId')->title?>',
+            dashboard: <?=($d=admin()->foreign('profileId')->dashboard) ? '\'' . $d . '\'': 'false'?>,
+            maxWindows: <?=admin()->foreign('profileId')->maxWindows ?: 15?>
         }
     }
 });

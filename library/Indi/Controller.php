@@ -24,7 +24,7 @@ class Indi_Controller {
         $spath = Indi::ini('view')->scriptPath;
 
         // Get db table, that current admin user entry is stored in, if logged in
-        $admin = Indi::admin() ? Indi::admin()->table() : false;
+        $admin = admin() ? admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
         if (Indi::ini()->general->seoUri) Indi::ini()->design = [];
@@ -208,7 +208,7 @@ class Indi_Controller {
      * @return mixed
      */
     public function __get($property) {
-        if (preg_match('/^row(set|)$/i', $property)) return Indi::trail()->$property;
+        if (preg_match('/^row(set|)$/i', $property)) return t()->$property;
     }
 
     /**
@@ -218,7 +218,7 @@ class Indi_Controller {
      * @param $value
      */
     public function __set($property, $value) {
-        if (preg_match('/^row(set|)$/i', $property)) Indi::trail()->$property = $value;
+        if (preg_match('/^row(set|)$/i', $property)) t()->$property = $value;
     }
 
     /**
@@ -228,7 +228,7 @@ class Indi_Controller {
      * @return bool
      */
     public function __isset($property) {
-        if (preg_match('/^row(set|)$/i', $property)) return isset(Indi::trail()->$property);
+        if (preg_match('/^row(set|)$/i', $property)) return isset(t()->$property);
     }
 
     /**
@@ -275,10 +275,10 @@ class Indi_Controller {
             if (!$column) continue;
 
             // Find a field, that column is linked to
-            foreach (Indi::trail()->fields as $fieldR) if ($fieldR->alias == $column) break;
+            foreach (t()->fields as $fieldR) if ($fieldR->alias == $column) break;
 
             // Skip further-foreign fields. todo: add support for such fields
-            if ($fieldR->entityId != t()->model->id()) continue;
+            if ($fieldR->entityId != m()->id()) continue;
 
             // If no direction - set as ASC by default
             if (!preg_match('/^(ASC|DESC)$/', $direction)) $direction = 'ASC';
@@ -313,7 +313,7 @@ class Indi_Controller {
     public function filtersWHERE($FROM = '', $search = '') {
 
         // Setup model, that should have fields, mentioned as filtering params names
-        $model = $FROM ? Indi::model($FROM) : Indi::trail()->model;
+        $model = $FROM ? Indi::model($FROM) : t()->model;
 
         // Defined an array for collecting data, that may be used in the process of building an excel spreadsheet
         $excelA = [];
@@ -353,7 +353,7 @@ class Indi_Controller {
                         $found = $fieldR;
 
                 // Set $further flag
-                $lookupBy = ($further = $found && $found->entityId != t()->model->id()) ? 'further' : 'fieldId';
+                $lookupBy = ($further = $found && $found->entityId != m()->id()) ? 'further' : 'fieldId';
 
                 // If further-foreign field detected - detect $foreign (e.g. filter->fieldId->alias)
                 // and $further (e.g. filter->further->alias)
@@ -363,8 +363,8 @@ class Indi_Controller {
                 if (array_key_exists($found->alias, $excelA) == false) {
 
                     // Get filter `alt` property
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset)
-                        $alt = Indi::trail()->filters->select($found->id, $lookupBy)->current()->alt;
+                    if (t()->filters instanceof Indi_Db_Table_Rowset)
+                        $alt = t()->filters->select($found->id, $lookupBy)->current()->alt;
 
                     // Set excel filter mention title
                     $excelA[$found->alias] = ['title' => $alt ? $alt : $found->title];
@@ -479,10 +479,10 @@ class Indi_Controller {
                     $any = false;
 
                     // Try to find filter
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset) {
+                    if (t()->filters instanceof Indi_Db_Table_Rowset) {
 
                         // Get filter row
-                        $filterR = Indi::trail()->filters->gb($found->id, $lookupBy);
+                        $filterR = t()->filters->gb($found->id, $lookupBy);
 
                         // If filter is multiple (desipite field is singe) set up $mode as `any`
                         if ($filterR->any()) $any = true;
@@ -530,10 +530,10 @@ class Indi_Controller {
                     $any = false;
 
                     // Try to find filter
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset) {
+                    if (t()->filters instanceof Indi_Db_Table_Rowset) {
 
                         // Get filter row
-                        $filterR = Indi::trail()->filters->gb($found->id, $lookupBy);
+                        $filterR = t()->filters->gb($found->id, $lookupBy);
 
                         // If filter should search any match rather than all matches
                         if ($filterR->any()) $any = true;
@@ -584,10 +584,10 @@ class Indi_Controller {
     public function indexActionOdata($for, $post) {
 
         // Get the field
-        $field = Indi::trail()->model->fields($for);
+        $field = m()->fields($for);
 
         // Get filter
-        if (Indi::trail()->filters) $filter = Indi::trail()->filters->select($field->id, 'fieldId')->at(0);
+        if (t()->filters) $filter = t()->filters->select($field->id, 'fieldId')->at(0);
 
         // Declare WHERE array
         $where = [];
@@ -599,10 +599,10 @@ class Indi_Controller {
         if ($filter->consistence && $relation = $field->relation) {
 
             // Get table name
-            $tbl = Indi::trail()->model->table();
+            $tbl = m()->table();
 
             // Setup a shortcut for scope WHERE
-            $sw = Indi::trail()->scope->WHERE;
+            $sw = t()->scope->WHERE;
 
             // Append part of WHERE clause, that will be involved in the process of fetching filter combo data
             $where[] = '`id` IN (' . (($in = Indi::db()->query('
@@ -611,7 +611,7 @@ class Indi_Controller {
         }
 
         // Setup a row
-        $this->row = Indi::trail()->filtersSharedRow;
+        $this->row = t()->filtersSharedRow;
 
         // Prepare and flush json-encoded combo options data
         $this->_odata($for, $post, $field, $where);
@@ -633,18 +633,18 @@ class Indi_Controller {
 
             // Create pseudo field for sibling combo
             $field = Indi_View_Helper_Admin_SiblingCombo::createPseudoFieldR(
-                $for, Indi::trail()->section->entityId, Indi::trail()->scope->WHERE);
+                $for, t()->section->entityId, t()->scope->WHERE);
             $this->row->$for = Indi::uri()->id;
-            $order = is_array(Indi::trail()->scope->ORDER) ? end(Indi::trail()->scope->ORDER) : Indi::trail()->scope->ORDER;
+            $order = is_array(t()->scope->ORDER) ? end(t()->scope->ORDER) : t()->scope->ORDER;
             $dir = array_pop(explode(' ', $order));
             $order = trim(preg_replace('/ASC|DESC/', '', $order), ' `');
             if (preg_match('/\(/', $order)) $offset = Indi::uri()->aix - 1;
 
         // Else if options data is for combo, associated with a existing form field - pick that field
-        } else $field = Indi::trail()->model->fields($for);
+        } else $field = m()->fields($for);
 
         // If field having $for as it's `alias` was not found in existing fields, try to finв it within pseudo fields
-        if (!$field) $field = Indi::trail()->pseudoFields->field($for);
+        if (!$field) $field = t()->pseudoFields->field($for);
 
         // Do some things, custom for certain field, before odata fetch
         if (($method = 'formActionOdata' . ucfirst(Indi::uri()->odata)) && method_exists($this, $method))
@@ -775,13 +775,13 @@ class Indi_Controller {
     public function indexAction() {
 
         // If data should be got as json or excel
-        if (Indi::uri('format') || (!$this->_isRowsetSeparate && Indi::trail(true))) {
+        if (Indi::uri('format') || (!$this->_isRowsetSeparate && t(true))) {
 
             // Adjust rowset, before using it as a basement of grid data
             $this->adjustGridDataRowset();
 
             // Build the grid data, based on current rowset
-            $data = $this->rowset->toGridData(Indi::trail()->gridFields ? Indi::trail()->gridFields->column('alias') : []);
+            $data = $this->rowset->toGridData(t()->gridFields ? t()->gridFields->column('alias') : []);
 
             // Adjust grid data
             $this->adjustGridData($data);
@@ -806,7 +806,7 @@ class Indi_Controller {
             else {
 
                 // Get scope
-                $scope = Indi::trail()->scope->toArray();
+                $scope = t()->scope->toArray();
 
                 // Unset tabs definitions from json-encoded scope data, as we'd already got it previously
                 unset($scope['actionrowset']['south']['tabs']);
@@ -826,7 +826,7 @@ class Indi_Controller {
                 if ($summary = $this->rowsetSummary()) $pageData['summary'] = $summary;
 
                 // Provide combo filters consistence
-                foreach (Indi::trail()->filters ?: [] as $filter) {
+                foreach (t()->filters ?: [] as $filter) {
 
                     // If `consistence` flag is Off - skip
                     if (!$filter->consistence) continue;
@@ -844,7 +844,7 @@ class Indi_Controller {
                     Indi::view()->filterCombo($filter);
 
                     // Pick combo data
-                    $metaData['filter'][$field->alias] = array_pop(Indi::trail()->filtersSharedRow->view($field->alias));
+                    $metaData['filter'][$field->alias] = array_pop(t()->filtersSharedRow->view($field->alias));
                 }
 
                 // If current request was made using Indi Engine standalone
@@ -859,7 +859,7 @@ class Indi_Controller {
                 if (Indi::uri('format') == 'json') jflush(true, $pageData);
 
                 // Else assign that data into scope's `pageData` prop
-                else Indi::trail()->scope->pageData = $pageData;
+                else t()->scope->pageData = $pageData;
             }
         }
     }
@@ -883,16 +883,16 @@ class Indi_Controller {
         if (is_string($primaryWHERE) && preg_match('/^[0-9a-zA-Z]{10}$/', $primaryWHERE)) {
 
             // Prepare $primaryWHERE
-            $primaryWHERE = Indi::trail()->scope->primary;
+            $primaryWHERE = t()->scope->primary;
 
             // Prepare search data for $this->filtersWHERE()
-            Indi::get()->search = Indi::trail()->scope->filters;
+            Indi::get()->search = t()->scope->filters;
 
             // Prepare search data for $this->keywordWHERE()
-            Indi::get()->keyword = urlencode(Indi::trail()->scope->keyword);
+            Indi::get()->keyword = urlencode(t()->scope->keyword);
 
             // Prepare sort params for $this->finalORDER()
-            Indi::get()->sort = Indi::trail()->scope->order;
+            Indi::get()->sort = t()->scope->order;
         }
 
         // Push primary part
@@ -942,12 +942,12 @@ class Indi_Controller {
 
         // Exclude further-foreign fields, as no support yet implemented for
         $exclude = array_merge($exclude, 
-            t()->fields->select(': != ' . t()->model->id(), 'entityId')->column('alias'),
+            t()->fields->select(': != ' . m()->id(), 'entityId')->column('alias'),
             t()->fields->select(': #[a-zA-Z]+#', 'id')->column('alias')
         );
 
         // Use keywordWHERE() method call on fields rowset to obtain a valid WHERE clause for the given keyword
-        return Indi::trail()->{Indi::trail()->gridFields ? 'gridFields' : 'fields'}->keywordWHERE($keyword, $exclude);
+        return t()->{t()->gridFields ? 'gridFields' : 'fields'}->keywordWHERE($keyword, $exclude);
     }
 
     /**
@@ -990,7 +990,7 @@ class Indi_Controller {
         foreach (ar($alias) as $a)
             if (!preg_match('#([a-zA-Z0-9]+)\*$#', $a, $prefix)) $aliasA []= $a; else {
                 $selector = ': #^' . trim($a, '*') . '#';
-                $selected = t()->model->fields()->select($selector, 'alias')->column('alias');
+                $selected = m()->fields()->select($selector, 'alias')->column('alias');
                 $aliasA = array_merge($aliasA, $selected);
             }
 
@@ -998,7 +998,7 @@ class Indi_Controller {
         foreach ($aliasA as $a) {
 
             // Check if such field exists, an if no - skip
-            if (!$_ = t()->model->fields($a)) continue;
+            if (!$_ = m()->fields($a)) continue;
 
             // Alter field's `mode` prop
             $_->mode = $displayInForm ? 'readonly' : 'hidden';
@@ -1040,7 +1040,7 @@ class Indi_Controller {
         foreach(ar($fields) as $a) {
 
             // Check if such field exists, and if no - skip
-            if (!$_ = Indi::trail()->model->fields($a)) continue;
+            if (!$_ = m()->fields($a)) continue;
 
             // If $mode arg is given - set `mode` according to $mode arg,
             // else if $mode arg is NOT given and `mode` prop is NOT modified
@@ -1092,10 +1092,10 @@ class Indi_Controller {
         $this->exclGridProp($propS);
 
         // Get `field` instances rowset with value of `alias` prop, mentioned in $propS arg
-        $fieldRs = Indi::trail()->model->fields(im(ar($propS)), 'rowset');
+        $fieldRs = m()->fields(im(ar($propS)), 'rowset');
 
         // Merge existing grid fields with additional
-        if (Indi::trail()->gridFields) Indi::trail()->gridFields->merge($fieldRs);
+        if (t()->gridFields) t()->gridFields->merge($fieldRs);
 
         // Return
         return $fieldRs;
@@ -1110,13 +1110,13 @@ class Indi_Controller {
     public function exclGridProp($propS) {
 
         // If no gridFields object - return
-        if (!Indi::trail()->gridFields) return '';
+        if (!t()->gridFields) return '';
 
         // If ids of fields to be excluded
-        $fieldIds = Indi::trail()->gridFields->select($propS, 'alias')->column('id', true);
+        $fieldIds = t()->gridFields->select($propS, 'alias')->column('id', true);
 
         // Merge existing grid fields with additional
-        Indi::trail()->gridFields->exclude($fieldIds);
+        t()->gridFields->exclude($fieldIds);
 
         // Return ids of excluded fields
         return $fieldIds;
@@ -1159,7 +1159,7 @@ class Indi_Controller {
         if ($t = t()->section->tileField) {
 
             // Get field alias
-            $field = t()->model->fields($t)->alias;
+            $field = m()->fields($t)->alias;
 
             // Get thumb
             $_thumb = t()->section->foreign('tileThumb')->alias;

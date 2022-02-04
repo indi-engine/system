@@ -25,11 +25,11 @@ class Admin_LangController extends Indi_Controller_Admin {
             $l++;
 
             // Create `lang` entry
-            Indi::model('Lang')->createRow([
+            Indi::model('Lang')->new([
                 'title' => $langI['name'],
                 'alias' => $langI['code'],
                 'toggle' => 'n'
-            ], true)->save();
+            ])->save();
         }
 
         // Flush result
@@ -45,7 +45,7 @@ class Admin_LangController extends Indi_Controller_Admin {
     public function onBeforeCellSave($cell, $value) {
 
         // Get field
-        $fieldR = t()->model->fields($cell);
+        $fieldR = m()->fields($cell);
 
         // Skip if $cell is not a l10n-fraction field
         if ($fieldR->rel()->table() != 'enumset' || $cell == 'toggle') return;
@@ -73,7 +73,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($value == 'qy') {
 
             // Create phantom `langId` field
-            $langId_combo = Indi::model('Field')->createRow([
+            $langId_combo = Indi::model('Field')->new([
                 'title' => 'asdasd',
                 'alias' => 'langId',
                 'columnTypeId' => 'INT(11)',
@@ -83,10 +83,10 @@ class Admin_LangController extends Indi_Controller_Admin {
                 'filter' => '`id` != "' . t()->row->id . '" AND `' . $cell . '` = "y"',
                 'mode' => 'hidden',
                 'defaultValue' => 0
-            ], true);
+            ]);
 
             // Append to fields list
-            t()->model->fields()->append($langId_combo);
+            m()->fields()->append($langId_combo);
 
             // Build config for langId-combo
             $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');

@@ -1,1 +1,1 @@
-<?=Indi::admin()->foreign('profileId')->home?>
+<?=admin()->foreign('profileId')->home?>

@@ -128,10 +128,10 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Create fields
         foreach ($fieldA as $alias => $fieldI) {
-            $fieldRA[$alias] = Indi::model('Field')->createRow();
+            $fieldRA[$alias] = Indi::model('Field')->new();
             $fieldRA[$alias]->entityId = $this->row->id;
             $fieldRA[$alias]->alias = $alias;
-            $fieldRA[$alias]->assign($fieldI);
+            $fieldRA[$alias]->set($fieldI);
             $fieldRA[$alias]->save();
         }
 
@@ -161,15 +161,15 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($this->row->table == 'action') Indi::db()->query('ALTER TABLE `action` DROP `toggle`');
 
         // Create field
-        $fieldR = Indi::model('Field')->createRow([
+        $fieldR = Indi::model('Field')->new([
             'entityId' => $this->row->id,
             'title' => 'Статус',
             'alias' => 'toggle',
             'storeRelationAbility' => 'one',
-            'elementId' => Indi::model('Element')->fetchRow('`alias` = "combo"')->id,
-            'columnTypeId' => Indi::model('ColumnType')->fetchRow('`type` = "ENUM"')->id,
+            'elementId' => Indi::model('Element')->row('`alias` = "combo"')->id,
+            'columnTypeId' => Indi::model('ColumnType')->row('`type` = "ENUM"')->id,
             'defaultValue' => 'y'
-        ], true);
+        ]);
 
         // Save field
         $fieldR->save();
@@ -180,11 +180,11 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $y->save();
 
         // Create one more enumset option within this field
-        Indi::model('Enumset')->createRow([
+        Indi::model('Enumset')->new([
             'fieldId' => $y->fieldId,
             'title' => '<span class="i-color-box" style="background: red;"></span>Выключен',
             'alias' => 'n'
-        ], true)->save();
+        ])->save();
 
         // Flush success
         jflush(true, 'Поле "Статус" было добавлено в структуру сущности "' . $this->row->title . '"');

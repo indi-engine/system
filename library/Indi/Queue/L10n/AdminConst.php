@@ -17,20 +17,20 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->createRow([
+        $queueTaskR = Indi::model('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-        ], true);
+        ]);
 
         // Save `queueTask` entries
         $queueTaskR->save();
 
         // Create `queueChunk` entry and setup basic props
-        Indi::model('QueueChunk')->createRow([
+        Indi::model('QueueChunk')->new([
             'queueTaskId' => $queueTaskR->id,
             'location' => '/' . $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
-        ], true)->save();
+        ])->save();
 
         // Increment `chunk`
         $queueTaskR->chunk ++;
@@ -49,7 +49,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function count($queueTaskId) {
 
         // Fetch `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
         foreach ($queueTaskR->nested('queueChunk', [
@@ -58,7 +58,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(['countState' => 'progress'])->basicUpdate();
+            $queueChunkR->set(['countState' => 'progress'])->basicUpdate();
 
             // Build filename of a php-file, containing l10n constants for source language
             $l10n_source_abs = DOC . STD . $queueChunkR->location;
@@ -76,7 +76,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
             $queueChunkR->countSize = count($const[2]);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(['countState' => 'finished'])->basicUpdate();
+            $queueChunkR->set(['countState' => 'finished'])->basicUpdate();
 
             // Update `queueTask` entry's `countSize` prop
             $queueTaskR->countSize += $queueChunkR->countSize;
@@ -84,7 +84,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(['state' => 'finished', 'countState' => 'finished'])->save();
+        $queueTaskR->set(['state' => 'finished', 'countState' => 'finished'])->save();
     }
 
     /**
@@ -96,7 +96,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function items($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'items';
@@ -114,10 +114,10 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(['itemsState' => 'progress'])->basicUpdate();
+            $queueChunkR->set(['itemsState' => 'progress'])->basicUpdate();
 
             // Get last target
-            $last = Indi::model('QueueItem')->fetchRow('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
+            $last = Indi::model('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
 
             // Build filename of a php-file, containing l10n constants for source language
             $l10n_source_abs = DOC . STD . $queueChunkR->location;
@@ -151,12 +151,12 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
                 $value = stripslashes($value);
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->createRow([
+                $queueItemR = Indi::model('QueueItem')->new([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => $target,
                     'value' => $value
-                ], true);
+                ]);
 
                 // Save `queueItem` entry
                 $queueItemR->save();
@@ -173,11 +173,11 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
             }
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(['itemsState' => 'finished'])->basicUpdate();
+            $queueChunkR->set(['itemsState' => 'finished'])->basicUpdate();
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(['state' => 'finished', 'itemsState' => 'finished'])->save();
+        $queueTaskR->set(['state' => 'finished', 'itemsState' => 'finished'])->save();
     }
 
     /**
@@ -229,7 +229,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
@@ -247,7 +247,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(['applyState' => 'progress'])->basicUpdate();
+            $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
@@ -293,7 +293,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
                 file_put_contents($l10n_target_abs, $l10n_target_raw);
 
                 // Write translation result
-                $r->assign(['stage' => 'apply'])->basicUpdate();
+                $r->set(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct++;
@@ -312,14 +312,14 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
             if ($params['toggle'] == 'n') unlink(DOC . STD . $queueChunkR->location);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(['applyState' => 'finished'])->basicUpdate();
+            $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(['state' => 'finished', 'applyState' => 'finished'])->save();
+        $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
 
         // Update target `lang` entry's state for current fraction
-        $langR_target = Indi::model('Lang')->fetchRow('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
+        $langR_target = Indi::model('Lang')->row('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
         $langR_target->{lcfirst(preg_replace('~^Indi_Queue_L10n_~', '', get_class($this)))} = $params['toggle'] ?: 'y';
         $langR_target->save();
     }

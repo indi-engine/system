@@ -955,7 +955,7 @@ class Indi {
 
             // Get the current user row
             $userR = (int) $_SESSION['user']['id']
-                ? Indi::model('User')->fetchRow('`id` = "' . (int) $_SESSION['user']['id'] . '"')
+                ? Indi::model('User')->row($_SESSION['user']['id'])
                 : false;
 
             // Push $obj object in registry under 'uri' key
@@ -983,7 +983,7 @@ class Indi {
 
             // Get the current user row
             $adminR = (int) $_SESSION['admin']['id']
-                ? Indi::model($table)->fetchRow('`id` = "' . (int) $_SESSION['admin']['id'] . '"')
+                ? Indi::model($table)->row($_SESSION['admin']['id'])
                 : false;
 
             // If current visitor is not a cms/admin user - return
@@ -995,7 +995,7 @@ class Indi {
             // If current cms user was found not in 'admin' database table,  we explicilty setup foreign
             // data for 'profileId' foreign key, despite on in that other table may be not such a foreign key
             if ($table != 'admin') {
-                $adminR->foreign('profileId', Indi::model('Profile')->fetchRow(
+                $adminR->foreign('profileId', Indi::model('Profile')->row(
                     '`entityId` = "' . Indi::model($table)->id() . '"'
                 ));
                 $adminR->profileId = $adminR->foreign('profileId')->id;
@@ -2208,7 +2208,7 @@ class Indi {
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
         $msg .= 'URI: ' . URI . '<br>';
-        $msg .= 'Admin: ' . Indi::admin()->title . '<br>';
+        $msg .= 'Admin: ' . admin()->title . '<br>';
         $msg .= 'User: ' . Indi::user()->title . '<br><br>';
 
         // DELETE queries
@@ -2238,7 +2238,7 @@ class Indi {
      * @return mixed
      */
     public static function cfg($key) {
-        return Indi::model('Config')->fetchRow('`alias` = "' . $key . '"')->currentValue;
+        return Indi::model('Config')->row('`alias` = "' . $key . '"')->currentValue;
     }
 
     /**
@@ -2400,7 +2400,7 @@ class Indi {
         $msg .= 'Remote IP: ' . $_SERVER['REMOTE_ADDR'] . '<br>';
 
         // Who?
-        if (Indi::admin()->id) $msg .= 'Admin [id#' . Indi::admin()->id . ']: ' . Indi::admin()->title . '<br>';
+        if (admin()->id) $msg .= 'Admin [id#' . admin()->id . ']: ' . admin()->title . '<br>';
         if (Indi::user()->id) $msg .= 'User [id#' . Indi::user()->id . ']: ' . Indi::user()->title . '<br>';
 
         // Spacer, data and separator
@@ -2602,8 +2602,8 @@ class Indi {
      * Prevent user from doing something when demo-mode is turned On
      */
     public static function demo($flush = true) {
-        if ((Indi::ini('general')->demo && Indi::admin()->profileId != 1)
-            || (Indi::admin() && (Indi::admin()->demo == 'y' || Indi::admin()->foreign('profileId')->demo == 'y')))
+        if ((Indi::ini('general')->demo && admin()->profileId != 1)
+            || (admin() && (admin()->demo == 'y' || admin()->foreign('profileId')->demo == 'y')))
             return $flush ? jflush(false, I_DEMO_ACTION_OFF) : true;
     }
 

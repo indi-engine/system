@@ -1140,7 +1140,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $cValue = $r->$consider;
 
                         // Get entry, identified by current value of consider-field
-                        $cEntryR = Indi::model($cField->relation)->fetchRow('`id` = "' . $cValue . '"');
+                        $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
 
                         // Get it's value
                         $cValueForeign = $cEntryR->{$cField_foreign->alias};
@@ -1601,7 +1601,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Convert $original into *_Row instance, if need
         if ($original instanceof Indi_Db_Table_Row) $append = $original; else {
-            $append = Indi::model($this->_table)->createRow();
+            $append = Indi::model($this->_table)->new();
             foreach($original as $prop => $value) $append->original($prop, $value);
         }
 
@@ -1737,7 +1737,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     }
 
     /**
-     * Call *_Row->assign($data) for each *_Row instance within current rowset
+     * Call *_Row->set($data) for each *_Row instance within current rowset
      *
      * @param array $data
      * @return $this
@@ -1745,7 +1745,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     public function assign(array $data) {
 
         // Assign $data into each row within current rowset
-        foreach ($this as $row) $row->assign($data);
+        foreach ($this as $row) $row->set($data);
 
         // Return rowset itself
         return $this;
@@ -1763,7 +1763,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (func_num_args() > 1) $assign = [$assign => $value];
 
         // Return rowset itself
-        return $this->assign($assign);
+        return $this->set($assign);
     }
 
     /**

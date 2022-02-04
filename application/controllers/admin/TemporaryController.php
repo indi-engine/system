@@ -32,14 +32,14 @@ class Admin_TemporaryController extends Indi_Controller {
         ]);
 
         grid('consider', 'connector', true);
-        if (!Indi::model('Consider')->fetchRow('`fieldId` = "' . $connector->id . '"'))
-            Indi::model('Consider')->createRow([
+        if (!Indi::model('Consider')->row('`fieldId` = "' . $connector->id . '"'))
+            Indi::model('Consider')->new([
                 'entityId' => entity('consider')->id,
                 'fieldId' => $connector->id,
                 'consider' => field('consider', 'fieldId')->id,
                 'foreign' => field('field', 'relation')->id,
                 'required' => 'y'
-            ], true)->save();
+            ])->save();
         die('ok');
     }
 
@@ -71,7 +71,7 @@ class Admin_TemporaryController extends Indi_Controller {
             field('disabledField', 'mode', ['defaultValue' => 'inherit']);
             field('disabledField', 'fieldId', ['title' => 'Поле']);
             field('disabledField', 'mode')->move(1);
-            entity('disabledField')->assign(['title' => 'Поле, измененное в рамках раздела'])->save();
+            entity('disabledField')->set(['title' => 'Поле, измененное в рамках раздела'])->save();
             section('disabledFields', ['title' => 'Измененные поля', 'alias' => 'alteredFields']);
             field('disabledField', 'alter', ['title' => 'Изменить свойства поля', 'elementId' => 'span']);
             field('disabledField', 'rename', ['title' => 'Наименование', 'elementId' => 'string', 'columnTypeId' => 'VARCHAR(255)']);

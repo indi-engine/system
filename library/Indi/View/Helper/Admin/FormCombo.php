@@ -84,7 +84,7 @@ class Indi_View_Helper_Admin_FormCombo {
      * @return Field_Row
      */
     public function getField($name) {
-        return Indi::trail()->model->fields($name);
+        return m()->fields($name);
     }
 
     /**

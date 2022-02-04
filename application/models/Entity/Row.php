@@ -188,7 +188,7 @@ class Entity_Row extends Indi_Db_Table_Row {
                     if (!Indi::model($this->id)->fields('title')) {
 
                         // Create it
-                        $fieldR = Indi::model('Field')->createRow();
+                        $fieldR = Indi::model('Field')->new();
                         $fieldR->entityId = $this->id;
                         $fieldR->title = 'Auto title';
                         $fieldR->alias = 'title';
@@ -296,10 +296,10 @@ class Entity_Row extends Indi_Db_Table_Row {
                 if (Indi::model($this->id)->fields($alias)) continue;
 
                 // Create field
-                $fieldRA[$alias] = Indi::model('Field')->createRow();
+                $fieldRA[$alias] = Indi::model('Field')->new();
                 $fieldRA[$alias]->entityId = $this->id;
                 $fieldRA[$alias]->alias = $alias;
-                $fieldRA[$alias]->assign($fieldI);
+                $fieldRA[$alias]->set($fieldI);
                 $fieldRA[$alias]->save();
             }
 

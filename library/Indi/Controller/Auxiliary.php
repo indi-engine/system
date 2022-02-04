@@ -16,7 +16,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!preg_match('/^[0-9]+$/', Indi::uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
 
         // Get the field
-        $fieldR = Indi::model('Field')->fetchRow('`id` = "' . Indi::uri('field') . '"');
+        $fieldR = Indi::model('Field')->row('`id` = "' . Indi::uri('field') . '"');
 
         // If field was not found
         if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
@@ -31,7 +31,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if ($fieldR->foreign('elementId')->alias != 'upload') die(I_DOWNLOAD_ERROR_FIELD_DOESNT_DEAL_WITH_FILES);
 
         // Get the row
-        $r = Indi::model($fieldR->entityId)->fetchRow('`id` = "' . Indi::uri('id') . '"');
+        $r = Indi::model($fieldR->entityId)->row('`id` = "' . Indi::uri('id') . '"');
 
         // If row was not found
         if (!$r) die(I_DOWNLOAD_ERROR_NO_SUCH_ROW);

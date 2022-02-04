@@ -12,6 +12,6 @@ class Indi_View_Helper_Admin_FilterCombo extends Indi_View_Helper_FilterCombo{
      *
      */
     public function primaryWHERE() {
-        return Indi::trail()->scope->primary;
+        return t()->scope->primary;
     }
 }

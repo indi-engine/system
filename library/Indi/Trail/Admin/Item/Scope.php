@@ -196,20 +196,20 @@ class Indi_Trail_Admin_Item_Scope {
         foreach ($data as $prop => $value) $this->$prop = $value;
 
         // Update session
-        $_SESSION['indi']['admin'][Indi::trail($this->_level)->section->alias][$this->hash]
-            = is_array($_SESSION['indi']['admin'][Indi::trail($this->_level)->section->alias][$this->hash])
-                ? array_merge($_SESSION['indi']['admin'][Indi::trail($this->_level)->section->alias][$this->hash], $data)
+        $_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash]
+            = is_array($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash])
+                ? array_merge($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash], $data)
                 : $this->toArray();
 
         // Update current object, for case if at the moment of apply() call there have already been some
         // related scope data in $_SESSION, so we replicate session scope data to current object
-        foreach ($_SESSION['indi']['admin'][Indi::trail($this->_level)->section->alias][$this->hash] as $prop => $value)
+        foreach ($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash] as $prop => $value)
             $this->$prop = $value;
 
-        if ($this->hash)Indi::trail($this->_level)->section->primaryHash = $this->hash;
-        if ($this->aix) Indi::trail($this->_level)->section->rowIndex = $this->aix;
+        if ($this->hash)t($this->_level)->section->primaryHash = $this->hash;
+        if ($this->aix) t($this->_level)->section->rowIndex = $this->aix;
 
-        if ($this->upperHash && $this->upperAix && Indi::trail($this->_level+1)->scope)
-            Indi::trail($this->_level+1)->scope->apply(['hash' => $this->upperHash, 'aix' => $this->upperAix]);
+        if ($this->upperHash && $this->upperAix && t($this->_level+1)->scope)
+            t($this->_level+1)->scope->apply(['hash' => $this->upperHash, 'aix' => $this->upperAix]);
     }
 }

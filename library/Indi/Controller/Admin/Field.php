@@ -34,7 +34,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $prompt = $this->prompt('Пожалуйста, выберите ' . $title, [$combo]);
 
         // Save new mode
-        foreach ($this->selected as $selected) $selected->assign(['mode' => $prompt['mode']])->save();
+        foreach ($this->selected as $selected) $selected->set(['mode' => $prompt['mode']])->save();
 
         // Flush success
         jflush(true);
@@ -76,7 +76,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $langId_filter = '"y" IN (`' . im($fraction = ar(t()->row->l10nFraction()), '`, `') . '`)';
 
         // Create phantom `langId` field
-        $langId_combo = Indi::model('Field')->createRow([
+        $langId_combo = Indi::model('Field')->new([
             'alias' => 'langId',
             'columnTypeId' => 'INT(11)',
             'elementId' => 'combo',
@@ -85,13 +85,13 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
             'filter' => $langId_filter,
             'mode' => 'hidden',
             'defaultValue' => 0
-        ], true);
+        ]);
 
         // Append to fields list
-        t()->model->fields()->append($langId_combo);
+        m()->fields()->append($langId_combo);
 
         // Set active value
-        t()->row->langId = m('lang')->fetchRow($langId_filter, '`move`')->id;
+        t()->row->langId = m('lang')->row($langId_filter, '`move`')->id;
 
         // Build config for langId-combo
         $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');

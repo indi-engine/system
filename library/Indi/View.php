@@ -109,7 +109,7 @@ class Indi_View {
      * @return mixed
      */
     public function __get($property) {
-        if (preg_match('/^row(set|)$/i', $property) && Indi::trail(true)) return Indi::trail()->$property;
+        if (preg_match('/^row(set|)$/i', $property) && t(true)) return t()->$property;
         else if (preg_match('/^user$/', $property)) return Indi::user();
     }
 
@@ -122,7 +122,7 @@ class Indi_View {
      */
     public function __isset($key)
     {
-        if (preg_match('/^row(set|)$/i', $key)) return isset(Indi::trail()->$key);
+        if (preg_match('/^row(set|)$/i', $key)) return isset(t()->$key);
 
         if ('_' != substr($key, 0, 1)) {
             return isset($this->$key);
@@ -146,8 +146,8 @@ class Indi_View {
      */
     public function __set($key, $val)
     {
-        if (preg_match('/^row(set|)$/i', $key) && Indi::trail(true)) {
-            Indi::trail()->$key = $val;
+        if (preg_match('/^row(set|)$/i', $key) && t(true)) {
+            t()->$key = $val;
             return;
         }
 

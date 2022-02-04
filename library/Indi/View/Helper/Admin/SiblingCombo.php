@@ -4,7 +4,7 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
     public $context = 'top.window';
     public function siblingCombo(){
 
-        $order = Indi::trail()->scope->ORDER;
+        $order = t()->scope->ORDER;
 
         if (is_array($order) && count($order) > 1) {
             //$this->comboDataOrderColumn = $order;
@@ -29,40 +29,40 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
     }
 
     public function getField($name) {
-        $pseudoFieldR = Indi::model('Field')->createRow();
-        $pseudoFieldR->entityId = Indi::trail()->section->entityId;
+        $pseudoFieldR = Indi::model('Field')->new();
+        $pseudoFieldR->entityId = t()->section->entityId;
         $pseudoFieldR->alias = $name;
         $pseudoFieldR->storeRelationAbility = 'one';
 
-        if (($groupFieldId = Indi::trail()->section->groupBy)
-            && ($groupFieldR = Indi::trail()->fields->gb($groupFieldId)))
+        if (($groupFieldId = t()->section->groupBy)
+            && ($groupFieldR = t()->fields->gb($groupFieldId)))
             $pseudoFieldR->param('groupBy', $groupFieldR->alias);
 
         $pseudoFieldR->elementId = 23;
         $pseudoFieldR->columnTypeId = 3;
-        //$pseudoFieldR->defaultValue = Indi::trail()->row->id;
-        $pseudoFieldR->relation = Indi::trail()->section->entityId;
-        $pseudoFieldR->filter = Indi::trail()->scope->WHERE;
+        //$pseudoFieldR->defaultValue = t()->row->id;
+        $pseudoFieldR->relation = t()->section->entityId;
+        $pseudoFieldR->filter = t()->scope->WHERE;
         $pseudoFieldR->ignoreAlternate = true;
 
         return $pseudoFieldR;
     }
 
     public static function createPseudoFieldR($name, $entityId, $filter) {
-        $pseudoFieldR = Indi::model('Field')->createRow();
+        $pseudoFieldR = Indi::model('Field')->new();
         $pseudoFieldR->entityId = $entityId;
         $pseudoFieldR->alias = $name;
         $pseudoFieldR->storeRelationAbility = 'one';
         $pseudoFieldR->elementId = 23;
         $pseudoFieldR->columnTypeId = 3;
-        //$pseudoFieldR->defaultValue = Indi::trail()->row->id;
+        //$pseudoFieldR->defaultValue = t()->row->id;
         $pseudoFieldR->relation = $entityId;
         $pseudoFieldR->filter = $filter;
         return $pseudoFieldR;
     }
 
     public function getRow(){
-        return Indi::trail()->row;
+        return t()->row;
     }
 
     public function extjs($options) {

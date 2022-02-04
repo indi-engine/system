@@ -9,7 +9,7 @@ class QueueTask_Row extends Indi_Db_Table_Row {
     public function start(){
 
         // Set `procID` and `procSince`
-        $this->assign(['procID'  => getmypid(), 'procSince' => date('Y-m-d H:i:s')])->save();
+        $this->set(['procID'  => getmypid(), 'procSince' => date('Y-m-d H:i:s')])->save();
 
         // Build queue class name
         $queueClassName = 'Indi_Queue_' . ucfirst($this->title);
