@@ -16,7 +16,7 @@ class Indi_Controller_Cmd extends Indi_Controller {
      * @param $queueTaskId
      */
     public function queueAction($queueTaskId) {
-        Indi::model('QueueTask')->row($queueTaskId)->start();
+        m('QueueTask')->row($queueTaskId)->start();
     }
 
     /**

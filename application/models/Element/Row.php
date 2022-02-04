@@ -17,7 +17,7 @@ class Element_Row extends Indi_Db_Table_Row {
 
         // Foreach `field` entry, nested within current `element` entry
         // - build `field` entry's creation expression
-        foreach (m('Field')->fetchAll('`entry` = "' . $this->id . '"', 'move') as $cfgFieldR)
+        foreach (m('Field')->all('`entry` = "' . $this->id . '"', 'move') as $cfgFieldR)
             $lineA[] = $cfgFieldR->export();
 
         // Return newline-separated list of creation expressions

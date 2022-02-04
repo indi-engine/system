@@ -109,7 +109,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $field = Indi::model('Section')->fields($prop);
+            $field = m('Section')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value) unset($ctor[$prop]);

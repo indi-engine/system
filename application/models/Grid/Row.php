@@ -69,7 +69,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $field = Indi::model('Grid')->fields($prop);
+            $field = m('Grid')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
@@ -196,7 +196,7 @@ class Grid_Row extends Indi_Db_Table_Row {
             $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
 
         // Get ordered fields aliases
-        $fieldA_alias = Indi::db()->query('
+        $fieldA_alias = db()->query('
             SELECT `g`.`id`, `f`.`alias` 
             FROM `field` `f`, `grid` `g`
             WHERE 1 

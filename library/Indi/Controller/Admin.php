@@ -288,7 +288,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Fetch selected rows
                 $this->selected = $idA
-                    ? m()->fetchAll(['`id` IN (' . im($idA) . ')', t()->scope->WHERE], t()->scope->ORDER)
+                    ? m()->all(['`id` IN (' . im($idA) . ')', t()->scope->WHERE], t()->scope->ORDER)
                     : m()->createRowset();
 
                 // Prepare scope params
@@ -421,7 +421,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 jcheck(['index' => ['req' => false, 'rex' => 'int11']], Indi::post());
 
                 // Get all grid columns having same `gridId` and same level
-                $siblingIdA = Indi::db()->query('
+                $siblingIdA = db()->query('
                     SELECT `id` 
                     FROM `grid` 
                     WHERE 1 
@@ -487,7 +487,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Fetch rows that should be moved
-        $toBeMovedRs = m()->fetchAll(
+        $toBeMovedRs = m()->all(
             ['`id` IN (' . im($toBeMovedIdA) . ')', t()->scope->WHERE],
             '`move` ' . ($direction == 'up' ? 'ASC' : 'DESC')
         );
@@ -543,7 +543,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Fetch rows that should be moved
-        $toBeDeletedRs = m()->fetchAll(
+        $toBeDeletedRs = m()->all(
             ['`id` IN (' . im($toBeDeletedIdA) . ')', t()->scope->WHERE],
             t()->scope->ORDER
         );
@@ -1078,7 +1078,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
 
                     // Fetch rows by keys
-                    $rs = Indi::model($excelI['table'])->fetchAll('`id` IN (' . implode(',', $excelI['value']) . ')')->toArray();
+                    $rs = m($excelI['table'])->all('`id` IN (' . implode(',', $excelI['value']) . ')')->toArray();
 
                     // Foreach row
                     for ($i = 0; $i < count($rs); $i++) {
@@ -1120,7 +1120,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
 
                     // Fetch rows by keys
-                    $rs = Indi::model('Enumset')->fetchAll([
+                    $rs = m('Enumset')->all([
                         '`fieldId` = "' . $excelI['fieldId'] . '"',
                         '`alias` IN ("' . implode('","', $excelI['value']) . '")'
                     ])->toArray();
@@ -1941,9 +1941,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             $password = $switchTo->password;
         }
 
-        $profileId = Indi::model($place)->fields('profileId') ? '`a`.`profileId`' : '"' . $profileId . '"';
-        $adminToggle = Indi::model($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
-        return Indi::db()->query('
+        $profileId = m($place)->fields('profileId') ? '`a`.`profileId`' : '"' . $profileId . '"';
+        $adminToggle = m($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
+        return db()->query('
             SELECT
                 `a`.*,
                 `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), PASSWORD(:s)) AS `passwordOk`,
@@ -1981,14 +1981,14 @@ class Indi_Controller_Admin extends Indi_Controller {
     private function _authLevel1($username, $password = null) {
 
         // Get array of most top toggled 'On' sections ids
-        $level0ToggledOnSectionIdA = Indi::db()->query('
+        $level0ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
             WHERE `sectionId` = "0" AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_COLUMN);
 
         // Get array of level 1 toggled 'On' sections ids.
-        $level1ToggledOnSectionIdA = Indi::db()->query('
+        $level1ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
             WHERE FIND_IN_SET(`sectionId`, "' . implode(',', $level0ToggledOnSectionIdA) . '") AND `toggle` = "y"
@@ -2001,7 +2001,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$data['id']) {
 
             // Get the list of other possible places, there user with given credentials can be found
-            $profile2tableA = Indi::db()->query('
+            $profile2tableA = db()->query('
                 SELECT `e`.`table`, `p`.`id` AS `profileId`
                 FROM `entity` `e`, `profile` `p`
                 WHERE `p`.`entityId` != "0"
@@ -2064,7 +2064,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $action)) return I_URI_ERROR_ACTION_FORMAT;
 
         // Try to find use data
-        $data = Indi::db()->query('
+        $data = db()->query('
             SELECT
                 `s`.`id`,
                 `s`.`toggle` != "n" AS `sectionToggle`,
@@ -2114,7 +2114,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $parent = ['sectionId' => $data['sectionId']];
 
             // Navigate through parent sections up to the root
-            while ($parent = Indi::db()->query('
+            while ($parent = db()->query('
                 SELECT `sectionId`, `toggle` FROM `section` WHERE `id` = "' . $parent['sectionId'] . '" LIMIT 1
             ')->fetch()) {
 
@@ -2210,11 +2210,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'com' => COM ? '' : '/admin',
                         'pre' => PRE,
                         'uri' => Indi::uri()->toArray(),
-                        'title' => Indi::ini('general')->title ?: 'Indi Engine',
+                        'title' => ini('general')->title ?: 'Indi Engine',
                         'throwOutMsg' => Indi::view()->throwOutMsg,
                         'lang' => $this->lang(),
                         'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
-                        'logo' => Indi::ini('general')->logo
+                        'logo' => ini('general')->logo
                     ]);
 
                 // Else if '/admin' folder exists and contains Indi standalone client app
@@ -2476,19 +2476,19 @@ class Indi_Controller_Admin extends Indi_Controller {
             'uri' => Indi::uri()->toArray(),
             'time' => time(),
             'ini' => [
-                'ws' => array_merge((array) Indi::ini('ws'), ['pem' => is_file(DOC . STD . '/core/application/ws.pem')]),
+                'ws' => array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/core/application/ws.pem')]),
                 'demo' => Indi::demo(false)
             ],
             'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
             'lang' => $this->lang(),
-            'logo' => Indi::ini('general')->logo,
-            'title' => Indi::ini('general')->title ?: 'Indi Engine',
+            'logo' => ini('general')->logo,
+            'title' => ini('general')->title ?: 'Indi Engine',
             'user' => [
                 'title' => admin()->title(),
                 'uid' => admin()->profileId . '-' . admin()->id,
                 'role' => admin()->foreign('profileId')->title,
                 'menu' => $this->menu(),
-                'auth' => session_id() . ':' . Indi::ini('lang')->admin,
+                'auth' => session_id() . ':' . ini('lang')->admin,
                 'dashboard' => admin()->foreign('profileId')->dashboard ?: false,
                 'maxWindows' => admin()->foreign('profileId')->maxWindows ?: 15,
                 'uiedit' => admin()->uiedit == 'y',
@@ -2551,7 +2551,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($otherIdA) {
 
                 // Fetch rows
-                $otherRs = m()->fetchAll(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
+                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
 
                 // For each row
                 foreach ($otherRs as $otherR) $otherR->toggle();
@@ -2586,7 +2586,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($otherIdA) {
 
                 // Fetch rows
-                $otherRs = m()->fetchAll(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
+                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
 
                 // For each row
                 foreach ($otherRs as $otherR) $otherR->m4d();
@@ -3013,7 +3013,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         ])) {
 
             // Refresh other tabs
-            foreach($channelA = Indi::db()->query('
+            foreach($channelA = db()->query('
                 SELECT `token` 
                 FROM `realtime` 
                 WHERE 1
@@ -3038,10 +3038,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             'com' => COM ? '' : '/admin',
             'pre' => PRE,
             'uri' => Indi::uri()->toArray(),
-            'title' => Indi::ini('general')->title ?: 'Indi Engine',
+            'title' => ini('general')->title ?: 'Indi Engine',
             'throwOutMsg' => $_SESSION['indi']['throwOutMsg'],
             'lang' => $this->lang(),
-            'logo' => Indi::ini('general')->logo
+            'logo' => ini('general')->logo
         ]);
 
         // Else redirect
@@ -3095,7 +3095,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         } else {
         
             // Get title
-            $title = Indi::model('Action')->row('`alias` = "' . $action . '"')->title;
+            $title = m('Action')->row('`alias` = "' . $action . '"')->title;
             
             // Get reason
             foreach ($this->_deny as $actions => $reason)
@@ -3363,10 +3363,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         $sectionIdA = array_column($menu, 'id');
 
         // If no 'Notice' entity found - return
-        if (!Indi::model('NoticeGetter', true) || !Indi::model('NoticeGetter')->fields('criteriaRelyOn')) return;
+        if (!m('NoticeGetter', true) || !m('NoticeGetter')->fields('criteriaRelyOn')) return;
 
         // Get ids of relyOnGetter-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnGetter = Indi::db()->query('
+        $noticeIdA_relyOnGetter = db()->query('
             SELECT `noticeId`
             FROM `noticeGetter`
             WHERE 1
@@ -3376,7 +3376,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         ')->fetchAll(PDO::FETCH_COLUMN);
 
         // Get ids of relyOnEvent-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnEvent = Indi::db()->query('
+        $noticeIdA_relyOnEvent = db()->query('
             SELECT `noticeId`, `criteriaEvt`
             FROM `noticeGetter`
             WHERE 1
@@ -3392,7 +3392,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $noticeIdA_relyOnEvent = array_keys($noticeIdA_relyOnEvent);
 
         // Get notices
-        $_noticeRs = Indi::model('Notice')->fetchAll([
+        $_noticeRs = m('Notice')->all([
             'FIND_IN_SET("' . admin()->profileId . '", `profileId`)',
             'CONCAT(",", `sectionId`, ",") REGEXP ",(' . im($sectionIdA, '|') . '),"',
             'FIND_IN_SET(`id`, IF(`qtyDiffRelyOn` = "event", "' . im($noticeIdA_relyOnEvent) . '", "' . im($noticeIdA_relyOnGetter) . '"))',
@@ -3409,9 +3409,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($_noticeRs as $_noticeR) {
 
             // Get qty
-            $_noticeR->qty = Indi::db()->query('
+            $_noticeR->qty = db()->query('
                 SELECT COUNT(`id`)
-                FROM `' . Indi::model($_noticeR->entityId)->table().'`
+                FROM `' . m($_noticeR->entityId)->table().'`
                 WHERE ' . $_noticeR->compiled('qtySql')
             )->fetchColumn();
 
@@ -3525,7 +3525,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function callAction() {
 
         // Check that 'sipnet' section exists within loaded configuration file
-        if (!$sipnet = Indi::ini('sipnet')) jflush(false, 'No "sipnet" section found in config.ini');
+        if (!$sipnet = ini('sipnet')) jflush(false, 'No "sipnet" section found in config.ini');
 
         // Check other required configuration options
         foreach (ar('url,uid,pwd') as $key) if (!$sipnet->$key)
@@ -3536,7 +3536,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'sipuid' => $sipnet->uid,
             'password' => $sipnet->pwd,
             'format' => '2',
-            'lang' => Indi::ini('lang')->admin,
+            'lang' => ini('lang')->admin,
             'operation' => 'balance'
         ];
 
@@ -3769,10 +3769,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (Indi::view()->lang) return Indi::view()->lang;
 
         // Get available languages
-        $langA = Indi::db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
+        $langA = db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
 
         // Get default/current language
-        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : Indi::ini('lang')->admin;
+        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
 
         // Get all languages' versions for 4 constants
         foreach ($langA as &$langI) {
@@ -3865,7 +3865,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             }
 
             // Flush success if realtime is turned Off, else flush failure
-            jflush(!Indi::ini('ws')->realtime);
+            jflush(!ini('ws')->realtime);
         }
     }
 }

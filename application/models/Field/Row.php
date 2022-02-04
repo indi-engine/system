@@ -108,7 +108,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 		$this->deleteFiles();
 
         // Delete related enumset rows
-        Indi::db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
+        db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
 
         // If current field is used as a title-field for entity, it's relating too
         if ($this->id == $this->foreign('entityId')->titleFieldId) {
@@ -120,30 +120,30 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Prevent deletion of `section` entries, having current `field` entry as `defaultSortField`
-        if ($sectionRs = Indi::model('Section')->fetchAll('`defaultSortField` = "' . $this->id . '"'))
+        if ($sectionRs = m('Section')->all('`defaultSortField` = "' . $this->id . '"'))
             foreach ($sectionRs as $sectionR) {
                 $sectionR->defaultSortField = 0;
                 $sectionR->save();
             }
 
         // Prevent deletion of `section` entries, having current `field` entry as `parentSectionConnector`
-        if ($sectionRs = Indi::model('Section')->fetchAll('`parentSectionConnector` = "' . $this->id . '"'))
+        if ($sectionRs = m('Section')->all('`parentSectionConnector` = "' . $this->id . '"'))
             foreach ($sectionRs as $sectionR) {
                 $sectionR->parentSectionConnector = 0;
                 $sectionR->save();
             }
 
         // Prevent deletion of `section` entries, having current `field` entry as `groupBy`
-        if (Indi::model('Section')->fields('groupBy')
-            && $sectionRs = Indi::model('Section')->fetchAll('`groupBy` = "' . $this->id . '"'))
+        if (m('Section')->fields('groupBy')
+            && $sectionRs = m('Section')->all('`groupBy` = "' . $this->id . '"'))
             foreach ($sectionRs as $sectionR) {
                 $sectionR->groupBy = 0;
                 $sectionR->save();
             }
 
         // Prevent deletion of `section` entries, having current `field` entry as `tileField`
-        if (Indi::model('Section')->fields('tileField')
-            && $sectionRs = Indi::model('Section')->fetchAll('`tileField` = "' . $this->id . '"'))
+        if (m('Section')->fields('tileField')
+            && $sectionRs = m('Section')->all('`tileField` = "' . $this->id . '"'))
             foreach ($sectionRs as $sectionR) {
                 $sectionR->tileField = 0;
                 $sectionR->tileThumb = 0;
@@ -157,7 +157,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $this->deleteColumn();
 
         // Delete current field from model's fields
-        Indi::model($this->entityId)->fields()->exclude($this->id);
+        m($this->entityId)->fields()->exclude($this->id);
 
         // Return
         return $return;
@@ -172,7 +172,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 		if (!$this->columnTypeId || $this->entry) return;
 
         // Drop column
-        Indi::db()->query('ALTER TABLE `' . $this->foreign('entityId')->table . '` DROP `' . $this->alias . '`');
+        db()->query('ALTER TABLE `' . $this->foreign('entityId')->table . '` DROP `' . $this->alias . '`');
 	}
 
     /**
@@ -181,14 +181,14 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     public function deleteFiles() {
 
         // If current field has no column type, and field's control element is 'upload'
-		if (!$this->columnTypeId && Indi::model($this->_original['entityId'])
+		if (!$this->columnTypeId && m($this->_original['entityId'])
             ->fields($this->_original['alias'])->foreign('elementId')->alias == 'upload') {
 
             // Get the table
-            $table = Indi::model($this->_original['entityId'])->table();
+            $table = m($this->_original['entityId'])->table();
 
             // Get the directory name
-            $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $table . '/';
+            $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
 
             // If directory does not exist - return
             if (!is_dir($dir)) return;
@@ -216,7 +216,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $table = $this->foreign('entityId')->table;
 
         // Get the directory name
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $table . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
 
         // If directory does not exist - return
         if (!is_dir($dir)) return;
@@ -246,7 +246,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $affect = ['entityId', 'alias', 'columnTypeId', 'defaultValue', 'storeRelationAbility'];
 
         // If field's control element was 'upload', but now it is not - set $deleteUploadedFiles to true
-        $uploadElementId = Indi::model('Element')->row('`alias` = "upload"')->id;
+        $uploadElementId = m('Element')->row('`alias` = "upload"')->id;
         if ($this->_original['elementId'] == $uploadElementId && array_key_exists('elementId', $this->_modified))
             $deleteUploadedFiles = true;
 
@@ -263,7 +263,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $return = parent::save();
 
             // Reload the model, because field was deleted
-            Indi::model($this->entityId)->reload();
+            m($this->entityId)->reload();
 
             // Check if saving of current field should affect current entity's
             // `titleFieldId` property and affect all involved titles
@@ -277,27 +277,27 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if ($this->id && $this->_modified['entityId']) {
 
             // Get names of tables, related to both original and modified entityIds
-            list($wasTable, $table) = Indi::model('Entity')->fetchAll(
+            list($wasTable, $table) = m('Entity')->all(
                 '`id` IN (' . $this->_original['entityId'] . ',' . $this->_modified['entityId'] . ')',
                 'FIND_IN_SET(`id`, "' . $this->_original['entityId'] . ',' . $this->_modified['entityId'] . '")'
             )->column('table');
 
             // Get real table, as $table may contain VIEW-name rather that TABLE-name
-            $table = Indi::model($table)->table(true);
+            $table = m($table)->table(true);
 
             // Drop column from old table, if that column exists
             if ($this->_original['columnTypeId'])
-                Indi::db()->query('ALTER TABLE `' . $wasTable . '` DROP COLUMN `' . $this->_original['alias'] .'`');
+                db()->query('ALTER TABLE `' . $wasTable . '` DROP COLUMN `' . $this->_original['alias'] .'`');
 
             // If field's control element was and still is 'upload' - set $deleteUploadedFiles flag to true.
             if ($this->elementId == $uploadElementId && $this->_original['elementId'] == $uploadElementId)
                 $deleteUploadedFiles = true;
 
             // Reload the model, because field was deleted
-            Indi::model($this->_original['entityId'])->fields()->exclude($this->id);
+            m($this->_original['entityId'])->fields()->exclude($this->id);
 
             // Get original entity row
-            $entityR = Indi::model('Entity')->row('`id` = "' . $this->_original['entityId'] . '"');
+            $entityR = m('Entity')->row('`id` = "' . $this->_original['entityId'] . '"');
 
             // If current field was used as title-field within original entity
             if ($entityR->titleFieldId == $this->id) {
@@ -311,7 +311,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         } else {
 
             // Get name of the table, related to `entityId` property
-            $table = Indi::model($this->entityId)->table(true);
+            $table = m($this->entityId)->table(true);
         }
 
         // If current field is a cfgField
@@ -371,7 +371,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             if (array_key_exists('columnTypeId', $this->_modified) && !$this->_modified['columnTypeId']) {
 
                 // Run a DROP COLUMN query
-                Indi::db()->query('ALTER TABLE `' . $table . '` DROP COLUMN `' . $this->_original['alias'] . '`');
+                db()->query('ALTER TABLE `' . $table . '` DROP COLUMN `' . $this->_original['alias'] . '`');
 
                 // Delete rows from `enumset` table, that are related to current field
                 $this->clearEnumset();
@@ -386,7 +386,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 $return = parent::save();
 
                 // Reload the model, because field was deleted
-                Indi::model($this->entityId)->reload();
+                m($this->entityId)->reload();
 
                 // Check if saving of current field should affect current entity's
                 // `titleFieldId` property and affect all involved titles
@@ -421,7 +421,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $return = parent::save();
 
             // Reload the model, because field info was changed
-            Indi::model($this->entityId)->reload();
+            m($this->entityId)->reload();
 
             // Check if saving of current field should affect current entity's
             // `titleFieldId` property and affect all involved titles
@@ -476,13 +476,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $sql = implode(' ', $sql);
 
         // Run the query
-        Indi::db()->query($sql);
+        db()->query($sql);
 
         // If we are creating move-column, e.g. this column will be used for ordering rows
         // Force it's values to be same as values of `id` column, for it to be possible to
         // move entries up/down once such a column was created
         if (!$this->id && $columnTypeR->type == 'INT(11)' && $this->foreign('elementId')->alias == 'move')
-            Indi::db()->query('UPDATE `' . $table . '` SET `' . $this->alias . '` = `id`');
+            db()->query('UPDATE `' . $table . '` SET `' . $this->alias . '` = `id`');
 
         // If field column type was ENUM or SET, but now it is not -
         // we should delete rows, related to current field, from `enumset` table
@@ -516,7 +516,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $this->_indexes($columnTypeR, $table, $original);
 
         // Reload the model, because field info was changed
-        Indi::model($this->entityId)->reload();
+        m($this->entityId)->reload();
 
         // Check if saving of current field should affect current entity's
         // `titleFieldId` property and affect all involved titles
@@ -556,7 +556,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         else if ($curTypeR->id && !in($curTypeR->type, 'ENUM,SET') && $columnTypeR->type == 'ENUM') {
 
             // Get values
-            $valueA = Indi::db()->query($this->entry
+            $valueA = db()->query($this->entry
                 ? 'SELECT DISTINCT `cfgValue` FROM `param` WHERE `cfgField` = "' . $this->id . '"'
                 : 'SELECT DISTINCT `' . $this->_original['alias'] . '` FROM `' . $table . '`'
             )->fetchAll(PDO::FETCH_COLUMN);
@@ -590,7 +590,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     private function _clear0($table) {
         if ($this->_modified['storeRelationAbility'] == 'many'
             && $this->_original['columnTypeId'] && $this->_modified['columnTypeId']
-            && $table && !array_key_exists('entityId', $this->_modified)) Indi::db()->query('
+            && $table && !array_key_exists('entityId', $this->_modified)) db()->query('
             UPDATE `' . $table . '` SET `' . $this->alias . '` = SUBSTR(REPLACE(CONCAT(",", `' . $this->alias . '`), ",0", ""), 2)
         ');
     }
@@ -887,10 +887,10 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             if (Indi::rexm('int11', $title)) $title = sprintf(I_ENUMSET_DEFAULT_VALUE_BLANK_TITLE, $alias);
 
             // Get `move` as auto increment
-            $move = Indi::db()->query('SHOW TABLE STATUS LIKE "enumset"')->fetch(PDO::FETCH_OBJ)->Auto_increment;
+            $move = db()->query('SHOW TABLE STATUS LIKE "enumset"')->fetch(PDO::FETCH_OBJ)->Auto_increment;
 
             // Do insert todo: refactor
-            Indi::db()->query('
+            db()->query('
                 INSERT INTO `enumset` SET
                 `fieldId` = "' . $this->id . '",
                 `title` = "' . $title . '",
@@ -911,30 +911,30 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Check if where was no relation and index, but now relation is exist, - we add an INDEX index
         if (preg_match('/INT|SET|ENUM|VARCHAR/', $columnTypeR->type))
-            if (!Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
+            if (!db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Key_name)
                 if ($original['storeRelationAbility'] == 'none' && $this->storeRelationAbility != 'none')
-                    Indi::db()->query('ALTER TABLE  `' . $table .'` ADD INDEX (`' . $this->alias . '`)');
+                    db()->query('ALTER TABLE  `' . $table .'` ADD INDEX (`' . $this->alias . '`)');
 
         // Check if where was a relation, and these was an index, but now there is no relation, - we remove an INDEX index
         if ($original['storeRelationAbility'] != 'none' && $this->storeRelationAbility == 'none')
-            if ($index = Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
+            if ($index = db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Key_name)
-                Indi::db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
+                db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
 
         // Check if is was not a TEXT column, and it had no FULLTEXT index, but now it is a TEXT column, - we add a FULLTEXT index
-        if (Indi::model('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type != 'TEXT')
-            if (!Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
+        if (m('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type != 'TEXT')
+            if (!db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch())
                 if ($columnTypeR->type == 'TEXT')
-                    Indi::db()->query('ALTER TABLE  `' . $table .'` ADD FULLTEXT (`' . $this->alias . '`)');
+                    db()->query('ALTER TABLE  `' . $table .'` ADD FULLTEXT (`' . $this->alias . '`)');
 
         // Check if is was a TEXT column, and it had a FULLTEXT index, but now it is not a TEXT column, - we remove a FULLTEXT index
-        if (Indi::model('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type == 'TEXT')
-            if ($index = Indi::db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
+        if (m('ColumnType')->row('`id` = "' . $original['columnTypeId'] . '"')->type == 'TEXT')
+            if ($index = db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
                 AND `Index_type` = "FULLTEXT"')->fetch(PDO::FETCH_OBJ)->Key_name)
                 if ($columnTypeR->type != 'TEXT')
-                    Indi::db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
+                    db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
     }
 
     /**
@@ -988,7 +988,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!($this->_original['columnTypeId'] && $this->_modified['columnTypeId'] && !$this->_modified['entityId'])) return;
 
         // Get the column type row, representing field's column before type change (original column)
-        $curTypeR = Indi::model('ColumnType')->row('`id` = "' . $this->_original['columnTypeId'] . '"');
+        $curTypeR = m('ColumnType')->row('`id` = "' . $this->_original['columnTypeId'] . '"');
 
         // Get the table name
         $tbl = $this->foreign('entityId')->table;
@@ -1065,39 +1065,39 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 $incompatibleValuesReplacement = '0000-00-00';
             } else if (preg_match('/ENUM/', $curTypeR->type)) {
                 $maxLen = 10;
-                foreach(Indi::model($tbl)->fields($this->id)->nested('enumset') as $enumsetR)
+                foreach(m($tbl)->fields($this->id)->nested('enumset') as $enumsetR)
                     if (strlen($enumsetR->alias) > $maxLen) $maxLen = strlen($enumsetR->alias);
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR('. $maxLen . ') NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR('. $maxLen . ') NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00';
             } else if (preg_match('/SET/', $curTypeR->type)) {
                 $shortestValue = '';
-                foreach(Indi::model($tbl)->fields($this->id)->nested('enumset') as $enumsetR)
+                foreach(m($tbl)->fields($this->id)->nested('enumset') as $enumsetR)
                     if (strlen($enumsetR->alias) < strlen($shortestValue)) $shortestValue = $enumsetR->alias;
-                Indi::db()->query('UPDATE TABLE `' . $tbl . '` SET `' . $col . '` = "' . $shortestValue . '"');
+                db()->query('UPDATE TABLE `' . $tbl . '` SET `' . $col . '` = "' . $shortestValue . '"');
                 $minLen = ($svl = strlen($shortestValue)) > 10 ? $svl : 10;
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(' . $minLen . ') NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(' . $minLen . ') NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00';
             } else if (preg_match('/YEAR/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = 'CONCAT(`' . $col .'`, IF(`' . $col . '` = "0000", "0000", "0101"))';
                 $q = ''; $w = false;
             } else if (preg_match('/BOOLEAN/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00'; $w = false;
             } else if (preg_match('/^DATETIME|TIME$/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(DAYOFYEAR(CAST(`' . $col .'` AS UNSIGNED)),
                 DATE_FORMAT(CAST(`' . $col .'` AS UNSIGNED), "%Y-%m-%d"), "0000-00-00")'; $q = ''; $w = false;
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00'; $w = false;
             } else if (preg_match('/DECIMAL\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00'; $w = false;
             } else if (preg_match('/DECIMAL\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(14) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(14) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00'; $w = false;
             }
         } else if ($newType == 'YEAR') {
@@ -1106,28 +1106,28 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else if (preg_match('/ENUM|SET/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/DATETIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = 'SUBSTR(`' . $col .'`, 1, 4)';
                 $q = ''; $w = false;
             } else if (preg_match('/DATE/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = 'SUBSTR(`' . $col .'`, 1, 4)';
                 $q = ''; $w = false;
             } else if (preg_match('/^TIME$/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/BOOLEAN/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(4) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(4) NOT NULL');
                 $incompatibleValuesReplacement = '0000'; $w = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
                 $incompatibleValuesReplacement = '0'; $w = false;
             } else if (preg_match('/DECIMAL\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
                 $incompatibleValuesReplacement = '0'; $w = false;
             } else if (preg_match('/DECIMAL\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` INT NOT NULL');
                 $incompatibleValuesReplacement = '0'; $w = false;
             }
         } else if ($newType == 'TIME') {
@@ -1136,29 +1136,29 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else if (preg_match('/ENUM|SET/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/DATETIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = 'SUBSTR(`' . $col .'`, 12)';
                 $q = ''; $w = false;
             } else if (preg_match('/DATE/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/^YEAR$/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/BOOLEAN/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/DECIMAL\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             } else if (preg_match('/DECIMAL\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
                 $incompatibleValuesReplacement = '00:00:00'; $w = false;
             }
         } else if ($newType == 'DATETIME') {
@@ -1167,28 +1167,28 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else if (preg_match('/ENUM|SET/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/TIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             } else if (preg_match('/DATE/', $curTypeR->type)) {
 
             } else if (preg_match('/^YEAR$/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = 'CONCAT(`' . $col . '`, "-", IF(`' . $col . '` = "0000", "00-00", "01-01"), " 00:00:00")';
                 $w = false; $q = '';
             } else if (preg_match('/BOOLEAN/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             } else if (preg_match('/DECIMAL\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             } else if (preg_match('/DECIMAL\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = '0000-00-00 00:00:00'; $w = false;
             }
         } else if ($newType == 'BOOLEAN') {
@@ -1197,95 +1197,95 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else if (preg_match('/ENUM|SET/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '0';
             } else if (preg_match('/DATETIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0000-00-00 00:00:00", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/^YEAR$/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(4) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(4) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0000", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/DATE/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0000-00-00", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/TIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(8) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "00:00:00", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = '1';
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0.00", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/DECIMAL\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0.00", "0", "1")'; $w = false; $q = '';
             } else if (preg_match('/DECIMAL\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
                 $incompatibleValuesReplacement = 'IF(`' . $col . '` = "0.000", "0", "1")'; $w = false; $q = '';
             }
         } else if ($newType == 'ENUM' || $newType == 'SET') {
             if (preg_match('/TEXT/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/VARCHAR\(255\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = true; $wcol = 'CONCAT(",", `' . $col . '`, ",")';
             } else if (preg_match('/SET/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $regexp = '^' . im($enumsetA, '|') . '$';
             } else if (preg_match('/BOOLEAN/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $regexp = '^' . im($enumsetA, '|') . '$';
             } else if (preg_match('/DATETIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/^YEAR$/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DATE/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/TIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` TEXT NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             }
         } else if ($newType == 'VARCHAR(10)') {
             if (preg_match('/VARCHAR|TEXT/', $curTypeR->type)) {
                 $incompatibleValuesReplacement = $defaultValue;
             } else if (preg_match('/ENUM|SET/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(' . $this->maxLength() . ') NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(' . $this->maxLength() . ') NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue;
             } else if (preg_match('/DATETIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(19) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/^YEAR$/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DATE/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/TIME/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(10) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/INT\(11\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(7,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(11) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(11,2\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(12) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             } else if (preg_match('/DOUBLE\(14,3\)/', $curTypeR->type)) {
-                Indi::db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
+                db()->query('ALTER TABLE `' . $tbl . '` MODIFY `' . $col . '` VARCHAR(15) NOT NULL');
                 $incompatibleValuesReplacement = $defaultValue; $w = false;
             }
         }
@@ -1293,7 +1293,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Adjust existing values, for them to be compatible with type, that field's column will be
         // converted to. We should do it to aviod mysql error like 'Incorrect integer value ...' etc
         if ($incompatibleValuesReplacement !== false)
-            Indi::db()->query('
+            db()->query('
                 UPDATE `' . $tbl . '`
                 SET `' . $col . '` = ' . $q . $incompatibleValuesReplacement . $q .
                     ($w ? ' WHERE ' . $wcol . ' NOT REGEXP "' . $regexp . '"' : '')
@@ -1304,7 +1304,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * Deletes rows from `enumset` table, that are nested to current field
      */
     public function clearEnumset() {
-        if ($this->id) Indi::db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
+        if ($this->id) db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
     }
 
     /**
@@ -1361,13 +1361,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
                 // Provide an approriate SQL expression, that will handle different titles for 1 and 0 possible column
                 // values, depending on current language
-                $orderA[] = (Indi::ini('view')->lang == 'en'
+                $orderA[] = (ini('view')->lang == 'en'
                     ? 'IF(`' . $this->alias . '`, "' . I_YES .'", "' . I_NO . '") '
                     : 'IF(`' . $this->alias . '`, "' . I_NO .'", "' . I_YES . '") ') . $direction;
 
             // Build l10n-compatible version of $order for usage in sql queries
             } else if ($this->l10n == 'y') {
-                $order = 'SUBSTRING_INDEX(`' . $this->alias . '`, \'"' . Indi::ini('lang')->admin . '":"\', -1) ' . $direction;
+                $order = 'SUBSTRING_INDEX(`' . $this->alias . '`, \'"' . ini('lang')->admin . '":"\', -1) ' . $direction;
 
             // Else build the simplest ORDER clause
             } else $order = '`' . $this->alias . '` ' . $direction;
@@ -1379,7 +1379,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             if ($this->foreign('columnTypeId')->type == 'ENUM') {
 
                 // Get a list of comma-imploded aliases, ordered by their titles
-                $set = Indi::db()->query($sql = '
+                $set = db()->query($sql = '
                     SELECT GROUP_CONCAT(`alias` ORDER BY `move`)
                     FROM `enumset`
                     WHERE `fieldId` = "' . $this->id . '"
@@ -1406,9 +1406,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     } else {
 
                         // Get the possible foreign keys
-                        $setA = Indi::db()->query('
+                        $setA = db()->query('
                             SELECT DISTINCT `' . $this->alias . '` AS `id`
-                            FROM `' . Indi::model($this->entityId)->table() . '`
+                            FROM `' . m($this->entityId)->table() . '`
                             ' . ($where ? 'WHERE ' . (is_array($where) ? implode(' AND ', $where) : $where) : '') . '
                         ')->fetchAll(PDO::FETCH_COLUMN);
 
@@ -1446,7 +1446,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
             // If column store boolean values
             if (preg_match('/BOOLEAN/', $this->foreign('columnTypeId')->type)) {
-                return Indi::db()->sql('IF(`' . $this->alias . '`, "' . I_YES . '", "' .
+                return db()->sql('IF(`' . $this->alias . '`, "' . I_YES . '", "' .
                     I_NO . '") LIKE :s', '%' . $keyword . '%');
 
             // Otherwise handle keyword search on other non-relation column types
@@ -1468,7 +1468,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     $this->foreign('columnTypeId')->type, $matches
                 )) {
                     if (preg_match('/^' . $reg[$matches[1]] . '+$/', $keyword)) {
-                        return Indi::db()->sql('`' . $this->alias . '` LIKE :s', '%' . $keyword . '%');
+                        return db()->sql('`' . $this->alias . '` LIKE :s', '%' . $keyword . '%');
                     } else {
                         return 'FALSE';
                     }
@@ -1477,7 +1477,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 }/* else if ($this->foreign('columnTypeId')->type == 'TEXT') {
                     return 'MATCH(`' . $this->alias . '`) AGAINST("' . implode('* ', explode(' ', $keyword)) . '*' . '" IN BOOLEAN MODE)';
                 }*/ else {
-                    return Indi::db()->sql('`' . $this->alias . '` LIKE :s', '%' . $keyword . '%');
+                    return db()->sql('`' . $this->alias . '` LIKE :s', '%' . $keyword . '%');
                 }
             }
 
@@ -1485,7 +1485,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         } else if ($this->relation == 6) {
 
             // Find `enumset` keys (mean `alias`-es), that have `title`-s, that match keyword
-            $idA = Indi::db()->query('
+            $idA = db()->query('
                 SELECT `alias` FROM `enumset`
                 WHERE `fieldId` = "' . $this->id . '" AND `title` LIKE :s
             ', '%' . $keyword . '%')->fetchAll(PDO::FETCH_COLUMN);
@@ -1501,7 +1501,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         } else if ($this->relation) {
 
             // Get the related model
-            $relatedM = Indi::model($this->relation);
+            $relatedM = m($this->relation);
 
             // Declare empty $idA array
             $idA = [];
@@ -1513,7 +1513,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 if (preg_match('/^[0-9]+$/', $keyword))
 
                     // Get the ids
-                    $idA = Indi::db()->query('
+                    $idA = db()->query('
                         SELECT `id` FROM `' . $relatedM->table() . '` WHERE `id` LIKE :s
                     ', '%' . $keyword . '%')->fetchAll(PDO::FETCH_COLUMN);
 
@@ -1521,7 +1521,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             } else if (($titleColumnWHERE = $relatedM->titleField()->keywordWHERE($keyword)) != 'FALSE') {
 
                 // Find matched foreign rows, collect their ids, and add a clause
-                $idA = Indi::db()->query($sql = '
+                $idA = db()->query($sql = '
                     SELECT `id` FROM `' . $relatedM->table() . '` WHERE ' . $titleColumnWHERE . '
                 ')->fetchAll(PDO::FETCH_COLUMN);
             }
@@ -1568,7 +1568,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!$this->_original['entityId']) return null;
 
         // Get the name of the table, that current field's entity is assotiated with
-        $table = Indi::model($this->_original['entityId'])->table();
+        $table = m($this->_original['entityId'])->table();
 
         // If (for some reason) current field's `alias` property is empty - return null
         if (!$this->_original['alias']) return null;
@@ -1578,11 +1578,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Return the maximum possible length, that current field's value are allowed to have
         // Such info is got from `INFORMATION_SCHEMA` pseudo-database
-        return (int) Indi::db()->query('
+        return (int) db()->query('
             SELECT `CHARACTER_MAXIMUM_LENGTH`
             FROM `INFORMATION_SCHEMA`.`COLUMNS`
             WHERE `table_name` = "'. $table . '"
-                AND `table_schema` = "' . Indi::ini()->db->dbname . '"
+                AND `table_schema` = "' . ini()->db->dbname . '"
                 AND `column_name` = "'. $this->_original['alias'] . '"
             LIMIT 0 , 1
         ')->fetchColumn();
@@ -1660,7 +1660,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $field = Indi::model('Field')->fields($prop);
+            $field = m('Field')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
@@ -1799,7 +1799,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @return Indi_Db_Table
      */
     public function rel() {
-        return Indi::model($this->relation, true);
+        return m($this->relation, true);
     }
 
     /**
@@ -1821,7 +1821,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
 
         // Get ordered fields aliases
-        $fieldA_alias = Indi::db()->query(
+        $fieldA_alias = db()->query(
             'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
         )->fetchAll(PDO::FETCH_COLUMN);
 
@@ -1876,7 +1876,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Get target langs
         $target = [];
-        foreach ($fraction as $fractionI) $target[$fractionI] = m('Lang')->fetchAll([
+        foreach ($fraction as $fractionI) $target[$fractionI] = m('Lang')->all([
             '`' . $fractionI . '` = "y"',
             '`alias` != "' . $lang . '"'
         ])->column('alias', true);

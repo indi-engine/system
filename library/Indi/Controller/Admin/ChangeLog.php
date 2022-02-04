@@ -18,21 +18,21 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
         // Here we setup `filter` prop for `entityId` field, to ensure that filter-combo,
         // linked to `entityId` field won't use extra width
-        if ($entityIdA = Indi::db()
+        if ($entityIdA = db()
             ->query('SELECT DISTINCT `entityId` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
             m()->fields('entityId')->filter = '`id` IN (' . im($entityIdA) . ') ';
 
         // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
         // linked to `changerType` field won't use extra width
-        if ($changerTypeA = Indi::db()
+        if ($changerTypeA = db()
             ->query('SELECT DISTINCT `changerType` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
             m()->fields('changerType')->filter = '`id` IN (' . im($changerTypeA) . ') ';
 
         // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
         // linked to `changerId` field won't use extra width
-        if ($changerIdA = Indi::db()
+        if ($changerIdA = db()
             ->query('SELECT DISTINCT `changerId` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
             m()->fields('changerId')->filter = '`id` IN (' . im($changerIdA) . ') ';
@@ -91,7 +91,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
         // Collect shaded fields
         if (($shade = []) || Indi::demo(false))
-            foreach(Indi::model(t(1)->section->entityId)->fields() as $fieldR)
+            foreach(m(t(1)->section->entityId)->fields() as $fieldR)
                 if ($fieldR->param('shade'))
                     $shade[$fieldR->id] = true;
 
@@ -143,7 +143,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         }
 
         // Fetch rows that should be moved
-        $toBeRevertedRs = m()->fetchAll([
+        $toBeRevertedRs = m()->all([
             '`id` IN (' . im($toBeRevertedIdA) . ')', t()->scope->WHERE
         ]);
 

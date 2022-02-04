@@ -9,7 +9,7 @@ class Indi_Queue_L10n_Action extends Indi_Queue_L10n_FieldToggleL10nUpload {
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->new([
+        $queueTaskR = m('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'

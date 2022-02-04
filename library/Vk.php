@@ -69,7 +69,7 @@ class Vk {
     private static function response($method, $data) {
 
         // Assign ini-props as internal props
-        foreach (Indi::ini('vk') as $p => $v) if (property_exists(__CLASS__, $p)) self::$$p = $v;
+        foreach (ini('vk') as $p => $v) if (property_exists(__CLASS__, $p)) self::$$p = $v;
 
         // Build request url
         $url = self::$url . $method;

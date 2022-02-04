@@ -3,17 +3,17 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title><?=Indi::ini('general')->title ?: 'Indi Engine'?></title>
+    <title><?=ini('general')->title ?: 'Indi Engine'?></title>
     <?$this->other('gz')?>
     <script type="text/javascript" src="/library/ckeditor/ckeditor.js"></script>
     <script type="text/javascript" src="/library/ckfinder/ckfinder.js"></script>
     <!-- Imploded and gzipped scripts and styles -->
-    <script type="text/javascript" src="/js/admin/indi.all.<?=Indi::ini('lang')->admin?>.<?eif(isIE(),'ie','gz')?>.js"></script>
+    <script type="text/javascript" src="/js/admin/indi.all.<?=ini('lang')->admin?>.<?eif(isIE(),'ie','gz')?>.js"></script>
     <script type="text/javascript" src="/js/admin/indi.all.<?eif(isIE(),'ie','gz')?>.js"></script>
-    <?if (Indi::ini('gmap')->key){?>
-    <script src="https://maps.googleapis.com/maps/api/js?key=<?=Indi::ini('gmap')->key?>"></script>
+    <?if (ini('gmap')->key){?>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?=ini('gmap')->key?>"></script>
     <?}?>
-    <?if (Indi::ini('ymap')->mode){?>
+    <?if (ini('ymap')->mode){?>
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
     <?}?>
     <script type="text/javascript" src="/library/Highstock-2.1.9/js/highstock.src.js"></script>
@@ -32,7 +32,7 @@ Ext.create('Indi', {
         time: <?=time()?>,
         menu: <?=json_encode($this->menu)?>,
         ini: {
-            ws: <?=json_encode(array_merge((array) Indi::ini('ws'), ['pem' => is_file(DOC . STD . '/core/application/ws.pem')]))?>,
+            ws: <?=json_encode(array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/core/application/ws.pem')]))?>,
             demo: <?=Indi::demo(false) ? 'true' : 'false'?>
         },
         user: {

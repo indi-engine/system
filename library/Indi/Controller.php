@@ -14,25 +14,25 @@ class Indi_Controller {
     public function __construct() {
 
         // Set locale
-        if (Indi::ini()->lang->{Indi::uri()->module} == 'ru')
+        if (ini()->lang->{Indi::uri()->module} == 'ru')
             setlocale(LC_TIME, 'ru_RU.UTF-8', 'ru_utf8', 'Russian_Russia.UTF8', 'ru_RU', 'Russian');
 
         // Create an Indi_View instance
 		$view = class_exists('Project_View') ? new Project_View : new Indi_View();
 
         // Get the script path
-        $spath = Indi::ini('view')->scriptPath;
+        $spath = ini('view')->scriptPath;
 
         // Get db table, that current admin user entry is stored in, if logged in
         $admin = admin() ? admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
-        if (Indi::ini()->general->seoUri) Indi::ini()->design = [];
+        if (ini()->general->seoUri) ini()->design = [];
 
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
         // additional paths for both scripts and helpers
-        if (Indi::uri('module') == 'front' && is_array($dsdirA = (array) Indi::ini('view')->design))
+        if (Indi::uri('module') == 'front' && is_array($dsdirA = (array) ini('view')->design))
             foreach($dsdirA as $dsdirI => $domainS) foreach (explode(' ', $domainS) as $domain) {
 
                 // Split $domain by domain name itself and admin-type, that may be specified
@@ -44,11 +44,11 @@ class Indi_Controller {
                 if ($d != $_SERVER['HTTP_HOST']) continue;
 
                 // If design is in public access, or is not, but is accessible for current admin - append design
-                if (!$u || $u == $admin) Indi::ini()->design[] = $dsdirI;
+                if (!$u || $u == $admin) ini()->design[] = $dsdirI;
             }
 
         // If more than 1 designs detected for current domain
-        if (count((array) Indi::ini()->design) > 1) {
+        if (count((array) ini()->design) > 1) {
 
             // Views dir shortcut
             $dir = DOC . STD . '/www/application/views/';
@@ -57,13 +57,13 @@ class Indi_Controller {
             $actionTpl = Indi::uri('section') . '/' . Indi::uri('action');
 
             // Foreach design
-            foreach (Indi::ini()->design as $design) {
+            foreach (ini()->design as $design) {
 
                 // Get template filename, applicable for section/action combination
                 $tpl = $dir . $design . '/' . $actionTpl . '.php';
 
                 // If template exists - force usage of current design especially for section/action combination
-                if (file_exists($tpl) && (Indi::ini()->design = $design)) {
+                if (file_exists($tpl) && (ini()->design = $design)) {
 
                     // Force action-tpl to be used as inner tpl
                     $view->innerTpl = $actionTpl;
@@ -79,7 +79,7 @@ class Indi_Controller {
                 $tpl = $dir . $design . '/' . $entryTpl . '.php';
 
                 // If template exists - force usage of current design especially for section/action/entry combination
-                if (file_exists($tpl) && (Indi::ini()->design = $design)) {
+                if (file_exists($tpl) && (ini()->design = $design)) {
 
                     // For entry-tpl to be used as inner tpl
                     $view->innerTpl = $entryTpl;
@@ -93,7 +93,7 @@ class Indi_Controller {
             }
 
         // Else use first
-        } else Indi::ini()->design = Indi::ini()->design[0];
+        } else ini()->design = ini()->design[0];
 
         // Do paths setup twice: first for module-specific paths, second for general-paths
         for ($i = 0; $i < 2; $i++) {
@@ -107,7 +107,7 @@ class Indi_Controller {
             if (is_dir(DOC . STD . '/www/' . $spath)) {
 
                 // Add design-specific script path
-                if (Indi::ini()->design) $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath . '/' . Indi::ini()->design);
+                if (ini()->design) $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath . '/' . ini()->design);
 
                 // Add general script path
                 $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath);
@@ -121,7 +121,7 @@ class Indi_Controller {
             if (is_dir(DOC . STD . '/www/library')) {
 
                 // Add design-specific helper path
-                if (Indi::ini()->design) $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp . '/' . Indi::ini()->design, 'Project_View_Helper_'. $mhcp);
+                if (ini()->design) $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp . '/' . ini()->design, 'Project_View_Helper_'. $mhcp);
 
                 // Add default helper path
                 $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
@@ -313,7 +313,7 @@ class Indi_Controller {
     public function filtersWHERE($FROM = '', $search = '') {
 
         // Setup model, that should have fields, mentioned as filtering params names
-        $model = $FROM ? Indi::model($FROM) : t()->model;
+        $model = $FROM ? m($FROM) : t()->model;
 
         // Defined an array for collecting data, that may be used in the process of building an excel spreadsheet
         $excelA = [];
@@ -402,7 +402,7 @@ class Indi_Controller {
                     } else if ($found->elementId == 9 || $found->elementId == 23) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = Indi::db()->sql('`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
+                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
 
                         // Pick the current filter value to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue ? I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_YES : I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_NO;
@@ -411,7 +411,7 @@ class Indi_Controller {
                     } else if ($found->elementId == 1) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = Indi::db()->sql('`' . $filterSearchFieldAlias . '` LIKE :s', '%' . $filterSearchFieldValue . '%');
+                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` LIKE :s', '%' . $filterSearchFieldValue . '%');
 
                         // Pick the current filter value to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
@@ -457,16 +457,16 @@ class Indi_Controller {
                                 $filterSearchFieldValue .= preg_match('/gte$/', $filterSearchFieldAlias) ? ' 00:00:00' : ' 23:59:59';
 
                             // Use a '>=' or '<=' clause, according to specified range border's type
-                            $where[$found->alias][$matches[2]] = Indi::db()->sql('`' . $matches[1] . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
+                            $where[$found->alias][$matches[2]] = db()->sql('`' . $matches[1] . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
 
                         // Else
-                        } else $where[$found->alias] = Indi::db()->sql('`' . $found->alias . '` = :s', $filterSearchFieldValue);
+                        } else $where[$found->alias] = db()->sql('`' . $found->alias . '` = :s', $filterSearchFieldValue);
 
                     // If $found field's column type is TEXT ( - control elements 'Text' and 'HTML')
                     } else if ($found->columnTypeId == 4) {
 
                         // Use 'MATCH AGAINST' clause
-                        $where[$found->alias] = Indi::db()->sql('MATCH(`' . $filterSearchFieldAlias . '`) AGAINST(:s IN BOOLEAN MODE)', $filterSearchFieldValue . '*');
+                        $where[$found->alias] = db()->sql('MATCH(`' . $filterSearchFieldAlias . '`) AGAINST(:s IN BOOLEAN MODE)', $filterSearchFieldValue . '*');
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
@@ -492,22 +492,22 @@ class Indi_Controller {
                     if ($further) {
 
                         // Get WHERE clause to be run on table, that filter's field's relation points to
-                        $furtherWHERE = Indi::db()->sql(
+                        $furtherWHERE = db()->sql(
                             $any ? 'FIND_IN_SET(`' . $further . '`, :s)' : '`' . $further . '` = :s',
                             $filterSearchFieldValue
                         );
 
                         // Get ids
-                        $idA = Indi::db()->query(
+                        $idA = db()->query(
                             'SELECT `id` FROM `:p` WHERE ' . $furtherWHERE,
-                            Indi::model($found->entityId)->table()
+                            m($found->entityId)->table()
                         )->fetchAll(PDO::FETCH_COLUMN);
 
                         // Set up WHERE clause according to value of $any flag
-                        $where[$found->alias] = Indi::db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
+                        $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
 
                     // Else set up WHERE clause according to value of $any flag
-                    } else $where[$found->alias] = Indi::db()->sql($any
+                    } else $where[$found->alias] = db()->sql($any
                         ? 'FIND_IN_SET(`' . $filterSearchFieldAlias . '`, :s)'
                         : '`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
 
@@ -545,7 +545,7 @@ class Indi_Controller {
 
                     // Fill that array
                     foreach ($filterSearchFieldValue as $filterSearchFieldValueItem)
-                        $fisA[] = Indi::db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
+                        $fisA[] = db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
 
                     // Implode array of FIND_IN_SET clauses with AND, and enclose by round brackets
                     $where[$found->alias] = '(' . implode(' ' . ($any ? 'OR' : 'AND') . ' ', $fisA) . ')';
@@ -605,7 +605,7 @@ class Indi_Controller {
             $sw = t()->scope->WHERE;
 
             // Append part of WHERE clause, that will be involved in the process of fetching filter combo data
-            $where[] = '`id` IN (' . (($in = Indi::db()->query('
+            $where[] = '`id` IN (' . (($in = db()->query('
                 SELECT DISTINCT `'. $for . '` FROM `' . $tbl .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
             )->fetchAll(PDO::FETCH_COLUMN)) ? trim(implode(',', $in), ',') : 0) . ')';
         }

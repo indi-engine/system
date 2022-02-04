@@ -114,21 +114,21 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
                 $connector = t()->fields->gb($this->filter->fieldId);
 
                 // Get connector consistent values
-                $connector_in = Indi::db()->query('
+                $connector_in = db()->query('
                   SELECT DISTINCT `' . $connector->alias . '`
                   FROM `' . $tbl . '`' .
                   (strlen($sw) ? 'WHERE ' . $sw : '')
                 )->fetchAll(PDO::FETCH_COLUMN);
 
                 // Get the distinct list of possibilities
-                $in = Indi::db()->query('
+                $in = db()->query('
                   SELECT DISTINCT `'. $field->original('alias') . '`
                   FROM `' . $connector->rel()->table() .'`
                   WHERE `id` IN (0' . rif(im($connector_in), ',$1') . ')'
                 )->fetchAll(PDO::FETCH_COLUMN);
 
             // Else get the distinct list of possibilities using usual approach
-            } else $in = Indi::db()->query('
+            } else $in = db()->query('
               SELECT DISTINCT `'. $alias . '` FROM `' . $this->distinctFrom($alias, $tbl) .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
             )->fetchAll(PDO::FETCH_COLUMN);
 

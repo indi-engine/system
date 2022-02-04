@@ -71,7 +71,7 @@ trait Indi_Queue_L10n_AdminExport {
         file_put_contents($abs, '<?php' . "\n");
 
         // Collect chunk ids in right order
-        $chunkIdA = Indi::db()->query('
+        $chunkIdA = db()->query('
             SELECT `id` 
             FROM `queueChunk`
             WHERE `id` IN (' . im(array_keys($this->meta)) . ')
@@ -97,7 +97,7 @@ trait Indi_Queue_L10n_AdminExport {
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
@@ -132,7 +132,7 @@ trait Indi_Queue_L10n_AdminExport {
                 $queueChunkR->set(['queueState' => 'noneed'])->basicUpdate();
 
             // Get queue items by 50 entries at a time
-            Indi::model('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $exportable) {
+            m('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $exportable) {
 
                 // Foreach fetched `queueItem` entry
                 foreach ($rs as $idx => $r) {
@@ -141,10 +141,10 @@ trait Indi_Queue_L10n_AdminExport {
                     if ($exportable) {
 
                         // Backup current language
-                        $_lang = Indi::ini('lang')->admin;
+                        $_lang = ini('lang')->admin;
 
                         // Spoof current language
-                        Indi::ini('lang')->admin = $source;
+                        ini('lang')->admin = $source;
 
                         // Get target entry
                         $te = m($table)->row($r->target);
@@ -153,7 +153,7 @@ trait Indi_Queue_L10n_AdminExport {
                         $result = $te->export($field);
 
                         // Restore current language
-                        Indi::ini('lang')->admin = $_lang;
+                        ini('lang')->admin = $_lang;
 
                     //
                     } else $result = '';
@@ -192,7 +192,7 @@ trait Indi_Queue_L10n_AdminExport {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
@@ -226,7 +226,7 @@ trait Indi_Queue_L10n_AdminExport {
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "queue"';
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, &$l10n_target_raw, $l10n_target_abs) {
+            m('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, &$l10n_target_raw, $l10n_target_abs) {
 
                 // Update target file
                 if ($r->result) file_put_contents($l10n_target_abs, $r->result . "\n", FILE_APPEND);

@@ -65,8 +65,8 @@ class Indi_Trail_Item {
      */
     public function __get($property) {
         if ($this->section->entityId)
-            if ($property == 'model') return Indi::model($this->section->entityId);
-            else if ($property == 'fields') return Indi::model($this->section->entityId)->fields();
+            if ($property == 'model') return m($this->section->entityId);
+            else if ($property == 'fields') return m($this->section->entityId)->fields();
     }
 
     /**
@@ -171,9 +171,9 @@ class Indi_Trail_Item {
             $ckeDataA = array_intersect(array_keys($array['row']), $ckeFieldA);
 
             // Here were omit STD's one or more dir levels at the ending, in case if
-            // Indi::ini('upload')->path is having one or more '../' at the beginning
+            // ini('upload')->path is having one or more '../' at the beginning
             $std = STD;
-            if (preg_match(':^(\.\./)+:', Indi::ini('upload')->path, $m)) {
+            if (preg_match(':^(\.\./)+:', ini('upload')->path, $m)) {
                 $lup = count(explode('/', rtrim($m[0], '/')));
                 for ($i = 0; $i < $lup; $i++) $std = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std);
             }
@@ -242,7 +242,7 @@ class Indi_Trail_Item {
 
         // Make the call
         return call_user_func_array(
-            [Indi::model($this->section->entityId), $call['function']],
+            [m($this->section->entityId), $call['function']],
             func_num_args() ? func_get_args() : $call['args']
         );
     }

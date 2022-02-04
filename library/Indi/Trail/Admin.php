@@ -37,7 +37,7 @@ class Indi_Trail_Admin {
         self::$items = [];
 
         // Get all sections, starting from current and up to the most top
-        $sectionRs = Indi::model('Section')->fetchAll(
+        $sectionRs = m('Section')->all(
             '`id` IN (' . $route = implode(',', $routeA) . ')',
             'FIND_IN_SET(`id`, "' . implode(',', $routeA) . '")'
         )->foreign('parentSectionConnector,defaultSortField');
@@ -46,7 +46,7 @@ class Indi_Trail_Admin {
         $top = $routeA[count($routeA) - 1];
 
         // Get array of actions that are toggled on
-        self::$toggledActionIdA = Indi::db()
+        self::$toggledActionIdA = db()
             ->query('SELECT `id` FROM `action` WHERE `toggle` = "y"')
             ->fetchAll(PDO::FETCH_COLUMN);
 
@@ -80,7 +80,7 @@ class Indi_Trail_Admin {
 
         // Get filters
         $searchWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` = "y"'];
-        if (Indi::model('Search')->fields('access') && Indi::model('Search')->fields('profileIds')) {
+        if (m('Search')->fields('access') && m('Search')->fields('profileIds')) {
             $searchWHERE[] = '(' . im([
                 '`access` = "all"',
                 '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
@@ -96,7 +96,7 @@ class Indi_Trail_Admin {
 
         // Grid columns WHERE clause
         $gridWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"'];
-        if (Indi::model('Grid')->fields('access') && Indi::model('Grid')->fields('profileIds')) {
+        if (m('Grid')->fields('access') && m('Grid')->fields('profileIds')) {
             $gridWHERE[] = '(' . im([
                 '`access` = "all"',
                 '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',

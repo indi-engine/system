@@ -955,7 +955,7 @@ class Indi {
 
             // Get the current user row
             $userR = (int) $_SESSION['user']['id']
-                ? Indi::model('User')->row($_SESSION['user']['id'])
+                ? m('User')->row($_SESSION['user']['id'])
                 : false;
 
             // Push $obj object in registry under 'uri' key
@@ -983,7 +983,7 @@ class Indi {
 
             // Get the current user row
             $adminR = (int) $_SESSION['admin']['id']
-                ? Indi::model($table)->row($_SESSION['admin']['id'])
+                ? m($table)->row($_SESSION['admin']['id'])
                 : false;
 
             // If current visitor is not a cms/admin user - return
@@ -995,8 +995,8 @@ class Indi {
             // If current cms user was found not in 'admin' database table,  we explicilty setup foreign
             // data for 'profileId' foreign key, despite on in that other table may be not such a foreign key
             if ($table != 'admin') {
-                $adminR->foreign('profileId', Indi::model('Profile')->row(
-                    '`entityId` = "' . Indi::model($table)->id() . '"'
+                $adminR->foreign('profileId', m('Profile')->row(
+                    '`entityId` = "' . m($table)->id() . '"'
                 ));
                 $adminR->profileId = $adminR->foreign('profileId')->id;
             }
@@ -1152,7 +1152,7 @@ class Indi {
                     // If namespace is given, and is 'Indi$lang'
                     if ($ns == 'Indi$lang') {
                         echo "$ns.push(" . json_encode($kvp) . ");";
-                        echo "$ns.push({name: '" . Indi::ini('lang')->admin . "'});";
+                        echo "$ns.push({name: '" . ini('lang')->admin . "'});";
                     }
 
                 // Echo that file contents
@@ -1334,7 +1334,7 @@ class Indi {
     public static function order($entityId, $idA, $dir = 'ASC'){
 
         // Load the model
-        $model = Indi::model($entityId);
+        $model = m($entityId);
 
         // Get the columns list
         $columnA = $model->fields(null, 'aliases');
@@ -1350,7 +1350,7 @@ class Indi {
                 : str_replace('$dir', $dir, $titleColumn);
 
             // Setup a new order for $idA
-            $idA = Indi::db()->query('
+            $idA = db()->query('
                 SELECT `id`
                 FROM `' . $model->table() . '`
                 WHERE `id` IN (' . implode(',', $idA) . ')
@@ -1394,8 +1394,8 @@ class Indi {
      */
     public static function l10n($text, $to, $from = null) {
 
-        // If $from arg is not given - set it to be same as Indi::ini('lang')->admin
-        if (!$from) $from = Indi::ini('lang')->admin;
+        // If $from arg is not given - set it to be same as ini('lang')->admin
+        if (!$from) $from = ini('lang')->admin;
 
         // If given lang is same as current lang return $text as is
         if ($to == $from) return $text;
@@ -1513,7 +1513,7 @@ class Indi {
 
 			// Fetch rowset
             $w = Indi::uri()->staticpageAdditionalWHERE; $w[] = '`toggle` = "y"';
-            $staticBlockRs = Indi::model('Staticblock')->fetchAll($w);
+            $staticBlockRs = m('Staticblock')->all($w);
 			
 			// Setup values in self::$_blockA array under certain keys
             foreach ($staticBlockRs as $staticBlockR) {
@@ -1744,7 +1744,7 @@ class Indi {
         }
 
         // Get the directory name
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $entity . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $entity . '/';
 
         // If directory does not exist - return
         if (!is_dir($dir)) return;
@@ -1781,7 +1781,7 @@ class Indi {
     public static function swf($entity, $id, $field, $attr = []) {
 
         // Get the directory name
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $entity . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $entity . '/';
 
         // If directory does not exist - return
         if (!is_dir($dir)) return;
@@ -2061,7 +2061,7 @@ class Indi {
 
                 // Else if source layout differs from current language
                 // - setup current language as destination layout
-                else if ($src != Indi::ini('lang')->admin) $dst = Indi::ini('lang')->admin;
+                else if ($src != ini('lang')->admin) $dst = ini('lang')->admin;
 
                 // Else if source layout is 'ru' - setup destination layout as 'en'
                 else if ($src == 'ru') $dst = 'en';
@@ -2143,7 +2143,7 @@ class Indi {
      * @return string
      */
     public function ckup() {
-        return DOC . STD . '/' . Indi::ini('upload')->path . '/' . Indi::ini('ckeditor')->uploadPath .'/';
+        return DOC . STD . '/' . ini('upload')->path . '/' . ini('ckeditor')->uploadPath .'/';
     }
 
     /**
@@ -2203,7 +2203,7 @@ class Indi {
         if (!count(Indi_Db::$DELETEQueryA)) return;
 
         // If DELETE queries logging is notturned On - return
-        if (!Indi::ini('db')->log->DELETE) return;
+        if (!ini('db')->log->DELETE) return;
 
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
@@ -2238,7 +2238,7 @@ class Indi {
      * @return mixed
      */
     public static function cfg($key) {
-        return Indi::model('Config')->row('`alias` = "' . $key . '"')->currentValue;
+        return m('Config')->row('`alias` = "' . $key . '"')->currentValue;
     }
 
     /**
@@ -2461,8 +2461,8 @@ class Indi {
         $mail = new PHPMailer();
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        if ($fe = Indi::ini('mail')->default->from->email) $mail->From = $fe;
-        if ($fn = Indi::ini('mail')->default->from->name)  $mail->FromName = $fn;
+        if ($fe = ini('mail')->default->from->email) $mail->From = $fe;
+        if ($fn = ini('mail')->default->from->name)  $mail->FromName = $fn;
         return $mail;
     }
 
@@ -2513,16 +2513,16 @@ class Indi {
     public static function ws($data) {
 
         // If websockets is not enabled - return
-        if (!Indi::ini('ws')->enabled) return;
+        if (!ini('ws')->enabled) return;
 
         // If data type is 'realtime' or 'F5', and rabbitmq is enabled
-        if (in($data['type'], 'realtime,F5') && Indi::ini('rabbitmq')->enabled) {
+        if (in($data['type'], 'realtime,F5') && ini('rabbitmq')->enabled) {
 
             // If rabbitmq connection channel not yet exists
             if (!self::$_mq) {
 
                 // Get credentials
-                $mq = (array) Indi::ini('rabbitmq');
+                $mq = (array) ini('rabbitmq');
 
                 // Create connection
                 $connection = new AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
@@ -2551,7 +2551,7 @@ class Indi {
             try {
 
                 // Create client
-                self::$_ws = new WsClient($prot . '://' . Indi::ini('ws')->socket . ':' . Indi::ini('ws')->port . '/' . $path);
+                self::$_ws = new WsClient($prot . '://' . ini('ws')->socket . ':' . ini('ws')->port . '/' . $path);
 
             // If exception caught
             } catch (Exception $e) {
@@ -2577,7 +2577,7 @@ class Indi {
             } else {
 
                 // Log message
-                if (Indi::ini('ws')->log) wsmsglog($data, $data['row'] . '.evt');
+                if (ini('ws')->log) wsmsglog($data, $data['row'] . '.evt');
 
                 // Send message
                 self::$_ws->send(json_encode($data));
@@ -2602,7 +2602,7 @@ class Indi {
      * Prevent user from doing something when demo-mode is turned On
      */
     public static function demo($flush = true) {
-        if ((Indi::ini('general')->demo && admin()->profileId != 1)
+        if ((ini('general')->demo && admin()->profileId != 1)
             || (admin() && (admin()->demo == 'y' || admin()->foreign('profileId')->demo == 'y')))
             return $flush ? jflush(false, I_DEMO_ACTION_OFF) : true;
     }
@@ -2631,7 +2631,7 @@ class Indi {
         $env = tempnam($dir, 'cmd');
 
         // Prepare command
-        $cmd = Indi::ini('general')->phpdir . "php ../core/application/cmd.php $method \"$env\"";
+        $cmd = ini('general')->phpdir . "php ../core/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
         file_put_contents($env, json_encode([

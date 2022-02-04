@@ -356,7 +356,7 @@ class Indi_Db_Table
         }
 
         // Fetch data
-        $data = Indi::db()->query($sql)->fetchAll();
+        $data = db()->query($sql)->fetchAll();
 
         // Prepare data for Indi_Db_Table_Rowset object construction
         $data = [
@@ -390,7 +390,7 @@ class Indi_Db_Table
             foreach ($union as $select) {
                 $select = preg_replace('~\* FROM~', 'COUNT(*) FROM', $select);
                 $select = preg_replace('~ LIMIT [0-9,]+$~', '', $select);
-                $found[] = (int) Indi::db()->query($select)->fetchColumn();
+                $found[] = (int) db()->query($select)->fetchColumn();
             }
             
             // Use max
@@ -398,7 +398,7 @@ class Indi_Db_Table
         }
         
         // Default logic
-        return Indi::db()->query('SELECT FOUND_ROWS()')->fetchColumn();
+        return db()->query('SELECT FOUND_ROWS()')->fetchColumn();
     }
 
     /**
@@ -446,7 +446,7 @@ class Indi_Db_Table
                 : '`' . $titleColumn . '` LIKE "' . str_replace('"', '\"', $keyword) . '%"';
 
             // Fetch rows that match $where clause, ant set foundRows
-            $foundRs = $this->fetchAll($where, $order, $count, $page);
+            $foundRs = $this->all($where, $order, $count, $page);
             $found = $foundRs->found();
             $foundA = $foundRs->toArray();
 
@@ -656,7 +656,7 @@ class Indi_Db_Table
         // Construct a WHERE and ORDER clauses for getting that particular
         // page of results, get it, and setup nesting level indents
         $wo = 'FIND_IN_SET(`id`, "' . implode(',', $ids) . '")';
-        $rowset = $this->fetchAll($wo, $wo);
+        $rowset = $this->all($wo, $wo);
         $sql = $rowset->query();
         $data = $rowset->toArray();
         $assocDataA = [];
@@ -728,7 +728,7 @@ class Indi_Db_Table
         $query .= rif($order, ' ORDER BY $1');
 
         // Get general tree data for whole table, but only `id` and `treeColumn` columns
-        $tree = Indi::db()->query($query)->fetchAll();
+        $tree = db()->query($query)->fetchAll();
         $nested = [];
         foreach ($tree as $item) {
             $nested[$item[$tc]][] = $item;
@@ -760,7 +760,7 @@ class Indi_Db_Table
             // First we should find primary results
             $primary = [];
             if (is_array($where) && count($where = un($where, null))) $where = implode(' AND ', $where);
-            $foundA = Indi::db()->query('SELECT `id` FROM `' . $this->_table . '` WHERE ' . $where)->fetchAll();
+            $foundA = db()->query('SELECT `id` FROM `' . $this->_table . '` WHERE ' . $where)->fetchAll();
             foreach ($foundA as $foundI) {
                 $primary[$foundI['id']] = true;
                 unset($foundI);
@@ -869,13 +869,13 @@ class Indi_Db_Table
         if ($this->treeColumn()) return ($this->fetchTree($where, $order, 1, null, null, $id, null, true) + 1) . '';
 
         // Offset variable
-        Indi::db()->query('SET @o=0;');
+        db()->query('SET @o=0;');
 
         // Random temporary table name. We should ensure that there will be no table with such name
         $tmpTableName = 'offset' . rand(2000, 8000);
 
         // We are using a temporary table to place data into it, and the get of offset
-        Indi::db()->query($sql = '
+        db()->query($sql = '
             CREATE TEMPORARY TABLE `' . $tmpTableName . '`
             SELECT @o:=@o+1 AS `offset`, `id`="' . $id . '" AS `found`
             FROM `' . $this->_table .'`'
@@ -884,17 +884,17 @@ class Indi_Db_Table
         );
 
         // Get the offset
-        $offset = Indi::db()->query('
+        $offset = db()->query('
             SELECT `offset`
             FROM `' . $tmpTableName . '`
             WHERE `found` = "1"'
         )->fetchColumn(0);
 
         // Unset offset variable
-        Indi::db()->query('SET @o=null;');
+        db()->query('SET @o=null;');
 
         // Truncate temporary table
-        Indi::db()->query('DROP TABLE `' . $tmpTableName . '`');
+        db()->query('DROP TABLE `' . $tmpTableName . '`');
 
         // Return
         return $offset;
@@ -1059,7 +1059,7 @@ class Indi_Db_Table
             . ($limit ? ' LIMIT ' . $limit : '');
 
         // Fetch and return result
-        return $data = Indi::db()->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        return $data = db()->query($sql)->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**
@@ -1092,7 +1092,7 @@ class Indi_Db_Table
 
         // Else use usual approach
         else {
-            $data = Indi::db()->query($sql =
+            $data = db()->query($sql =
                 'SELECT * FROM `' . $this->_table . '`' .
                 rif(strlen($where), ' WHERE ' . $where) .
                 rif($order, ' ORDER BY ' . $order) .
@@ -1142,11 +1142,11 @@ class Indi_Db_Table
      * in case when we need to create an instance of a row and assign a values into it - and all
      * this within a single call. So, without $assign arg usage, the desired effect would require:
      *
-     *   Indi::model('SomeModel')->new()->set(['prop1' => 'value1', 'prop2' => 'value2']);
+     *   m('SomeModel')->new()->set(['prop1' => 'value1', 'prop2' => 'value2']);
      *
      * But not, with $assign arg usage, same effect would require
      *
-     *   Indi::model('SomeModel')->createRow(['prop1' => 'value1', 'prop2' => 'value2']);
+     *   m('SomeModel')->new(['prop1' => 'value1', 'prop2' => 'value2']);
      *
      * So, with $assign arg usage, we can omit the additional 'assign(..)' call
      *
@@ -1264,7 +1264,7 @@ class Indi_Db_Table
             $sql .= ' WHERE ' . $where;
 
             // Execute the query
-            return Indi::db()->query($sql);
+            return db()->query($sql);
 
             // Otherwise throw an exception, to avoid deleting all database table's rows
         } else {
@@ -1309,7 +1309,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = Indi::db()->sql('`id` = :s', $data['id']);
+        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
@@ -1329,7 +1329,7 @@ class Indi_Db_Table
                     $data[$fieldR->alias] = $fieldR->compiled('defaultValue');
 
                 // If $set flag is `true` - append value with related field alias to $set array
-                if ($set) $setA[] = Indi::db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+                if ($set) $setA[] = db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
             }
         }
 
@@ -1337,10 +1337,10 @@ class Indi_Db_Table
         $sql .= count($setA) ? implode(', ', $setA) : '`id` = NULL';
 
         // Run the query
-        Indi::db()->query($sql);
+        db()->query($sql);
 
         // Return the id of inserted row
-        return Indi::db()->getPDO()->lastInsertId();
+        return db()->getPDO()->lastInsertId();
     }
 
     /**
@@ -1367,7 +1367,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = Indi::db()->sql('`id` = :s', $data['id']);
+        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
@@ -1379,7 +1379,7 @@ class Indi_Db_Table
             if (!array_key_exists($fieldR->alias, $data)) continue;
 
             // We append value with related field alias to $set array
-            $setA[] = Indi::db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+            $setA[] = db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
         }
 
         // Append comma-imploded items of $setA array to sql query
@@ -1394,7 +1394,7 @@ class Indi_Db_Table
         }
 
         // Execute query and return number of affected rows
-        return Indi::db()->query($sql);
+        return db()->query($sql);
     }
 
     /**
@@ -1437,11 +1437,11 @@ class Indi_Db_Table
         if ($title) {
 
             // If localization is turned On
-            if (Indi::model('Entity')->fields('title')->l10n == 'y') {
+            if (m('Entity')->fields('title')->l10n == 'y') {
 
                 // Spoof title within json
                 $_ = json_decode($this->_title);
-                $_->{Indi::ini('lang')->admin} = $title;
+                $_->{ini('lang')->admin} = $title;
                 $this->_title = json_encode($_);
 
             // Else spoof existing title
@@ -1449,8 +1449,8 @@ class Indi_Db_Table
         }
 
         // If localization is turned On - pick title from json, or return as is
-        return Indi::model('Entity')->fields('title')->l10n == 'y'
-            ? json_decode($this->_title)->{Indi::ini('lang')->admin}
+        return m('Entity')->fields('title')->l10n == 'y'
+            ? json_decode($this->_title)->{ini('lang')->admin}
             : $this->_title;
     }
 
@@ -1524,8 +1524,8 @@ class Indi_Db_Table
     public function dir($mode = '', $ckfinder = false, $subdir = '') {
 
         // Build the target directory name
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path
-            . ($ckfinder ? '/' . Indi::ini()->ckeditor->uploadPath : '')
+        $dir = DOC . STD . '/' . ini()->upload->path
+            . ($ckfinder ? '/' . ini()->ckeditor->uploadPath : '')
             . '/' . $this->_table . '/'
             . (!is_bool($ckfinder) && preg_match(Indi::rex('int11'), $ckfinder) ? $ckfinder . '/' : '')
             . $subdir;
@@ -1543,7 +1543,7 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Row|null
      */
     public function entity() {
-        return Indi::model('Entity')->row('`id` = "' . $this->_id . '"');
+        return m('Entity')->row('`id` = "' . $this->_id . '"');
     }
 
     /**
@@ -1554,10 +1554,10 @@ class Indi_Db_Table
     public function reload() {
 
         // Full model reload
-        Indi::db((int) $this->_id);
+        db((int) $this->_id);
 
         // Return reloaded model
-        return Indi::model($this->_id);
+        return m($this->_id);
     }
 
     /**
@@ -1653,7 +1653,7 @@ class Indi_Db_Table
         if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
 
         // Get total qty of entries to be processed
-        $qty = Indi::db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->fetchColumn();
+        $qty = db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->fetchColumn();
 
         // Fetch usages by $limit at a time
         for ($p = 1; $p <= ceil($qty/$limit); $p++) {
@@ -1666,7 +1666,7 @@ class Indi_Db_Table
             $deduct = 0;
 
             // Fetch usages
-            $rs = $this->fetchAll($where, $order, $limit, $p);
+            $rs = $this->all($where, $order, $limit, $p);
 
             // If nothing found - return
             if (!$rs->count()) return;
@@ -1869,7 +1869,7 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Row
      */
     public function preloadedRow($key) {
-        return Indi::db()->preloadedRow($this->_table, $key);
+        return db()->preloadedRow($this->_table, $key);
     }
 
     /**
@@ -1879,7 +1879,7 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Rowset
      */
     public function preloadedAll($keys) {
-        return Indi::db()->preloadedAll($this->_table, $keys);
+        return db()->preloadedAll($this->_table, $keys);
     }
 
     /**
@@ -1888,7 +1888,7 @@ class Indi_Db_Table
      * @return mixed
      */
     public function nid() {
-        return Indi::db()->query('SHOW TABLE STATUS LIKE "' . $this->_table . '"')->fetch(PDO::FETCH_OBJ)->Auto_increment;
+        return db()->query('SHOW TABLE STATUS LIKE "' . $this->_table . '"')->fetch(PDO::FETCH_OBJ)->Auto_increment;
     }
 
     /**
@@ -1914,11 +1914,11 @@ class Indi_Db_Table
         Indi::view()->addScriptPath($dir = DOC . STD . '/www/data/tpldoc');
 
         // If localization is turned On for this field - append language definition to file name
-        if ($this->fields($field)->l10n == 'y' && !$lang && $lang !== false) $lang = Indi::ini('lang')->admin;
+        if ($this->fields($field)->l10n == 'y' && !$lang && $lang !== false) $lang = ini('lang')->admin;
 
         // Build template file name
         $tpl = rif($abs, $dir . '/') . $this->_table . '-' . $field .  rif($lang, '-$1') . '.php';
-        if (!file_exists($tpl) && ($lang = Indi::ini('lang')->admin))
+        if (!file_exists($tpl) && ($lang = ini('lang')->admin))
             $tpl = rif($abs, $dir . '/') . $this->_table . '-' . $field .  rif($lang, '-$1') . '.php';
 
         // Build template file name

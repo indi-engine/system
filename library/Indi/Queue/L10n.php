@@ -20,7 +20,7 @@ class Indi_Queue_L10n extends Indi_Queue {
     public function count($queueTaskId) {
 
         // Fetch `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
         foreach ($queueTaskR->nested('queueChunk', [
@@ -35,7 +35,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Count items
-            $queueChunkR->countSize = Indi::db()->query('
+            $queueChunkR->countSize = db()->query('
                 SELECT COUNT(`id`) FROM `' . $table . '`' . rif($queueChunkR->where, ' WHERE $1')
             )->fetchColumn();
 
@@ -60,7 +60,7 @@ class Indi_Queue_L10n extends Indi_Queue {
     public function items($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'items';
@@ -84,7 +84,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Get last target
-            $last = Indi::model('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
+            $last = m('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
 
             // Check whether we will use setter method call (instead of google translate api call) as queue-stage
             $setter = method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
@@ -99,7 +99,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             $orderColumn = m($table)->fields('move')->alias ?: m($table)->fields('alias')->alias ?: 'id';
 
             // Foreach entry matching chunk's definition
-            Indi::model($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
+            m($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
 
                 // Get value
                 $value = $params['toggle'] == 'n'
@@ -109,7 +109,7 @@ class Indi_Queue_L10n extends Indi_Queue {
                         : $r->language($field, $params['source']) ?: $r->$field);
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->new([
+                $queueItemR = m('QueueItem')->new([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => $r->id,
@@ -154,7 +154,7 @@ class Indi_Queue_L10n extends Indi_Queue {
     public function appendChunk(&$queueTaskR, $entityR, $fieldR_having_l10nY, $where = []) {
 
         // Create `queueChunk` entry and setup basic props
-        $queueChunkR = Indi::model('QueueChunk')->new([
+        $queueChunkR = m('QueueChunk')->new([
             'queueTaskId' => $queueTaskR->id,
             'queueState' => $queueTaskR->queueState
         ]);
@@ -230,7 +230,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             $section2actionR = section2action($section, $action);
 
             // Get tpldoc file abs path
-            $tpl = DOC . STD . '/www/' . Indi::ini('view')->scriptPath . '/admin/'
+            $tpl = DOC . STD . '/www/' . ini('view')->scriptPath . '/admin/'
                 . $section . '/' . $action . rif($section2actionR->l10n == 'y', '-' . $params['source']) . '.php';
 
             // If exists

@@ -7,7 +7,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
     public function adjustCreatingRowAccess(&$row) {
 
         //
-        if (!Indi::ini('db')->cfgField) return;
+        if (!ini('db')->cfgField) return;
 
         //
         if (Indi::uri()->action != 'form') return;
@@ -48,7 +48,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         $this->appendDisabledField('fieldId', true);
 
         //
-        if (!Indi::ini('db')->cfgField) return;
+        if (!ini('db')->cfgField) return;
 
         // Disable `possibleParamId` and `value` field
         // They are temporarily kept for backward compatibility
@@ -62,7 +62,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
     public function adjustExistingRowAccess(Indi_Db_Table_Row $row) {
 
         //
-        if (!$row->cfgField || !Indi::ini('db')->cfgField) return;
+        if (!$row->cfgField || !ini('db')->cfgField) return;
 
         // Prepare field for spoofing `cfgValue` field
         $gen = $row->foreign('cfgField')->set([

@@ -61,7 +61,7 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
         // Pick localized value of `cfgValue` prop, if detected that raw value contain localized values
         if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data['cfgValue']))
             if ($this->_language['cfgValue'] = json_decode($data['cfgValue'], true))
-                $data['cfgValue'] = $this->_language['cfgValue'][Indi::ini('lang')->admin];
+                $data['cfgValue'] = $this->_language['cfgValue'][ini('lang')->admin];
 
         // Return data
         return $data;

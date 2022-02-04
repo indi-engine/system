@@ -85,14 +85,14 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     public function authorAction() {
 
         // Get model
-        $model = Indi::model($this->row->id);
+        $model = m($this->row->id);
 
         // If `author` field exists - flush error
         if ($model->fields('author'))
             jflush(false, 'Группа полей "Автор" уже существует в структуре сущности "' . $this->row->title . '"');
 
         // Get involded `element` entries
-        $elementRs = Indi::model('Element')->fetchAll('FIND_IN_SET(`alias`, "span,combo,datetime")');
+        $elementRs = m('Element')->all('FIND_IN_SET(`alias`, "span,combo,datetime")');
 
         // Prepare fields config
         $fieldA = [
@@ -106,8 +106,8 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 'elementId' => $elementRs->gb('combo', 'alias')->id,
                 'columnTypeId' => 3,
                 'defaultValue' => '<?=Indi::me(\'mid\')?>',
-                'relation' => Indi::model('Entity')->id(),
-                'filter' => '`id` IN (' . Indi::db()->query('
+                'relation' => m('Entity')->id(),
+                'filter' => '`id` IN (' . db()->query('
                     SELECT GROUP_CONCAT(DISTINCT IF(`entityId`, `entityId`, 11)) FROM `profile` WHERE `toggle` = "y"
                 ')->fetchColumn() . ')'
             ],
@@ -128,7 +128,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Create fields
         foreach ($fieldA as $alias => $fieldI) {
-            $fieldRA[$alias] = Indi::model('Field')->new();
+            $fieldRA[$alias] = m('Field')->new();
             $fieldRA[$alias]->entityId = $this->row->id;
             $fieldRA[$alias]->alias = $alias;
             $fieldRA[$alias]->set($fieldI);
@@ -148,7 +148,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     public function toggleAction() {
 
         // Get model
-        $model = Indi::model($this->row->id);
+        $model = m($this->row->id);
 
         // If `author` field exists - flush error
         if ($model->fields('toggle'))
@@ -158,16 +158,16 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // set up that column `toggle` was created not by using Indi Engine, so it does not have
         // assotiated entries neither in `field` table, nor in `enumset` table, so the below line
         // just remove the column, for the ability to re-create in as a part of the process of field creation
-        if ($this->row->table == 'action') Indi::db()->query('ALTER TABLE `action` DROP `toggle`');
+        if ($this->row->table == 'action') db()->query('ALTER TABLE `action` DROP `toggle`');
 
         // Create field
-        $fieldR = Indi::model('Field')->new([
+        $fieldR = m('Field')->new([
             'entityId' => $this->row->id,
             'title' => 'Статус',
             'alias' => 'toggle',
             'storeRelationAbility' => 'one',
-            'elementId' => Indi::model('Element')->row('`alias` = "combo"')->id,
-            'columnTypeId' => Indi::model('ColumnType')->row('`type` = "ENUM"')->id,
+            'elementId' => m('Element')->row('`alias` = "combo"')->id,
+            'columnTypeId' => m('ColumnType')->row('`type` = "ENUM"')->id,
             'defaultValue' => 'y'
         ]);
 
@@ -180,7 +180,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $y->save();
 
         // Create one more enumset option within this field
-        Indi::model('Enumset')->new([
+        m('Enumset')->new([
             'fieldId' => $y->fieldId,
             'title' => '<span class="i-color-box" style="background: red;"></span>Выключен',
             'alias' => 'n'

@@ -21,7 +21,7 @@ class Resize_Row extends Indi_Db_Table_Row {
     public function deleteCopies() {
 
         // Build the target directory
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $this->foreign('fieldId')->foreign('entityId')->table . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $this->foreign('fieldId')->foreign('entityId')->table . '/';
 
         // Get all copies ( of all images, that were uploaded using current field), created in respect of current row
         $fileA = glob($dir . '*_' . $this->foreign('fieldId')->alias . ','  . $this->alias . '.*');
@@ -48,7 +48,7 @@ class Resize_Row extends Indi_Db_Table_Row {
         if (!$this->id) {
 
             // Get all rows within entity, that current row's field is in structure of
-            $rs = Indi::model($table)->fetchAll();
+            $rs = m($table)->all();
 
             // Create a new resized copy of an image, uploaded using $field, for all rows
             foreach ($rs as $r) $r->resize($field, $this);
@@ -60,7 +60,7 @@ class Resize_Row extends Indi_Db_Table_Row {
             if (count($this->_modified) == 1 && isset($this->_modified['alias'])) {
 
                 // Get the directory name
-                $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $table . '/';
+                $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
 
                 // If directory does not exist - return
                 if (!is_dir($dir)) return;
@@ -88,7 +88,7 @@ class Resize_Row extends Indi_Db_Table_Row {
                 if (isset($this->_modified['alias'])) {
 
                     // Get the directory name
-                    $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $table . '/';
+                    $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
 
                     // If directory does not exist - return
                     if (!is_dir($dir)) return;
@@ -101,7 +101,7 @@ class Resize_Row extends Indi_Db_Table_Row {
                 }
 
                 // Get all rows within entity, that current row's field is in structure of
-                $rs = Indi::model($table)->fetchAll();
+                $rs = m($table)->all();
 
                 // Create a new resized copies
                 foreach ($rs as $r) $r->resize($field, $this);

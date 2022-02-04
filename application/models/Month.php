@@ -49,10 +49,10 @@ class Month extends Indi_Db_Table {
         list($y, $m) = explode('-', $date);
 
         // If there is no such a year entry found
-        if (!$yearR = Indi::model('Year')->row('`title` = "' . $y . '"')) {
+        if (!$yearR = m('Year')->row('`title` = "' . $y . '"')) {
 
             // Create it
-            $yearR = Indi::model('Year')->new()->set(['title' => $y]);
+            $yearR = m('Year')->new(['title' => $y]);
             $yearR->save();
         }
 
@@ -61,7 +61,7 @@ class Month extends Indi_Db_Table {
         if (!$monthR = $this->row('`month` = "' . $m . '" AND `yearId` = "' . $yearR->id . '"')) {
 
             // Create it
-            $monthR = $this->new()->set(['month' => $m, 'yearId' => $yearR->id]);
+            $monthR = $this->new(['month' => $m, 'yearId' => $yearR->id]);
             $monthR->save();
         }
 

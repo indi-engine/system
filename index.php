@@ -74,10 +74,10 @@ $mt = 0; function mt(){$m = microtime();list($mc, $s) = explode(' ', $m); $n = $
 $mu = 0; function mu(){$m = memory_get_usage(); $ret = $m - $GLOBALS['mu']; $GLOBALS['mu'] = $m; return number_format($ret);} mu();
 
 // Load config and setup DB interface
-Indi::ini('application/config.ini');
+ini('application/config.ini');
 if (function_exists('geoip_country_code_by_name')
     && geoip_country_code_by_name($_SERVER['REMOTE_ADDR']) == 'GB')
-        Indi::ini('lang')->admin = 'en';
+        ini('lang')->admin = 'en';
 
 // If request came from client-app - split 'Indi-Auth' header's value by ':', and set cookies
 if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
@@ -87,7 +87,7 @@ if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
 }
 
 Indi::cache();
-Indi::db(Indi::ini()->db);
+Indi::db(ini()->db);
 
 // Save config and global request data to registry
 Indi::post($_POST);

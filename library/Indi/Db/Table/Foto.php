@@ -40,7 +40,7 @@ class Indi_Db_Table_Foto extends Indi_Db_Table {
     public function adjustFotoTitles($_withinFieldValue) {
 
         // Get fotos array
-        $_fotoA = Indi::db()->query('
+        $_fotoA = db()->query('
             SELECT `id`
             FROM `' . $this->_table . '`
             ' . ($this->_withinField ? 'WHERE `' . $this->_withinField . '` = "' . $_withinFieldValue . '"' : '') . '

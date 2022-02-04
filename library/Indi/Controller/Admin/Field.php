@@ -76,7 +76,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $langId_filter = '"y" IN (`' . im($fraction = ar(t()->row->l10nFraction()), '`, `') . '`)';
 
         // Create phantom `langId` field
-        $langId_combo = Indi::model('Field')->new([
+        $langId_combo = m('Field')->new([
             'alias' => 'langId',
             'columnTypeId' => 'INT(11)',
             'elementId' => 'combo',

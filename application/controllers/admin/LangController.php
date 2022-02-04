@@ -7,10 +7,10 @@ class Admin_LangController extends Indi_Controller_Admin {
     public function dictAction() {
 
         // Get languages, already existing as `lang` entries
-        $langA = Indi::db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
         // Create Google Cloud Translation PHP API
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => Indi::ini('lang')->gapi->key]);
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // New languages counter
         $l = 0;
@@ -25,7 +25,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             $l++;
 
             // Create `lang` entry
-            Indi::model('Lang')->new([
+            m('Lang')->new([
                 'title' => $langI['name'],
                 'alias' => $langI['code'],
                 'toggle' => 'n'
@@ -73,7 +73,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($value == 'qy') {
 
             // Create phantom `langId` field
-            $langId_combo = Indi::model('Field')->new([
+            $langId_combo = m('Field')->new([
                 'title' => 'asdasd',
                 'alias' => 'langId',
                 'columnTypeId' => 'INT(11)',
@@ -398,16 +398,16 @@ class Admin_LangController extends Indi_Controller_Admin {
             $data = DOC . STD . '/' . $dir . '/application/lang/ui/' . t()->row->alias . '.php';
 
             // Backup current language
-            $_lang = Indi::ini('lang')->admin;
+            $_lang = ini('lang')->admin;
 
             // Spoof current language with given language
-            Indi::ini('lang')->admin = t()->row->alias;
+            ini('lang')->admin = t()->row->alias;
 
             // Execute file, containing php-code for setting up titles for given language
             require_once $data;
 
             // Restore current language
-            Indi::ini('lang')->admin = $_lang;
+            ini('lang')->admin = $_lang;
 
             // Set 'y' for imported language's fraction-column
             t()->row->set($prompt['fraction'], 'y')->save();

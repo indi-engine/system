@@ -46,7 +46,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $fieldR = Indi::model('Section2action')->fields($prop);
+            $fieldR = m('Section2action')->fields($prop);
 
             // Exclude prop, if it has value equal to default value (unless it's `profileIds`)
             if ($fieldR->defaultValue == $value && $prop != 'profileIds' && !in($prop, $certain)) unset($ctor[$prop]);
@@ -87,7 +87,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
             $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
 
         // Get ordered action aliases
-        $actionA_alias = Indi::db()->query('
+        $actionA_alias = db()->query('
             SELECT `sa`.`id`, `a`.`alias` 
             FROM `action` `a`, `section2action` `sa`
             WHERE 1 
@@ -148,7 +148,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         foreach ($this->adelta('profileIds', 'del') as $del)
 
             // If section have no more actions accessible for removed role
-            if (!Indi::db()->query('
+            if (!db()->query('
                 SELECT COUNT(*) FROM `section2action`
                 WHERE 1
                   AND `sectionId` = "'. $this->sectionId . '"

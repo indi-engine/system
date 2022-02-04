@@ -40,7 +40,7 @@ class Action_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $field = Indi::model('Action')->fields($prop);
+            $field = m('Action')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);

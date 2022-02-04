@@ -222,7 +222,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         // Find the name of database table, where recipients should be found within
         foreach (Indi_Db::role() as $profileIds => $entityId)
             if (in($this->profileId, $profileIds))
-                if ($model = Indi::model($entityId))
+                if ($model = m($entityId))
                     break;
 
         // Prevent recipients duplication
@@ -252,7 +252,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
                 $wayA[$way] = $field;
 
         // Fetch recipients
-        $rs = Indi::db()->query('
+        $rs = db()->query('
             SELECT `' . im($wayA, '`, `') . '`
             FROM `' . $model->table() . '`
             WHERE ' . im($where, ' AND ')

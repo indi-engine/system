@@ -29,7 +29,7 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
     }
 
     public function getField($name) {
-        $pseudoFieldR = Indi::model('Field')->new();
+        $pseudoFieldR = m('Field')->new();
         $pseudoFieldR->entityId = t()->section->entityId;
         $pseudoFieldR->alias = $name;
         $pseudoFieldR->storeRelationAbility = 'one';
@@ -49,7 +49,7 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
     }
 
     public static function createPseudoFieldR($name, $entityId, $filter) {
-        $pseudoFieldR = Indi::model('Field')->new();
+        $pseudoFieldR = m('Field')->new();
         $pseudoFieldR->entityId = $entityId;
         $pseudoFieldR->alias = $name;
         $pseudoFieldR->storeRelationAbility = 'one';

@@ -182,8 +182,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data[$field]) || $data[$field] == '{}')
                     if (($this->_language[$field] = json_decode($data[$field], true)) || $data[$field] == '{}')
                         $data[$field] = $this->_language[$field][
-                            array_key_exists(Indi::ini('lang')->admin, $this->_language[$field])
-                                ? Indi::ini('lang')->admin
+                            array_key_exists(ini('lang')->admin, $this->_language[$field])
+                                ? ini('lang')->admin
                                 : key($this->_language[$field])
                         ];
 
@@ -191,7 +191,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: [] as $field => $l10n)
             if (array_key_exists($field, $data))
                 if ($this->_language[$field] = json_decode($l10n[$this->id], true))
-                    $data[$field] = $this->_language[$field][Indi::ini('lang')->admin];
+                    $data[$field] = $this->_language[$field][ini('lang')->admin];
 
         // Return data
         return $data;
@@ -302,7 +302,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$mflush) return;
 
         // Rollback changes
-        Indi::db()->rollback();
+        db()->rollback();
 
         // Build an array, containing mismatches explanations
         $mismatch = [
@@ -367,7 +367,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $this->{$coords['date']} = $this->date('spaceSince');
 
                 // Set 'timeId' field
-                $this->{$coords['timeId']} = Indi::model('Time')->row(
+                $this->{$coords['timeId']} = m('Time')->row(
                     '`title` = "' . $this->date('spaceSince', 'H:i') . '"'
                 )->id;
             }
@@ -647,7 +647,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Update $this->_language
         foreach ($this->_modified as $prop => $value)
-            if ($this->_language[$prop]) $this->_language[$prop][Indi::ini('lang')->admin] = $value;
+            if ($this->_language[$prop]) $this->_language[$prop][ini('lang')->admin] = $value;
 
         // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
         $this->_modified = $this->_mismatch = $this->_affected = [];
@@ -668,7 +668,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Update cache if need
-        if (Indi::ini('db')->cache && $this->model()->useCache()) Indi_Cache::update($this->model()->table());
+        if (ini('db')->cache && $this->model()->useCache()) Indi_Cache::update($this->model()->table());
 
         // Adjust file-upload fields contents according to meta info, existing in $this->_files for such fields
         $this->files(true);
@@ -707,7 +707,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function realtime($event = 'affected') {
 
         // If websockets are not enabled, or realtime is not enabled - return
-        if (!Indi::ini('ws')->enabled || !Indi::ini('ws')->realtime) return;
+        if (!ini('ws')->enabled || !ini('ws')->realtime) return;
 
         // Start building WHERE clause
         $where = [
@@ -729,7 +729,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Fetch matching `realtime` entries
-        $realtimeRs = m('Realtime')->fetchAll($where)->exclude(': != "context"', 'type');
+        $realtimeRs = m('Realtime')->all($where)->exclude(': != "context"', 'type');
 
         // Pull foreign data for `realtimeId` key
         $realtimeRs->foreign('realtimeId');
@@ -807,7 +807,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If there is at least 1 next page exists
                     // Detect ID of entry that will be shifted from next page's first to current page's last
                     if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) Indi::db()->query('
+                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query('
                             SELECT `id` FROM `' . $this->_table . '` 
                             WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                             ' . rif($order, 'ORDER BY $1') . ' 
@@ -841,7 +841,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $realtimeR->basicUpdate();
 
                 // Else if deleted entry is on prev or next page
-                } else if (!$scope['WHERE'] || Indi::db()->query($sql = '
+                } else if (!$scope['WHERE'] || db()->query($sql = '
                     SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
                 )->fetchColumn()) {
 
@@ -849,7 +849,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
 
                     // Get the ordered IDs: deleted, first on current page, and last on current page
-                    $idA = Indi::db()->query($sql = '
+                    $idA = db()->query($sql = '
                         SELECT `id` FROM `' . $this->_table . '`
                         WHERE `id` IN (' . rif($first, '$1,') . rif($last, '$1,') .  $this->id . ')
                         ' . rif($order, 'ORDER BY $1') . ' 
@@ -864,7 +864,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If there is at least 1 next page exists
                         // Detect ID of entry that will be shifted from next page's first to current page's last
                         if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) Indi::db()->query('
+                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query('
                                 SELECT `id` FROM `' . $this->_table . '` 
                                 WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                                 ' . rif($order, 'ORDER BY $1') . ' 
@@ -924,7 +924,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
 
                 // Check whether inserted row match scope's WHERE clause
-                if (!$scope['WHERE'] || Indi::db()->query($sql = '
+                if (!$scope['WHERE'] || db()->query($sql = '
                     SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
                 )->fetchColumn()) {
 
@@ -944,7 +944,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     if ($realtimeR->entries) {
 
                         // Get the ordered IDs: pgupLast, current, and newly added
-                        $idA = Indi::db()->query($sql = '
+                        $idA = db()->query($sql = '
                             SELECT `id` FROM `' . $this->_table . '`
                             WHERE `id` IN (' . rif($scope['pgupLast'], '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
                             ' . rif($order, 'ORDER BY $1') . ' 
@@ -963,7 +963,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $entries = ar($realtimeR->entries); array_unshift($entries, $scope['pgupLast']);
 
                             //
-                            $scope['pgupLast'] = Indi::db()->query('
+                            $scope['pgupLast'] = db()->query('
                                 SELECT `id` FROM `' . $this->_table . '` 
                                 WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                                 ' . rif($order, 'ORDER BY $1') . ' 
@@ -1085,7 +1085,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Update $this->_language
         foreach ($this->_modified as $prop => $value)
-            if ($this->_language[$prop]) $this->_language[$prop][Indi::ini('lang')->admin] = $value;
+            if ($this->_language[$prop]) $this->_language[$prop][ini('lang')->admin] = $value;
 
         // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
         $this->_modified = $this->_mismatch = [];
@@ -1150,7 +1150,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($mlfA as $mlfI) {
 
             // Prepare blank template and setup first value - for current language
-            $json[$mlfI] = $jtpl; $json[$mlfI][Indi::ini('lang')->admin] = $data[$mlfI];
+            $json[$mlfI] = $jtpl; $json[$mlfI][ini('lang')->admin] = $data[$mlfI];
 
             // Check whether setter-method exists and if yes - remember that
             if (method_exists($this, $setter = 'set' . ucfirst($mlfI)) && !ini()->lang->migration) $setterA[$mlfI] = $setter;
@@ -1164,13 +1164,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Get target languages
-        $targets = $jtpl; unset($targets[Indi::ini('lang')->admin]); $targets = array_keys($targets);
+        $targets = $jtpl; unset($targets[ini('lang')->admin]); $targets = array_keys($targets);
 
         // If both $batch and $targets are not empty
         if ($batch && $targets) {
 
             // Require and instantiate Google Cloud Translation PHP API and
-            $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => Indi::ini('lang')->gapi->key]);
+            $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
             // Try to call Google Cloud Translate API
             try {
@@ -1179,7 +1179,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 foreach (ar($targets) as $target) $resultByLang[$target] = array_combine(
                         array_keys($batch),
                         array_column($gapi->translateBatch(array_values($batch), [
-                            'source' => Indi::ini('lang')->admin,
+                            'source' => ini('lang')->admin,
                             'target' => $target,
                         ]), 'text')
                     );
@@ -1194,7 +1194,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         foreach ($json[$mlfI] as $lang => &$holder) {
 
                             // Else if $lang is same as current system lang - use as is
-                            if ($lang == Indi::ini('lang')->admin) $holder = $data[$mlfI];
+                            if ($lang == ini('lang')->admin) $holder = $data[$mlfI];
 
                             // Else if translation result defined - use it
                             else if (array_key_exists($mlfI, $resultByLang[$lang])) $holder = $resultByLang[$lang][$mlfI];
@@ -1235,7 +1235,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 foreach ($json[$mlfI] as $lang => &$holder) {
 
                     // Backup current language
-                    $_lang = Indi::ini('lang')->admin;
+                    $_lang = ini('lang')->admin;
 
                     // Temporary spoof values within $this->_modified for localized fields, as they may be involved by setters
                     $this->_modified = array_merge(
@@ -1251,7 +1251,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     if ($_lang != $lang) foreach ($keep as $keep_) $this->_modified[$keep_] = $this->_language['alias'][$lang];
 
                     // Temporary spoof current language with $lang
-                    Indi::ini('lang')->admin = $lang;
+                    ini('lang')->admin = $lang;
 
                     // Call setter and get value according to required language
                     $this->{$setter}(); $holder =  $this->$mlfI;
@@ -1260,19 +1260,19 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $resultBySetter[$lang][$mlfI] = $holder;
 
                     // Restore current language back
-                    Indi::ini('lang')->admin = $_lang;
+                    ini('lang')->admin = $_lang;
 
                     // Restore $this->_modified
                     $this->_modified = $modified;
                 }
 
                 // Revert value back to current language
-                $this->$mlfI = $json[$mlfI][Indi::ini('lang')->admin];
+                $this->$mlfI = $json[$mlfI][ini('lang')->admin];
 
             // Else
             } else if (!array_key_exists($mlfI, $batch))
                 foreach ($json[$mlfI] as $lang => &$holder)
-                    $holder = $lang == Indi::ini('lang')->admin ? $data[$mlfI] : $this->_language[$mlfI][$lang];
+                    $holder = $lang == ini('lang')->admin ? $data[$mlfI] : $this->_language[$mlfI][$lang];
 
             // Get JSON
             $data[$mlfI] = json_encode($json[$mlfI], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
@@ -1287,7 +1287,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     private function _updateUsages() {
 
         // If 'Consider'-model exists, then for each dependent field
-        if (!Indi::model('Consider', true)) return;
+        if (!m('Consider', true)) return;
 
         // If no affected fields - return
         if (!$affected = $this->model()->fields(array_keys($this->_affected))->column('id', '|')) return;
@@ -1297,11 +1297,11 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($this->_table == 'enumset') $sql .= ' AND `consider` = "' . $this->fieldId . '"';
 
         // Fetch usage map entries ids, and if ono found - return
-        if (!$considerIdA = Indi::db()->query($sql)->fetchAll(PDO::FETCH_COLUMN)) return;
+        if (!$considerIdA = db()->query($sql)->fetchAll(PDO::FETCH_COLUMN)) return;
 
         // Prepare params
         $params = [
-            'source' => Indi::ini('lang')->admin,
+            'source' => ini('lang')->admin,
             'fraction' => $this->fraction(),
             'table' => $this->_table,
             'entry' => $this->id,
@@ -1498,7 +1498,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function titleUsagesUpdate() {
 
         // Get the model-usages info as entityId and titleFieldAlias
-        $usageA = Indi::db()->query('
+        $usageA = db()->query('
             SELECT `e`.`id` AS `entityId`, `e`.`table`, `f`.`alias` AS `titleFieldAlias`
             FROM `entity` `e`, `field` `f`
             WHERE `f`.`relation` = "' . $this->model()->id() . '" AND `e`.`titleFieldId` = `f`.`id`
@@ -1508,7 +1508,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($usageA as $usageI) {
 
             // Get the model
-            $model = Indi::model($usageI['entityId']);
+            $model = m($usageI['entityId']);
 
             // Get the field
             $titleFieldR = $model->fields($usageI['titleFieldAlias']);
@@ -1519,7 +1519,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 : 'FIND_IN_SET("' . $this->id . '", `' . $titleFieldR->alias . '`)';
 
             // Get the rows, that use current row for building their titles
-            $rs = $model->fetchAll($where);
+            $rs = $model->all($where);
 
             // Setup foreign data, for it to be fetched within a single request
             // to database server, instead of multiple request for each row within rowset
@@ -1653,10 +1653,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$this->id) return;
 
         // If `ChangeLog` model does not exist - return
-        if (!$changeLogM = Indi::model('ChangeLog', true)) return;
+        if (!$changeLogM = m('ChangeLog', true)) return;
 
         // Find and delete related `changeLog` entries
-        $changeLogM->fetchAll([
+        $changeLogM->all([
             '`entityId` = "' . $this->model()->id() . '"',
             '`key` = "' . $this->id . '"'
         ])->delete();
@@ -1682,10 +1682,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         $where = null, $fieldR = null, $order = null, $dir = 'ASC', $offset = null, $consistence = null, $multiSelect = null) {
 
         // Basic info
-        $fieldM = Indi::model('Field');
-        $fieldR = $fieldR ? $fieldR : Indi::model($this->_table)->fields($field);
+        $fieldM = m('Field');
+        $fieldR = $fieldR ? $fieldR : m($this->_table)->fields($field);
         $fieldColumnTypeR = $fieldR->foreign('columnTypeId');
-        if ($fieldR->relation) $relatedM = Indi::model($fieldR->relation);
+        if ($fieldR->relation) $relatedM = m($fieldR->relation);
 
         // Array for WHERE clauses
         $where = $where ? (is_array($where) ? $where : [$where]): [];
@@ -1732,7 +1732,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else if ($fieldColumnTypeR->type == 'BOOLEAN') {
 
             // Prepare the data
-            $dataRs = Indi::model('Enumset')->createRowset(
+            $dataRs = m('Enumset')->createRowset(
                 [
                     'data' => [
                         ['alias' => '0', 'title' => I_NO],
@@ -1790,7 +1790,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $cField_foreign = $considerR->foreign('foreign');
 
                 // Get entry, identified by current value of consider-field
-                $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
+                $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
 
                 // Get it's value
                 $cValueForeign = $cEntryR->{$cField_foreign->alias};
@@ -1824,7 +1824,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             } else {
 
                 // Setup model, that combo data will be fetched from
-                $relatedM = $cValue ? Indi::model($cValue) : false;
+                $relatedM = $cValue ? m($cValue) : false;
             }
         }
 
@@ -1850,7 +1850,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // Build l10n-compatible version of $order for usage in sql queries
                 if ($orderColumn != 'id' && $relatedM->fields($orderColumn)->l10n == 'y' && $l10n = true)
-                    $order = 'SUBSTRING_INDEX(`' . $orderColumn . '`, \'"' . Indi::ini('lang')->admin . '":"\', -1)';
+                    $order = 'SUBSTRING_INDEX(`' . $orderColumn . '`, \'"' . ini('lang')->admin . '":"\', -1)';
             }
 
             // If $order is not null, but is an empty string, we set is as 'id' for results being fetched in the order of
@@ -1999,7 +1999,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $foundRowsWhere = $foundRowsWhere ? 'WHERE ' . $foundRowsWhere : '';
 
                 // Get number of total found rows
-                $found = Indi::db()->query(
+                $found = db()->query(
                     'SELECT COUNT(`id`) FROM `' . $relatedM->table() . '`' . $foundRowsWhere
                 )->fetchColumn(0);
 
@@ -2053,7 +2053,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $order = [$groupByFieldOrder, $order];
 
                 // Fetch raw combo data
-                $dataRs = $relatedM->fetchAll($where, $order, self::$comboOptionsVisibleCount, $page, $offset);
+                $dataRs = $relatedM->all($where, $order, self::$comboOptionsVisibleCount, $page, $offset);
 
                 // We set number of total found rows only if passed page number is null, so that means that
                 // we are doing a search of first page of results by a keyword, that just has been recently changed
@@ -2093,7 +2093,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $order = [$groupByFieldOrder, $order];
 
                     // Fetch raw combo data
-                    $dataRs = $relatedM->fetchAll($where, $order, self::$comboOptionsVisibleCount, $page + 1);
+                    $dataRs = $relatedM->all($where, $order, self::$comboOptionsVisibleCount, $page + 1);
                 }
             }
         }
@@ -2114,7 +2114,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             ]);
 
             // Get group field related entity model
-            $groupByFieldEntityM = Indi::model($groupByFieldR->relation);
+            $groupByFieldEntityM = m($groupByFieldR->relation);
 
             // Get titles for optgroups
             $groupByOptions = [];
@@ -2123,7 +2123,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($groupByFieldEntityM->table() == 'enumset') {
 
                 // Get groups by aliases
-                $groupByRs = $groupByFieldEntityM->fetchAll([
+                $groupByRs = $groupByFieldEntityM->all([
                     '`fieldId` = "' . $groupByFieldR->id . '"',
                     'FIND_IN_SET(`alias`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")'
                 ]);
@@ -2135,7 +2135,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             } else {
 
                 // Get groups by ids
-                $groupByRs = $groupByFieldEntityM->fetchAll(
+                $groupByRs = $groupByFieldEntityM->all(
                     'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")',
                     'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '") ASC'
                 );
@@ -2216,7 +2216,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // If some of selected rows are not presented in $dataRs, we do additional fetch to retrieve
                 // them from database and append these rows to $data array
                 if (count($selectedThatShouldBeAdditionallyFetched = array_diff($selected, $allFetchedIds))) {
-                    $data = array_merge($data, $relatedM->fetchAll('
+                    $data = array_merge($data, $relatedM->all('
                         FIND_IN_SET(`id`, "' . implode(',', $selectedThatShouldBeAdditionallyFetched) . '")
                     ')->rows());
                 }
@@ -2467,7 +2467,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $cField_foreign = $considerR->foreign('foreign');
 
                             // Get entry, identified by current value of consider-field
-                            $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
+                            $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
 
                             // Spoof model
                             $model = $cValue = $cEntryR->{$cField_foreign->alias};
@@ -2495,7 +2495,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If field is related to enumset entity, we should append an additional WHERE clause,
                         // that will outline the `fieldId` value, because in this case current row store aliases
                         // of rows from `enumset` table instead of ids, and aliases are not unique within that table.
-                        if (Indi::model($model)->table() == 'enumset') {
+                        if (m($model)->table() == 'enumset') {
                             $where[] = '`fieldId` = "' . $fieldR->id . '"';
                             $col = 'alias';
                         } else {
@@ -2503,11 +2503,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                         }
 
                         // If foreign model's `preload` flag was turned On
-                        if (Indi::model($model)->preload()) {
+                        if (m($model)->preload()) {
 
                             // Use preloaded data as foreign data rather than
                             // obtaining foreign data by separate sql-query
-                            $foreign = Indi::model($model)->{'preloaded' . $methodType}($val);
+                            $foreign = m($model)->{'preloaded' . $methodType}($val);
 
                         // Else fetch foreign from db
                         } else {
@@ -2519,7 +2519,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                     : '= "' . $val . '"');
 
                             // Fetch foreign row/rows
-                            $foreign = Indi::model($model)->{'fetch' . $methodType}(
+                            $foreign = m($model)->{'fetch' . $methodType}(
                                 $where,
                                 $fieldR->original('storeRelationAbility') == 'many'
                                     ? 'FIND_IN_SET(`' . $col . '`, "' . $val . '")'
@@ -2545,7 +2545,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @return Indi_Db_Table
      */
     public function model() {
-        return Indi::model($this->_table);
+        return m($this->_table);
     }
 
     /**
@@ -2599,33 +2599,33 @@ class Indi_Db_Table_Row implements ArrayAccess
         $entities = [];
 
         // Get all fields in whole database, which are containing keys related to this entity
-        $fieldRs = Indi::model('Field')->fetchAll('`relation` = "' . $this->model()->id() . '"');
+        $fieldRs = m('Field')->all('`relation` = "' . $this->model()->id() . '"');
         foreach ($fieldRs as $fieldR) $entities[$fieldR->entityId]['fields'][] = $fieldR;
 
         // Get auxiliary deletion info within each entity
         foreach ($entities as $eid => $data) {
 
             // Load model
-            $model = Indi::model($eid);
+            $model = m($eid);
 
             // Foreach field within current model
             foreach ($data['fields'] as $field) {
                 // We should check that column - which will be used in WHERE clause for retrieving a dependent rowset -
                 // still exists. We need to perform this check because this column may have already been deleted, if
                 // it was dependent of other column that was deleted.
-                if ($model->fields($field->alias) && $field->columnTypeId && Indi::db()->query(
+                if ($model->fields($field->alias) && $field->columnTypeId && db()->query(
                     'SHOW COLUMNS FROM `' . $model->table(). '` LIKE "' . $field->alias . '"'
                 )->fetchColumn()) {
 
                     // We delete rows there $this->id in at least one field, which ->storeRelationAbility = 'one'
                     if ($field->storeRelationAbility == 'one') {
 
-                        $model->fetchAll('`' . $field->alias . '` = "' . $this->id . '"')->delete();
+                        $model->all('`' . $field->alias . '` = "' . $this->id . '"')->delete();
 
                     // If storeRelationAbility = 'many', we do not delete rows, but we delete
                     // mentions of $this->id from comma-separated sets of keys
                     } else if ($field->storeRelationAbility == 'many') {
-                        $rs = $model->fetchAll('FIND_IN_SET(' . $this->id . ', `' . $field->alias . '`)');
+                        $rs = $model->all('FIND_IN_SET(' . $this->id . ', `' . $field->alias . '`)');
                         foreach ($rs as $r) {
                             $set = explode(',', $r->{$field->alias});
                             $found = array_search($this->id, $set);
@@ -2725,8 +2725,8 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function abs($alias, $copy = '') {
 
         // Here were omit STD's one or more dir levels at the ending, in case if
-        // Indi::ini('upload')->path is having one or more '../' at the beginning
-        $std = STD; $uph = Indi::ini('upload')->path;
+        // ini('upload')->path is having one or more '../' at the beginning
+        $std = STD; $uph = ini('upload')->path;
         if (preg_match(':^(\.\./)+:', $uph, $m)) {
             $uph = preg_replace(':^(\.\./)+:', '', $uph);
             $lup = count(explode('/', rtrim($m[0], '/')));
@@ -2739,7 +2739,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If field have l10n turned on and tpldoc exists for that field prepare language-part of glob() pattern
         if ($this->id && $this->field($alias)->l10n == 'y')
-            if ($this->tpldoc($alias, true, $_ = Indi::ini('lang')->admin))
+            if ($this->tpldoc($alias, true, $_ = ini('lang')->admin))
                 $lang = '-' . $_;
 
         // Build the filename pattern for using in glob() php function
@@ -2802,9 +2802,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($abs = preg_match('/^([A-Z]:|\/)/', $alias) ? $alias : $this->abs($alias, $copy)) {
 
             // Here were omit STD's one or more dir levels at the ending, in case if
-            // Indi::ini('upload')->path is having one or more '../' at the beginning
+            // ini('upload')->path is having one or more '../' at the beginning
             $std_ = STD;
-            if (preg_match(':^(\.\./)+:', Indi::ini('upload')->path, $m)) {
+            if (preg_match(':^(\.\./)+:', ini('upload')->path, $m)) {
                 $lup = count(explode('/', rtrim($m[0], '/')));
                 for ($i = 0; $i < $lup; $i++) $std_ = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std_);
             }
@@ -2906,7 +2906,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $sql = 'SELECT COUNT(`id`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
 
         // Get qty
-        return Indi::db()->query($sql)->fetchColumn();
+        return db()->query($sql)->fetchColumn();
     }
 
     /**
@@ -2934,7 +2934,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $sql = 'SELECT SUM(`' . $column .'`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
 
         // Get qty
-        return Indi::db()->query($sql)->fetchColumn() ?: 0;
+        return db()->query($sql)->fetchColumn() ?: 0;
     }
 
     /**
@@ -3016,13 +3016,13 @@ class Indi_Db_Table_Row implements ArrayAccess
             $where = isset($where) && is_array($where) ? $where : (strlen($where) ? [$where] : []);
 
             // If connector field store relation ability is multiple
-            if (Indi::model($table)->fields($connector)->storeRelationAbility == 'many')
+            if (m($table)->fields($connector)->storeRelationAbility == 'many')
 
                 // We use FIND_IN_SET sql expression for prepending $where array
                 array_unshift($where, 'FIND_IN_SET("' . $this->id . '", `' . $connector . '`)');
 
             // Else if connector field store relation ability is single
-            else if (Indi::model($table)->fields($connector)->storeRelationAbility == 'one')
+            else if (m($table)->fields($connector)->storeRelationAbility == 'one')
 
                 // We use '=' sql expression for prepending $where array
                 array_unshift($where, '`' . $connector . '` = "' . $this->id . '"');
@@ -3031,8 +3031,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             else throw new Exception();
 
             // Fetch nested rowset, assign it under $key key within $this->_nested array
-            $method = Indi::model($table)->treeColumn() ? 'fetchTree' : 'fetchAll';
-            $this->_nested[$key] = Indi::model($table)->$method($where, $order, $count, $page, $offset);
+            $method = m($table)->treeColumn() ? 'fetchTree' : 'fetchAll';
+            $this->_nested[$key] = m($table)->$method($where, $order, $count, $page, $offset);
 
             // Setup foreign data for nested rowset, if need
             if ($foreign) $this->_nested[$key]->foreign($foreign);
@@ -3120,8 +3120,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         // once value was found
         if (array_key_exists($columnName, $this->_modified)) return $this->_modified[$columnName];
         else if (array_key_exists($columnName, $this->_language) && is_array($this->_language[$columnName]))
-            return $this->_language[$columnName][array_key_exists(Indi::ini('lang')->admin, $this->_language[$columnName])
-                ? Indi::ini('lang')->admin
+            return $this->_language[$columnName][array_key_exists(ini('lang')->admin, $this->_language[$columnName])
+                ? ini('lang')->admin
                 : key(Lang::$_jtpl[$this->fraction()])
         ];
         else if (array_key_exists($columnName, $this->_original)) return $this->_original[$columnName];
@@ -4317,7 +4317,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach (Indi_Db::role() as $entityId) {
 
             // Model shortcut
-            $m = Indi::model($entityId);
+            $m = m($entityId);
 
             // Exclude some entities from username unicity check
             if ($exclude && in($m->table(), ar($exclude))) continue;
@@ -4358,7 +4358,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Apply faced keys to $this->_language where possible
                 foreach (func_get_arg(0) as $prop => $value)
                     if ($this->_language[$prop])
-                        $this->_language[$prop][Indi::ini('lang')->admin] = $value;
+                        $this->_language[$prop][ini('lang')->admin] = $value;
 
                 // Assign original data and return it
                 return $this->_original = func_get_arg(0);
@@ -4371,7 +4371,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Apply language version, if key is an alias of a localized fields
             if ($this->_language[func_get_arg(0)])
-                $this->_language[func_get_arg(0)][Indi::ini('lang')->admin] = func_get_arg(1);
+                $this->_language[func_get_arg(0)][ini('lang')->admin] = func_get_arg(1);
 
             // Assign original value for a given key and return it
             return $this->_original[func_get_arg(0)] = func_get_arg(1);
@@ -4586,7 +4586,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (preg_match('/^gif|jpe?g|png$/i', $ext)) {
 
                     // Check if there should be copies created for that image
-                    $resizeRs = Indi::model('Resize')->fetchAll('`fieldId` = "' . $this->model()->fields($field)->id . '"');
+                    $resizeRs = m('Resize')->all('`fieldId` = "' . $this->model()->fields($field)->id . '"');
 
                     // If should - create thmem
                     foreach ($resizeRs as $resizeR) $this->resize($field, $resizeR, $dst);
@@ -4678,7 +4678,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$src) {
 
             // Get the directory name
-            $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $this->_table . '/';
+            $dir = DOC . STD . '/' . ini()->upload->path . '/' . $this->_table . '/';
 
             // If directory does not exist - return
             if (!is_dir($dir)) return;
@@ -4883,7 +4883,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (preg_match('/^gif|jpe?g|png$/i', $ext)) {
 
             // Check if there should be copies created for that image
-            $resizeRs = Indi::model('Resize')->fetchAll('`fieldId` = "' . $this->model()->fields($field)->id . '"');
+            $resizeRs = m('Resize')->all('`fieldId` = "' . $this->model()->fields($field)->id . '"');
 
             // If should - create thmem
             foreach ($resizeRs as $resizeR) $this->resize($field, $resizeR, $dst);
@@ -4977,7 +4977,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (preg_match('/^gif|jpe?g|png$/i', $ext)) {
 
                 // Check if there should be copies created for that image
-                $resizeRs = Indi::model('Resize')->fetchAll('`fieldId` = "' . $this->model()->fields($field)->id . '"');
+                $resizeRs = m('Resize')->all('`fieldId` = "' . $this->model()->fields($field)->id . '"');
 
                 // If should - create thmem
                 foreach ($resizeRs as $resizeR) $this->resize($field, $resizeR, $dst);
@@ -5014,9 +5014,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Here were omit STD's one or more dir levels at the ending, in case if
-        // Indi::ini('upload')->path is having one or more '../' at the beginning
+        // ini('upload')->path is having one or more '../' at the beginning
         $std_ = STD;
-        if (preg_match(':^(\.\./)+:', Indi::ini('upload')->path, $m)) {
+        if (preg_match(':^(\.\./)+:', ini('upload')->path, $m)) {
             $lup = count(explode('/', rtrim($m[0], '/')));
             for ($i = 0; $i < $lup; $i++) $std_ = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std_);
             $file['std'] = $std_;
@@ -5114,10 +5114,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         $now = clone $this; $now->foreign(implode(',', $affectedForeignA));
 
         // Get the storage model
-        $storageM = Indi::model('ChangeLog');
+        $storageM = m('ChangeLog');
 
         // Get the rowset of modified fields
-        $affectedFieldRs = Indi::model($entityId)->fields()->select(array_keys($affected), 'alias');
+        $affectedFieldRs = m($entityId)->fields()->select(array_keys($affected), 'alias');
 
         // Foreach modified field within the modified fields rowset
         foreach ($affectedFieldRs as $affectedFieldR) {
@@ -5196,7 +5196,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
             if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
-            $storageR->changerType = Indi::model(admin()->alternate ? admin()->alternate : 'Admin')->id();
+            $storageR->changerType = m(admin()->alternate ? admin()->alternate : 'Admin')->id();
             $storageR->profileId = admin()->profileId ?: 0;
             $storageR->changerId = admin()->id ?: 0;
             $storageR->save();
@@ -5798,7 +5798,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $new = array_diff($now, $was);
 
         // Get field name within nested model, responsible for logical connection between
-        $connector = Indi::model($this->field($field)->relation)->table() . 'Id';
+        $connector = m($this->field($field)->relation)->table() . 'Id';
 
         // Remove nested rows, having keys that were removed from comma-separated list within $field-prop value
         if ($del) {
@@ -5814,7 +5814,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($new as $id) {
 
             // Create row
-            $r = Indi::model($nested)->new();
+            $r = m($nested)->new();
 
             // Setup main props
             $r->set([$this->table() . 'Id' => $this->id, $connector => $id]);
@@ -5864,17 +5864,17 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($ctor == 'check') return true;
 
         // Create new entry
-        $entry = Indi::model($entityId)->new(array_merge([
+        $entry = m($entityId)->new(array_merge([
             'title' => $this->$prop
         ], $ctor));
 
         // Build WHERE clause to detect whether such entry is already exist
         $where = [];
         foreach ($entry->modified() as $key => $value)
-            $where[] = Indi::db()->sql('`' . $key . '` = :s', $value);
+            $where[] = db()->sql('`' . $key . '` = :s', $value);
 
         // Check whether such entry is already exist, and if yes - use existing, or save new otherwise
-        if ($already = Indi::model($entityId)->row($where)) $entry = $already; else $entry->save();
+        if ($already = m($entityId)->row($where)) $entry = $already; else $entry->save();
 
         // Assign or append new entry's id, depend of field's storeRelationAbility
         if ($field->storeRelationAbility == 'one') $this->$prop = $entry->id;
@@ -6034,8 +6034,8 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
                 else if ($rule['key'] && !$this->zero($prop) && !$this->foreign($prop)) $flush
-                    ? mflush($prop, sprintf(I_MCHECK_KEY, ucfirst(Indi::model($fieldR->relation)->table()), $this->$prop))
-                    : $this->_mismatch[$prop] = sprintf(I_MCHECK_KEY, ucfirst(Indi::model($fieldR->relation)->table()), $this->$prop);
+                    ? mflush($prop, sprintf(I_MCHECK_KEY, ucfirst(m($fieldR->relation)->table()), $this->$prop))
+                    : $this->_mismatch[$prop] = sprintf(I_MCHECK_KEY, ucfirst(m($fieldR->relation)->table()), $this->$prop);
 
                 // If prop's value should be unique within the whole database table, but it's not - flush error
                 else if ($rule['unq'] && !$this->zero($prop) && $this->model()->row([
@@ -6056,7 +6056,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
                 if ($rule['key'] && $this->$prop) {
-                    if ($fgn = Indi::model($rule['key'])->row('`id` = "' . $this->$prop . '"')) $this->foreign($prop, $fgn);
+                    if ($fgn = m($rule['key'])->row('`id` = "' . $this->$prop . '"')) $this->foreign($prop, $fgn);
                     else jflush(false, sprintf(I_JCHECK_KEY, $rule['key'], $this->$prop));
                 }
                 
@@ -6827,7 +6827,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($field)) {
 
             // Create
-            $fieldR = Indi::model('Field')->new();
+            $fieldR = m('Field')->new();
 
             // Assign config
             $fieldR->set($field);

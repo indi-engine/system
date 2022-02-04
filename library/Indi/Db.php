@@ -51,7 +51,7 @@ class Indi_Db {
     protected static $_l10nA = [];
 
     /**
-     * Array of *_Row instances preloaded by Indi::model('ModelName')->preload(true) call
+     * Array of *_Row instances preloaded by m('ModelName')->preload(true) call
      * Those instances are grouped by entity table name and are used as a return value for
      * $row->foreign('foreignKeyName'), $rowset->foreign('foreignKeyName') and $schedule->distinct() calls
      *
@@ -211,14 +211,14 @@ class Indi_Db {
             // Unset tmp variable
             unset($_);
 
-            // Overwrite Indi::ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
+            // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
-            if (($lang = $_COOKIE['i-language']) && Indi::ini('lang')->admin != $lang
-                && in($lang, Indi::db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->fetchAll(PDO::FETCH_COLUMN)))
-                Indi::ini('lang')->admin = $_COOKIE['i-language'];
+            if (($lang = $_COOKIE['i-language']) && ini('lang')->admin != $lang
+                && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->fetchAll(PDO::FETCH_COLUMN)))
+                ini('lang')->admin = $_COOKIE['i-language'];
 
             // Setup json-templates for each possible fractions
-            if (Indi::db()->query('
+            if (db()->query('
                 SELECT COUNT(`column_name`) 
                 FROM `INFORMATION_SCHEMA`.`COLUMNS` 
                 WHERE 1
@@ -227,7 +227,7 @@ class Indi_Db {
                   AND `column_name` IN ("adminSystemUi", "move")
             ')->fetchColumn() == 2)
                 foreach (['adminSystemUi', 'adminCustomUi', 'adminCustomData', 'adminSystemUi,adminCustomUi'] as $fraction)
-                    Lang::$_jtpl[$fraction] = Indi::db()->query('
+                    Lang::$_jtpl[$fraction] = db()->query('
                     SELECT `alias`, "" AS `holder` 
                     FROM `lang` 
                     WHERE "y" IN (`' . im(ar($fraction), '`,`') . '`)
@@ -325,7 +325,7 @@ class Indi_Db {
                         : '';
                     self::$_cfgValue['certain']['field'][$paramI['fieldId']][$fieldA[$paramI['cfgField']]['alias']]
                         = preg_match('~^{"[a-zA-Z]{2,5}":~', $paramI['cfgValue'])
-                            ? json_decode($paramI['cfgValue'])->{Indi::ini('lang')->admin}
+                            ? json_decode($paramI['cfgValue'])->{ini('lang')->admin}
                             : $paramI['cfgValue'];
                 }
             }
@@ -382,7 +382,7 @@ class Indi_Db {
                     );
 
                     // For now, config-fields is a new untested update, so it will should be turnable on/off
-                    if (Indi::ini('db')->cfgField || !$pep)
+                    if (ini('db')->cfgField || !$pep)
                     $fieldI['temporary']['params'] = array_merge(
                         self::$_cfgValue['default']['element'][$elementId] ?: [],
                         self::$_cfgValue['certain']['field'][$fieldId] ?: []
@@ -631,7 +631,7 @@ class Indi_Db {
             return $affected;
 
         // If cache usage is turned on, and current query match cache usage requirements
-        } else if (Indi::ini()->db->cache && $params = self::shouldUseCache($sql)) {
+        } else if (ini()->db->cache && $params = self::shouldUseCache($sql)) {
 
             // Pass query to Indi_Cache::fetcher() method
             return Indi_Cache::fetcher($params);
@@ -758,7 +758,7 @@ class Indi_Db {
         // Rollback
         self::$_instance->query('ROLLBACK');
 
-        // Return `false`. Here we do it because we will be using 'return Indi::db()->rollback()' statements
+        // Return `false`. Here we do it because we will be using 'return db()->rollback()' statements
         return false;
     }
 
@@ -773,7 +773,7 @@ class Indi_Db {
         // if we a at the most top transaction level - commit the transaction,
         if (self::$_transactionLevel == 0) self::$_instance->query('COMMIT');
 
-        // Return `false`. Here we do it because we will be using 'return Indi::db()->rollback()' statements
+        // Return `false`. Here we do it because we will be using 'return db()->rollback()' statements
         return true;
     }
 
@@ -787,8 +787,8 @@ class Indi_Db {
      *  :p - already parsed query parts
      *
      * Example:
-     * $qpart = $someBool ? Indi::db()->sql(' AND `bar` = :s', $bar) : '';
-     * $sql = Indi::db()->sql('SELECT * FROM `table` WHERE `foo` = :s :p LIMIT :i', $foo, $qpart, $qty);
+     * $qpart = $someBool ? db()->sql(' AND `bar` = :s', $bar) : '';
+     * $sql = db()->sql('SELECT * FROM `table` WHERE `foo` = :s :p LIMIT :i', $foo, $qpart, $qty);
      * echo $sql;
      *
      * @param string $tpl - whatever expression that contains placeholders
@@ -903,7 +903,7 @@ class Indi_Db {
         $rows = []; foreach(ar($keys) as $key) array_push($rows, self::$_preloadedA[$entity][$key]);
 
         // Wrap picked rows into a rowset and return it
-        return Indi::model($entity)->createRowset(['rows' => $rows]);
+        return m($entity)->createRowset(['rows' => $rows]);
     }
 
     /**
@@ -918,6 +918,6 @@ class Indi_Db {
         if (array_key_exists($entity, self::$_preloadedA)) return;
 
         // Else preload
-        foreach (Indi::model($entity)->fetchAll() as $row) self::$_preloadedA[$entity][$row->id] = $row;
+        foreach (m($entity)->all() as $row) self::$_preloadedA[$entity][$row->id] = $row;
     }
 }

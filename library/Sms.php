@@ -90,7 +90,7 @@ class Sms {
     private static function response($method, $data) {
 
         // Assign ini-props as internal props
-        foreach (Indi::ini('sms') as $p => $v) if (property_exists(__CLASS__, $p)) self::$$p = $v;
+        foreach (ini('sms') as $p => $v) if (property_exists(__CLASS__, $p)) self::$$p = $v;
 
         // Build request url
         $url = self::$url . $method;
@@ -201,7 +201,7 @@ class Sms {
 
         // Prepare data
         $data = [
-            'from' => Indi::ini('sms')->from,
+            'from' => ini('sms')->from,
             'to' => im(array_keys($phoneA)),
             'text' => $text,
             //'translit' => 1

@@ -12,7 +12,7 @@ class Admin_Row extends Indi_Db_Table_Row {
         if ($this->_modified['password']) {
 
             // Encrypt the password
-            $this->_modified['password'] = Indi::db()->query('
+            $this->_modified['password'] = db()->query('
                 SELECT PASSWORD("' . $this->_modified['password'] . '")
             ')->fetchColumn(0);
         }
@@ -32,7 +32,7 @@ class Admin_Row extends Indi_Db_Table_Row {
             if (!preg_match('~^https://vk.com/([a-zA-Z0-9_\.]{3,})~', $this->vk, $m))
                 $this->_mismatch['vk'] = 'Адрес страницы должен начинаться с https://vk.com/';
 
-            else if (Indi::ini('vk')->enabled) {
+            else if (ini('vk')->enabled) {
 
                 // Try to detect object type
                 $response = Vk::type($m[1]);

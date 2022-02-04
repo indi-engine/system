@@ -36,11 +36,11 @@ class Entity_Row extends Indi_Db_Table_Row {
         $return = parent::delete();
 
         // Delete database table if that table exists
-        if (Indi::db()->query('SHOW TABLES LIKE "' . $this->table . '"')->fetchColumn())
-            Indi::db()->query('DROP TABLE `' . $this->table . '`');
+        if (db()->query('SHOW TABLES LIKE "' . $this->table . '"')->fetchColumn())
+            db()->query('DROP TABLE `' . $this->table . '`');
 
         // Destroy model
-        Indi::model($this->table, 'destroy');
+        m($this->table, 'destroy');
 
         // Return
         return $return;
@@ -56,7 +56,7 @@ class Entity_Row extends Indi_Db_Table_Row {
     public function deleteAllUploadedFilesAndUploadFolder() {
 
         // Get the directory name
-        $dir = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $this->table . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $this->table . '/';
 
         // If directory does not exist - return
         if (!is_dir($dir)) return;
@@ -92,7 +92,7 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // If CKFinder upload dir (special dir for entity/model,
         // that current row instance represents) does not exist - return
-        if (($dir = Indi::model($this->id)->dir('exists', true)) === false) return;
+        if (($dir = m($this->id)->dir('exists', true)) === false) return;
 
         // Delete recursively all the contents - folder and files
         foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $path) {
@@ -117,7 +117,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         if (!$this->id) {
 
             // Run the CREATE TABLE sql query
-            Indi::db()->query('CREATE TABLE IF NOT EXISTS `' . $this->table . '` (
+            db()->query('CREATE TABLE IF NOT EXISTS `' . $this->table . '` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=MyISAM');
 
@@ -125,29 +125,29 @@ class Entity_Row extends Indi_Db_Table_Row {
         } else if ($this->_modified['table']) {
 
             // Run the RENAME TABLE sql query
-            Indi::db()->query('RENAME TABLE  `' . $this->_original['table'] . '` TO  `' . $this->_modified['table'] . '`');
+            db()->query('RENAME TABLE  `' . $this->_original['table'] . '` TO  `' . $this->_modified['table'] . '`');
 
             // Get the original ordinary upload directory name
-            $old = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $this->_original['table'] . '/';
+            $old = DOC . STD . '/' . ini()->upload->path . '/' . $this->_original['table'] . '/';
 
             // If directory exists - rename it
             if (is_dir($old)) {
 
                 // Get the new directory name
-                $new = DOC . STD . '/' . Indi::ini()->upload->path . '/' . $this->_modified['table'] . '/';
+                $new = DOC . STD . '/' . ini()->upload->path . '/' . $this->_modified['table'] . '/';
 
                 // Do rename
                 rename($old, $new);
             }
 
             // Get the original CKFinder upload directory name
-            $old = Indi::model($this->id)->dir('name', true);
+            $old = m($this->id)->dir('name', true);
 
             // If directory exists - rename it
             if (is_dir($old)) {
 
                 // Get the new directory name
-                $new = DOC . STD . '/' . Indi::ini()->upload->path . '/' . Indi::ini()->ckeditor->uploadPath
+                $new = DOC . STD . '/' . ini()->upload->path . '/' . ini()->ckeditor->uploadPath
                     . '/' . $this->_modified['table'] . '/';
 
                 // Do rename
@@ -165,13 +165,13 @@ class Entity_Row extends Indi_Db_Table_Row {
         if (count($modified)) {
 
             // If it was an existing entity - do a full model reload, else
-            if ($original['id']) $model = Indi::model($this->id)->reload(); else {
+            if ($original['id']) $model = m($this->id)->reload(); else {
 
                 // Append new model metadata into the Indi_Db's registry
-                Indi::db((int) $this->id);
+                db((int) $this->id);
 
                 // Load that new model
-                $model = Indi::model($this->id);
+                $model = m($this->id);
             }
         }
 
@@ -185,10 +185,10 @@ class Entity_Row extends Indi_Db_Table_Row {
                 if ($titleFieldR->storeRelationAbility != 'none') {
 
                     // If current entity has no `title` field
-                    if (!Indi::model($this->id)->fields('title')) {
+                    if (!m($this->id)->fields('title')) {
 
                         // Create it
-                        $fieldR = Indi::model('Field')->new();
+                        $fieldR = m('Field')->new();
                         $fieldR->entityId = $this->id;
                         $fieldR->title = 'Auto title';
                         $fieldR->alias = 'title';
@@ -200,7 +200,7 @@ class Entity_Row extends Indi_Db_Table_Row {
                     }
 
                     // Fetch all rows
-                    $rs = $model->fetchAll();
+                    $rs = $model->all();
 
                     // Setup foreign data, as it will be need in the process of rows titles updating
                     $rs->foreign($titleFieldR->alias);
@@ -208,8 +208,8 @@ class Entity_Row extends Indi_Db_Table_Row {
                     // Update titles
                     foreach ($rs as $r) $r->titleUpdate($titleFieldR);
 
-                } else $model->fetchAll()->titleUsagesUpdate();
-            } else $model->fetchAll()->titleUsagesUpdate();
+                } else $model->all()->titleUsagesUpdate();
+            } else $model->all()->titleUsagesUpdate();
         }
 
         // If useCache property was changed
@@ -238,7 +238,7 @@ class Entity_Row extends Indi_Db_Table_Row {
     public function onUpdate() {
 
         // Reload model
-        if (Indi::model($this->id, true)) Indi::model($this->id)->reload();
+        if (m($this->id, true)) m($this->id)->reload();
 
         // Apply spaceScheme changes, if need
         $this->_spaceScheme();
@@ -259,8 +259,8 @@ class Entity_Row extends Indi_Db_Table_Row {
         if ($this->affected('spaceScheme', true) == 'none') {
 
             // Get key-value pairs of `element` and `columnType` entries
-            $elementIdA = Indi::db()->query('SELECT `alias`, `id` FROM `element`')->fetchAll(PDO::FETCH_KEY_PAIR);
-            $columnTypeIdA = Indi::db()->query('SELECT `type`, `id` FROM `columnType`')->fetchAll(PDO::FETCH_KEY_PAIR);
+            $elementIdA = db()->query('SELECT `alias`, `id` FROM `element`')->fetchAll(PDO::FETCH_KEY_PAIR);
+            $columnTypeIdA = db()->query('SELECT `type`, `id` FROM `columnType`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
             // Prepare fields configs
             $fieldA = [
@@ -293,10 +293,10 @@ class Entity_Row extends Indi_Db_Table_Row {
             foreach ($fieldA as $alias => $fieldI) {
 
                 // If field already exists - skip
-                if (Indi::model($this->id)->fields($alias)) continue;
+                if (m($this->id)->fields($alias)) continue;
 
                 // Create field
-                $fieldRA[$alias] = Indi::model('Field')->new();
+                $fieldRA[$alias] = m('Field')->new();
                 $fieldRA[$alias]->entityId = $this->id;
                 $fieldRA[$alias]->alias = $alias;
                 $fieldRA[$alias]->set($fieldI);
@@ -307,11 +307,11 @@ class Entity_Row extends Indi_Db_Table_Row {
         } else if ($this->affected('spaceScheme') && $this->spaceScheme == 'none') {
 
             // Remove space* fields
-            Indi::model($this->id)->fields('space,spaceSince,spaceUntil,spaceFrame')->delete();
+            m($this->id)->fields('space,spaceSince,spaceUntil,spaceFrame')->delete();
         }
 
         // Get space settings
-        $space = Indi::model($this->id)->space();
+        $space = m($this->id)->space();
 
         // Space's scheme and coords shortcuts
         $scheme = $space['scheme']; $coords = $space['coords'];
@@ -330,7 +330,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         // [+] date-timespan
 
         // If scheme is 'date'
-        if ($scheme == 'date') Indi::db()->query('
+        if ($scheme == 'date') db()->query('
             UPDATE `:p` SET
               `spaceSince` = CONCAT(`:p`, " 00:00:00"),
               `spaceUntil` = CONCAT(`:p`, " 00:00:00"),
@@ -338,12 +338,12 @@ class Entity_Row extends Indi_Db_Table_Row {
         ', $this->table, $coords['date'], $coords['date']);
 
         // If scheme is 'datetime'
-        if ($scheme == 'datetime') Indi::db()->query('
+        if ($scheme == 'datetime') db()->query('
             UPDATE `:p` SET `spaceSince` = `:p`, `spaceUntil` = `:p`, `spaceFrame` = 0
         ', $this->table, $coords['datetime'], $coords['datetime']);
 
         // If scheme is 'date-time'
-        if ($scheme == 'date-time') Indi::db()->query('
+        if ($scheme == 'date-time') db()->query('
             UPDATE `:p` SET
               `spaceSince` = CONCAT(`:p`, " ", `:p`),
               `spaceUntil` = CONCAT(`:p`, " ", `:p`),
@@ -351,7 +351,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         ', $this->table, $coords['date'], $coords['time'], $coords['date'], $coords['time']);
 
         // If scheme is 'date-timeId'
-        if ($scheme == 'date-timeId') Indi::db()->query('
+        if ($scheme == 'date-timeId') db()->query('
             UPDATE `:p` `e`, `time` `t` SET
               `e`.`spaceSince` = CONCAT(`e`.`:p`, " ", `t`.`title`, ":00"),
               `e`.`spaceUntil` = CONCAT(`e`.`:p`, " ", `t`.`title`, ":00"),
@@ -360,7 +360,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         ', $this->table, $coords['date'], $coords['date'], $coords['timeId']);
 
         // If scheme is 'date-dayQty'
-        if ($scheme == 'date-dayQty') Indi::db()->query('
+        if ($scheme == 'date-dayQty') db()->query('
              UPDATE `:p` SET
               `spaceSince` = CONCAT(`:p`, " 00:00:00"),
               `spaceUntil` = CONCAT(DATE_ADD(`:p`, INTERVAL `' . $coords['dayQty'] . '` DAY), " 00:00:00"),
@@ -368,7 +368,7 @@ class Entity_Row extends Indi_Db_Table_Row {
        ', $this->table, $coords['date'], $coords['date']);
 
         // If scheme is 'datetime-minuteQty'
-        if ($scheme == 'datetime-minuteQty') Indi::db()->query('
+        if ($scheme == 'datetime-minuteQty') db()->query('
             UPDATE `:p` SET
               `spaceSince` = `:p`,
               `spaceUntil` = DATE_ADD(`:p`, INTERVAL `' . $coords['minuteQty'] . '` MINUTE),
@@ -376,7 +376,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         ', $this->table, $coords['datetime'], $coords['datetime']);
 
         // If scheme is 'date-time-minuteQty'
-        if ($scheme == 'date-time-minuteQty') Indi::db()->query('
+        if ($scheme == 'date-time-minuteQty') db()->query('
             UPDATE `:p` SET
               `spaceSince` = CONCAT(`:p`, " ", `:p`),
               `spaceUntil` = DATE_ADD(CONCAT(`:p`, " ", `:p`), INTERVAL `' . $coords['minuteQty'] . '` MINUTE),
@@ -384,7 +384,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         ', $this->table, $coords['date'], $coords['time'], $coords['date'], $coords['time']);
 
         // If scheme is 'date-timeId-minuteQty'
-        if ($scheme == 'date-timeId-minuteQty') Indi::db()->query('
+        if ($scheme == 'date-timeId-minuteQty') db()->query('
             UPDATE `:p` `e`, `time` `t` SET
               `e`.`spaceSince` = CONCAT(`e`.`:p`, " ", `t`.`title`, ":00"),
               `e`.`spaceUntil` = DATE_ADD(CONCAT(`e`.`:p`, " ", `t`.`title`, ":00"), INTERVAL `' . $coords['minuteQty'] . '` MINUTE),
@@ -396,7 +396,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         if ($scheme == 'date-timespan') {
 
             // Update `spaceSince` and `spaceUntil`
-            Indi::db()->query('
+            db()->query('
                 UPDATE `' . $this->table . '` SET
                   `spaceSince` = CONCAT(`' . $coords['date'] . '`, " ", SUBSTRING(`' . $coords['timespan'] . '`, 1, 5), ":00"),
                   `spaceUntil` = DATE_ADD(
@@ -406,7 +406,7 @@ class Entity_Row extends Indi_Db_Table_Row {
             ');
 
             // Update `spaceFrame`
-            Indi::db()->query('
+            db()->query('
                 UPDATE `' . $this->table . '`
                 SET `spaceFrame` = UNIX_TIMESTAMP(`spaceUntil`) - UNIX_TIMESTAMP(`spaceSince`)
             ');
@@ -468,7 +468,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value)
 
             // Exclude prop, if it has value equal to default value
-            if (Indi::model('Entity')->fields($prop)->defaultValue == $value) unset($ctor[$prop]);
+            if (m('Entity')->fields($prop)->defaultValue == $value) unset($ctor[$prop]);
 
             // Exclude prop, if $invert arg is given as `true` and prop is not mentioned in $deferred list
             else if ($invert && !in($prop, $deferred)) unset($ctor[$prop]);
@@ -561,7 +561,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $group = $m->fields($this->filesGroupBy)->alias;
 
         // Get id => group array
-        $groupByIdA = Indi::db()->query('SELECT `id`, `' . $group . '` FROM `' . $m->table() . '`')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $groupByIdA = db()->query('SELECT `id`, `' . $group . '` FROM `' . $m->table() . '`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
         // Model dir
         $dir = $m->dir();

@@ -304,7 +304,7 @@ function ago($date1, $date2 = null, $mode = 'ago', $exact = false) {
 function tbq($q = 2, $versions012 = '', $showNumber = true, $lang = null) {
 
     // If lang is not 'ru' - use different logic
-    if (($lang ?: Indi::ini('lang')->admin) != 'ru' && count(ar($versions012)) == 2) {
+    if (($lang ?: ini('lang')->admin) != 'ru' && count(ar($versions012)) == 2) {
 
         // Convert $versions012 string into an array
         // We assume that we need only 2 versions, for example 'item,items'
@@ -1371,7 +1371,7 @@ function l10n_dataI($dataI, $props) {
     foreach(ar($props) as $prop)
         if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop]))
             if ($json = json_decode($dataI[$prop], true))
-            $dataI[$prop] = $json[array_key_exists(Indi::ini('lang')->admin, $json) ? Indi::ini('lang')->admin : key($json)];
+            $dataI[$prop] = $json[array_key_exists(ini('lang')->admin, $json) ? ini('lang')->admin : key($json)];
 
     // Return
     return $dataI;
@@ -1444,7 +1444,7 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
             $f = $s ? 'fetchRow' : 'fetchAll';
 
             // Fetch
-            $rowA[$prop] = Indi::model($m)->$f($w);
+            $rowA[$prop] = m($m)->$f($w);
 
             // If no *_Row was fetched, or empty *_Rowset was fetched - flush error
             if (!($s ? $rowA[$prop] : $rowA[$prop]->count())) $flushFn($arg1, sprintf(constant($const), $m, $value));
@@ -1455,7 +1455,7 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
             $flushFn($arg1, sprintf(constant($c . 'EQL'), $rule['eql'], $value));
         
         // If prop's value should be unique within the whole database table, but it's not - flush error
-        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && Indi::model($_[0])->row([
+        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && m($_[0])->row([
             '`' . $_[1] . '` = "' . $value . '"'
             ])) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
     }
@@ -1579,7 +1579,7 @@ function entity($table, array $ctor = []) {
     $byprop = Indi::rexm('int11', $table) ? 'id' : 'table';
 
     // Return `entity` entry
-    $entityR = Indi::model('Entity')->row('`' . $byprop . '` = "' . $table . '"');
+    $entityR = m('Entity')->row('`' . $byprop . '` = "' . $table . '"');
 
     // If $ctor arg is an empty array - return `entity` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1590,7 +1590,7 @@ function entity($table, array $ctor = []) {
     if (!array_key_exists('table', $ctor)) $ctor['table'] = $table;
 
     // If `entity` entry was not found - create it
-    if (!$entityR) $entityR = Indi::model('Entity')->new();
+    if (!$entityR) $entityR = m('Entity')->new();
 
     // Assign other props and save
     $entityR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
@@ -1619,13 +1619,13 @@ function field($table, $alias, array $ctor = []) {
 
     // Check whether `field`.`entry` column was already created
     // This is a temporary check, to be used until all Indi Engine projects are updated
-    $entryColumn = Indi::db()->query('
+    $entryColumn = db()->query('
         SELECT * FROM `information_schema`.`columns` 
         WHERE `table_name`="field" AND `column_name`="entry"
     ')->fetch();
 
     // Try to find `field` entry
-    $fieldR = Indi::model('Field')->row([
+    $fieldR = m('Field')->row([
         '`entityId` = "' . $entityId . '"',
         rif($entryColumn, '`entry` = "' . (int) $ctor['entry'] . '"', 'TRUE'),
         '`' . $byprop . '` = "' . $alias . '"'
@@ -1643,7 +1643,7 @@ function field($table, $alias, array $ctor = []) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$fieldR) $fieldR = Indi::model('Field')->new();
+    if (!$fieldR) $fieldR = m('Field')->new();
 
     // Assign `entityId` prop first
     if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
@@ -1680,7 +1680,7 @@ function cfgField($table, $entry, $alias, array $ctor = []) {
     if (!Indi::rexm('int11', $entry)) $entry = m($table)->row('`alias` = "' . $entry . '"')->id;
 
     // Try to find `field` entry
-    $fieldR = Indi::model('Field')->row([
+    $fieldR = m('Field')->row([
         '`entityId` = "' . $entityId . '"',
         '`entry` = "' . $entry . '"',
         '`' . $byprop . '` = "' . $alias . '"'
@@ -1698,7 +1698,7 @@ function cfgField($table, $entry, $alias, array $ctor = []) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$fieldR) $fieldR = Indi::model('Field')->new();
+    if (!$fieldR) $fieldR = m('Field')->new();
 
     // Assign `entityId` prop first
     if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
@@ -1725,7 +1725,7 @@ function section($alias, array $ctor = []) {
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
     // Try to find `section` entry
-    $sectionR = Indi::model('Section')->row('`' . $byprop . '` = "' . $alias . '"');
+    $sectionR = m('Section')->row('`' . $byprop . '` = "' . $alias . '"');
 
     // If $ctor arg is an empty array - return `section` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1736,7 +1736,7 @@ function section($alias, array $ctor = []) {
     if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
 
     // If `section` entry was not found - create it
-    if (!$sectionR) $sectionR = Indi::model('Section')->new();
+    if (!$sectionR) $sectionR = m('Section')->new();
 
     // Assign `entityId` prop first
     if ($ctor['entityId'] && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
@@ -1791,7 +1791,7 @@ function grid($section, $field, $ctor = false) {
     } else $w []= '`alias` = "' . $field . '"';
 
     // Try to find `grid` entry
-    $gridR = Indi::model('Grid')->row($w);
+    $gridR = m('Grid')->row($w);
 
     // If $ctor arg is non-false and is not and empty array - return found `grid` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -1806,7 +1806,7 @@ function grid($section, $field, $ctor = false) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$gridR) $gridR = Indi::model('Grid')->new();
+    if (!$gridR) $gridR = m('Grid')->new();
 
     // Assign `sectionId` prop first, to be able to detect `fieldId`
     if ($ctor['sectionId'] && $gridR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
@@ -1841,7 +1841,7 @@ function enumset($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $enumsetR = Indi::model('Enumset')->row([
+    $enumsetR = m('Enumset')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
     ]);
@@ -1860,7 +1860,7 @@ function enumset($table, $field, $alias, $ctor = false) {
     if ($enumsetR) unset($ctor['fieldId']);
 
     // Else - create it
-    else $enumsetR = Indi::model('Enumset')->new();
+    else $enumsetR = m('Enumset')->new();
 
     // If $ctor['color'] is given - apply color-box
     if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
@@ -1894,7 +1894,7 @@ function cfgEnumset($table, $entry, $field, $alias, $ctor = false) {
     $fieldId = cfgField($table, $entry, $field)->id;
 
     // Try to find `grid` entry
-    $enumsetR = Indi::model('Enumset')->row([
+    $enumsetR = m('Enumset')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
     ]);
@@ -1913,7 +1913,7 @@ function cfgEnumset($table, $entry, $field, $alias, $ctor = false) {
     if ($enumsetR) unset($ctor['fieldId']);
 
     // Else - create it
-    else $enumsetR = Indi::model('Enumset')->new();
+    else $enumsetR = m('Enumset')->new();
 
     // If $ctor['color'] is given - apply color-box
     if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
@@ -1944,7 +1944,7 @@ function thumb($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $thumbR = Indi::model('Resize')->row([
+    $thumbR = m('Resize')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
     ]);
@@ -1963,7 +1963,7 @@ function thumb($table, $field, $alias, $ctor = false) {
     if ($thumbR) unset($ctor['fieldId']);
 
     // Else - create it
-    else $thumbR = Indi::model('Resize')->new();
+    else $thumbR = m('Resize')->new();
 
     // Assign other props and save
     $thumbR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
@@ -2050,7 +2050,7 @@ function coltype($type) {
     $byprop = Indi::rexm('int11', $type) ? 'id' : 'type';
 
     // Return `columnType` entry
-    return Indi::model('ColumnType')->row('`' . $byprop . '` = "' . $type . '"');
+    return m('ColumnType')->row('`' . $byprop . '` = "' . $type . '"');
 }
 
 /**
@@ -2071,7 +2071,7 @@ function section2action($section, $action, array $ctor = []) {
     $actionId = action($action)->id;
 
     // Try to find `section2action` entry
-    $section2actionR = Indi::model('Section2action')->row([
+    $section2actionR = m('Section2action')->row([
         '`sectionId` = "' . $sectionId . '"',
         '`actionId` = "' . $actionId . '"'
     ]);
@@ -2088,7 +2088,7 @@ function section2action($section, $action, array $ctor = []) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$section2actionR) $section2actionR = Indi::model('Section2action')->new();
+    if (!$section2actionR) $section2actionR = m('Section2action')->new();
 
     // Assign props and save
     $section2actionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
@@ -2110,7 +2110,7 @@ function action($alias, array $ctor = []) {
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
     // Return `action` entry
-    $actionR = Indi::model('Action')->row('`' . $byprop . '` = "' . $alias . '"');
+    $actionR = m('Action')->row('`' . $byprop . '` = "' . $alias . '"');
 
     // If $ctor arg is an empty array - return `action` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -2121,7 +2121,7 @@ function action($alias, array $ctor = []) {
     if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
 
     // If `action` entry was not found - create it
-    if (!$actionR) $actionR = Indi::model('Action')->new();
+    if (!$actionR) $actionR = m('Action')->new();
 
     // Assign other props and save
     $actionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
@@ -2181,7 +2181,7 @@ function alteredField($section, $field, array $ctor = []) {
     $fieldId = field($sectionR->foreign('entityId')->table, $field)->id;
 
     // Try to find `alteredField` entry
-    $alteredFieldR = Indi::model('AlteredField')->row([
+    $alteredFieldR = m('AlteredField')->row([
         '`sectionId` = "' . $sectionId . '"',
         '`fieldId` = "' . $fieldId . '"'
     ]);
@@ -2199,7 +2199,7 @@ function alteredField($section, $field, array $ctor = []) {
             $ctor[$prop] = $$prop;
 
     // If `alteredField` entry was not found - create it
-    if (!$alteredFieldR) $alteredFieldR = Indi::model('AlteredField')->new();
+    if (!$alteredFieldR) $alteredFieldR = m('AlteredField')->new();
 
     // Assign `sectionId` prop first
     if ($ctor['sectionId'] && $alteredFieldR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
@@ -2244,7 +2244,7 @@ function filter($section, $field, $ctor = false) {
     $w []= '`further` = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `filter` entry
-    $filterR = Indi::model('Search')->row($w);
+    $filterR = m('Search')->row($w);
 
     // If $ctor arg is non-false and is not and empty array - return found `filter` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -2259,7 +2259,7 @@ function filter($section, $field, $ctor = false) {
             $ctor[$prop] = $$prop;
 
     // If `filter` entry was not found - create it
-    if (!$filterR) $filterR = Indi::model('Search')->new();
+    if (!$filterR) $filterR = m('Search')->new();
 
     // Assign `sectionId` prop first
     if ($ctor['sectionId'] && $filterR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
@@ -2317,7 +2317,7 @@ function param($table, $field, $alias, $value = null) {
     }
 
     // Try to find `param` entry
-    $paramR = Indi::model('Param')->row($where);
+    $paramR = m('Param')->row($where);
 
     // If $ctor arg is non-false and is not and empty array - return `param` entry, else
     if (func_num_args() < 4) return $paramR;
@@ -2363,7 +2363,7 @@ function consider($entity, $field, $consider, $ctor = false) {
     $consider = field($entity, $consider)->id ?: 0;
 
     // Try to find such `consider` entry
-    $considerR = Indi::model('Consider')->row([
+    $considerR = m('Consider')->row([
         '`entityId` = "' . $entityId . '"',
         '`fieldId` = "' . $fieldId . '"',
         '`consider` = "' . $consider . '"'
@@ -2382,7 +2382,7 @@ function consider($entity, $field, $consider, $ctor = false) {
             $ctor[$prop] = $$prop;
 
     // If `consider` entry was not found - create it
-    if (!$considerR) $considerR = Indi::model('Consider')->new();
+    if (!$considerR) $considerR = m('Consider')->new();
 
     // Assign some props first
     foreach (ar('entityId,fieldId,consider') as $prop)
@@ -2760,13 +2760,13 @@ function __($str) {
     if (substr($str, 0, 2) == 'I_' && preg_match('~^I_[A-Z0-9_]+$~', $str)) {
 
         // If initial language is not same as current
-        if ($COOKIE['i-language'] != Indi::ini('lang')->admin) {
+        if ($COOKIE['i-language'] != ini('lang')->admin) {
 
             // Load other-language constants as a variables, if not yet loaded
-            if (!$GLOBALS['const'][Indi::ini('lang')->admin]) {
+            if (!$GLOBALS['const'][ini('lang')->admin]) {
 
                 // Build filename of a php-file, containing l10n constants for required language
-                $l10n_source_abs = DOC . STD . '/www/application/lang/admin/' . Indi::ini('lang')->admin . '.php';
+                $l10n_source_abs = DOC . STD . '/www/application/lang/admin/' . ini('lang')->admin . '.php';
 
                 // If no file - skip
                 if (!file_exists($l10n_source_abs)) jflush(false, 'File ' . $l10n_source_abs . ' - not found');
@@ -2778,11 +2778,11 @@ function __($str) {
                 $const = Indi::rexma('~define\(\'(.*?)\', ?\'(.*?)\'\);~', $l10n_source_raw);
 
                 // Load all constants from constants-file into global variable
-                $GLOBALS['const'][Indi::ini('lang')->admin] = array_combine($const[1], $const[2]);
+                $GLOBALS['const'][ini('lang')->admin] = array_combine($const[1], $const[2]);
             }
 
             // Mind current language
-            $str = $GLOBALS['const'][Indi::ini('lang')->admin][$str];
+            $str = $GLOBALS['const'][ini('lang')->admin][$str];
 
         // Get constant value by name
         } else  $str = constant($str);

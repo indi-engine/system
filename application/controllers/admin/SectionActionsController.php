@@ -44,7 +44,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $langId_filter = '"y" IN (`' . im($fraction = ar(t()->row->fraction()), '`, `') . '`)';
 
         // Create phantom `langId` field
-        $langId_combo = Indi::model('Field')->new([
+        $langId_combo = m('Field')->new([
             'alias' => 'langId',
             'columnTypeId' => 'INT(11)',
             'elementId' => 'combo',
@@ -84,7 +84,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
         // Get target langs
         $target = [];
-        foreach ($fraction as $fractionI) $target[$fractionI] = Indi::model('Lang')->fetchAll([
+        foreach ($fraction as $fractionI) $target[$fractionI] = m('Lang')->all([
             '`' . $fractionI . '` = "y"',
             '`alias` != "' . $_['langId']->alias . '"'
         ])->column('alias', true);

@@ -59,27 +59,27 @@ ATTENTION: The trailing slash is required.
 include_once($_SERVER['DOCUMENT_ROOT'] . $_SERVER['REDIRECT_STD'] .'/core/library/Indi.php');
 foreach (array('www', 'core') as $p) {
     if (($cnf = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['REDIRECT_STD'] . '/' . $p . '/application/config.ini') && is_file($cnf)) {
-        $cnf = @Indi::ini($cnf);
+        $cnf = @ini($cnf);
         break;
     }
 }
 
 $std = $_SERVER['REDIRECT_STD'];
-$uph = Indi::ini('upload')->path;
+$uph = ini('upload')->path;
 if (preg_match(':^(\.\./)+:', $uph, $m)) {
     $uph = preg_replace(':^(\.\./)+:', '', $uph);
     $lup = count(explode('/', rtrim($m[0], '/')));
     for ($i = 0; $i < $lup; $i++) $std = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std);
 }
 
-$baseUrl =  $std . '/' . $uph . '/' . Indi::ini('ckeditor')->uploadPath .'/';
+$baseUrl =  $std . '/' . $uph . '/' . ini('ckeditor')->uploadPath .'/';
 
 if ($_SESSION['admin']['alternate']) $baseUrl .= $_SESSION['admin']['alternate'] . '/' . $_SESSION['admin']['id'] . '/';
 
 // LicenseKey : Paste your license key here. If left blank, CKFinder will be
 // fully functional, in demo mode.
 $config['LicenseName'] = $_SERVER['HTTP_HOST'];
-$config['LicenseKey'] = Indi::ini('ckeditor')->key;
+$config['LicenseKey'] = ini('ckeditor')->key;
 
 /*
 $baseDir : the path to the local directory (in the server) which points to the

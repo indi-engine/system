@@ -12,7 +12,7 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         if (is_array($params)) {
 
             // Create `queueTask` entry
-            $queueTaskR = Indi::model('QueueTask')->new([
+            $queueTaskR = m('QueueTask')->new([
                 'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
                 'params' => json_encode($params),
                 'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
@@ -37,7 +37,7 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         } else {
 
             // Create chunks
-            foreach (Indi::model('Entity')->fetchAll('`system` = "n"', '`table` ASC') as $entityR)
+            foreach (m('Entity')->all('`system` = "n"', '`table` ASC') as $entityR)
                 foreach ($entityR->nested('field', ['where' => '`l10n` = "y" AND `relation` != "6"']) as $fieldR)
                     $this->appendChunk($queueTaskR, $entityR, $fieldR);
 

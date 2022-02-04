@@ -499,7 +499,7 @@ class Indi_Schedule {
         // Load existing busy spaces into schedule
         foreach ($rs as $r)
             if ($this->busy($r))
-                jflush(false, 'Не удалось загрузить ' . Indi::model($table)->title() . ' ' . $r->id . ' в раcписание');
+                jflush(false, 'Не удалось загрузить ' . m($table)->title() . ' ' . $r->id . ' в раcписание');
 
         // Return schedule itself
         return $this;
@@ -528,7 +528,7 @@ class Indi_Schedule {
     public function rowset($table, $where = [], $pre = null) {
 
         // Get model
-        $model = Indi::model($table);
+        $model = m($table);
 
         // Normalize $where arg
         if (is_array($where)) $where = un($where, [null, '']);
@@ -544,7 +544,7 @@ class Indi_Schedule {
         $where[] = self::where($since, $until);
 
         // Get schedule's busy spaces
-        $rs = $model->fetchAll($where, '`spaceSince` ASC');
+        $rs = $model->all($where, '`spaceSince` ASC');
 
         // If $pre arg is callable - call it, passing row, and schedule-related fields
         if (is_callable($pre)) foreach ($rs as $r) $pre($r);
@@ -983,7 +983,7 @@ class Indi_Schedule {
 
             // Flush failure
             if ($this->busy($r)) jflush(false, 'Не удалось загрузить '
-                . Indi::model($this->_rs->table())->title() . ' ' . $r->id . ' в раcписание');
+                . m($this->_rs->table())->title() . ' ' . $r->id . ' в раcписание');
         }
 
         // Setup daily hours
@@ -1060,10 +1060,10 @@ class Indi_Schedule {
             $spaceOwnerModelId = $this->_rs->model()->fields($spaceOwnerProp)->relation;
 
             // Shortcut for space owner model
-            $m = Indi::model($spaceOwnerModelId);
+            $m = m($spaceOwnerModelId);
 
             // Collect space owner distict entries and inject them into $this->_distinct array
-            $rs = $m->preload() ? $m->preloadedAll($vA) : $m->fetchAll('`id` IN (' . im($vA) . ')');
+            $rs = $m->preload() ? $m->preloadedAll($vA) : $m->all('`id` IN (' . im($vA) . ')');
             foreach ($rs as $spaceOwnerEntry)
                 $this->_distinct[$spaceOwnerProp][$spaceOwnerEntry->id]['entry'] = $spaceOwnerEntry;
         }
@@ -1123,7 +1123,7 @@ class Indi_Schedule {
     public static function timeId($Hi = null) {
 
         // If self::$_timeIdA is null - fetch key-value pairs
-        if (self::$_timeIdA === null) self::$_timeIdA = Indi::db()->query('
+        if (self::$_timeIdA === null) self::$_timeIdA = db()->query('
             SELECT `title`, `id` FROM `time` WHERE `title` REGEXP ":(00|15|30|45)$" ORDER BY `title`
         ')->fetchAll(PDO::FETCH_KEY_PAIR);
 
@@ -1143,7 +1143,7 @@ class Indi_Schedule {
     public static function timeHi($timeId = null) {
 
         // If self::$_timeHiA is null - fetch key-value pairs
-        if (self::$_timeHiA === null) self::$_timeHiA = Indi::db()->query('
+        if (self::$_timeHiA === null) self::$_timeHiA = db()->query('
             SELECT `id`, `title` FROM `time` WHERE `title` REGEXP ":(00|15|30|45)$" ORDER BY `title`
         ')->fetchAll(PDO::FETCH_KEY_PAIR);
 

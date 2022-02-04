@@ -35,7 +35,7 @@ class Indi_Controller_Admin_Exportable extends Indi_Controller_Admin {
         } else $order = is_array(t()->scope->ORDER) ? im(t()->scope->ORDER, ', ') : (t()->scope->ORDER ?: '');
 
         // Fetch rows that should be moved
-        $toBeExportedRs = m()->fetchAll(['`id` IN (' . im($toBeExportedIdA) . ')', t()->scope->WHERE], $order);
+        $toBeExportedRs = m()->all(['`id` IN (' . im($toBeExportedIdA) . ')', t()->scope->WHERE], $order);
 
         // For each row get export expression
         $php = []; foreach ($toBeExportedRs as $toBeExportedR) $php []= $toBeExportedR->export();

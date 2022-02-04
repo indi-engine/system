@@ -21,7 +21,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $config = [];
         $dataTypeA = ['original', 'temporary', 'compiled', 'foreign'];
         foreach ($dataTypeA as $dataTypeI) $config[$dataTypeI] = $sectionR->$dataTypeI();
-        $this->section = Indi::model('Section')->createRow($config);
+        $this->section = m('Section')->createRow($config);
 
         // Setup index
         $this->level = $level;
@@ -30,7 +30,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $this->section->href = (COM ? '' : '/admin') . '/' . $this->section->alias;
 
         // Setup $this->actions
-        $this->actions = Indi::model('Action')->createRowset();
+        $this->actions = m('Action')->createRowset();
         foreach ($sectionR->nested('section2action') as $section2actionR) {
             $actionI = $section2actionR->foreign('actionId')->toArray();
             if (strlen($section2actionR->rename)) $actionI['title'] = $section2actionR->rename;
@@ -39,7 +39,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $actionI['fitWindow'] = $section2actionR->fitWindow;
             $actionI['indi'] = ['ui' => 'section2action', 'id' => $section2actionR->id];
             $actionI['l10n'] = $section2actionR->l10n;
-            $actionR = m('Action')->new()->set($actionI);
+            $actionR = m('Action')->new($actionI);
             $this->actions->append($actionR);
         }
 
@@ -152,7 +152,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $this->grid->append(['fieldId' => $sectionR->tileField]);
 
         // Build and assign `gridFields` prop
-        $this->gridFields = Indi::model('Field')->createRowset();
+        $this->gridFields = m('Field')->createRowset();
 
         // Foreach grid column
         foreach ($this->grid as $gridR) {
@@ -208,7 +208,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                     // Prepend an additional part to WHERE clause array, so if row would be found,
                     // it will mean that that row match all necessary requirements
-                    array_unshift($where, Indi::db()->sql('`id` = :s', Indi::uri('id')));
+                    array_unshift($where, db()->sql('`id` = :s', Indi::uri('id')));
                     //i($where, 'a');
 
                     // Try to find a row by given id, that, hovewer, also match all requirements,
@@ -358,7 +358,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 if ($tabIdA = array_filter($tabA)) {
                     $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
                     if (strlen($array['scope']['WHERE'])) $where[] = $array['scope']['WHERE'];
-                    $tabRs = $this->model->fetchAll($where);
+                    $tabRs = $this->model->all($where);
                 }
                 foreach ($tabA as $i => $id) {
                     if ($id) {
@@ -480,7 +480,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $section = $this->section->alias;
 
         // Construct filename of the template, that should be rendered by default
-        $script = $section . '/' . $action . rif($this->action->l10n == 'y', '-' . Indi::ini('lang')->admin) . '.php';
+        $script = $section . '/' . $action . rif($this->action->l10n == 'y', '-' . ini('lang')->admin) . '.php';
 
         // Build action-view class name
         $actionClass = 'Admin_' . ucfirst($section) . 'Controller' . ucfirst($action) . 'ActionView';
@@ -490,7 +490,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If template with such filename exists, render the template
         if ($actionClassFile = Indi::view()->exists($script)
-            ?: Indi::view()->exists($script = $section . '/' . $action . '-' . Indi::ini('lang')->admin . '.php')) {
+            ?: Indi::view()->exists($script = $section . '/' . $action . '-' . ini('lang')->admin . '.php')) {
 
             // If $render argument is set to `true`
             if ($render) {

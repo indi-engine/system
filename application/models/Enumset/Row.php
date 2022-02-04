@@ -12,13 +12,13 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Pick localized value of `title` prop, if detected that raw value contain localized values
         if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data['title']))
             if ($this->_language['title'] = json_decode($data['title'], true))
-                $data['title'] = $this->_language['title'][Indi::ini('lang')->admin];
+                $data['title'] = $this->_language['title'][ini('lang')->admin];
 
         // Get localized
         foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: [] as $field => $l10n)
             if (array_key_exists($field, $data))
                 if ($this->_language[$field] = json_decode($l10n[$this->id], true))
-                    $data[$field] = $this->_language[$field][Indi::ini('lang')->admin];
+                    $data[$field] = $this->_language[$field][ini('lang')->admin];
 
         // Return data
         return $data;
@@ -75,7 +75,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Get the current default value
         $defaultValue = $fieldR->entry
             ? $fieldR->defaultValue
-            : Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
+            : db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Default;
 
         // If this is an existing enumset row
@@ -118,7 +118,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "%s"';
 
             // Run that query
-            Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
+            db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
                 '("' . im($enumsetA, '","') . '")', $defaultValue));
         }
 
@@ -129,7 +129,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             if (!$fieldR->entry) {
 
                 // Replace mentions of original value with modified value
-                Indi::db()->query('
+                db()->query('
                     UPDATE `' . $table . '`
                     SET `' . $fieldR->alias . '` = TRIM(BOTH "," FROM REPLACE(
                         CONCAT(",", `' . $fieldR->alias . '`, ","),
@@ -142,7 +142,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             } else {
 
                 // Replace mentions of original value with modified value
-                Indi::db()->query('
+                db()->query('
                     UPDATE `param`
                     SET `cfgValue` = TRIM(BOTH "," FROM REPLACE(
                         CONCAT(",", `cfgValue`, ","),
@@ -158,13 +158,13 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
 
             // If it's not a cfgField - re-run ALTER query
             if (!$fieldR->entry)
-                Indi::db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
+                db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
                 '("' . im($enumsetA, '","') . '")', $defaultValue));
         }
 
         // If $updateFieldDefaultValue flag is set to true
         if ($updateFieldDefaultValue)
-            Indi::db()->query('
+            db()->query('
                 UPDATE `field`
                 SET `defaultValue` = "' . $defaultValue . '"
                 WHERE `id` = "' . $fieldR->id . '"
@@ -194,7 +194,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Get the current default value
         $defaultValue = $fieldR->entry
             ? $fieldR->defaultValue
-            : Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
+            : db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Default;
 
         // If current row is the last enumset row, related to current field - throw an error message
@@ -234,12 +234,12 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $sql[] = 'DEFAULT "' . $defaultValue . '"';
 
             // Run that query
-            Indi::db()->query(implode(' ', $sql));
+            db()->query(implode(' ', $sql));
         }
 
         // If $updateFieldDefaultValue flag is set to true
         if ($updateFieldDefaultValue)
-            Indi::db()->query('
+            db()->query('
                 UPDATE `field`
                 SET `defaultValue` = "' . $defaultValue . '"
                 WHERE `id` = "' . $fieldR->id . '"
@@ -299,7 +299,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            // $field = Indi::model('Enumset')->fields($prop);
+            // $field = m('Enumset')->fields($prop);
 
             // Else if $prop is 'move' - get alias of the enumset, that current enumset is after,
             // among enumsets with same value of `fieldId` prop
@@ -361,7 +361,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
 
         // Get ordered enumset aliases
-        $enumsetA_alias = Indi::db()->query(
+        $enumsetA_alias = db()->query(
             'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
         )->fetchAll(PDO::FETCH_COLUMN);
 

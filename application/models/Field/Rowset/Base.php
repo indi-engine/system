@@ -231,10 +231,10 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
 
         // Append clauses, for deeper/nested keyword-search, if $nested argument is given
         if ($this[0]) {
-            $connector = Indi::model($this[0]->entityId)->table() . 'Id';
+            $connector = m($this[0]->entityId)->table() . 'Id';
             foreach ($nested as $table => $columns) {
-                if ($nestedWHERE = Indi::model($table)->fields($columns, 'rowset')->keywordWHERE($keyword)) {
-                    $idA = Indi::db()->query('
+                if ($nestedWHERE = m($table)->fields($columns, 'rowset')->keywordWHERE($keyword)) {
+                    $idA = db()->query('
                         SELECT `' . $connector . '` FROM `block` WHERE ' . $nestedWHERE
                     )->fetchAll(PDO::FETCH_COLUMN);
                     $where[] = count($idA) ? '`id` IN (' . implode(',', $idA) . ')' : 'FALSE';
@@ -338,7 +338,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
             'storeRelationAbility' => $multiple ? 'many' : 'one',
             'elementId' => 23,
             'defaultValue' => $multiple ? '' : 0,
-            'relation' => Indi::model($table)->id()
+            'relation' => m($table)->id()
         ]);
 
         // Return field itself
@@ -389,7 +389,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
             if ($fieldR->storeRelationAbility == 'none') continue;
 
             // Get further-foreign field
-            if (!$further = Indi::model($fieldR->relation)->fields($m[2])) continue;
+            if (!$further = m($fieldR->relation)->fields($m[2])) continue;
 
             // Use cloned field
             $further = clone $further;

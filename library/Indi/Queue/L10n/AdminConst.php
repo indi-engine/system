@@ -17,7 +17,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->new([
+        $queueTaskR = m('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
@@ -27,7 +27,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         $queueTaskR->save();
 
         // Create `queueChunk` entry and setup basic props
-        Indi::model('QueueChunk')->new([
+        m('QueueChunk')->new([
             'queueTaskId' => $queueTaskR->id,
             'location' => '/' . $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
         ])->save();
@@ -49,7 +49,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function count($queueTaskId) {
 
         // Fetch `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
         foreach ($queueTaskR->nested('queueChunk', [
@@ -96,7 +96,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function items($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'items';
@@ -117,7 +117,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
             $queueChunkR->set(['itemsState' => 'progress'])->basicUpdate();
 
             // Get last target
-            $last = Indi::model('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
+            $last = m('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
 
             // Build filename of a php-file, containing l10n constants for source language
             $l10n_source_abs = DOC . STD . $queueChunkR->location;
@@ -151,7 +151,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
                 $value = stripslashes($value);
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->new([
+                $queueItemR = m('QueueItem')->new([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => $target,
@@ -229,7 +229,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
@@ -281,7 +281,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
             }
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, &$l10n_target_raw, $l10n_target_abs) {
+            m('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, &$l10n_target_raw, $l10n_target_abs) {
 
                 // Replace &#39; with \'
                 $r->result = str_replace(['&#39;', "'"], "\'", $r->result);
@@ -319,7 +319,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
 
         // Update target `lang` entry's state for current fraction
-        $langR_target = Indi::model('Lang')->row('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
+        $langR_target = m('Lang')->row('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
         $langR_target->{lcfirst(preg_replace('~^Indi_Queue_L10n_~', '', get_class($this)))} = $params['toggle'] ?: 'y';
         $langR_target->save();
     }

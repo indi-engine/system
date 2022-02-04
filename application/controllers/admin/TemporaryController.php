@@ -32,8 +32,8 @@ class Admin_TemporaryController extends Indi_Controller {
         ]);
 
         grid('consider', 'connector', true);
-        if (!Indi::model('Consider')->row('`fieldId` = "' . $connector->id . '"'))
-            Indi::model('Consider')->new([
+        if (!m('Consider')->row('`fieldId` = "' . $connector->id . '"'))
+            m('Consider')->new([
                 'entityId' => entity('consider')->id,
                 'fieldId' => $connector->id,
                 'consider' => field('consider', 'fieldId')->id,
@@ -93,7 +93,7 @@ class Admin_TemporaryController extends Indi_Controller {
     public function noticesAction() {
         die('disabled');
         // If notices system is already is in it's last version - return
-        if (!(!Indi::model('NoticeGetter', true) || !Indi::model('NoticeGetter')->fields('criteriaRelyOn'))) die('already ok');
+        if (!(!m('NoticeGetter', true) || !m('NoticeGetter')->fields('criteriaRelyOn'))) die('already ok');
 
         // Remove previous version of notices, if exists
         if (entity('noticeGetter')) entity('noticeGetter')->delete();
@@ -170,7 +170,7 @@ class Admin_TemporaryController extends Indi_Controller {
                 'satellite' => 'entityId',
                 'dependency' => 'с',
                 'storeRelationAbility' => 'many',
-                'filter' => 'FIND_IN_SET(`sectionId`, "<?=Indi::model(\'Section\')->fetchAll(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
+                'filter' => 'FIND_IN_SET(`sectionId`, "<?=m(\'Section\')->all(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
             ]);
             field('notice', 'bg', [
                 'title' => 'Цвет фона',
@@ -453,21 +453,21 @@ class Admin_TemporaryController extends Indi_Controller {
          */
 
         // Create `year` entries
-        foreach(Indi::db()->query('
+        foreach(db()->query('
             SELECT DISTINCT YEAR(`datetime`) FROM `changeLog`
         ')->fetchAll(PDO::FETCH_COLUMN) as $year)
             Year::o($year);
 
         // Create `month` entries
-        foreach (Indi::db()->query('
+        foreach (db()->query('
             SELECT DISTINCT DATE_FORMAT(`datetime`, "%Y-%m") AS `Ym` FROM `changeLog` ORDER BY `Ym`
         ')->fetchAll(PDO::FETCH_COLUMN) as $Ym)
             $monthA[$Ym] = Month::o($Ym)->id;
 
         // Setup `monthId` for `changeLog` entries with zero-value in `monthId` col
-        foreach (Indi::db()->query('
+        foreach (db()->query('
             SELECT `id`, DATE_FORMAT(`datetime`, "%Y-%m") AS `Ym` FROM `changeLog` WHERE `monthId` = "0"
-        ')->fetchAll() as $_) Indi::db()->query('
+        ')->fetchAll() as $_) db()->query('
             UPDATE `changeLog` SET `monthId` = "' . $monthA[$_['Ym']] . '" WHERE `id` = "' . $_['id'] . '"
         ');
 
@@ -559,7 +559,7 @@ class Admin_TemporaryController extends Indi_Controller {
         field('section', 'entityId', ['title' => 'Сущность']);
         filter('sections', 'roleIds', true);
 
-        $sectionRs = Indi::model('Section')->fetchAll();
+        $sectionRs = m('Section')->all();
         $sectionRs->nested('section2action');
         foreach ($sectionRs as $sectionR) {
             $sectionR->roleIds = '';

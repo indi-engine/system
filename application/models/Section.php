@@ -36,10 +36,10 @@ class Section extends Indi_Db_Table {
     public static function menu() {
 
         // Append props, containing info about auto-expanding, if such props exist
-        $_ = Indi::model('Section')->fields('expand') ? ', `expand`, `expandRoles`' : '';
+        $_ = m('Section')->fields('expand') ? ', `expand`, `expandRoles`' : '';
 
         // Fetch temporary data about root menu items
-        $tmpA = Indi::db()->query('
+        $tmpA = db()->query('
             SELECT `id`, `sectionId`, `title`, `alias`' . $_ . '
             FROM `section`
             WHERE `sectionId` = "0" AND `toggle` = "y"
@@ -53,7 +53,7 @@ class Section extends Indi_Db_Table {
         $rootA = []; for ($i = 0; $i < count($tmpA); $i++) $rootA[$tmpA[$i]['id']] = $tmpA[$i]; unset($tmpA);
 
         // Fetch menu items, that are 1st-level children for root items
-        $nestedA = Indi::db()->query('
+        $nestedA = db()->query('
             SELECT `s`.`id`, `s`.`sectionId`, `s`.`title`, `s`.`alias`
             FROM `section` `s`, `section2action` `sa`
             WHERE 1

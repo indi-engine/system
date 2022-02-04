@@ -297,7 +297,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             ], json_decode(Indi::post('_prompt'), true));
 
             // Get prefix
-            $prefix = Indi::model($_['sectionId']->entityId)->table();
+            $prefix = m($_['sectionId']->entityId)->table();
 
             // Get sectionId
             $sectionId_parent = $_['sectionId']->id;
@@ -316,7 +316,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 $config['alias'] = $prefix .= ucfirst($r->foreign('entityId')->table);
 
                 // Create new entry, assign props and save
-                $new = Indi::model('Section')->new($config);
+                $new = m('Section')->new($config);
                 $new->save();
 
                 // Use new entry's id as parent for next iteration
@@ -329,7 +329,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 foreach (ar('section2action,grid,alteredField,search') as $nested) {
 
                     // Get tree-column, if set
-                    if ($tc = Indi::model($nested)->treeColumn()) $parent[$nested] = [0 => 0];
+                    if ($tc = m($nested)->treeColumn()) $parent[$nested] = [0 => 0];
 
                     // Foreach nested entry
                     foreach ($r->nested($nested) as $nestedR) {
@@ -374,13 +374,13 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!in('entityId', $this->row->affected())) return;
 
         // Delete old grid info when associated entity has changed
-        m('Grid')->fetchAll('`sectionId` = "' . $this->id . '"')->delete();
+        m('Grid')->all('`sectionId` = "' . $this->id . '"')->delete();
 
         // Set up new grid, if associated entity remains not null, event after change
         if (!$this->row->entityId) return;
 
         // Get entity fields as grid columns candidates
-        $fields = m('Field')->fetchAll('`entityId` = "' . $this->row->entityId . '"', '`move`')->toArray();
+        $fields = m('Field')->all('`entityId` = "' . $this->row->entityId . '"', '`move`')->toArray();
 
         // If no fields - return
         if (!count($fields)) return;

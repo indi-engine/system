@@ -9,7 +9,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->new([
+        $queueTaskR = m('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
@@ -37,7 +37,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function count($queueTaskId) {
 
         // Fetch `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -80,7 +80,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function items($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'items';
@@ -112,7 +112,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             foreach ($langA as $lang) {
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->new([
+                $queueItemR = m('QueueItem')->new([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => preg_replace('~\.php$~', '-' . $lang . '$0', $queueChunkR->location),
@@ -150,13 +150,13 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => Indi::ini('lang')->gapi->key]);
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
@@ -188,7 +188,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
 
             // Get queue items by 50 entries at a time
-            Indi::model('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $value, $tpl) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $value, $tpl) {
 
                 // Try to call Google Cloud Translate API
                 try {
@@ -249,7 +249,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->row($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
@@ -276,7 +276,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             $localizable = $this->getLocalizable($params);
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params) {
 
                 $current = DOC . STD . $r->target;
 

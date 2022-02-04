@@ -81,7 +81,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         if ($auto = enumset('section2action', 'fitWindow', 'auto')) {
             if (enumset('section2action', 'fitWindow', 'y')) {
-                Indi::db()->query('UPDATE `section2action` SET `fitWindow` = "y" WHERE `fitWindow` = "auto"');
+                db()->query('UPDATE `section2action` SET `fitWindow` = "y" WHERE `fitWindow` = "auto"');
                 $auto->delete();
             } else {
                 $auto->alias = 'y';
@@ -89,7 +89,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             }
         }
         if ($_ = field('section', 'grid')) $_->delete();
-        Indi::db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0');
+        db()->query('DELETE FROM `grid` WHERE `sectionId` = "' . section('queueChunk')->id . '" AND `fieldId` = 0');
         section2action('lang', 'form', ['toggle' => 'n']);
         section2action('lang', 'delete', ['toggle' => 'n']);
         section('fieldsAll', ['defaultSortField' => 'move']);
@@ -139,8 +139,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'mode' => 'required',
         ]);
         grid('profiles', 'alias', ['move' => 'title']);
-        Indi::db()->query('UPDATE `profile` SET `alias` = "dev" WHERE `id` = "1"');
-        Indi::db()->query('UPDATE `profile` SET `alias` = "admin" WHERE `id` = "12"');
+        db()->query('UPDATE `profile` SET `alias` = "dev" WHERE `id` = "1"');
+        db()->query('UPDATE `profile` SET `alias` = "admin" WHERE `id` = "12"');
         section('profiles', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
         section2action('profiles','export', ['move' => 'toggle', 'profileIds' => '1']);
         section('controlElements', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
@@ -237,7 +237,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('param', 'value')->delete();
         entity('param', ['titleFieldId' => 'cfgField']);
         consider('param', 'title', 'cfgField', ['foreign' => 'title', 'required' => 'y']);
-        m('Param')->fetchAll('`cfgField` = "0"')->delete();
+        m('Param')->all('`cfgField` = "0"')->delete();
         die('ok');
     }
     public function cfgFieldMetaAction() {
@@ -701,7 +701,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
     }
     public function cfgFieldImportAction() {
 
-        foreach (m('param')->fetchAll() as $paramR) {
+        foreach (m('param')->all() as $paramR) {
             $possibleR = $paramR->foreign('possibleParamId');
             if ($cfgField = m('Field')->row([
                 '`entityId` = "' . entity('element')->id . '"',
@@ -713,7 +713,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             }
         }
 
-        foreach (m('param')->fetchAll() as $paramR) {
+        foreach (m('param')->all() as $paramR) {
             $param = $paramR->foreign('possibleParamId')->alias;
             $rel = $paramR->foreign('fieldId')->rel();
             if (in($param, 'groupBy,titleColumn')) $paramR->cfgValue = $rel->fields($paramR->value)->id;
@@ -750,7 +750,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         die('ok');
     }
     public function syncSectionsAction() {
-        m('Section')->fetchAll('`type` = "s"')->delete();
+        m('Section')->all('`type` = "s"')->delete();
         section('configuration', ['title' => 'Конфигурация', 'type' => 's']);
         section('sections', [
             'sectionId' => 'configuration',
@@ -3573,7 +3573,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'qtyDiffRelyOn',
             'relation' => 'section',
             'storeRelationAbility' => 'many',
-            'filter' => 'FIND_IN_SET(`sectionId`, "<?=Indi::model(\'Section\')->fetchAll(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
+            'filter' => 'FIND_IN_SET(`sectionId`, "<?=m(\'Section\')->all(\'`sectionId` = "0"\')->column(\'id\', true)?>")',
         ]);
         consider('notice', 'sectionId', 'entityId', ['required' => 'y']);
         field('notice', 'bg', [
@@ -4170,8 +4170,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         mt();
         //for ($i = 0; $i < 50; $i++) m('Test')->new(['title' => 'Test' . str_pad($i+1, 2, '0', STR_PAD_LEFT)])->save();
         /*for ($i = 0; $i < 10000; $i++) {
-            //Indi::db()->query('SELECT * FROM `test` WHERE `id`="169" OR `title` <= "Тест 12111" ORDER BY `title` DESC LIMIT 2')->fetchAll();
-            Indi::db()->query('SELECT * FROM `test` ORDER BY `title` ASC LIMIT 25, 1')->fetchAll();
+            //db()->query('SELECT * FROM `test` WHERE `id`="169" OR `title` <= "Тест 12111" ORDER BY `title` DESC LIMIT 2')->fetchAll();
+            db()->query('SELECT * FROM `test` ORDER BY `title` ASC LIMIT 25, 1')->fetchAll();
         }*/
         //m('Test')->new(['title' => 'Жопа 2'])->save();
         //m('Test')->row('`id` = "206"')->delete();
@@ -4181,7 +4181,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             $data = ['title' => 'Test ' . $i]; d($data);
             m('Test')->new($data)->save();
         }
-        m('Test')->fetchAll()->delete();
+        m('Test')->all()->delete();
         Indi::ws(false);
         d(mt());
         die('xx1');
@@ -4229,10 +4229,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
         die('ok');
     }
     public function titleField2considerAction() {
-        foreach (m('Entity')->fetchAll() as $entityR) {
+        foreach (m('Entity')->all() as $entityR) {
             if (!$entityR->titleFieldId) continue;
             if ($entityR->foreign('titleFieldId')->storeRelationAbility == 'none') continue;
-            if (!$fieldR_title = Indi::model($entityR->id)->fields('title')) continue;
+            if (!$fieldR_title = m($entityR->id)->fields('title')) continue;
             $existing = consider($entityR->table, 'title', $entityR->foreign('titleFieldId')->alias);
             d($entityR->table . ':' . $entityR->foreign('titleFieldId')->alias);
             if (Indi::get()->do) $newupdated = consider($entityR->table, 'title', $entityR->foreign('titleFieldId')->alias, ['foreign' => 'title']);
@@ -4283,7 +4283,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         field('enumset', 'title', ['columnTypeId' => 'TEXT']);
         if (action('login')) action('login', ['type' => 's']);
-        foreach (ar('grid,alteredField,search') as $table) Indi::db()->query('
+        foreach (ar('grid,alteredField,search') as $table) db()->query('
             UPDATE `' . $table . '` `g`, `field` `f` SET `g`.`title` = `f`.`title` WHERE `g`.`fieldId` = `f`.`id`
         ');
         field('queueTask', 'stageState', [
@@ -5148,10 +5148,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
         filter('fieldsAll', 'dependency', true);
 
         // Convert satellite-cfg into consider-cfg
-        foreach (Indi::model('Field')->fetchAll('`dependency` != "u"') as $fieldR) {
+        foreach (m('Field')->all('`dependency` != "u"') as $fieldR) {
             $ctor = [];
             if ($fieldR->alternative) $ctor['foreign'] = $fieldR->alternative;
-            if (!Indi::model($fieldR->entityId)->fields($fieldR->alias)->param('allowZeroSatellite'))
+            if (!m($fieldR->entityId)->fields($fieldR->alias)->param('allowZeroSatellite'))
                 $ctor['required'] = 'y';
             if ($_ = $fieldR->foreign('satellite')->satellitealias) $ctor['connector'] = $_;
             if (!$ctor) $ctor = true;
@@ -5160,7 +5160,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('section', 'parentSectionConnector', ['filter' => '`storeRelationAbility`!="none"']);
 
         // Erase satellite-cfg and hide fields, responsible for satellite-functionaity
-        //Indi::db()->query('UPDATE `field` SET `dependency` = "u", `satellitealias` = "", `satellite` = "0", `alternative` = ""');
+        //db()->query('UPDATE `field` SET `dependency` = "u", `satellitealias` = "", `satellite` = "0", `alternative` = ""');
         foreach (ar('span,dependency,satellitealias,satellite,alternative') as $field)
             field('field', $field, ['mode' => 'readonly']);
         die('ok');
@@ -5203,7 +5203,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section('queueChunk', [
             'defaultSortField' => 'move',
         ]);
-        Indi::db()->query('UPDATE `profile` SET `entityId` = "11" WHERE `entityId` = "0"');
+        db()->query('UPDATE `profile` SET `entityId` = "11" WHERE `entityId` = "0"');
         field('profile', 'type', [
             'title' => 'Тип',
             'columnTypeId' => 'ENUM',
@@ -5214,7 +5214,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         enumset('profile', 'type', 's', ['title' => '<font color=red>Системная</font>']);
         enumset('profile', 'type', 'p', ['title' => 'Проектная']);
-        Indi::db()->query('UPDATE `profile` SET `type` = "s" WHERE `id` = "1"');
+        db()->query('UPDATE `profile` SET `type` = "s" WHERE `id` = "1"');
         grid('profiles', 'type', true)->move(3);
         die('ok');
     }

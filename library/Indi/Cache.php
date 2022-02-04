@@ -12,13 +12,13 @@ class Indi_Cache {
         $model = ucfirst($table);
 
         // Get the columns array
-        $columnA = Indi::model($model)->fields(null, 'columns');
+        $columnA = m($model)->fields(null, 'columns');
 
         // Prepend columns array with 'id' item
         array_unshift($columnA, 'id');
 
         // Fetch all data from database table
-		$dataA = Indi::model($model)->fetchAll()->toArray();
+		$dataA = m($model)->all()->toArray();
 
         // Start building data section of cache file
         $php = "<?php \$GLOBALS['cache']['" . $table . "']['myd'] = Array";
@@ -133,7 +133,7 @@ class Indi_Cache {
      * @static
      */
     public static function load() {
-        if (Indi::ini()->db->cache)
+        if (ini()->db->cache)
             foreach (glob(DOC . STD . '/www/application/cache/*.php') as $cacheI)
                 require_once($cacheI);
     }

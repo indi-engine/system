@@ -48,7 +48,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         if (!$prev = $this->affected('alias', true)) return;
 
         // Get info about what entities have what localized fields
-        $fieldA = Indi::db()->query('
+        $fieldA = db()->query('
             SELECT `e`.`table`, `f`.`alias` AS `field`, "1" AS `where`
             FROM `entity` `e`, `field` `f`
             WHERE 1
@@ -58,7 +58,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         ')->fetchAll();
 
         // If localized enumset-fields found, append new item in $fieldA
-        if ($fieldIdA_enumset = Indi::db()->query('
+        if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
@@ -69,7 +69,7 @@ class Lang_Row extends Indi_Db_Table_Row {
                 ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
-        foreach ($fieldA as $info) foreach (Indi::db()->query('
+        foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
         ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
 
@@ -90,7 +90,7 @@ class Lang_Row extends Indi_Db_Table_Row {
             $json = json_encode($dataNow);
 
             // Update
-            Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
+            db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
         }
     }
 
@@ -103,7 +103,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         if ($this->toggle == 'n') return;
 
         // Get info about what entities have what localized fields
-        $fieldA = Indi::db()->query('
+        $fieldA = db()->query('
             SELECT `e`.`table`, `f`.`alias` AS `field`, "1" AS `where`
             FROM `entity` `e`, `field` `f`
             WHERE 1
@@ -113,7 +113,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         ')->fetchAll();
 
         // If localized enumset-fields found, append them in $fieldA
-        if ($fieldIdA_enumset = Indi::db()->query('
+        if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
@@ -124,7 +124,7 @@ class Lang_Row extends Indi_Db_Table_Row {
                 ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
-        foreach ($fieldA as $info) foreach (Indi::db()->query('
+        foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
         ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
 
@@ -133,13 +133,13 @@ class Lang_Row extends Indi_Db_Table_Row {
 
             // Append new translation, equal to current translation.
             // This is a temporary solution, Google Translate API will be used instead.
-            $data[$this->alias] = $data[Indi::ini('lang')->admin];
+            $data[$this->alias] = $data[ini('lang')->admin];
 
             // Convert array back to json
             $json = json_encode($data);
 
             // Update
-            Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
+            db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
         }
     }
 
@@ -152,7 +152,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         if ($this->toggle == 'n') return;
 
         // Get info about what entities have what localized fields
-        $fieldA = Indi::db()->query('
+        $fieldA = db()->query('
             SELECT `e`.`table`, `f`.`alias` AS `field`, "1" AS `where`
             FROM `entity` `e`, `field` `f`
             WHERE 1
@@ -162,7 +162,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         ')->fetchAll();
 
         // If localized enumset-fields found, append new item in $fieldA
-        if ($fieldIdA_enumset = Indi::db()->query('
+        if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
         ')->fetchAll(PDO::FETCH_COLUMN))
             foreach(ar('title') as $field)
@@ -173,7 +173,7 @@ class Lang_Row extends Indi_Db_Table_Row {
                 ];
 
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
-        foreach ($fieldA as $info) foreach (Indi::db()->query('
+        foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
         ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
 
@@ -187,7 +187,7 @@ class Lang_Row extends Indi_Db_Table_Row {
             $json = json_encode($data);
 
             // Update
-            Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
+            db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
         }
     }
 
@@ -197,10 +197,10 @@ class Lang_Row extends Indi_Db_Table_Row {
     public function onBeforeDelete() {
 
         // If current entry is the last remaining `lang` entry - flush error
-        if (Indi::db()->query('SELECT COUNT(*) FROM `lang`')->fetchColumn() == 1)
-            jflush(false, sprintf(I_LANG_LAST, Indi::model('Lang')->title()));
+        if (db()->query('SELECT COUNT(*) FROM `lang`')->fetchColumn() == 1)
+            jflush(false, sprintf(I_LANG_LAST, m('Lang')->title()));
 
         // If current entry is a translation, that is currently used - flush error
-        if ($this->alias == Indi::ini('lang')->admin) jflush(false, I_LANG_CURR);
+        if ($this->alias == ini('lang')->admin) jflush(false, I_LANG_CURR);
     }
 }

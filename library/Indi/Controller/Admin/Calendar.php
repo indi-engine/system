@@ -269,7 +269,7 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
     public function detectColors() {
 
         // Get id of ENUM column type
-        $ENUM_columnTypeId = Indi::model('ColumnType')->row('`type` = "ENUM"')->id;
+        $ENUM_columnTypeId = m('ColumnType')->row('`type` = "ENUM"')->id;
 
         // Get ENUM fields
         $ENUM_fieldRs = m()->fields()->select($ENUM_columnTypeId, 'columnTypeId');

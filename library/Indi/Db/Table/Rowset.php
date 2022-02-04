@@ -208,7 +208,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @return Indi_Db_Table
      */
     public function model() {
-        return Indi::model($this->_table);
+        return m($this->_table);
     }
 
     /**
@@ -623,7 +623,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $mode = $foreign->storeRelationAbility == 'one' ? 'single' : 'multiple';
 
                 // Collect further-foreign fields info in a format, compatible with $this->foreign() usage
-                if ($further = Indi::model($foreign->relation)->fields($m[2]))
+                if ($further = m($foreign->relation)->fields($m[2]))
                     if ($further->storeRelationAbility != 'none')
                         $typeA['foreign'][$mode][$foreign->alias]['foreign'][0] []= $m[2];
 
@@ -635,12 +635,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Foreign keys (single and multiple)
             if ($gridFieldR->original('storeRelationAbility') == 'one')
                 $typeA['foreign']['single'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: Indi::model($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
                     : true;
 
             else if ($gridFieldR->original('storeRelationAbility') == 'many')
                 $typeA['foreign']['multiple'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: Indi::model($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
                     : true;
 
             // Boolean values
@@ -667,7 +667,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Shaded fields
             if (Indi::demo(false) && ($gridFieldR->param('shade')  || (
-                    ($_ = $gridFieldR->relation) && ($_ = Indi::model($_)) && ($_ = $_->titleField()) && $_->param('shade')
+                    ($_ = $gridFieldR->relation) && ($_ = m($_)) && ($_ = $_->titleField()) && $_->param('shade')
                 ))) $typeA['shade'][$gridFieldR->alias] = $gridFieldR->param();                
 
             // Append current grid field alias to $columnA array
@@ -907,14 +907,14 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if ($this->_count) {
 
                 // If connector field store relation ability is multiple
-                if (Indi::model($table)->fields($connector)->storeRelationAbility == 'many')
+                if (m($table)->fields($connector)->storeRelationAbility == 'many')
 
                     // We use REGEXP sql expression for prepending $where array
                     array_unshift($where,
                         'CONCAT(",", `' . $connector . '`, ",") REGEXP ",(' . implode('|', $idA) . '),"');
 
                 // Else if connector field store relation ability is single
-                else if (Indi::model($table)->fields($connector)->storeRelationAbility == 'one')
+                else if (m($table)->fields($connector)->storeRelationAbility == 'one')
 
                     // We use IN sql expression for prepending $where array. If
                     array_unshift($where,
@@ -930,7 +930,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             } else array_unshift($where, '0');
 
             // Fetch rowset containing rows, that are nested to at least one row of current rowset
-            $nestedRs = Indi::model($table)->fetchAll($where, $order, $count, $page, $offset);
+            $nestedRs = m($table)->all($where, $order, $count, $page, $offset);
 
             // Setup foreign data for nested rowset, if need
             if ($foreign) $nestedRs->foreign($foreign);
@@ -948,13 +948,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($nestedRs as $nestedR)
 
                 // If connector field is multiple, foreach unique value within that multiple - append a row
-                if (Indi::model($table)->fields($connector)->storeRelationAbility == 'many') {
+                if (m($table)->fields($connector)->storeRelationAbility == 'many') {
                     foreach (explode(',', $nestedR->$connector) as $i)
                         if (strlen($i))
                             $cNested[$i][] = $nestedR;
 
                 // Else we use usual approach
-                } else if (Indi::model($table)->fields($connector)->storeRelationAbility == 'one') {
+                } else if (m($table)->fields($connector)->storeRelationAbility == 'one') {
                     $cNested[$nestedR->$connector][] = $nestedR;
                 }
 
@@ -962,7 +962,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($this as $r) {
 
                 // Assign
-                $r->nested($key, Indi::model($table)->createRowset(
+                $r->nested($key, m($table)->createRowset(
                     $cNested[$r->id] && count($cNested[$r->id]) ? ['rows' => $cNested[$r->id]] : []
                 ));
 
@@ -1140,7 +1140,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $cValue = $r->$consider;
 
                         // Get entry, identified by current value of consider-field
-                        $cEntryR = Indi::model($cField->relation)->row('`id` = "' . $cValue . '"');
+                        $cEntryR = m($cField->relation)->row('`id` = "' . $cValue . '"');
 
                         // Get it's value
                         $cValueForeign = $cEntryR->{$cField_foreign->alias};
@@ -1212,7 +1212,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($distinctA as $entityId => $keys) {
 
                 // If current field is an imitated-field, and is a enumset-filed
-                if ($imitated && Indi::model($entityId)->table() == 'enumset') {
+                if ($imitated && m($entityId)->table() == 'enumset') {
 
                     // Fetch foreign data with no db-request
                     $foreignRs[$entityId] = $fieldR->nested('enumset')->select($keys, 'alias');
@@ -1226,7 +1226,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     // If current $entityId is id of enumset entity, we should append an additional WHERE clause,
                     // that will outline the `fieldId` value, because in this case rows in current rowset store
                     // aliases of rows from `enumset` table instead of ids, and aliases are not unique within that table.
-                    if (Indi::model($entityId)->table() == 'enumset') {
+                    if (m($entityId)->table() == 'enumset') {
 
                         // Set the first part of WHERE clause
                         $where[] = '`fieldId` = "' . $fieldR->id . '"';
@@ -1244,11 +1244,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     }
 
                     // If foreign model's `preload` flag was turned On
-                    if (Indi::model($entityId)->preload()) {
+                    if (m($entityId)->preload()) {
 
                         // Use preloaded data as foreign data rather than
                         // obtaining foreign data by separate sql-query
-                        $foreignRs[$entityId] = Indi::model($entityId)->preloadedAll($distinctA[$entityId]);
+                        $foreignRs[$entityId] = m($entityId)->preloadedAll($distinctA[$entityId]);
 
                     // Else fetch foreign from db
                     } else {
@@ -1259,7 +1259,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             : 'FALSE';
 
                         // Fetch foreign data
-                        $foreignRs[$entityId] = Indi::model($entityId)->fetchAll($where);
+                        $foreignRs[$entityId] = m($entityId)->all($where);
                     }
                 }
 
@@ -1370,7 +1370,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                     // Create a rowset object, with usage of data, collected in $rows array, and assing that rowset
                     // as a value within $this->_foreign property under current foreign key field name and current row
-                    $r->foreign($key, Indi::model($foreignKeyEntityId)->createRowset(['rows' => $rows]));
+                    $r->foreign($key, m($foreignKeyEntityId)->createRowset(['rows' => $rows]));
 
                     // Release the memory
                     unset($rows, $set);
@@ -1601,7 +1601,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Convert $original into *_Row instance, if need
         if ($original instanceof Indi_Db_Table_Row) $append = $original; else {
-            $append = Indi::model($this->_table)->new();
+            $append = m($this->_table)->new();
             foreach($original as $prop => $value) $append->original($prop, $value);
         }
 
