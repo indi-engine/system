@@ -770,14 +770,8 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function export($data, $format = 'excel'){
 
-        /** Include path **/
-        ini_set('include_path', ini_get('include_path').';../Classes/');
-
-        /** PHPExcel */
-        include 'PHPExcel.php';
-
         // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
+        $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
         // Set properties
         $objPHPExcel->getProperties()->setCreator($_SESSION['admin']['title']);
@@ -788,11 +782,8 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Set up $noBorder variable, containing style definition to be used as an argument while applyFromArray() calls
         // in cases then no borders should be displayed
-        $_noBorder = ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => 'ffffff']];
+        $_noBorder = ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'ffffff']];
         $noBorder = ['borders' => ['right' => $_noBorder, 'left' => $_noBorder, 'top' => $_noBorder]];
-
-        // Set active sheet by index
-        $objPHPExcel->setActiveSheetIndex(0);
 
         // Get the columns, that need to be presented in a spreadsheet
         $_columnA = json_decode(Indi::get()->columns, true);
@@ -834,7 +825,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($columnA as $n => $columnI) {
 
             // Get column letter
-            $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+            $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
             // Apply styles for all rows within current column (font and alignment)
             $objPHPExcel->getActiveSheet()
@@ -864,7 +855,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $crumbA = t(true)->toString(false);
 
         // Defined a PHPExcel_RichText object
-        $objRichText = new PHPExcel_RichText();
+        $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
         // For each crumb
         for ($i = 0; $i < count($crumbA); $i++) {
@@ -910,7 +901,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $currentRowIndex++;
 
         // Set total number of $data items
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, I_TOTAL . ': ' . count($data));
+        $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, I_TOTAL . ': ' . count($data));
         $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
         if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
         $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(15.75);
@@ -926,7 +917,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Insert a whitespace into first cell of that visual-separator-row, as DomPDF ignores height
                 // definition for empty row, and makes it tiny, so, by inserting a whitespace - we ensure that
                 // visual separation will be properly displayed
-                $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, ' ');
+                $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, ' ');
 
                 // Merge all cell within that separator-row before no-border-style apply
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -943,7 +934,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($this->_excelA as $alias => $excelI) {
 
                 // Create rich text object
-                $objRichText = new PHPExcel_RichText();
+                $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
                 // Merge all cell within current row
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -1065,7 +1056,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][1]), 0, 0, 0, 15, 15);
 
                     //  Add the GD image to a spreadsheet
-                    $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                     $objDrawing->setCoordinates('A' . $currentRowIndex);
                     $objDrawing->setImageResource($canvasIm);
                     $objDrawing->setHeight(11)->setWidth(183)->setOffsetY(4)->setOffsetX($excelI['offset'] + 5);
@@ -1160,11 +1151,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.5;
 
                                 //  Add the image to a worksheet
-                                $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                                 $objDrawing->setCoordinates('A' . $currentRowIndex);
                                 $objDrawing->setImageResource($gdImage);
-                                $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
-                                $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+                                $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
+                                $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
                                 $objDrawing->setHeight(11);
                                 $objDrawing->setWidth(14);
                                 $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
@@ -1180,7 +1171,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                                     //$additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
 
                                     //  Add the image to a worksheet
-                                    $objDrawing = new PHPExcel_Worksheet_Drawing();
+                                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                                     $objDrawing->setPath($abs);
                                     $objDrawing->setCoordinates('A' . $currentRowIndex);
                                     //$objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1216,7 +1207,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set rich text object as a cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, $objRichText);
+                $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, $objRichText);
                 if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
 
                 // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously setted default height
@@ -1231,15 +1222,15 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (Indi::get()->keyword) {
 
             // Setup new rich text object for keyword search usage mention
-            $objRichText = new PHPExcel_RichText();
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
             // Merge current row sells and set alignment as 'right'
             $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
             $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->getAlignment()
-                ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Write the keyword search method title, with a separator
-            $objSelfStyled = $objRichText->createTextRun('Искать -» ');
+            $objSelfStyled = $objRichText->createTextRun(trim(I_ACTION_INDEX_KEYWORD_LABEL, '…') . ' -» ');
             $objSelfStyled->getFont()->setName($font)->setSize('8');
             $objSelfStyled->getFont()->getColor()->setRGB('04408C');
 
@@ -1249,7 +1240,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $objSelfStyled->getFont()->getColor()->setRGB('7EAAE2');
 
             // Set rich text object as cell value
-            $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, $objRichText);
+            $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, $objRichText);
 
             // Set no-border style
             if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
@@ -1289,7 +1280,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($columnA as $n => $columnI) {
 
             // Get column letter
-            $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+            $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
             // Setup column width
             $m = uri()->format == 'excel' ? 7.43 : 6.4;
@@ -1308,7 +1299,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $additionalOffsetX = ceil(($columnI['width']-16)/2);
 
                     //  Add the image to a worksheet
-                    $objDrawing = new PHPExcel_Worksheet_Drawing();
+                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                     $objDrawing->setPath($abs);
                     $objDrawing->setCoordinates($columnL . $currentRowIndex);
                     $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1340,7 +1331,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
 
                 //  Add the GD image to a spreadsheet
-                $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setImageResource($canvasIm);
                 $objDrawing->setWidth(13)->setHeight(5)->setOffsetY(10)->setOffsetX($columnI['titleWidth'] + 6);
@@ -1354,26 +1345,26 @@ class Indi_Controller_Admin extends Indi_Controller {
                 [
                     'borders' => [
                         'right' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                             'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'aaccf6':'c5c5c5')
                             ]
                         ],
                         'top' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                             'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
                             ]
                         ],
                         'bottom' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                             'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'A7C7EE':'c5c5c5')
                             ]
                         ],
                     ],
                     'fill' => [
-                        'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                        'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                         'rotation' => 90,
                         'startcolor' => [
                             'rgb' => ($columnI['dataIndex'] == $order->property ? 'ebf3fd' : 'F9F9F9'),
@@ -1389,7 +1380,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Ensure header title to be wrapped, if need
             if ($columnI['height']) {
                 $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setWrapText(true);
-                $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                 if ($wrap < $columnI['height']) $wrap = $columnI['height'];
             }
 
@@ -1398,7 +1389,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 ->applyFromArray([
                     'borders' => [
                         'left' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                             'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
                             ]
@@ -1414,25 +1405,24 @@ class Indi_Controller_Admin extends Indi_Controller {
                     'alignment' => [
                         'horizontal' => $columnI['align']
                     ]
-                    ]
+                ]
             );
 
             // Apply background color for all cells within current column,
             // in case if current column is a rownumberer-column
             if ($columnA[$n]['type'] == 'rownumberer') $objPHPExcel->getActiveSheet()
                 ->getStyle($columnL . ($currentRowIndex + 1) . ':' . $columnL . $lastRowIndex)
-                ->applyFromArray(
-                [
+                ->applyFromArray([
                     'borders' => [
                         'right' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                             'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
                             ]
                         ],
                     ],
                     'fill' => [
-                        'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                        'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                         'rotation' => 0,
                         'startcolor' => [
                             'rgb' => 'F9F9F9',
@@ -1463,7 +1453,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(20.75);
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex(0);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1);
 
                 // Merge cells
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -1477,16 +1467,16 @@ class Indi_Controller_Admin extends Indi_Controller {
                     ->applyFromArray([
                         'borders' => [
                             'bottom' => [
-                                'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
                                 'color' => ['rgb' => '7EAAE2']
                             ],
                         ],
                         'alignment' => ['vertical' => 'bottom', 'horizontal' => 'left', 'indent' => 2],
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_NONE]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE]
                     ]);
 
                 //  Add the image to a worksheet
-                $objDrawing = new PHPExcel_Worksheet_Drawing();
+                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                 $objDrawing->setPath(DOC . STD . '/core/library/extjs4/resources/themes/images/default/grid/group-collapse.gif');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setOffsetY(10)->setOffsetX(6);
@@ -1506,7 +1496,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($columnA as $n => $columnI) {
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the index/value
                 if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']];
@@ -1529,11 +1519,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $additionalOffsetX = ceil(($columnI['width']-14)/2) - 2;
 
                         //  Add the image to a worksheet
-                        $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                         $objDrawing->setCoordinates($columnL . $currentRowIndex);
                         $objDrawing->setImageResource($gdImage);
-                        $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
-                        $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+                        $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
+                        $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
                         $objDrawing->setHeight(11);
                         $objDrawing->setWidth(14);
                         $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
@@ -1550,7 +1540,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             $additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
 
                             //  Add the image to a worksheet
-                            $objDrawing = new PHPExcel_Worksheet_Drawing();
+                            $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                             $objDrawing->setPath($abs);
                             $objDrawing->setCoordinates($columnL . $currentRowIndex);
                             $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1597,7 +1587,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $additionalOffsetX = ceil(($columnI['width']-16)/2);
 
                         //  Add the image to a worksheet
-                        $objDrawing = new PHPExcel_Worksheet_Drawing();
+                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                         $objDrawing->setPath($abs);
                         $objDrawing->setCoordinates($columnL . $currentRowIndex);
                         $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1628,17 +1618,16 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Set right and bottom border, because cell fill will hide default Excel's ot OpenOffice Write's cell borders
                 $objPHPExcel->getActiveSheet()
                     ->getStyle($columnL . $currentRowIndex)
-                    ->applyFromArray(
-                    [
+                    ->applyFromArray([
                         'borders' => [
                             'right' => [
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                                 'color' => [
                                     'rgb' => 'D0D7E5'
                                 ]
                             ],
                             'bottom' => [
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                                 'color' => [
                                     'rgb' => 'D0D7E5'
                                 ]
@@ -1652,7 +1641,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     ->applyFromArray([
                         'borders' => [
                             'left' => [
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                                 'color' => [
                                     'rgb' => 'c5c5c5'
                                 ]
@@ -1681,14 +1670,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue($columnL . $currentRowIndex, $value);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnL . $currentRowIndex, $value);
 
                 // Set odd-even rows background difference
                 if ($i%2 && $columnA[$n]['type'] != 'rownumberer') {
                     $objPHPExcel->getActiveSheet()
                         ->getStyle($columnL . $currentRowIndex)
                         ->getFill()
-                        ->setFillType(PHPExcel_Style_Fill::FILL_SOLID)
+                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                         ->getStartColor()->setRGB('FAFAFA');
                 }
 
@@ -1706,23 +1695,22 @@ class Indi_Controller_Admin extends Indi_Controller {
             ->applyFromArray([
                 'borders' => [
                     'right' => [
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                         'color' => [
                             'rgb' => 'c5c5c5'
                         ]
                     ]
                 ]
-                ]
+            ]
         );
 
         // Apply last row style (bottom border)
         $objPHPExcel->getActiveSheet()
             ->getStyle('A' . (count($data) + $dataStartAtRowIndex - 1) . ':' . $columnL . (count($data) + $groupQty + $dataStartAtRowIndex - 1))
-            ->applyFromArray(
-            [
+            ->applyFromArray([
                 'borders' => [
                     'bottom' => [
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                         'color' => [
                             'rgb' => 'c5c5c5'
                         ]
@@ -1738,7 +1726,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($columnA as $n => $columnI) {
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the value
                 $value = $summary->{$columnI['dataIndex']};
@@ -1763,20 +1751,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue($columnL . $currentRowIndex, $value);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnL . $currentRowIndex, $value);
 
                 // Set up no-border style
                 if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . (count($data) + $dataStartAtRowIndex - 1 + 1))
                     ->applyFromArray($noBorder)
                     ->applyFromArray([
-                    'borders' => [
-                        'bottom' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => [
-                                'rgb' => 'ffffff'
+                        'borders' => [
+                            'bottom' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => [
+                                    'rgb' => 'ffffff'
+                                ]
                             ]
                         ]
-                    ]
                     ]);
             }
 
@@ -1801,24 +1789,22 @@ class Indi_Controller_Admin extends Indi_Controller {
             'excel' => [
                 'ext' => 'xlsx',
                 'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'writer' => 'Excel2007'
+                'writer' => 'Xlsx'
             ],
             'pdf' => [
                 'ext' => 'pdf',
                 'mime' => 'application/pdf',
                 'writer' => 'PDF_DomPDF',
-                'renderer' => PHPExcel_Settings::PDF_RENDERER_DOMPDF
+                //'renderer' => PHPExcel_Settings::PDF_RENDERER_DOMPDF
             ],
         ];
 
         // Output
         $file = $this->exportFname() . '.' . $formatCfg[$format]['ext'];
+
         if (preg_match('/MSIE/', $_SERVER['HTTP_USER_AGENT'])) $file = iconv('utf-8', 'windows-1251', $file);
         header('Content-Type: ' . $formatCfg[$format]['mime']);
         header('Content-Disposition: attachment; filename="' . $file . '"');
-
-        // Load PHPExcel's IO Factory class
-        require_once 'PHPExcel/IOFactory.php';
 
         // If export format is 'pdf'
         if ($format == 'pdf') {
@@ -1833,8 +1819,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Create writer
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $formatCfg[$format]['writer']);
-
+        $objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, $formatCfg[$format]['writer']);
 
         // Create temporary file
         $tmp = tempnam(ini_get('upload_tmp_dir'), 'xls');

@@ -4,6 +4,7 @@
     "type": "project",
     "require": {
         "php-amqplib/php-amqplib": "2.12.0",
-	"google/cloud-translate": "1.6.0"
+	"google/cloud-translate": "1.6.0",
+        "phpoffice/phpspreadsheet": "^1.21"
     }
 }
