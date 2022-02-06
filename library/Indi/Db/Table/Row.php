@@ -1874,7 +1874,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Get selected row
             // todo: implement proper handling of $selected
-            $selectedR = $relatedM->row('`id` IN (' . $selected . ')');
+            $selectedR = $relatedM->row('`id` IN (' . ($selected ?: 0) . ')');
 
             // Setup current value of a sorting field as start point
             if (!is_array($order) && $order && !preg_match('/[\(,]/', $orderColumn ?: $order))
