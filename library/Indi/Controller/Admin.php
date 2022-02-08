@@ -1326,7 +1326,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                 // Pick hue bg and place it on canvas
-                $iconFn = DOC . STD . '/core/library/extjs4/resources/themes/images/default/grid/sort_' . strtolower($order->direction) . '.gif';
+                $iconFn = DOC . STD . '/core/i/admin/sort_' . strtolower($order->direction) . '.gif';
                 $iconIm = imagecreatefromgif($iconFn);
                 imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
 
@@ -1477,7 +1477,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 //  Add the image to a worksheet
                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                $objDrawing->setPath(DOC . STD . '/core/library/extjs4/resources/themes/images/default/grid/group-collapse.gif');
+                $objDrawing->setPath(DOC . STD . '/core/i/admin/group-collapse.gif');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setOffsetY(10)->setOffsetX(6);
                 $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
