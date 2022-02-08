@@ -398,6 +398,18 @@ class Indi_View {
     }
 
     /**
+     * Alias for assign
+     *
+     * @param $spec
+     * @param null $value
+     * @return $this
+     * @throws Exception
+     */
+    public function set($spec, $value = null) {
+        return $this->assign($spec, $value);
+    }
+
+    /**
      * Processes a view script and returns the output.
      *
      * @param string $name The script name to process.
