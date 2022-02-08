@@ -2458,7 +2458,7 @@ class Indi {
      * @return PHPMailer
      */
     public static function mailer() {
-        $mail = new PHPMailer();
+        $mail = new \PHPMailer\PHPMailer\PHPMailer();
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
         if ($fe = ini('mail')->default->from->email) $mail->From = $fe;
