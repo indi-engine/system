@@ -1794,8 +1794,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'pdf' => [
                 'ext' => 'pdf',
                 'mime' => 'application/pdf',
-                'writer' => 'PDF_DomPDF',
-                //'renderer' => PHPExcel_Settings::PDF_RENDERER_DOMPDF
+                'writer' => 'Mpdf',
             ],
         ];
 
@@ -1806,20 +1805,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         header('Content-Type: ' . $formatCfg[$format]['mime']);
         header('Content-Disposition: attachment; filename="' . $file . '"');
 
-        // If export format is 'pdf'
-        if ($format == 'pdf') {
-
-            // Setup $rName and $rPath
-            $rName = $formatCfg[$format]['renderer'];
-            $rPath = DOC . STD . '/core/library/' . $rName;
-
-            // Try to set up pdf renderer
-            if (!PHPExcel_Settings::setPdfRenderer($rName, $rPath))
-                jflush(false, 'Can\'t set up pdf renderer with such name and/or path');
-        }
-
         // Create writer
         $objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, $formatCfg[$format]['writer']);
+        if ($format == 'pdf') $objWriter->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
 
         // Create temporary file
         $tmp = tempnam(ini_get('upload_tmp_dir'), 'xls');
