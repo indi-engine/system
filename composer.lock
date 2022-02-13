@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0c662957d3857923cbef78147bbc8477",
+    "content-hash": "d72980aa131fbf3a97a49acbbd4907cd",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -1247,6 +1247,30 @@
                 "source": "https://github.com/paragonie/random_compat"
             },
             "time": "2020-10-15T08:29:30+00:00"
+        },
+        {
+            "name": "perminov/ckeditor",
+            "version": "v4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/perminov/ckeditor.git",
+                "reference": "54ab33223e358e279c53c745ea757e96c7d5996a"
+            },
+            "type": "library",
+            "description": "Special version of ckeditor adopted for use with Indi Engine projects having public areas.",
+            "time": "2022-02-13T12:20:35+00:00"
+        },
+        {
+            "name": "perminov/ckfinder",
+            "version": "v2.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/perminov/ckfinder.git",
+                "reference": "d373bafba4e4ce1ceda81fd5e5d2e8b089aba399"
+            },
+            "type": "library",
+            "description": "Special version of ckfinder adopted for use with Indi Engine projects having public areas.",
+            "time": "2022-02-13T13:16:14+00:00"
         },
         {
             "name": "php-amqplib/php-amqplib",
