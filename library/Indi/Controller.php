@@ -113,9 +113,9 @@ class Indi_Controller {
                 $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath);
             }
 
-            // Add script paths for major core part and for front core part
+            // Add script paths for major system part and for front core part
             $view->addScriptPath(DOC . STD . '/coref/' . $spath . $mpath);
-            $view->addScriptPath(DOC . STD . '/core/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . '/system/' . $spath . $mpath);
 
             // If certain project has 'library' dir
             if (is_dir(DOC . STD . '/www/library')) {
@@ -127,9 +127,9 @@ class Indi_Controller {
                 $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
             }
 
-            // Add helper paths for major core part and for front core part
+            // Add helper paths for major system part and for front core part
             $view->addHelperPath(DOC . STD . '/coref/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
-            $view->addHelperPath(DOC . STD . '/core/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . '/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
         }
 
         // Put view object into the registry

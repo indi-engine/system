@@ -4,8 +4,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function restartAction() {
 
         // Get lock file
-        $wsLock = DOC . STD . '/core/application/ws.pid';
-        $wsErr  = DOC . STD . '/core/application/ws.err';
+        $wsLock = DOC . STD . '/system/application/ws.pid';
+        $wsErr  = DOC . STD . '/system/application/ws.err';
 
         // If websocket-server lock-file exists, and contains websocket-server's process ID, and it's an integer
         if (is_file($wsLock) && $wsPid = (int) trim(file_get_contents($wsLock))) {

@@ -339,7 +339,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $prompt = $this->_prompt(I_LANG_IMPORT_HEADER);
 
         // Dirs
-        $dirA = ['adminSystemUi' => 'core', 'adminCustomUi' => 'www', 'adminCustomData' => 'www'];
+        $dirA = ['adminSystemUi' => 'system', 'adminCustomUi' => 'www', 'adminCustomData' => 'www'];
 
         // Dir
         $dir = $dirA[$prompt['fraction']];

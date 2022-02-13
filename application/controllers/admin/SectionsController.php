@@ -13,12 +13,12 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function jsAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/core',
+        // JS-controller files for sections of type 'system' - will be created in '/system',
         // 'often' - in '/coref', 'project' - in '/www', but beware that js-controller files
-        // created for system sections should be moved from /core/js/admin/app/controller
+        // created for system sections should be moved from /system/js/admin/app/controller
         // to Indi Engine system app source code into app/controller folder, and then should be
         // compiled by 'sencha app build --production' command, so that admin/classic/app.js bundle to be refreshed
-        $repoDirA = ['s' => 'core', 'o' => 'coref', 'p' => 'www'];
+        $repoDirA = ['s' => 'system', 'o' => 'coref', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -39,7 +39,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
 
             // Build template model absolute file name
-            $tplAbs = DOC. STD . '/core/js/admin/app/controller/{controller}.js';
+            $tplAbs = DOC. STD . '/system/js/admin/app/controller/{controller}.js';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -69,9 +69,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        // JS-controller files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'coref', 'p' => 'www');
         // 'often' - in '/coref', 'project' - in '/www'
-        $repoDirA = ['s' => 'core', 'o' => 'coref', 'p' => 'www'];
+        $repoDirA = ['s' => 'system', 'o' => 'coref', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -93,7 +93,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'PHP-controller file for that section already exists');
 
         // Build template model absolute file name
-        $tplAbs = DOC. STD . '/core/application/controllers/admin/{controller}.php';
+        $tplAbs = DOC. STD . '/system/application/controllers/admin/{controller}.php';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
         if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -164,7 +164,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         foreach (ar('extendsPhp,extendsJs') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
 
         // Dirs dict by section type
-        $dir = ['s' => 'core', 'p' => 'www', 'o' => 'coref'];
+        $dir = ['s' => 'system', 'p' => 'www', 'o' => 'coref'];
 
         // Foreach data item
         foreach ($data as &$item) {

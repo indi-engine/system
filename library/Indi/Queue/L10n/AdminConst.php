@@ -2,7 +2,7 @@
 class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
 
     /**
-     * Use 'core' for system fraction, or 'www' for custom fraction
+     * Use 'system' for system fraction, or 'www' for custom fraction
      *
      * @var string
      */

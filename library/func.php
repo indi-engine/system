@@ -2715,7 +2715,7 @@ function appjs($dir = '/js/admin') {
  * @param $msg
  */
 function wslog($msg, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/core/application') . '/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+    file_put_contents(($path ?: DOC . STD . '/system/application') . '/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**
@@ -2729,7 +2729,7 @@ function wslog($msg, $path = null) {
  * @param $msg
  */
 function wsmsglog($msg, $logtype, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/core/application') . '/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+    file_put_contents(($path ?: DOC . STD . '/system/application') . '/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**

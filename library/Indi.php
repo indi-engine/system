@@ -1068,12 +1068,12 @@ class Indi {
         $refresh = false;
 
         // Get filename of file, containing modification times for all files that are compiled
-        $mtime = DOC . STD . '/core' . (uri()->module == 'front' ? 'f' : '') . '/' . $rel . '/' . uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . '.mtime';
+        $mtime = DOC . STD . '/' . (uri()->module == 'front' ? 'coref' : 'system') . '/' . $rel . '/' . uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . '.mtime';
 
         // Append mirror files
         $mirrorA = [];
         for($i = 0; $i < count($files); $i++)
-            foreach (ar('core,coref,www') as $place)
+            foreach (ar('system,coref,www') as $place)
                 if (is_file(DOC . STD . '/' . $place . preg_replace('/:[a-zA-Z\.$]+$/', '', $files[$i])))
                     $mirrorA[] = '/' . $place . $files[$i];
 
@@ -1162,7 +1162,7 @@ class Indi {
                     $txt = file_get_contents($file);
                     
                     // Get dir, relative to document root
-                    $dir = pathinfo(preg_replace('~^/(www|coref|core)~', '', $mirrorA[$i]), PATHINFO_DIRNAME);
+                    $dir = pathinfo(preg_replace('~^/(www|coref|system)~', '', $mirrorA[$i]), PATHINFO_DIRNAME);
                     
                     // Convert relative paths, mentioned in css files to paths, relative to web root
                     $txt = preg_replace('!url\((\'|"|)/!', 'url($1' . STD . '/', $txt);
@@ -1203,7 +1203,7 @@ class Indi {
             if ($alias != 'ie') $txt = gzencode($txt, 9);
 
             // Build the filename
-            $gz = DOC . STD . '/core' . (uri()->module == 'front' ? 'f' : '')
+            $gz = DOC . STD . '/' . (uri()->module == 'front' ? 'coref' : 'system')
                 . $rel . '/' . uri()->module . '/indi.all' . ($alias ? '.' . $alias : '') . rif($alias != 'ie', '.gz') .'.' . $ext;
 
             // Refresh compilation file
@@ -2397,14 +2397,14 @@ class Indi {
 
     /**
      * Detect absolute filepath for a relative one, checking
-     * 'www', 'coref' and 'core' folders as places of possible location
+     * 'www', 'coref' and 'system' folders as places of possible location
      *
      * @static
      * @param $src
      * @return string
      */
     public static function abs($src) {
-        foreach (ar('www,coref,core') as $rep)
+        foreach (ar('www,coref,system') as $rep)
             if (file_exists($abs = DOC . STD . '/' . $rep . $src))
                 return $abs;
     }
@@ -2448,7 +2448,7 @@ class Indi {
             $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
 
             // Protocol
-            $prot = is_file(DOC . STD . '/core/application/ws.pem') ? 'wss' : 'ws';
+            $prot = is_file(DOC . STD . '/system/application/ws.pem') ? 'wss' : 'ws';
 
             // Try create client
             try {
@@ -2534,7 +2534,7 @@ class Indi {
         $env = tempnam($dir, 'cmd');
 
         // Prepare command
-        $cmd = ini('general')->phpdir . "php ../core/application/cmd.php $method \"$env\"";
+        $cmd = ini('general')->phpdir . "php ../system/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
         file_put_contents($env, json_encode([

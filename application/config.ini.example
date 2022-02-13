@@ -32,7 +32,7 @@ gapi.key =
 scriptPath = application/views
 
 [upload]
-path = core/data/upload
+path = system/data/upload
 
 [ckeditor]
 key = 

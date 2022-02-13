@@ -120,7 +120,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         session_write_close();
 
         // Get lock file
-        $wsLock = DOC . STD . '/core/application/ws.pid';
+        $wsLock = DOC . STD . '/system/application/ws.pid';
         
         // If websocket-server lock-file exists, and contains websocket-server's process ID, and it's an integer
         if (is_file($wsLock) && $wsPid = (int) trim(file_get_contents($wsLock))) {
@@ -133,10 +133,10 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!is_writable($wsLock)) jflush(false, 'ws.pid file is not writable');
 
         // Check whether err-file is writable
-        if (!is_writable(DOC . STD . '/core/application/ws.err')) jflush(false, 'ws.err file is not writable');
+        if (!is_writable(DOC . STD . '/system/application/ws.err')) jflush(false, 'ws.err file is not writable');
         
         // Path to websocket-server php script
-        $wsServer = '/core/application/ws.php';
+        $wsServer = '/system/application/ws.php';
         
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)

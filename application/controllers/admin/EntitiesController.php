@@ -6,9 +6,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // PHP class files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        // PHP class files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'coref', 'p' => 'www');
         // 'often' - in '/coref', 'project' - in '/www'
-        $repositoryDirA = ['y' => 'core', 'o' => 'coref', 'n' => 'www'];
+        $repositoryDirA = ['y' => 'system', 'o' => 'coref', 'n' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->system, array_keys($repositoryDirA)))
@@ -29,7 +29,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelFn = $dir . '/' . $model . '.php')) {
 
             // Build template model file name
-            $tplModelFn = DOC. STD . '/core/application/models/{Model}.php';
+            $tplModelFn = DOC. STD . '/system/application/models/{Model}.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplModelFn)) jflush(false, 'No template-model file found');
@@ -60,7 +60,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelRowFn = $dir . '/' . $model . '/Row.php')) {
 
             // Build template model's rowClass file name
-            $tplModelRowFn = DOC. STD . '/core/application/models/{Model}/Row.php';
+            $tplModelRowFn = DOC. STD . '/system/application/models/{Model}/Row.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model's rowClass file
             if (!is_file($tplModelRowFn)) jflush(false, 'No template file for model\'s rowClass found');

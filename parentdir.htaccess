@@ -44,19 +44,19 @@ SetEnvIf REQUEST_URI "((/[^\/]+){2})(/.*)" L2=$1 URI2=$3
 SetEnvIf REQUEST_URI "((/[^\/]+){3})(/.*)" L3=$1 URI3=$3
 
 # Check each level to detect
-RewriteCond %{DOCUMENT_ROOT}/core -d 
+RewriteCond %{DOCUMENT_ROOT}/system -d
 RewriteRule .* - [E=URI:%{REQUEST_URI}]
 
 RewriteCond %{ENV:URI} ^$
-RewriteCond %{DOCUMENT_ROOT}%{ENV:L1}/core -d 
+RewriteCond %{DOCUMENT_ROOT}%{ENV:L1}/system -d
 RewriteRule .* - [E=STD:%{ENV:L1},E=URI:%{ENV:URI1}]
 
 RewriteCond %{ENV:URI} ^$
-RewriteCond %{DOCUMENT_ROOT}%{ENV:L2}/core -d 
+RewriteCond %{DOCUMENT_ROOT}%{ENV:L2}/system -d
 RewriteRule .* - [E=STD:%{ENV:L2},E=URI:%{ENV:URI2}]
 
 RewriteCond %{ENV:URI} ^$
-RewriteCond %{DOCUMENT_ROOT}%{ENV:L3}/core -d 
+RewriteCond %{DOCUMENT_ROOT}%{ENV:L3}/system -d
 RewriteRule .* - [E=STD:%{ENV:L3},E=URI:%{ENV:URI3}]
 
 RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/www%{ENV:URI} -f
@@ -65,8 +65,8 @@ RewriteRule .* www%{ENV:URI} [L]
 RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/coref%{ENV:URI} -f
 RewriteRule .* coref%{ENV:URI} [L]
 
-RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/core%{ENV:URI} -f
-RewriteRule .* core%{ENV:URI} [L]
+RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/system%{ENV:URI} -f
+RewriteRule .* system%{ENV:URI} [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} resources|classic
@@ -74,11 +74,11 @@ RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/admin -d
 RewriteRule .* admin%{ENV:URI} [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule \.(jpg|jpeg|png|gif|css|js|ico|txt)$ core/application/static404.php
+RewriteRule \.(jpg|jpeg|png|gif|css|js|ico|txt)$ system/application/static404.php
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/www/index.php -f
 RewriteRule .* www/index.php [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule .* core/index.php [L]
+RewriteRule .* system/index.php [L]

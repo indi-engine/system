@@ -7,7 +7,7 @@ class Indi_Uri_Base {
     public function __construct() {
 
         // Include l10n constants
-        foreach (ar('www,coref,core') as $fraction)
+        foreach (ar('www,coref,system') as $fraction)
             foreach (['', '/admin'] as $_)
                 if (file_exists($file = DOC . STD . '/'. $fraction . '/application/lang' . $_ . '/' . ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
                     include_once($file);
@@ -145,7 +145,7 @@ class Indi_Uri_Base {
         session_start();
 
         // Set current language
-        @include_once(DOC . STD . '/core/application/lang/admin/' . ini('lang')->admin . '.php');
+        @include_once(DOC . STD . '/system/application/lang/admin/' . ini('lang')->admin . '.php');
         @include_once(DOC . STD . '/www/application/lang/admin/' . ini('lang')->admin . '.php');
     }
 
