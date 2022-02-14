@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d72980aa131fbf3a97a49acbbd4907cd",
+    "content-hash": "ba1e0a4cd3f79c579982cd28ff6c1a4f",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -1253,30 +1253,6 @@
             "time": "2020-10-15T08:29:30+00:00"
         },
         {
-            "name": "perminov/ckeditor",
-            "version": "v4.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/perminov/ckeditor.git",
-                "reference": "54ab33223e358e279c53c745ea757e96c7d5996a"
-            },
-            "type": "library",
-            "description": "Special version of ckeditor adopted for use with Indi Engine projects having public areas.",
-            "time": "2022-02-13T12:20:35+00:00"
-        },
-        {
-            "name": "perminov/ckfinder",
-            "version": "v2.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/perminov/ckfinder.git",
-                "reference": "d373bafba4e4ce1ceda81fd5e5d2e8b089aba399"
-            },
-            "type": "library",
-            "description": "Special version of ckfinder adopted for use with Indi Engine projects having public areas.",
-            "time": "2022-02-13T13:16:14+00:00"
-        },
-        {
             "name": "php-amqplib/php-amqplib",
             "version": "v2.12.0",
             "source": {
@@ -2302,5 +2278,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.1.0"
 }

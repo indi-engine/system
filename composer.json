@@ -15,8 +15,6 @@
         "phpoffice/phpspreadsheet": "^1.21",
         "phpoffice/phpword": "^0.18.2",
         "phpmailer/phpmailer": "^6.5",
-        "mpdf/mpdf": "^8.0",
-        "perminov/ckeditor": "^4.1",
-        "perminov/ckfinder": "^2.3"
+        "mpdf/mpdf": "^8.0"
     }
 }
