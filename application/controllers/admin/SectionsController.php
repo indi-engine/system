@@ -14,11 +14,11 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function jsAction() {
 
         // JS-controller files for sections of type 'system' - will be created in '/system',
-        // 'often' - in '/coref', 'project' - in '/www', but beware that js-controller files
+        // 'often' - in '/public', 'project' - in '/www', but beware that js-controller files
         // created for system sections should be moved from /system/js/admin/app/controller
         // to Indi Engine system app source code into app/controller folder, and then should be
         // compiled by 'sencha app build --production' command, so that admin/classic/app.js bundle to be refreshed
-        $repoDirA = ['s' => 'system', 'o' => 'coref', 'p' => 'www'];
+        $repoDirA = ['s' => 'system', 'o' => 'public', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -69,9 +69,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
-        $repoDirA = ['s' => 'system', 'o' => 'coref', 'p' => 'www'];
+        // JS-controller files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'public', 'p' => 'www');
+        // 'often' - in '/public', 'project' - in '/www'
+        $repoDirA = ['s' => 'system', 'o' => 'public', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -164,7 +164,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         foreach (ar('extendsPhp,extendsJs') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
 
         // Dirs dict by section type
-        $dir = ['s' => 'system', 'p' => 'www', 'o' => 'coref'];
+        $dir = ['s' => 'system', 'p' => 'www', 'o' => 'public'];
 
         // Foreach data item
         foreach ($data as &$item) {

@@ -49,7 +49,7 @@ define('APP', array_key_exists('HTTP_INDI_AUTH', $_SERVER));
 
 // Set include path. Here we add more include paths, in case if some stuff is related to front module only,
 // but required to be available in admin module.
-$dirs = ['../www/', (COM || preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI) ? '' : '../coref/'), '../system/'];
+$dirs = ['../www/', (COM || preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI) ? '' : '../public/'), '../system/'];
 $subs = ['library', 'application/controllers', 'application/models']; $p = PATH_SEPARATOR;
 foreach($dirs as $d) if ($d) foreach($subs as $s) $inc[] = $d . $s; $inc[] = get_include_path();
 set_include_path(implode($p, $inc));

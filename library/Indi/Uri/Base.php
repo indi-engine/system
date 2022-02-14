@@ -7,7 +7,7 @@ class Indi_Uri_Base {
     public function __construct() {
 
         // Include l10n constants
-        foreach (ar('www,coref,system') as $fraction)
+        foreach (ar('www,public,system') as $fraction)
             foreach (['', '/admin'] as $_)
                 if (file_exists($file = DOC . STD . '/'. $fraction . '/application/lang' . $_ . '/' . ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
                     include_once($file);

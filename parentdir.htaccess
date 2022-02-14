@@ -62,8 +62,8 @@ RewriteRule .* - [E=STD:%{ENV:L3},E=URI:%{ENV:URI3}]
 RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/www%{ENV:URI} -f
 RewriteRule .* www%{ENV:URI} [L]
 
-RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/coref%{ENV:URI} -f
-RewriteRule .* coref%{ENV:URI} [L]
+RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/public%{ENV:URI} -f
+RewriteRule .* public%{ENV:URI} [L]
 
 RewriteCond %{DOCUMENT_ROOT}%{ENV:STD}/system%{ENV:URI} -f
 RewriteRule .* system%{ENV:URI} [L]

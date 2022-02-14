@@ -114,7 +114,7 @@ class Indi_Controller {
             }
 
             // Add script paths for major system part and for front core part
-            $view->addScriptPath(DOC . STD . '/coref/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . '/public/' . $spath . $mpath);
             $view->addScriptPath(DOC . STD . '/system/' . $spath . $mpath);
 
             // If certain project has 'library' dir
@@ -128,7 +128,7 @@ class Indi_Controller {
             }
 
             // Add helper paths for major system part and for front core part
-            $view->addHelperPath(DOC . STD . '/coref/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . '/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
             $view->addHelperPath(DOC . STD . '/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
         }
 

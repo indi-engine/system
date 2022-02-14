@@ -6,9 +6,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // PHP class files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
-        $repositoryDirA = ['y' => 'system', 'o' => 'coref', 'n' => 'www'];
+        // PHP class files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'public', 'p' => 'www');
+        // 'often' - in '/public', 'project' - in '/www'
+        $repositoryDirA = ['y' => 'system', 'o' => 'public', 'n' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->system, array_keys($repositoryDirA)))
