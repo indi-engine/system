@@ -2190,8 +2190,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'logo' => ini('general')->logo
                     ]);
 
-                // Else if '/admin' folder exists and contains Indi standalone client app
-                } else if (file_exists($client = DOC . STD . '/admin/index.html') && !isset(Indi::get()->classic)) {
+                // Else if '/client' folder exists and contains Indi standalone client app
+                } else if (file_exists($client = DOC . STD . '/client/index.html') && !isset(Indi::get()->classic)) {
 
                     // Flush client app's bootstrap file
                     iexit(readfile($client));
@@ -2369,8 +2369,8 @@ class Indi_Controller_Admin extends Indi_Controller {
             // If request was made via Indi Engine client app - flush info right now
             if (APP) jflush(true, $info);
 
-            // Else if '/admin' folder exists and contains Indi standalone client app
-            else if (file_exists($client = DOC . STD . '/admin/index.html') && !isset(Indi::get()->classic))
+            // Else if '/client' folder exists and contains Indi standalone client app
+            else if (file_exists($client = DOC . STD . '/client/index.html') && !isset(Indi::get()->classic))
 
                 // Flush client app's bootstrap file
                 iexit(readfile($client));

@@ -2,7 +2,7 @@
 class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
     /**
-     * Contents of admin/classic/app.js for checking js-controllers files presence
+     * Contents of client/classic/app.js for checking js-controllers files presence
      *
      * @var string
      */
@@ -17,7 +17,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // 'often' - in '/public', 'project' - in '/www', but beware that js-controller files
         // created for system sections should be moved from /system/js/admin/app/controller
         // to Indi Engine system app source code into app/controller folder, and then should be
-        // compiled by 'sencha app build --production' command, so that admin/classic/app.js bundle to be refreshed
+        // compiled by 'sencha app build --production' command, so that client/classic/app.js bundle to be refreshed
         $repoDirA = ['s' => 'system', 'o' => 'public', 'p' => 'www'];
 
         // If current section has a type, that is (for some reason) not in the list of known types
@@ -225,7 +225,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             } else {
 
                 // If system app js is not yet set up - do it
-                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/admin/classic/app.js');
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/client/classic/app.js');
 
                 // If js-controller file exists
                 if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
