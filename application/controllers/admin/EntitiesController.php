@@ -6,18 +6,24 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // PHP class files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'public', 'p' => 'www');
-        // 'often' - in '/public', 'project' - in '/www'
-        $repositoryDirA = ['y' => 'system', 'o' => 'public', 'n' => 'www'];
+        // PHP class files for entities of fraction:
+        // - 'system' - will be created in '/vendor/perminov/system',
+        // - 'public' -                 in '/vendor/perminov/public',
+        // - 'custom' -                 in ''
+        $repoDirA = [
+            'y' => '/vendor/perminov/system',
+            'o' => '/vendor/perminov/public',
+            'n' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
-        if (!in($this->row->system, array_keys($repositoryDirA)))
+        if (!in($this->row->system, array_keys($repoDirA)))
 
             // Flush an error
             jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen entity');
 
         // Build the dir name, that model's php-file will be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repositoryDirA[$this->row->system] . '/application/models/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->system] . '/application/models/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -29,7 +35,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelFn = $dir . '/' . $model . '.php')) {
 
             // Build template model file name
-            $tplModelFn = DOC. STD . '/system/application/models/{Model}.php';
+            $tplModelFn = DOC. STD . '/vendor/perminov/system/application/models/{Model}.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplModelFn)) jflush(false, 'No template-model file found');
@@ -60,7 +66,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelRowFn = $dir . '/' . $model . '/Row.php')) {
 
             // Build template model's rowClass file name
-            $tplModelRowFn = DOC. STD . '/system/application/models/{Model}/Row.php';
+            $tplModelRowFn = DOC. STD . '/vendor/perminov/system/application/models/{Model}/Row.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model's rowClass file
             if (!is_file($tplModelRowFn)) jflush(false, 'No template file for model\'s rowClass found');

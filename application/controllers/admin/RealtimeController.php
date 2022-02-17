@@ -4,21 +4,21 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function restartAction() {
 
         // Get lock file
-        $wsLock = DOC . STD . '/system/application/ws.pid';
-        $wsErr  = DOC . STD . '/system/application/ws.err';
+        $wsLock = DOC . STD . '/application/ws.pid';
+        $wsErr  = DOC . STD . '/application/ws.err';
 
         // If websocket-server lock-file exists, and contains websocket-server's process ID, and it's an integer
         if (is_file($wsLock) && $wsPid = (int) trim(file_get_contents($wsLock))) {
 
-            // If such process is found - flush msg and exit
+            // If such process is found
             if (checkpid($wsPid)) {
 
-                // Build websocket startup cmd
+                // Build websocket server kill cmd
                 $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
                     ? sprintf('taskkill /f /PID  %s 2>&1', $wsPid)
                     : sprintf('kill -9 %s', $wsPid);
 
-                // Start websocket server
+                // Kill websocket server
                 wslog('------------------------------');
                 wslog('Exec: ' . $result['cmd']);
                 exec($result['cmd'], $result['output'], $result['return']);

@@ -49,16 +49,16 @@ define('APP', array_key_exists('HTTP_INDI_AUTH', $_SERVER));
 
 // Set include path. Here we add more include paths, in case if some stuff is related to front module only,
 // but required to be available in admin module.
-$dirs = ['../www/', (COM || preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI) ? '' : '../public/'), '../system/'];
+$dirs = ['', 'vendor/perminov/system/'];
+if (!COM && !preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI))
+    array_splice($dirs, 1, 0, 'vendor/perminov/public/');
+
 $subs = ['library', 'application/controllers', 'application/models']; $p = PATH_SEPARATOR;
-foreach($dirs as $d) if ($d) foreach($subs as $s) $inc[] = $d . $s; $inc[] = get_include_path();
+foreach($dirs as $d) foreach($subs as $s) $inc[] = $d . $s; $inc[] = get_include_path();
 set_include_path(implode($p, $inc));
 
 // Load misc functions
 require('func.php');
-
-// Require vendor
-if (file_exists('vendor/autoload.php')) require_once('vendor/autoload.php');
 
 // Register autoloader
 spl_autoload_register('autoloader');

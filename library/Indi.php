@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once rtrim(__DIR__, '\\/') . '/../../../autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -2534,7 +2534,7 @@ class Indi {
         $env = tempnam($dir, 'cmd');
 
         // Prepare command
-        $cmd = ini('general')->phpdir . "php ../system/application/cmd.php $method \"$env\"";
+        $cmd = ini('general')->phpdir . "php vendor/perminov/system/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
         file_put_contents($env, json_encode([

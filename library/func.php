@@ -1,7 +1,8 @@
 <?php
 /**
  * Autoloader function. Here we provide an ability for classes to be loaded from 'public', if they are used in admin module,
- * so all classes located in public/application/controller/admin, and public/Indi/Controller/Admin will be loaded if need
+ * so all classes located in vendor/perminov/public/application/controller/admin,
+ * and vendor/perminov/public/Indi/Controller/Admin will be loaded if need
  *
  * @param $class
  */
@@ -23,16 +24,16 @@ function autoloader($class) {
             if (preg_match('/^Indi_Controller_Admin_([a-zA-Z]*)$/', $class, $l))
 
                 // Prepend an appropriate dir to filename
-                $cf = '../public/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
+                $cf = '../vendor/perminov/public/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
 
             // Else if $class is an admin module controller
             else if (is_array($c) && count($c)) {
 
                 // Prepend an appropriate dir to filename
-                $cf = '../public/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
+                $cf = '../vendor/perminov/public/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
 
             // Else if $class is some other class, we assume it's a model class
-            } else $cf = '../public/application/models/' . $cf;
+            } else $cf = '../vendor/perminov/public/application/models/' . $cf;
 
             // Include class file
             @include_once($cf);
@@ -136,13 +137,15 @@ function i($value, $type = 'w', $file = 'debug.txt') {
     $doc = rtrim($_SERVER['DOCUMENT_ROOT'], '\\/');
 
     // Get the array of directory branches, from current directory and up to the document root (non-inclusive)
-    $dir = explode('/', substr(str_replace('\\', '/', __DIR__), strlen($doc)));
+    $dir = substr(str_replace('\\', '/', __DIR__), strlen($doc));
+    $dir = substr($dir, strlen('/vendor/perminov/system'));
+    $dir = explode('/', $dir);
 
     // Get the STD path, if project run not from the document root, but from some-level subdirectory of document root
     $std = implode('/', array_slice($dir, 0, count($dir) -2));
 
     // Get the absolute path of a file, that will be used for writing data to
-    $abs = $doc . $std. '/www/' . $file;
+    $abs = $doc . $std. '/' . $file;
 
     // Renew the $dir, where we assume that output file is/will be located
     // Here we do not use existing $dir value, because $file arg can be
@@ -2714,8 +2717,8 @@ function appjs($dir = '/js/admin') {
  *
  * @param $msg
  */
-function wslog($msg, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/system/application') . '/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+function wslog($msg) {
+    file_put_contents(rtrim(__DIR__, '\\/') . '/../../../../application/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**
@@ -2729,7 +2732,7 @@ function wslog($msg, $path = null) {
  * @param $msg
  */
 function wsmsglog($msg, $logtype, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/system/application') . '/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+    file_put_contents(rtrim(__DIR__, '\\/') . '/../../../../application/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**

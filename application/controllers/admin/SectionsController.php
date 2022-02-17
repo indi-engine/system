@@ -2,7 +2,7 @@
 class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
     /**
-     * Contents of client/classic/app.js for checking js-controllers files presence
+     * Contents of vendor/perminov/client/classic/app.js for checking js-controllers files presence
      *
      * @var string
      */
@@ -13,12 +13,19 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function jsAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/system',
-        // 'often' - in '/public', 'project' - in '/www', but beware that js-controller files
-        // created for system sections should be moved from /system/js/admin/app/controller
-        // to Indi Engine system app source code into app/controller folder, and then should be
-        // compiled by 'sencha app build --production' command, so that client/classic/app.js bundle to be refreshed
-        $repoDirA = ['s' => 'system', 'o' => 'public', 'p' => 'www'];
+        // JS-controller files for sections of fraction:
+        // - 'system' - will be created in '/vendor/perminov/system',
+        // - 'public' -                 in '/vendor/perminov/public',
+        // - 'custom' -                 in '',
+        // but beware that js-controller files created for system sections should be moved from
+        // /vendor/perminov/system/js/admin/app/controller to Indi Engine client app source code
+        // into /vendor/perminov/client-dev/app/controller folder, and then should be compiled
+        // by 'sencha app build --production' command to /vendor/perminov/client/classic/app.js bundle to be refreshed
+        $repoDirA = [
+            's' => '/vendor/perminov/system',
+            'o' => '/vendor/perminov/public',
+            'p' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -27,7 +34,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'Can\'t detect fraction of selected section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -39,7 +46,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
 
             // Build template model absolute file name
-            $tplAbs = DOC. STD . '/system/js/admin/app/controller/{controller}.js';
+            $tplAbs = DOC. STD . '/vendor/perminov/system/js/admin/app/controller/{controller}.js';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -69,9 +76,15 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/system',                                                          //$repositoryDirA = array('s' => 'system', 'o' => 'public', 'p' => 'www');
-        // 'often' - in '/public', 'project' - in '/www'
-        $repoDirA = ['s' => 'system', 'o' => 'public', 'p' => 'www'];
+        // JS-controller files for sections of fraction:
+        // - 'system' - will be created in '/vendor/perminov/system',
+        // - 'often'                    in '/vendor/perminov/public',
+        // - 'project'                  in ''
+        $repoDirA = [
+            's' => '/vendor/perminov/system',
+            'o' => '/vendor/perminov/public',
+            'p' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -80,7 +93,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repoDirA[$this->row->type] . '/application/controllers/admin/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/application/controllers/admin/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -93,7 +106,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'PHP-controller file for that section already exists');
 
         // Build template model absolute file name
-        $tplAbs = DOC. STD . '/system/application/controllers/admin/{controller}.php';
+        $tplAbs = DOC. STD . '/vendor/perminov/system/application/controllers/admin/{controller}.php';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
         if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -163,8 +176,12 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Get default values
         foreach (ar('extendsPhp,extendsJs') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
 
-        // Dirs dict by section type
-        $dir = ['s' => 'system', 'p' => 'www', 'o' => 'public'];
+        // Dirs dict by section fraction
+        $dir = [
+            's' => '/vendor/perminov/system',
+            'o' => '/vendor/perminov/public',
+            'p' => ''
+        ];
 
         // Foreach data item
         foreach ($data as &$item) {
@@ -201,7 +218,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             if ($item['$keys']['type'] != 's') {
 
                 // Get js-controller file name
-                $js = DOC . STD . '/' . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+                $js = DOC . STD . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
                 // If js-controller file exists
                 if (file_exists($js)) {
@@ -225,7 +242,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             } else {
 
                 // If system app js is not yet set up - do it
-                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/client/classic/app.js');
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/vendor/perminov/client/classic/app.js');
 
                 // If js-controller file exists
                 if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {

@@ -473,7 +473,7 @@ class Indi_View {
         }
 
         $message = "script '$name' not found in path ("
-                 . implode(PATH_SEPARATOR, $this->_path['script'])
+                 . var_export($this->_path['script'], true)
                  . ")";
         $e = new Exception($message);
         throw $e;

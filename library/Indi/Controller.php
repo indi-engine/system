@@ -51,7 +51,7 @@ class Indi_Controller {
         if (count((array) ini()->design) > 1) {
 
             // Views dir shortcut
-            $dir = DOC . STD . '/www/application/views/';
+            $dir = DOC . STD . '/application/views/';
 
             // Build tpl for current action within current section
             $actionTpl = uri('section') . '/' . uri('action');
@@ -104,32 +104,32 @@ class Indi_Controller {
             $mhcp =   !$i ? ucfirst(uri('module')) . '_' : '';
 
             // Add script paths for certain/current project
-            if (is_dir(DOC . STD . '/www/' . $spath)) {
+            if (is_dir(DOC . STD . '/' . $spath)) {
 
                 // Add design-specific script path
-                if (ini()->design) $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath . '/' . ini()->design);
+                if (ini()->design) $view->addScriptPath(DOC . STD . '/' . $spath . $mpath . '/' . ini()->design);
 
                 // Add general script path
-                $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath);
+                $view->addScriptPath(DOC . STD . '/' . $spath . $mpath);
             }
 
             // Add script paths for major system part and for front core part
-            $view->addScriptPath(DOC . STD . '/public/' . $spath . $mpath);
-            $view->addScriptPath(DOC . STD . '/system/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . '/vendor/perminov/public/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . '/vendor/perminov/system/' . $spath . $mpath);
 
             // If certain project has 'library' dir
-            if (is_dir(DOC . STD . '/www/library')) {
+            if (is_dir(DOC . STD . '/library')) {
 
                 // Add design-specific helper path
-                if (ini()->design) $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp . '/' . ini()->design, 'Project_View_Helper_'. $mhcp);
+                if (ini()->design) $view->addHelperPath(DOC . STD . '/library/Project/View/Helper' . $mhpp . '/' . ini()->design, 'Project_View_Helper_'. $mhcp);
 
                 // Add default helper path
-                $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
+                $view->addHelperPath(DOC . STD . '/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
             }
 
             // Add helper paths for major system part and for front core part
-            $view->addHelperPath(DOC . STD . '/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
-            $view->addHelperPath(DOC . STD . '/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . '/vendor/perminov/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . '/vendor/perminov/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
         }
 
         // Put view object into the registry

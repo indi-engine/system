@@ -1041,17 +1041,17 @@ class Indi_Controller_Admin extends Indi_Controller {
                     imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                     // Pick hue bg and place it on canvas
-                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/system/i/admin/i-color-slider-bg.png';
+                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-bg.png';
                     $hueIm = imagecreatefrompng($hueFn);
                     imagecopy($canvasIm, $hueIm, 7, 2, 0, 0, 183, 11);
 
                     // Pick first thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/system/i/admin/i-color-slider-thumb-first.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-thumb-first.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][0]), 0, 0, 0, 15, 15);
 
                     // Pick last thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/system/i/admin/i-color-slider-thumb-last.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-thumb-last.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][1]), 0, 0, 0, 15, 15);
 
@@ -1326,7 +1326,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                 // Pick hue bg and place it on canvas
-                $iconFn = DOC . STD . '/system/i/admin/sort_' . strtolower($order->direction) . '.gif';
+                $iconFn = DOC . STD . '/vendor/perminov/system/i/admin/sort_' . strtolower($order->direction) . '.gif';
                 $iconIm = imagecreatefromgif($iconFn);
                 imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
 
@@ -1477,7 +1477,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 //  Add the image to a worksheet
                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                $objDrawing->setPath(DOC . STD . '/system/i/admin/group-collapse.gif');
+                $objDrawing->setPath(DOC . STD . '/vendor/perminov/system/i/admin/group-collapse.gif');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setOffsetY(10)->setOffsetX(6);
                 $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
@@ -2191,7 +2191,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     ]);
 
                 // Else if '/client' folder exists and contains Indi standalone client app
-                } else if (file_exists($client = DOC . STD . '/client/index.html') && !isset(Indi::get()->classic)) {
+                } else if (file_exists($client = DOC . STD . '/vendor/perminov/client/index.html') && !isset(Indi::get()->classic)) {
 
                     // Flush client app's bootstrap file
                     iexit(readfile($client));
@@ -2370,7 +2370,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if (APP) jflush(true, $info);
 
             // Else if '/client' folder exists and contains Indi standalone client app
-            else if (file_exists($client = DOC . STD . '/client/index.html') && !isset(Indi::get()->classic))
+            else if (file_exists($client = DOC . STD . '/vendor/perminov/client/index.html') && !isset(Indi::get()->classic))
 
                 // Flush client app's bootstrap file
                 iexit(readfile($client));
@@ -2449,7 +2449,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'uri' => uri()->toArray(),
             'time' => time(),
             'ini' => [
-                'ws' => array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/system/application/ws.pem')]),
+                'ws' => array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/application/ws.pem')]),
                 'demo' => Indi::demo(false)
             ],
             'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
@@ -3754,10 +3754,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             $langI['const'] = [];
 
             // Foreach dir
-            foreach (ar('system,www') as $dir) {
+            foreach (['', '/vendor/perminov/system'] as $dir) {
 
                 // Build filename of a php-file, containing l10n constants
-                $l10n_file = DOC . STD . '/' . $dir . '/application/lang/admin/' . $langI['alias'] . '.php';
+                $l10n_file = DOC . STD . $dir . '/application/lang/admin/' . $langI['alias'] . '.php';
 
                 // If no file - skip
                 if (!file_exists($l10n_file)) continue;

@@ -2,6 +2,13 @@
 // Set error reporting
 error_reporting(version_compare(PHP_VERSION, '5.4.0', 'ge') ? E_ALL ^ E_NOTICE ^ E_STRICT : E_ALL ^ E_NOTICE);
 
+// Define project document root
+define('DOC', rtrim(__DIR__, '\\/') . '/../../../..');
+
+// Define paths to pid and run files
+define('PID', DOC . '/application/ws.pid');
+define('RUN', DOC . '/application/ws.run');
+
 // Change dir
 chdir(__DIR__);
 
@@ -9,10 +16,10 @@ chdir(__DIR__);
 include '../library/func.php';
 
 // Log that execution reached ws.php
-wslog('mypid: ' . getmypid() . ', ' . 'Reached ws.php', __DIR__);
+wslog('mypid: ' . getmypid() . ', ' . 'Reached ws.php');
 
 // Require autoload.php
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once DOC . '/vendor/autoload.php';
 
 // Declare PhpAmqLib usage
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -32,7 +39,7 @@ function err($msg = null, $exit = false) {
 
     // Log errors
     if (func_num_args() >= 4) err(func_get_arg(1) . '[' . func_get_arg(0) . '] at ' . func_get_arg(2) . ' on line ' . func_get_arg(3));
-    else file_put_contents(rtrim(__DIR__, '\\/') . '/' . 'ws.err', date('Y-m-d H:i:s => ') . 'mypid: ' . getmypid() . ', ' . print_r($msg, true) . "\n", FILE_APPEND);
+    else file_put_contents(DOC . '/application/ws.err', date('Y-m-d H:i:s => ') . 'mypid: ' . getmypid() . ', ' . print_r($msg, true) . "\n", FILE_APPEND);
 
     // Exit
     if ($exit === true) exit;
@@ -50,7 +57,7 @@ function logd($data) {
 
     // Do log, with millisecond-precise timestamp
     file_put_contents(
-        rtrim(__DIR__, '\\/') . '/' . 'ws.' . getmypid(). '.data',
+        DOC . '/application/ws.' . getmypid(). '.data',
         date('Y-m-d H:i:s') . substr(explode(' ', microtime())[0], 1, 4) . ' => ' . $data . "\n",
         FILE_APPEND
     );
@@ -81,7 +88,7 @@ register_shutdown_function('shutdown');
 set_error_handler('err');
 
 // Do some checks for ini-file
-if (!is_file($ini = '../../www/application/config.ini')) err('No ini-file found', true);
+if (!is_file($ini = DOC . '/application/config.ini')) err('No ini-file found', true);
 if (!$ini = parse_ini_file($ini, true)) err('Ini-file found but parsing failed', true);
 if (!array_key_exists('ws', $ini)) err('No [ws] section found in ini-file', true);
 
@@ -100,10 +107,10 @@ if (!array_key_exists('port', $ini)) err('No socket port specified in ini-file',
 if (!$port = (int) $ini['port']) err('Invalid socket port specified in ini-file', true);
 
 // If last execution of ws.php was initiated less than 5 seconds ago - prevent duplicate
-if (file_exists('ws.run') && strtotime(date('Y-m-d H:i:s')) >= strtotime(file_get_contents('ws.run')) + 5)
-    unlink('ws.run');
+if (file_exists(RUN) && strtotime(date('Y-m-d H:i:s')) >= strtotime(file_get_contents(RUN)) + 5)
+    unlink(RUN);
 
-if ($run = @fopen('ws.run', 'x')) {
+if ($run = @fopen(RUN, 'x')) {
     fwrite($run, date('Y-m-d H:i:s'));
     fclose($run);
     err('First instance');
@@ -112,10 +119,10 @@ if ($run = @fopen('ws.run', 'x')) {
 }
 
 // If ws.pid file exists
-if (file_exists('ws.pid'))
+if (file_exists(PID))
 
     // If it contains PID of process
-    if ($PID = trim(file_get_contents('ws.pid'))) {
+    if ($PID = trim(file_get_contents(PID))) {
 
         // If process having such PID still running
         if (checkpid($PID)) {
@@ -127,7 +134,7 @@ if (file_exists('ws.pid'))
         }  else {
 
             // Backup PID value and truncate ws.pid
-            $wasPID = $PID; file_put_contents('ws.pid', $PID = '');
+            $wasPID = $PID; file_put_contents(PID, $PID = '');
 
             // Log that before going further
             err('ws.pid: ' . $wasPID . ' => proc not found => truncated. mypid => going further');
@@ -137,7 +144,7 @@ if (file_exists('ws.pid'))
     } else err('ws.pid: truncated. mypid => going further');
 
 // Open pid-file
-$pid = fopen('ws.pid', 'c');
+$pid = fopen(PID, 'c');
 
 // Try to lock pid-file
 $flock = flock($pid, LOCK_SH | LOCK_EX | LOCK_NB, $wouldblock);
@@ -292,7 +299,7 @@ while (true) {
                 curl_exec($ch); curl_close($ch);
 
                 // Log
-                if ($ini['log']) logd('?newtab done: ' . $index);
+                if ($ini['log']) logd('?newtab done: ' . $index . ' => ' . $info['Origin'] . $pathA[$index] . '/realtime/?newtab');
             }
         }
 
