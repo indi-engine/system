@@ -46,7 +46,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
 
             // Build template model absolute file name
-            $tplAbs = DOC. STD . '/vendor/perminov/system/js/admin/app/controller/{controller}.js';
+            $tplAbs = DOC. STD . '/vendor/perminov/client/classic/resources/{controller}.js';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
