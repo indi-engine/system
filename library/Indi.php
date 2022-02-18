@@ -2534,7 +2534,7 @@ class Indi {
         $env = tempnam($dir, 'cmd');
 
         // Prepare command
-        $cmd = ini('general')->phpdir . "php vendor/perminov/system/application/cmd.php $method \"$env\"";
+        $cmd = ini('general')->phpdir . "php " . lrim(VDR, '/') . "/system/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
         file_put_contents($env, json_encode([

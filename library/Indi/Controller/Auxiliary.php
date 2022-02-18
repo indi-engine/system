@@ -136,7 +136,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!is_writable(DOC . STD . '/application/ws.err')) jflush(false, 'ws.err file is not writable');
         
         // Path to websocket-server php script
-        $wsServer = 'vendor/perminov/system/application/ws.php';
+        $wsServer = ltrim(VDR, '/') . '/system/application/ws.php';
         
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
@@ -172,7 +172,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
 
         // Check whether `lang` uri-param is given
         $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', uri()->lang))
-            ? '/vendor/perminov/client/classic/resources/locale/' . $lang
+            ? VDR . '/client/classic/resources/locale/' . $lang
             : '/js/admin/app/proxy,/js/admin/app/data,/js/admin/app/lib,/js/admin/app/controller';
 
         // Flush

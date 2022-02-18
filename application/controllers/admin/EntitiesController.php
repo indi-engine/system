@@ -7,12 +7,12 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     public function phpAction() {
 
         // PHP class files for entities of fraction:
-        // - 'system' - will be created in '/vendor/perminov/system',
-        // - 'public' -                 in '/vendor/perminov/public',
+        // - 'system' - will be created in VDR . '/system',
+        // - 'public' -                 in VDR . '/public',
         // - 'custom' -                 in ''
         $repoDirA = [
-            'y' => '/vendor/perminov/system',
-            'o' => '/vendor/perminov/public',
+            'y' => VDR . '/system',
+            'o' => VDR . '/public',
             'n' => ''
         ];
 
@@ -35,7 +35,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelFn = $dir . '/' . $model . '.php')) {
 
             // Build template model file name
-            $tplModelFn = DOC. STD . '/vendor/perminov/system/application/models/{Model}.php';
+            $tplModelFn = DOC. STD . VDR . '/system/application/models/{Model}.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplModelFn)) jflush(false, 'No template-model file found');
@@ -66,7 +66,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_file($modelRowFn = $dir . '/' . $model . '/Row.php')) {
 
             // Build template model's rowClass file name
-            $tplModelRowFn = DOC. STD . '/vendor/perminov/system/application/models/{Model}/Row.php';
+            $tplModelRowFn = DOC. STD . VDR . '/system/application/models/{Model}/Row.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model's rowClass file
             if (!is_file($tplModelRowFn)) jflush(false, 'No template file for model\'s rowClass found');

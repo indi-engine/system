@@ -1,8 +1,9 @@
 <?php
 /**
- * Autoloader function. Here we provide an ability for classes to be loaded from 'public', if they are used in admin module,
- * so all classes located in vendor/perminov/public/application/controller/admin,
- * and vendor/perminov/public/Indi/Controller/Admin will be loaded if need
+ * Autoloader function. Here we provide an ability for classes to be loaded from 'public',
+ * if they are used in admin module, so all classes located
+ *     in VDR . '/public/application/controller/admin',
+ * and in VDR . '/public/Indi/Controller/Admin' will be loaded if need
  *
  * @param $class
  */
@@ -24,16 +25,16 @@ function autoloader($class) {
             if (preg_match('/^Indi_Controller_Admin_([a-zA-Z]*)$/', $class, $l))
 
                 // Prepend an appropriate dir to filename
-                $cf = '../vendor/perminov/public/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
+                $cf = '..' . VDR . '/public/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
 
             // Else if $class is an admin module controller
             else if (is_array($c) && count($c)) {
 
                 // Prepend an appropriate dir to filename
-                $cf = '../vendor/perminov/public/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
+                $cf = '..' . VDR . '/public/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
 
             // Else if $class is some other class, we assume it's a model class
-            } else $cf = '../vendor/perminov/public/application/models/' . $cf;
+            } else $cf = '..' . VDR . '/public/application/models/' . $cf;
 
             // Include class file
             @include_once($cf);
@@ -138,7 +139,7 @@ function i($value, $type = 'w', $file = 'debug.txt') {
 
     // Get the array of directory branches, from current directory and up to the document root (non-inclusive)
     $dir = substr(str_replace('\\', '/', __DIR__), strlen($doc));
-    $dir = substr($dir, strlen('/vendor/perminov/system'));
+    $dir = substr($dir, strlen(VDR . '/system'));
     $dir = explode('/', $dir);
 
     // Get the STD path, if project run not from the document root, but from some-level subdirectory of document root

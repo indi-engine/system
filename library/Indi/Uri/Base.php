@@ -7,7 +7,7 @@ class Indi_Uri_Base {
     public function __construct() {
 
         // Include l10n constants
-        foreach (['', '/vendor/perminov/public', '/vendor/perminov/system'] as $fraction)
+        foreach (['', VDR . '/public', VDR . '/system'] as $fraction)
             foreach (['', '/admin'] as $_)
                 if (file_exists($file = DOC . STD . $fraction . '/application/lang' . $_ . '/' . ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
                     include_once($file);
@@ -145,7 +145,7 @@ class Indi_Uri_Base {
         session_start();
 
         // Set current language
-        @include_once(DOC . STD . '/vendor/perminov/system/application/lang/admin/' . ini('lang')->admin . '.php');
+        @include_once(DOC . STD . VDR . '/system/application/lang/admin/' . ini('lang')->admin . '.php');
         @include_once(DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php');
     }
 

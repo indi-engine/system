@@ -24,8 +24,8 @@ ini_set('display_errors', 'On');
 // variable is passed WITH 'REDIRECT_' prefix, which is not covered by engine
 if (!$_SERVER['STD'] && $_SERVER['REDIRECT_STD']) $_SERVER['STD'] = $_SERVER['REDIRECT_STD'];
 
-// Setup $_SERVER['STD'] as php constant, for being easier accessible
-define('STD', $_SERVER['STD']);
+// Setup $_SERVER['STD'] and $_SERVER['VDR'] as php constants, for being easier accessible
+define('STD', $_SERVER['STD']); define('VDR', '/' . $vdr = $_SERVER['VDR']);
 
 // Setup $GLOBALS['cmsOnlyMode'] as php constant, for being easier accessible
 define('COM', $GLOBALS['cmsOnlyMode']);
@@ -49,9 +49,9 @@ define('APP', array_key_exists('HTTP_INDI_AUTH', $_SERVER));
 
 // Set include path. Here we add more include paths, in case if some stuff is related to front module only,
 // but required to be available in admin module.
-$dirs = ['', 'vendor/perminov/system/'];
+$dirs = ['', $vdr . '/system/'];
 if (!COM && !preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI))
-    array_splice($dirs, 1, 0, 'vendor/perminov/public/');
+    array_splice($dirs, 1, 0, $vdr . '/public/');
 
 $subs = ['library', 'application/controllers', 'application/models']; $p = PATH_SEPARATOR;
 foreach($dirs as $d) foreach($subs as $s) $inc[] = $d . $s; $inc[] = get_include_path();

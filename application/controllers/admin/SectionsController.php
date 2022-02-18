@@ -2,7 +2,7 @@
 class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
     /**
-     * Contents of vendor/perminov/client/classic/app.js for checking js-controllers files presence
+     * Contents of VDR . '/client/classic/app.js' for checking js-controllers files presence
      *
      * @var string
      */
@@ -14,16 +14,16 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function jsAction() {
 
         // JS-controller files for sections of fraction:
-        // - 'system' - will be created in '/vendor/perminov/system',
-        // - 'public' -                 in '/vendor/perminov/public',
+        // - 'system' - will be created in VDR . '/system',
+        // - 'public' -                 in VDR . '/public',
         // - 'custom' -                 in '',
-        // but beware that js-controller files created for system sections should be moved from
-        // /vendor/perminov/system/js/admin/app/controller to Indi Engine client app source code
-        // into /vendor/perminov/client-dev/app/controller folder, and then should be compiled
-        // by 'sencha app build --production' command to /vendor/perminov/client/classic/app.js bundle to be refreshed
+        // but beware that js-controller files created for system-fraction sections should be moved
+        // from VDR . '/system/js/admin/app/controller to Indi Engine client app source code
+        // into VDR . '/client-dev/app/controller folder, and then should be compiled
+        // by 'sencha app build --production' command to VDR . '/client/classic/app.js' bundle to be refreshed
         $repoDirA = [
-            's' => '/vendor/perminov/system',
-            'o' => '/vendor/perminov/public',
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
             'p' => ''
         ];
 
@@ -46,7 +46,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
 
             // Build template model absolute file name
-            $tplAbs = DOC. STD . '/vendor/perminov/client/classic/resources/{controller}.js';
+            $tplAbs = DOC. STD . VDR . '/client/classic/resources/{controller}.js';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -77,12 +77,12 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function phpAction() {
 
         // JS-controller files for sections of fraction:
-        // - 'system' - will be created in '/vendor/perminov/system',
-        // - 'often'                    in '/vendor/perminov/public',
+        // - 'system' - will be created in VDR . '/system',
+        // - 'often'                    in VDR . '/public',
         // - 'project'                  in ''
         $repoDirA = [
-            's' => '/vendor/perminov/system',
-            'o' => '/vendor/perminov/public',
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
             'p' => ''
         ];
 
@@ -106,7 +106,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'PHP-controller file for that section already exists');
 
         // Build template model absolute file name
-        $tplAbs = DOC. STD . '/vendor/perminov/system/application/controllers/admin/{controller}.php';
+        $tplAbs = DOC. STD . VDR . '/system/application/controllers/admin/{controller}.php';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
         if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -178,8 +178,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // Dirs dict by section fraction
         $dir = [
-            's' => '/vendor/perminov/system',
-            'o' => '/vendor/perminov/public',
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
             'p' => ''
         ];
 
@@ -242,7 +242,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             } else {
 
                 // If system app js is not yet set up - do it
-                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . '/vendor/perminov/client/classic/app.js');
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
 
                 // If js-controller file exists
                 if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {

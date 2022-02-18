@@ -114,8 +114,8 @@ class Indi_Controller {
             }
 
             // Add script paths for major system part and for front core part
-            $view->addScriptPath(DOC . STD . '/vendor/perminov/public/' . $spath . $mpath);
-            $view->addScriptPath(DOC . STD . '/vendor/perminov/system/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . VDR . '/public/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . VDR . '/system/' . $spath . $mpath);
 
             // If certain project has 'library' dir
             if (is_dir(DOC . STD . '/library')) {
@@ -128,8 +128,8 @@ class Indi_Controller {
             }
 
             // Add helper paths for major system part and for front core part
-            $view->addHelperPath(DOC . STD . '/vendor/perminov/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
-            $view->addHelperPath(DOC . STD . '/vendor/perminov/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . VDR . '/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . VDR . '/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
         }
 
         // Put view object into the registry
