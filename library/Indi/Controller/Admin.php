@@ -1041,17 +1041,17 @@ class Indi_Controller_Admin extends Indi_Controller {
                     imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                     // Pick hue bg and place it on canvas
-                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-bg.png';
+                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/client/resources/images/icons/i-color-slider-bg.png';
                     $hueIm = imagecreatefrompng($hueFn);
                     imagecopy($canvasIm, $hueIm, 7, 2, 0, 0, 183, 11);
 
                     // Pick first thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-thumb-first.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/client/resources/images/icons/i-color-slider-thumb-first.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][0]), 0, 0, 0, 15, 15);
 
                     // Pick last thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/system/i/admin/i-color-slider-thumb-last.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/vendor/perminov/client/resources/images/icons/i-color-slider-thumb-last.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][1]), 0, 0, 0, 15, 15);
 
@@ -1326,7 +1326,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                 // Pick hue bg and place it on canvas
-                $iconFn = DOC . STD . '/vendor/perminov/system/i/admin/sort_' . strtolower($order->direction) . '.gif';
+                $iconFn = DOC . STD . '/vendor/perminov/client/resources/images/icons/sort_' . strtolower($order->direction) . '.gif';
                 $iconIm = imagecreatefromgif($iconFn);
                 imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
 
@@ -1477,7 +1477,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 //  Add the image to a worksheet
                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                $objDrawing->setPath(DOC . STD . '/vendor/perminov/system/i/admin/group-collapse.gif');
+                $objDrawing->setPath(DOC . STD . '/vendor/perminov/client/resources/images/icons/group-collapse.gif');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setOffsetY(10)->setOffsetX(6);
                 $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());

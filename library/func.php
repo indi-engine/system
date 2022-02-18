@@ -2705,7 +2705,7 @@ function appjs($dir = '/js/admin') {
     // Collect raw contents
     $raw = [];
     foreach (ar($dir) as $_dir)
-        foreach (scandirr(DOC . STD . '/www' . $_dir) as $file)
+        foreach (scandirr(DOC . STD . $_dir) as $file)
             $raw[$file] = file_get_contents($file);
 
     // Return all app's js files concatenated into single string

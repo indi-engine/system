@@ -2288,8 +2288,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'storeRelationAbility' => 'one',
         ]);
         enumset('field', 'storeRelationAbility', 'none', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет', 'move' => '']);
-        enumset('field', 'storeRelationAbility', 'one', ['title' => '<span class="i-color-box" style="background: url(/i/admin/btn-icon-login.png);"></span>Да, но только один ключ', 'move' => 'none']);
-        enumset('field', 'storeRelationAbility', 'many', ['title' => '<span class="i-color-box" style="background: url(/i/admin/btn-icon-multikey.png);"></span>Да, несколько ключей', 'move' => 'one']);
+        enumset('field', 'storeRelationAbility', 'one', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/btn-icon-login.png);"></span>Да, но только один ключ', 'move' => 'none']);
+        enumset('field', 'storeRelationAbility', 'many', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/btn-icon-multikey.png);"></span>Да, несколько ключей', 'move' => 'one']);
         field('field', 'relation', [
             'title' => 'Ключи какой сущности',
             'columnTypeId' => 'INT(11)',
@@ -2316,10 +2316,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'relation' => 'enumset',
             'storeRelationAbility' => 'one',
         ]);
-        enumset('field', 'mode', 'regular', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/regular.png);"></span>Обычное', 'move' => '']);
-        enumset('field', 'mode', 'required', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/required.png);"></span>Обязательное', 'move' => 'regular']);
-        enumset('field', 'mode', 'readonly', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/readonly.png);"></span>Только чтение', 'move' => 'required']);
-        enumset('field', 'mode', 'hidden', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/hidden.png);"></span>Скрытое', 'move' => 'readonly']);
+        enumset('field', 'mode', 'regular', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/regular.png);"></span>Обычное', 'move' => '']);
+        enumset('field', 'mode', 'required', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/required.png);"></span>Обязательное', 'move' => 'regular']);
+        enumset('field', 'mode', 'readonly', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/readonly.png);"></span>Только чтение', 'move' => 'required']);
+        enumset('field', 'mode', 'hidden', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/hidden.png);"></span>Скрытое', 'move' => 'readonly']);
         field('field', 'elementId', [
             'title' => 'Элемент управления',
             'columnTypeId' => 'INT(11)',
@@ -2443,11 +2443,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'relation' => 'enumset',
             'storeRelationAbility' => 'one',
         ]);
-        enumset('alteredField', 'mode', 'inherit', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/inherit.png);"></span>Без изменений', 'move' => '']);
-        enumset('alteredField', 'mode', 'regular', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/regular.png);"></span>Обычное', 'move' => 'inherit']);
-        enumset('alteredField', 'mode', 'required', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/required.png);"></span>Обязательное', 'move' => 'regular']);
-        enumset('alteredField', 'mode', 'readonly', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/readonly.png);"></span>Только чтение', 'move' => 'required']);
-        enumset('alteredField', 'mode', 'hidden', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/hidden.png);"></span>Скрытое', 'move' => 'readonly']);
+        enumset('alteredField', 'mode', 'inherit', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/inherit.png);"></span>Без изменений', 'move' => '']);
+        enumset('alteredField', 'mode', 'regular', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/regular.png);"></span>Обычное', 'move' => 'inherit']);
+        enumset('alteredField', 'mode', 'required', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/required.png);"></span>Обязательное', 'move' => 'regular']);
+        enumset('alteredField', 'mode', 'readonly', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/readonly.png);"></span>Только чтение', 'move' => 'required']);
+        enumset('alteredField', 'mode', 'hidden', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/hidden.png);"></span>Скрытое', 'move' => 'readonly']);
         field('alteredField', 'elementId', [
             'title' => 'Элемент',
             'columnTypeId' => 'INT(11)',
@@ -2729,9 +2729,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'relation' => 'enumset',
             'storeRelationAbility' => 'one',
         ]);
-        enumset('section', 'rowsetSeparate', 'auto', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/inherit.png);"></span>Авто', 'move' => '']);
-        enumset('section', 'rowsetSeparate', 'yes', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/readonly.png);"></span>Отдельным запросом', 'move' => 'auto']);
-        enumset('section', 'rowsetSeparate', 'no', ['title' => '<span class="i-color-box" style="background: url(/i/admin/field/required.png);"></span>В том же запросе', 'move' => 'yes']);
+        enumset('section', 'rowsetSeparate', 'auto', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/inherit.png);"></span>Авто', 'move' => '']);
+        enumset('section', 'rowsetSeparate', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/readonly.png);"></span>Отдельным запросом', 'move' => 'auto']);
+        enumset('section', 'rowsetSeparate', 'no', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/required.png);"></span>В том же запросе', 'move' => 'yes']);
         field('section', 'defaultSortField', [
             'title' => 'Сортировка',
             'columnTypeId' => 'INT(11)',
@@ -5070,8 +5070,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
                     $_->delete();
         entity('columnType', ['titleFieldId' => 'type']);
         enumset('field', 'storeRelationAbility', 'none', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет']);
-        enumset('field', 'storeRelationAbility', 'one', ['title' => '<span class="i-color-box" style="background: url(/i/admin/btn-icon-login.png);"></span>Да, но для только одного значения ключа']);
-        enumset('field', 'storeRelationAbility', 'many', ['title' => '<span class="i-color-box" style="background: url(/i/admin/btn-icon-multikey.png);"></span>Да, для энного количества значений ключей']);
+        enumset('field', 'storeRelationAbility', 'one', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/btn-icon-login.png);"></span>Да, но для только одного значения ключа']);
+        enumset('field', 'storeRelationAbility', 'many', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/btn-icon-multikey.png);"></span>Да, для энного количества значений ключей']);
         if ($_ = section('fieldsAll')) $_->delete();
         section('fieldsAll', [
             'sectionId' => 'configuration',

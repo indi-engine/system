@@ -58,12 +58,12 @@ class Admin_TemporaryController extends Indi_Controller {
             ]);
 
             // Update existing possible values
-            enumset('disabledField', 'mode', '0', ['alias' => 'hidden', 'title' => 'Скрытое', 'color' => 'url(/i/admin/field/hidden.png)']);
-            enumset('disabledField', 'mode', '1', ['alias' => 'readonly', 'title' => 'Только чтение', 'color' => 'url(/i/admin/field/readonly.png)']);
+            enumset('disabledField', 'mode', '0', ['alias' => 'hidden', 'title' => 'Скрытое', 'color' => 'url(resources/images/icons/field/hidden.png)']);
+            enumset('disabledField', 'mode', '1', ['alias' => 'readonly', 'title' => 'Только чтение', 'color' => 'url(resources/images/icons/field/readonly.png)']);
 
             // Append new possible values
             foreach (['inherit' => 'Без изменений', 'regular' => 'Обычное', 'required' => 'Обязательное'] as $alias => $title)
-                enumset('disabledField', 'mode', $alias, ['title' => $title, 'color' => 'url(/i/admin/field/' . $alias . '.png)'])
+                enumset('disabledField', 'mode', $alias, ['title' => $title, 'color' => 'url(resources/images/icons/field/' . $alias . '.png)'])
                     ->move(2);
 
             // Other things
