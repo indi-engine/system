@@ -2333,7 +2333,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $summary = db()->query($sql)->fetchObject();
 
         // Convert to integer
-        array_walk($summary, fn(&$v) => $v += 0);
+        array_walk($summary, function(&$v) {$v += 0;});
 
         // Fetch and return calculated summaries
         return $summary;

@@ -2448,7 +2448,7 @@ class Indi {
             $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
 
             // Protocol
-            $prot = is_file(DOC . STD . '/system/application/ws.pem') ? 'wss' : 'ws';
+            $prot = is_file(DOC . STD . '/application/ws.pem') ? 'wss' : 'ws';
 
             // Try create client
             try {
@@ -2534,7 +2534,7 @@ class Indi {
         $env = tempnam($dir, 'cmd');
 
         // Prepare command
-        $cmd = ini('general')->phpdir . "php " . lrim(VDR, '/') . "/system/application/cmd.php $method \"$env\"";
+        $cmd = ini('general')->phpdir . "php " . ltrim(VDR, '/') . "/system/application/cmd.php $method \"$env\"";
 
         // Fill temporary file with current state
         file_put_contents($env, json_encode([
