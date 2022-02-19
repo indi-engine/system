@@ -134,19 +134,8 @@ function d($value) {
  */
 function i($value, $type = 'w', $file = 'debug.txt') {
 
-    // Get the document root, with trimmed right trailing slash
-    $doc = rtrim($_SERVER['DOCUMENT_ROOT'], '\\/');
-
-    // Get the array of directory branches, from current directory and up to the document root (non-inclusive)
-    $dir = substr(str_replace('\\', '/', __DIR__), strlen($doc));
-    $dir = substr($dir, strlen(VDR . '/system'));
-    $dir = explode('/', $dir);
-
-    // Get the STD path, if project run not from the document root, but from some-level subdirectory of document root
-    $std = implode('/', array_slice($dir, 0, count($dir) -2));
-
     // Get the absolute path of a file, that will be used for writing data to
-    $abs = $doc . $std. '/' . $file;
+    $abs = rtrim(__DIR__, '\\/') . '/../../../../' . $file;
 
     // Renew the $dir, where we assume that output file is/will be located
     // Here we do not use existing $dir value, because $file arg can be

@@ -166,8 +166,8 @@ ignore_user_abort(1);
 $context = stream_context_create();
 
 // If certificate file exists - make context to be secure
-if (!is_file('ws.pem')) $prot = 'tcp'; else {
-    stream_context_set_option($context, 'ssl', 'local_cert', 'ws.pem');
+if (!is_file($pem = DOC . '/application/ws.pem')) $prot = 'tcp'; else {
+    stream_context_set_option($context, 'ssl', 'local_cert', $pem);
     stream_context_set_option($context, 'ssl', 'verify_peer', false);
     $prot = 'ssl';
     if (!$ini['pem']) $ini['pem'] = true;

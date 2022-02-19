@@ -141,7 +141,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
             ? sprintf('start /B %sphp %s 2>&1', rif(ini('general')->phpdir, '$1/'), $wsServer)
-            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . STD . $wsServer . '" > /dev/null &';
+            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . STD . '/' . $wsServer . '" > /dev/null &';
 
         // Start websocket server
         wslog('------------------------------');
