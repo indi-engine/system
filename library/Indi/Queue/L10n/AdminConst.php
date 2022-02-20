@@ -2,7 +2,7 @@
 class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
 
     /**
-     * Use 'system' for system fraction, or 'www' for custom fraction
+     * Use VDR . '/system' for system fraction, or '' for custom fraction
      *
      * @var string
      */
@@ -29,7 +29,7 @@ class Indi_Queue_L10n_AdminConst extends Indi_Queue_L10n_AdminUi {
         // Create `queueChunk` entry and setup basic props
         m('QueueChunk')->new([
             'queueTaskId' => $queueTaskR->id,
-            'location' => '/' . $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
+            'location' => $this->fractionDir . '/application/lang/admin/' . $params['source']. '.php'
         ])->save();
 
         // Increment `chunk`

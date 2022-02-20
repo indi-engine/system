@@ -4,7 +4,7 @@ class Indi_Queue_L10n_AdminCustomDataExport extends Indi_Queue_L10n_AdminCustomD
     /**
      * Fraction dir
      */
-    public $fractionDir = 'www';
+    public $fractionDir = '';
 
     /**
      * Type

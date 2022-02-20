@@ -135,10 +135,10 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($answer == 'cancel') jflush(true);
 
         // Foreach fraction
-        foreach (ar('www') as $fraction) {
+        foreach ([''] as $fraction) {
 
             // Create dir, containing l10n-constants files, for current fraction if not yet exists
-            if (!is_dir($_ = DOC . STD . '/' . $fraction . '/application/lang/admin/')) mkdir($_, true, 777);
+            if (!is_dir($_ = DOC . STD . $fraction . '/application/lang/admin/')) mkdir($_, true, 777);
 
             // Where will be current language used for building file name
             $out =  $_ . t()->row->alias . '.php';
@@ -148,18 +148,18 @@ class Admin_LangController extends Indi_Controller_Admin {
 
             // Both both php ans js wordings
             foreach ([
-                         'php' => [
-                             'dir' => ['application/controllers/admin', 'application/models', 'library/Project'],
-                             'rex' => ['~(__\()(\s*)\'(.*?)\'~']
-                         ],
-                         'js'  => [
-                             'dir' => ['js/admin/app/controller', 'js/admin/app/lib/controller'],
-                             'rex' => [
-                                 '~(title|msg|buttonText|regexText|wand|fieldLabel|tooltip|emptyText|text|printButtonTooltip|infoText)(:\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
-                                 '~(wait|alert|update)(\(\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
-                             ]
-                         ]
-                     ] as $type => $cfg) {
+                 'php' => [
+                     'dir' => ['application/controllers/admin', 'application/models', 'library/Project'],
+                     'rex' => ['~(__\()(\s*)\'(.*?)\'~']
+                 ],
+                 'js'  => [
+                     'dir' => ['js/admin/app/controller', 'js/admin/app/lib/controller'],
+                     'rex' => [
+                         '~(title|msg|buttonText|regexText|wand|fieldLabel|tooltip|emptyText|text|printButtonTooltip|infoText)(:\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
+                         '~(wait|alert|update)(\(\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
+                     ]
+                 ]
+             ] as $type => $cfg) {
 
                 // Collect raw contents
                 foreach ($cfg['dir'] as $dir) {
@@ -168,7 +168,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                     $pref['dir'] = 'I_'; foreach(explode('/', $dir) as $level) $pref['dir'] .= strtoupper(substr($level, 0, 1));
 
                     // Absolute fraction path
-                    $abs = DOC . STD . '/' . $fraction . '/' . $dir;
+                    $abs = DOC . STD . $fraction . '/' . $dir;
 
                     // Foreach file in dir
                     foreach (scandirr($abs) as $file) {
@@ -339,7 +339,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $prompt = $this->_prompt(I_LANG_IMPORT_HEADER);
 
         // Dirs
-        $dirA = ['adminSystemUi' => 'system', 'adminCustomUi' => 'www', 'adminCustomData' => 'www'];
+        $dirA = ['adminSystemUi' => VDR . '/system', 'adminCustomUi' => '', 'adminCustomData' => ''];
 
         // Dir
         $dir = $dirA[$prompt['fraction']];
@@ -348,7 +348,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($prompt['settings'] == 'meta') {
 
             // Get file containing meta-part of migration, e.g. the code, that is toggling l10n for required fields
-            $meta = DOC . STD . '/' . $dir . '/application/lang/'
+            $meta = DOC . STD . $dir . '/application/lang/'
                 . strtolower(preg_replace('~^admin(System|Custom)~', '', $prompt['fraction'])) . '.php';
 
             // Applicable languages WHERE clause
@@ -395,7 +395,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
 
             // Else get file containing data-part of migration, e.g. the code, that is setting up titles for given language
-            $data = DOC . STD . '/' . $dir . '/application/lang/ui/' . t()->row->alias . '.php';
+            $data = DOC . STD . $dir . '/application/lang/ui/' . t()->row->alias . '.php';
 
             // Backup current language
             $_lang = ini('lang')->admin;

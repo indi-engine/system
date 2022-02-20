@@ -141,7 +141,7 @@ function i($value, $type = 'w', $file = 'debug.txt') {
     // Here we do not use existing $dir value, because $file arg can be
     // not only 'someOutputFile.txt', for example, but 'someSubDir/someOutputFile.txt' also
     // e.g. it can contain additional (deeper) directory specification
-    $dir = Indi::dir(pathinfo($abs, PATHINFO_DIRNAME) . '/');
+    $dir = Indi::dir(str_replace('\\', '/', pathinfo(realpath($abs), PATHINFO_DIRNAME)) . '/');
 
     // If $dir is not a directory name
     if (!Indi::rexm('dir', $dir)) {
@@ -2759,7 +2759,7 @@ function __($str) {
             if (!$GLOBALS['const'][ini('lang')->admin]) {
 
                 // Build filename of a php-file, containing l10n constants for required language
-                $l10n_source_abs = DOC . STD . '/www/application/lang/admin/' . ini('lang')->admin . '.php';
+                $l10n_source_abs = DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php';
 
                 // If no file - skip
                 if (!file_exists($l10n_source_abs)) jflush(false, 'File ' . $l10n_source_abs . ' - not found');
