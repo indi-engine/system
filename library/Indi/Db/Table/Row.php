@@ -4378,8 +4378,18 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Build the full filename into $dst variable
         $dst = $dir . $this->id . '_' . $field . '.' . $ext;
 
+        // 
+        if ($url) {
+            
+            // Prepare context options
+            $opt = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+
+            // Create context, for passing as a third argument within file_get_contents() call
+            $ctx = stream_context_create($opt);
+        }
+
         // Copy the remote file
-        $return = copy($tmp ? $tmp : $url, $dst);
+        $return = copy($tmp ? $tmp : $url, $dst, $ctx);
 
         // Change access rights
         chmod($dst, 0666);

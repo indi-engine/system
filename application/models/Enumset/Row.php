@@ -72,6 +72,19 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Get the database table name
         $table = $fieldR->foreign('entityId')->table;
 
+        // If _baseTable defined for current model, it means than current $table is a VIEW rather than TABLE
+        if (property_exists(m($table), '_baseTable')) {
+            
+            // So we need to check whether the field, that we're going to alter enumset options for - exists in TABLE
+            if (Indi::db()->query('
+                SHOW COLUMNS FROM `' . ($baseTable = m($table)->baseTable()) . '` LIKE "' . $fieldR->alias . '"'
+            )->fetch()) {
+                $table = $baseTable;
+            } else {
+                return parent::save();
+            }
+        } 
+
         // Get the current default value
         $defaultValue = Indi::db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
             ->fetch(PDO::FETCH_OBJ)->Default;

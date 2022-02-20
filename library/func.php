@@ -215,16 +215,36 @@ function indent($level, $count = 5, $char = '&nbsp;') {
  * @param $string
  * @param $length
  * @param bool $dots
+ * @param bool|int $lineQty
  * @return string
  */
-function usubstr($string, $length, $dots = true) {
+function usubstr($string, $length, $dots = true, $lineQty = false) {
 
     // If $dots argument is true, and length of $string argument
     // is greater that the value of $length argument set $dots as '..'
     $dots = mb_strlen($string, 'utf-8') > $length && $dots ? '…' : '';
 
     // Trim the $string by the $length characters, add dots, if need, and return the result string
-    return mb_substr($string, 0, $length, 'utf-8') . $dots;
+    $str = mb_substr($string, 0, $length, 'utf-8') . $dots;
+    
+    // If $lineQty arg is given
+    if ($lineQty) {
+        
+        // Split by lines
+        $lineA = preg_split('~<br ?/?>~', $str);
+        
+        // If number of lines is greater than $lineQty - setup dots
+        $dots = rif(count($lineA) > $lineQty, $dots);
+        
+        // Splice lines
+        $lineA = array_slice($lineA, 0, $lineQty);
+        
+        // Implode back and append dots
+        $str = implode('<br>', $lineA) . $dots;
+    }
+    
+    // Return 
+    return $str;
 }
 
 /**
