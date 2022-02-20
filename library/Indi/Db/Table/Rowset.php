@@ -798,6 +798,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         if (preg_match('/background:\s*url\(/', $data[$pointer][$columnI])) {
                             if ($this->model()->fields($columnI)->relation == 6) {
                                 $data[$pointer][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
+                            } else {
+                                $data[$pointer][$columnI] = preg_replace('~(url\()(/data/)~', '$1' . STD .  '$2', $data[$pointer][$columnI]);
                             }
                         } else {
                             $data[$pointer][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
