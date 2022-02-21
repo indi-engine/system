@@ -1,6 +1,4 @@
 <?php
-use Google\Cloud\Translate\V2\TranslateClient;
-
 class Admin_LangController extends Indi_Controller_Admin {
 
     /**
@@ -8,14 +6,11 @@ class Admin_LangController extends Indi_Controller_Admin {
      */
     public function dictAction() {
 
-        // Require Google Cloud Translation PHP API
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
-
         // Get languages, already existing as `lang` entries
-        $langA = Indi::db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
         // Create Google Cloud Translation PHP API
-        $gapi = new TranslateClient(['key' => Indi::ini('lang')->gapi->key]);
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // New languages counter
         $l = 0;
@@ -30,11 +25,11 @@ class Admin_LangController extends Indi_Controller_Admin {
             $l++;
 
             // Create `lang` entry
-            Indi::model('Lang')->createRow(array(
+            m('Lang')->new([
                 'title' => $langI['name'],
                 'alias' => $langI['code'],
                 'toggle' => 'n'
-            ), true)->save();
+            ])->save();
         }
 
         // Flush result
@@ -50,7 +45,7 @@ class Admin_LangController extends Indi_Controller_Admin {
     public function onBeforeCellSave($cell, $value) {
 
         // Get field
-        $fieldR = t()->model->fields($cell);
+        $fieldR = m()->fields($cell);
 
         // Skip if $cell is not a l10n-fraction field
         if ($fieldR->rel()->table() != 'enumset' || $cell == 'toggle') return;
@@ -63,14 +58,13 @@ class Admin_LangController extends Indi_Controller_Admin {
 
             // Ask what we're going to do
             if ('no' == $this->confirm(sprintf(
-                'Если вы хотите %s язык "%s" для фракции "%s" нажмите "%s". ' .
-                'Если просто нужно привести в соответствие с текущим состоянием - нажмите "%s"',
-                $value == 'qy' ? 'добавить' : 'удалить', t()->row->title, $fraction, I_YES, I_NO), 'YESNOCANCEL'))
+                I_LANG_QYQN_CONFIRM,
+                mb_strtolower($value == 'qy' ? I_ADD : I_DELETE, 'utf-8'), t()->row->title, $fraction, I_YES, I_NO), 'YESNOCANCEL'))
                 return;
 
         // Else if we're going to setup fraction-status directly
         } else if ('ok' == $this->confirm(sprintf(
-            'Для фракции "%s" язык "%s" будет вручную помечен как "%s". Продолжить?',
+            I_LANG_QYQN_CONFIRM2,
             $fraction, t()->row->title, t()->row->enumset($cell, $value)
         ), 'OKCANCEL'))
             return;
@@ -79,7 +73,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($value == 'qy') {
 
             // Create phantom `langId` field
-            $langId_combo = Indi::model('Field')->createRow([
+            $langId_combo = m('Field')->new([
                 'title' => 'asdasd',
                 'alias' => 'langId',
                 'columnTypeId' => 'INT(11)',
@@ -89,16 +83,16 @@ class Admin_LangController extends Indi_Controller_Admin {
                 'filter' => '`id` != "' . t()->row->id . '" AND `' . $cell . '` = "y"',
                 'mode' => 'hidden',
                 'defaultValue' => 0
-            ], true);
+            ]);
 
             // Append to fields list
-            t()->model->fields()->append($langId_combo);
+            m()->fields()->append($langId_combo);
 
             // Build config for langId-combo
             $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');
 
             // Prompt for source language
-            $prompt = $this->prompt('Выберите исходный язык', [$combo]);
+            $prompt = $this->prompt(I_LANG_QYQN_SELECT, [$combo]);
 
             // Check prompt data
             $_ = jcheck(['langId' => ['req' => true, 'rex' => 'int11', 'key' => 'lang']], $prompt);
@@ -126,7 +120,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process, for now only for *Const-fractions
-        Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+        Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
     }
 
     /**
@@ -141,31 +135,31 @@ class Admin_LangController extends Indi_Controller_Admin {
         if ($answer == 'cancel') jflush(true);
 
         // Foreach fraction
-        foreach (ar('www') as $fraction) {
+        foreach ([''] as $fraction) {
 
             // Create dir, containing l10n-constants files, for current fraction if not yet exists
-            if (!is_dir($_ = DOC . STD . '/' . $fraction . '/application/lang/admin/')) mkdir($_, true, 777);
+            if (!is_dir($_ = DOC . STD . $fraction . '/application/lang/admin/')) mkdir($_, true, 777);
 
             // Where will be current language used for building file name
             $out =  $_ . t()->row->alias . '.php';
 
             // Lines to be written to php-constants file
-            $lineA = array();
+            $lineA = [];
 
             // Both both php ans js wordings
             foreach ([
-                         'php' => [
-                             'dir' => ['application/controllers/admin', 'application/models', 'library/Project'],
-                             'rex' => ['~(__\()(\s*)\'(.*?)\'~']
-                         ],
-                         'js'  => [
-                             'dir' => ['js/admin/app/controller', 'js/admin/app/lib/controller'],
-                             'rex' => [
-                                 '~(title|msg|buttonText|regexText|wand|fieldLabel|tooltip|emptyText|text|printButtonTooltip|infoText)(:\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
-                                 '~(wait|alert|update)(\(\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
-                             ]
-                         ]
-                     ] as $type => $cfg) {
+                 'php' => [
+                     'dir' => ['application/controllers/admin', 'application/models', 'library/Project'],
+                     'rex' => ['~(__\()(\s*)\'(.*?)\'~']
+                 ],
+                 'js'  => [
+                     'dir' => ['js/admin/app/controller', 'js/admin/app/lib/controller'],
+                     'rex' => [
+                         '~(title|msg|buttonText|regexText|wand|fieldLabel|tooltip|emptyText|text|printButtonTooltip|infoText)(:\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
+                         '~(wait|alert|update)(\(\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
+                     ]
+                 ]
+             ] as $type => $cfg) {
 
                 // Collect raw contents
                 foreach ($cfg['dir'] as $dir) {
@@ -174,7 +168,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                     $pref['dir'] = 'I_'; foreach(explode('/', $dir) as $level) $pref['dir'] .= strtoupper(substr($level, 0, 1));
 
                     // Absolute fraction path
-                    $abs = DOC . STD . '/' . $fraction . '/' . $dir;
+                    $abs = DOC . STD . $fraction . '/' . $dir;
 
                     // Foreach file in dir
                     foreach (scandirr($abs) as $file) {
@@ -223,7 +217,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                         $fidx = 0;
 
                         // Wordings-by-method array, for counting purposes
-                        $methodA = array();
+                        $methodA = [];
 
                         // Foreach regex according to current type
                         foreach ($cfg['rex'] as $rex) {
@@ -300,5 +294,199 @@ class Admin_LangController extends Indi_Controller_Admin {
 
         //
         jflush(true, 'OK');
+    }
+
+    /**
+     * Export admin system or custom ui translation as a php-code
+     */
+    public function exportAction() {
+
+        // Show prompt
+        $prompt = $this->_prompt(I_LANG_EXPORT_HEADER);
+
+        // Prepare params
+        $params = ['source' => t()->row->alias, 'export' => $prompt['settings']];
+
+        // Build queue class name
+        $queueClassName = 'Indi_Queue_L10n_' . ucfirst($prompt['fraction']) . 'Export';
+
+        // Check that class exists
+        if (!class_exists($queueClassName)) jflush(false, sprintf('Не найден класс %s', $queueClassName));
+
+        // Create queue class instance
+        $queue = new $queueClassName();
+
+        // Run first stage
+        $queueTaskR = $queue->chunk($params);
+
+        // If data should be exported
+        if ($prompt['settings'] == 'data') {
+
+            // If fraction is adminCustomData - flush failure
+            if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
+
+            // Else auto-start queue as a background process
+            Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+        }
+
+        // Flush ok
+        jflush(true, 'OK');
+    }
+
+    public function importAction() {
+
+        // Show prompt
+        $prompt = $this->_prompt(I_LANG_IMPORT_HEADER);
+
+        // Dirs
+        $dirA = ['adminSystemUi' => VDR . '/system', 'adminCustomUi' => '', 'adminCustomData' => ''];
+
+        // Dir
+        $dir = $dirA[$prompt['fraction']];
+
+        // If meta should be imported
+        if ($prompt['settings'] == 'meta') {
+
+            // Get file containing meta-part of migration, e.g. the code, that is toggling l10n for required fields
+            $meta = DOC . STD . $dir . '/application/lang/'
+                . strtolower(preg_replace('~^admin(System|Custom)~', '', $prompt['fraction'])) . '.php';
+
+            // Applicable languages WHERE clause
+            $langId_filter = '"y" IN (`' . $prompt['fraction'] . '`)';
+
+            // Create phantom `langId` field
+            $langId_combo = m('field')->new([
+                'alias' => 'langId',
+                'columnTypeId' => 'INT(11)',
+                'elementId' => 'combo',
+                'storeRelationAbility' => 'one',
+                'relation' => 'lang',
+                'filter' => $langId_filter,
+                'mode' => 'hidden',
+                'defaultValue' => 0
+            ]);
+
+            // Append to fields list
+            m()->fields()->append($langId_combo);
+
+            // Set active value
+            t()->row->langId = m('lang')->row($langId_filter, '`move`')->id;
+
+            // Build config for langId-combo
+            $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');
+
+            // Prompt for source language
+            $prompt2 = $this->prompt(__(I_LANG_SELECT_CURRENT, $prompt['_fraction'][$prompt['fraction']]), [$combo]);
+
+            // Check language
+            $_ = jcheck(['langId' => ['req' => true, 'rex' => 'int11', 'key' => 'lang']], $prompt2);
+
+            // Get current language of selected fraction
+            $lang = $_['langId']->alias;
+
+            // Execute file, containing php-code for toggling l10n for certain fields
+            require_once $meta;
+        }
+
+        // If titles should be imported
+        if ($prompt['settings'] == 'data') {
+
+            // If fraction is 'adminCustomData' - flush not supported msg
+            if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
+
+            // Else get file containing data-part of migration, e.g. the code, that is setting up titles for given language
+            $data = DOC . STD . $dir . '/application/lang/ui/' . t()->row->alias . '.php';
+
+            // Backup current language
+            $_lang = ini('lang')->admin;
+
+            // Spoof current language with given language
+            ini('lang')->admin = t()->row->alias;
+
+            // Execute file, containing php-code for setting up titles for given language
+            require_once $data;
+
+            // Restore current language
+            ini('lang')->admin = $_lang;
+
+            // Set 'y' for imported language's fraction-column
+            t()->row->set($prompt['fraction'], 'y')->save();
+        }
+
+        // Flush ok
+        jflush(true, 'OK');
+    }
+
+    /**
+     * @param $header
+     * @return mixed
+     * @throws Exception
+     */
+    protected function _prompt($header) {
+
+        // Get titles of `lang` fields, representing fractions of ui
+        $t = m()
+            ->fields('adminSystem,adminSystemUi,adminCustom,adminCustomUi,adminCustomData')
+            ->column('title', false, 'alias');
+
+        // Create phantom `fraction` field for being used for radio buttons rendering
+        $fraction = m('field')->new([
+            'alias' => 'fraction',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'mode' => 'hidden'
+        ]);
+
+        // Setup possible values
+        $fraction->nested('enumset', $fractionA = [
+            ['alias' => $_ = 'adminSystemUi',  'title' => im([$t['adminSystem'], $t['adminSystemUi']],   ' - ')],
+            ['alias' => 'adminCustomUi',       'title' => im([$t['adminCustom'], $t['adminCustomUi']],   ' - ')],
+            ['alias' => 'adminCustomData',     'title' => im([$t['adminCustom'], $t['adminCustomData']], ' - ')],
+        ]);
+
+        // Append to fields list and set first fraction to be selected by default
+        m()->fields()->add($fraction); t()->row->fraction = $_;
+
+        // Create phantom `settings` field for being used for checkboxes rendering
+        $settings = m('field')->new([
+            'alias' => 'settings',
+            'columnTypeId' => 'SET',
+            'elementId' => 'combo',
+            'storeRelationAbility' => 'many',
+            'relation' => 'enumset',
+            'mode' => 'hidden'
+        ]);
+
+        // Setup possible values
+        $settings->nested('enumset', [
+            ['alias' => 'meta', 'title' => I_LANG_MIGRATE_META],
+            ['alias' => 'data', 'title' => I_LANG_MIGRATE_DATA],
+        ]);
+
+        // Append to fields list and set first step to be selected by default
+        m()->fields()->add($settings); t()->row->settings = 'meta';
+
+        // Show prompt dialog with two fields
+        $prompt = $this->prompt($header, [
+            t()->row->radio('fraction'),
+            t()->row->radio('settings')
+        ]);
+
+        // Check prompt data
+        jcheck([
+            'fraction' => [
+                'req' => true,
+                'rex' => '~^(adminSystemUi|adminCustomUi|adminCustomData)$~'
+            ],
+            'settings' => [
+                'req' => true,
+                'rex' => '~^(meta|data)$~'
+            ]
+        ], $prompt);
+
+        // Return prompt data
+        return $prompt + ['_fraction' => array_column($fractionA, 'title', 'alias')];
     }
 }

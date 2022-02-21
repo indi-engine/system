@@ -1,20 +1,40 @@
 <?php
 class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
+    /**
+     * Contents of VDR . '/client/classic/app.js' for checking js-controllers files presence
+     *
+     * @var string
+     */
+    public static $systemAppJs = '';
+
+    /**
+     * Create js-controller file for selected section
+     */
     public function jsAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
-        $repoDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        // JS-controller files for sections of fraction:
+        // - 'system' - will be created in VDR . '/system',
+        // - 'public' -                 in VDR . '/public',
+        // - 'custom' -                 in '',
+        // but beware that js-controller files created for system-fraction sections should be moved
+        // from VDR . '/system/js/admin/app/controller to Indi Engine client app source code
+        // into VDR . '/client-dev/app/controller folder, and then should be compiled
+        // by 'sencha app build --production' command to VDR . '/client/classic/app.js' bundle to be refreshed
+        $repoDirA = [
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
+            'p' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen section');
+            jflush(false, 'Can\'t detect fraction of selected section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -26,7 +46,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
 
             // Build template model absolute file name
-            $tplAbs = DOC. STD . '/core/js/admin/app/controller/{controller}.js';
+            $tplAbs = DOC. STD . VDR . '/client/classic/resources/{controller}.js';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -51,11 +71,20 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         jflush(true);
     }
 
+    /**
+     * Create php-controller file for selected section
+     */
     public function phpAction() {
 
-        // JS-controller files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
-        $repoDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
+        // JS-controller files for sections of fraction:
+        // - 'system' - will be created in VDR . '/system',
+        // - 'often'                    in VDR . '/public',
+        // - 'project'                  in ''
+        $repoDirA = [
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
+            'p' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
         if (!in($this->row->type, array_keys($repoDirA)))
@@ -64,7 +93,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repoDirA[$this->row->type] . '/application/controllers/admin/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/application/controllers/admin/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -77,7 +106,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(false, 'PHP-controller file for that section already exists');
 
         // Build template model absolute file name
-        $tplAbs = DOC. STD . '/core/application/controllers/admin/{controller}.php';
+        $tplAbs = DOC. STD . VDR . '/system/application/controllers/admin/{controller}.php';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
         if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
@@ -107,10 +136,32 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function indexAction() {
 
         //
-        Indi::trail()->model->fields('roleIds')->storeRelationAbility = 'one';
+        m()->fields('roleIds')->storeRelationAbility = 'one';
 
         // Call parent
         $this->callParent();
+    }
+    /**
+     * Append sort direction clickable icon to the sort field
+     *
+     * @param $item
+     */
+    public function adjustGridDataItem(&$item) {
+
+        // Add icon for `defaultSortField` prop
+        if ($item['$keys']['defaultSortField']
+            && $info = Indi::rexm('~<span (.*?) title="(.*?)"></span>$~', $item['defaultSortDirection'])) {
+
+            // If defaultSortField is -1 - assume it's ID-column
+            if ($item['$keys']['defaultSortField'] == -1) $item['defaultSortField'] = 'ID';
+
+            // Setup jump
+            $item['_system']['jump']['defaultSortField'] = [[
+                'href' => 'cell:defaultSortDirection',
+                'ibox' => $info[1],
+                'over' => $info[2]
+            ]];
+        }
     }
 
     /**
@@ -125,8 +176,12 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Get default values
         foreach (ar('extendsPhp,extendsJs') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
 
-        // Dirs dict by section type
-        $dir = array('s' => 'core', 'p' => 'www', 'o' => 'coref');
+        // Dirs dict by section fraction
+        $dir = [
+            's' => VDR . '/system',
+            'o' => VDR . '/public',
+            'p' => ''
+        ];
 
         // Foreach data item
         foreach ($data as &$item) {
@@ -148,25 +203,57 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                     = sprintf('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
             }
 
-            // Get js-controller file name
-            $js = DOC . STD . '/' . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+            // Add icon for `extendsPhp` prop
+            if (($_ = $item['extendsPhp']) != 'Indi_Controller_Admin') $item['_render']['extendsPhp']
+                = '<img src="resources/images/icons/btn-icon-php-parent.png" class="i-cell-img">' . $_;
 
-            // If js-controller file exists
-            if (file_exists($js)) {
+            // Add icon for `extendsJs` prop
+            if (($_ = $item['extendsJs']) != 'Indi.lib.controller.Controller') $item['_render']['extendsJs']
+                = '<img src="resources/images/icons/btn-icon-js-parent.png" class="i-cell-img">' . $_;
 
-                // Setup flag
-                $item['_system']['js-class'] = true;
+            // Add icon for `filter` prop
+            if ($_ = $item['filter']) $item['_render']['filter']
+                = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
 
-                // If js-controller file is empty - setup error
-                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+            if ($item['$keys']['type'] != 's') {
 
-                // Else we're unable to find parent class mention - setup error
-                else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
-                    $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+                // Get js-controller file name
+                $js = DOC . STD . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
-                // Else if parent class is not as per `extendsJs` prop - setup error
-                else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
-                    = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
+                // If js-controller file exists
+                if (file_exists($js)) {
+
+                    // Setup flag
+                    $item['_system']['js-class'] = true;
+
+                    // If js-controller file is empty - setup error
+                    if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+
+                    // Else we're unable to find parent class mention - setup error
+                    else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
+                        $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+
+                    // Else if parent class is not as per `extendsJs` prop - setup error
+                    else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
+                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
+                }
+
+            // Else
+            } else {
+
+                // If system app js is not yet set up - do it
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
+
+                // If js-controller file exists
+                if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
+
+                    // Setup flag
+                    $item['_system']['js-class'] = true;
+
+                    // If parent class is not as per `extendsJs` prop - setup error
+                    if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
+                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $m[1]);
+                }
             }
 
             // Hide default values
@@ -196,7 +283,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      * Created copies of selected sections and attach under section, chosen within prompt-window
      * Caution! Do not use it, it's not completed and works properly only in specific situations
      */
-    public function duplicateAction() {
+    public function copyAction() {
 
         // Get selected entries ids
         $sectionId_disabled = $this->selected->column('id');
@@ -205,33 +292,29 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!Indi::get('answer')) {
 
             // Create blank `section` entry
-            $sectionR = t()->model->createRow();
+            $sectionR = m()->new();
 
             // Get `sectionId` field extjs config
-            $sectionId_field = $sectionR->combo('sectionId') + array('disabledOptions' => $sectionId_disabled);
-
-            // Build prompt msg
-            $msg = implode(array('Выберите родительский раздел, в подчинении у которого должны быть',
-                'созданы дубликаты выбранных разделов'), '<br>');
+            $sectionId_field = $sectionR->combo('sectionId') + ['disabledOptions' => $sectionId_disabled];
 
             // Prompt for timeId
-            jprompt($msg, array($sectionId_field));
+            jprompt(I_SECTION_CLONE_SELECT_PARENT, [$sectionId_field]);
 
         // If answer is 'ok'
         } else if (Indi::get('answer') == 'ok') {
 
             // Validate prompt data and flush error is something is not ok
-            $_ = jcheck(array(
-                'sectionId' => array(
+            $_ = jcheck([
+                'sectionId' => [
                     'req' => true,
                     'rex' => 'int11',
                     'key' => 'section',
                     'dis' => $sectionId_disabled
-                )
-            ), json_decode(Indi::post('_prompt'), true));
+                ]
+            ], json_decode(Indi::post('_prompt'), true));
 
             // Get prefix
-            $prefix = Indi::model($_['sectionId']->entityId)->table();
+            $prefix = m($_['sectionId']->entityId)->table();
 
             // Get sectionId
             $sectionId_parent = $_['sectionId']->id;
@@ -250,7 +333,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 $config['alias'] = $prefix .= ucfirst($r->foreign('entityId')->table);
 
                 // Create new entry, assign props and save
-                $new = Indi::model('Section')->createRow($config, true);
+                $new = m('Section')->new($config);
                 $new->save();
 
                 // Use new entry's id as parent for next iteration
@@ -263,7 +346,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 foreach (ar('section2action,grid,alteredField,search') as $nested) {
 
                     // Get tree-column, if set
-                    if ($tc = Indi::model($nested)->treeColumn()) $parent[$nested] = array(0 => 0);
+                    if ($tc = m($nested)->treeColumn()) $parent[$nested] = [0 => 0];
 
                     // Foreach nested entry
                     foreach ($r->nested($nested) as $nestedR) {
@@ -278,7 +361,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                         $values['sectionId'] = $new->id;
 
                         // Create new nested entry, assign props and save
-                        $clone = $nestedR->model()->createRow($values, true);
+                        $clone = $nestedR->model()->new($values);
 
                         // If have tree-column - assign value
                         if ($tc) $clone->$tc = $parent[$nested][$nestedR->system('level')];
@@ -296,6 +379,71 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             jflush(true, 'Copied');
 
         // Else flush failure
-        } else jflush(false, 'Duplication cancelled');
+        } else jflush(false, 'Copying cancelled');
+    }
+
+    /**
+     * Auto-create `grid` entries for `section` entry, if it's a new entry or `entityId` was changed
+     */
+    public function postSave() {
+
+        // If entityId was not changed - return
+        if (!in('entityId', $this->row->affected())) return;
+
+        // Delete old grid info when associated entity has changed
+        m('Grid')->all('`sectionId` = "' . $this->id . '"')->delete();
+
+        // Set up new grid, if associated entity remains not null, event after change
+        if (!$this->row->entityId) return;
+
+        // Get entity fields as grid columns candidates
+        $fields = m('Field')->all('`entityId` = "' . $this->row->entityId . '"', '`move`')->toArray();
+
+        // If no fields - return
+        if (!count($fields)) return;
+
+        // Declare exclusions array, because not each entity field will have corresponding column in grid
+        $exclusions = [];
+
+        // Exclude tree column, if exists
+        if ($tc = m($this->row->entityId)->treeColumn()) $exclusions[] = $tc;
+
+        // Exclude columns that have controls of several types, listed below
+        for ($i = 0; $i < count($fields); $i++) {
+            // 13 - html-editor
+            if (in_array($fields[$i]['elementId'], [13])) {
+                if ($fields[$i]['elementId'] == 6 && $fields[$i]['alias'] == 'title') {} else {
+                    $exclusions[] = $fields[$i]['alias'];
+                }
+            }
+        }
+
+        // Exclude columns that are links to parent sections
+        $parentSectionId = $this->row->sectionId;
+        do {
+            $parentSection = m()->row($parentSectionId);
+            if ($parentSection && $parentEntity = $parentSection->foreign('entityId')){
+                for ($i = 0; $i < count($fields); $i++) {
+                    if ($fields[$i]['alias'] == $parentEntity->table . 'Id' && $fields[$i]['relation'] == $parentEntity->id) {
+                        $exclusions[] = $fields[$i]['alias'];
+                    }
+                }
+                $parentSectionId = $parentSection->sectionId;
+            }
+        } while ($parentEntity);
+
+        // Create grid, stripping exclusions from final grid column list
+        $j = 0; $gridId = 0;
+        for ($i = 0; $i < count($fields); $i++) {
+            if (!in_array($fields[$i]['alias'], $exclusions)) {
+                $gridR = m('Grid')->new();
+                $gridR->gridId = $fields[$i]['elementId'] == 16 ? 0 : $gridId;
+                $gridR->sectionId = $this->row->id;
+                $gridR->fieldId = $fields[$i]['id'];
+                $gridR->save();
+                $j++;
+                if ($fields[$i]['elementId'] == 16) $gridId = $gridR->id;
+            }
+        }
     }
 }

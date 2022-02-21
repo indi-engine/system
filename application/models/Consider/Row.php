@@ -74,7 +74,7 @@ class Consider_Row extends Indi_Db_Table_Row {
         $dataRs = $this->callParent();
 
         // Prepend data rowset with 'ID' option
-        if ($field == 'connector') $dataRs->append(array('id' => -1, 'title' => 'ID', 'alias' => 'id'), 'title');
+        if ($field == 'connector') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 'title');
 
         // Return
         return $dataRs;
@@ -83,18 +83,22 @@ class Consider_Row extends Indi_Db_Table_Row {
     /**
      * Build a string, that will be used in Consider_Row->export()
      *
+     * @param string $certain
      * @return string
      */
-    protected function _ctor() {
+    protected function _ctor($certain = '') {
 
         // Use original data as initial ctor
         $ctor = $this->_original;
 
         // Exclude `id` and `title` as those will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['title']);
+        unset($ctor['id']); if (!in('title', $certain)) unset($ctor['title']);
 
         // Exclude props that will be already represented by shorthand-fn args
         foreach (ar('entityId,fieldId,consider') as $arg) unset($ctor[$arg]);
+
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
 
         // Replace ids with aliases for `foreign` and `connector` fields
         // Foreach $ctor prop
@@ -112,26 +116,24 @@ class Consider_Row extends Indi_Db_Table_Row {
             }
         }
 
-        // Stringify
-        $ctorS = var_export($ctor, true);
-
-        // Return
-        return $ctorS;
+        // Stringify and return $ctor
+        return _var_export($ctor);
     }
 
     /**
      * Build an expression for creating the current `consider` entry in another project, running on Indi Engine
      *
+     * @param string $certain
      * @return string
      */
-    public function export() {
+    public function export($certain = '') {
 
         // Build `field` entry creation line
         $lineA[] = "consider('"
             . $this->foreign('entityId')->table . "', '"
             . $this->foreign('fieldId')->alias  . "', '"
             . $this->foreign('consider')->alias . "', "
-            . $this->_ctor() . ");";
+            . $this->_ctor($certain) . ");";
 
         // Return newline-separated list of creation expressions
         return im($lineA, "\n");

@@ -1,1 +1,0 @@
-<?=Indi::admin()->foreign('profileId')->home?>

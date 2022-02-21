@@ -18,24 +18,24 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
         // Here we setup `filter` prop for `entityId` field, to ensure that filter-combo,
         // linked to `entityId` field won't use extra width
-        if ($entityIdA = Indi::db()
+        if ($entityIdA = db()
             ->query('SELECT DISTINCT `entityId` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
-            Indi::trail()->model->fields('entityId')->filter = '`id` IN (' . im($entityIdA) . ') ';
+            m()->fields('entityId')->filter = '`id` IN (' . im($entityIdA) . ') ';
 
         // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
         // linked to `changerType` field won't use extra width
-        if ($changerTypeA = Indi::db()
+        if ($changerTypeA = db()
             ->query('SELECT DISTINCT `changerType` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
-            Indi::trail()->model->fields('changerType')->filter = '`id` IN (' . im($changerTypeA) . ') ';
+            m()->fields('changerType')->filter = '`id` IN (' . im($changerTypeA) . ') ';
 
         // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
         // linked to `changerId` field won't use extra width
-        if ($changerIdA = Indi::db()
+        if ($changerIdA = db()
             ->query('SELECT DISTINCT `changerId` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
-            Indi::trail()->model->fields('changerId')->filter = '`id` IN (' . im($changerIdA) . ') ';
+            m()->fields('changerId')->filter = '`id` IN (' . im($changerIdA) . ') ';
 
         // Append `was` and `now` columns as they weren't added at the stage
         // of grid columns autocreation after current section entry was created
@@ -46,18 +46,18 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
         // If current changeLog-section is for operating on changeLog-entries,
         // nested under some single entry - exclude `key` grid column
-        if (Indi::trail(1)->section->entityId) $this->exclGridProp('key');
+        if (t(1)->section->entityId) $this->exclGridProp('key');
 
         // Else force `fieldId`-filter's combo-data to be grouped by `entityId`
-        else Indi::trail()->model->fields('fieldId')->param('groupBy', 'entityId');
+        else m()->fields('fieldId')->param('groupBy', 'entityId');
 
         // If Indi client app is used - make 'datetime' to be grouping field
         if (APP) t()->section->groupBy = 'datetime';
 
         // Set grid column titles
-        t()->model->fields('fieldId')->title = I_CHANGELOG_FIELD;
-        t()->model->fields('was')->title = I_CHANGELOG_WAS;
-        t()->model->fields('now')->title = I_CHANGELOG_NOW;
+        m()->fields('fieldId')->title = I_CHANGELOG_FIELD;
+        m()->fields('was')->title = I_CHANGELOG_WAS;
+        m()->fields('now')->title = I_CHANGELOG_NOW;
     }
 
     /**
@@ -68,18 +68,18 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
     public function parentWHERE() {
 
         // If current section does not have a parent section, or have, but is a root section - return
-        if (!Indi::trail(1)->section->sectionId) return;
+        if (!t(1)->section->sectionId) return;
 
         // Setup connector alias, which is always is 'key'
         $connectorAlias = 'key';
 
         // Get the connector value
-        $connectorValue = Indi::uri('action') == 'index'
-            ? Indi::uri('id')
-            : $_SESSION['indi']['admin']['trail']['parentId'][Indi::trail(1)->section->id];
+        $connectorValue = uri('action') == 'index'
+            ? uri('id')
+            : $_SESSION['indi']['admin']['trail']['parentId'][t(1)->section->id];
 
         // Return clause
-        return '`entityId` = "' . Indi::trail(1)->section->entityId . '" AND `' . $connectorAlias . '` = "' . $connectorValue . '"';
+        return '`entityId` = "' . t(1)->section->entityId . '" AND `' . $connectorAlias . '` = "' . $connectorValue . '"';
     }
 
     /**
@@ -90,8 +90,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
     public function adjustGridData(&$data) {
 
         // Collect shaded fields
-        if (($shade = array()) || Indi::demo(false))
-            foreach(Indi::model(Indi::trail(1)->section->entityId)->fields() as $fieldR)
+        if (($shade = []) || Indi::demo(false))
+            foreach(m(t(1)->section->entityId)->fields() as $fieldR)
                 if ($fieldR->param('shade'))
                     $shade[$fieldR->id] = true;
 
@@ -143,9 +143,9 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         }
 
         // Fetch rows that should be moved
-        $toBeRevertedRs = Indi::trail()->model->fetchAll(array(
-            '`id` IN (' . im($toBeRevertedIdA) . ')', Indi::trail()->scope->WHERE
-        ));
+        $toBeRevertedRs = m()->all([
+            '`id` IN (' . im($toBeRevertedIdA) . ')', t()->scope->WHERE
+        ]);
 
         // For each row
         foreach ($toBeRevertedRs as $toBeRevertedR) $toBeRevertedR->revert();

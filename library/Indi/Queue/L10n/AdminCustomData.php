@@ -12,11 +12,11 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         if (is_array($params)) {
 
             // Create `queueTask` entry
-            $queueTaskR = Indi::model('QueueTask')->createRow(array(
+            $queueTaskR = m('QueueTask')->new([
                 'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
                 'params' => json_encode($params),
                 'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-            ), true);
+            ]);
 
             // Save `queueTask` entries
             $queueTaskR->save();
@@ -29,7 +29,7 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         // so our aim here to obtain WHERE clause for certain field's chunk,
         // and appendChunk() call will return WHERE clause rather than `queueChunk` instance
         if ($this->fieldId) {
-            if ($fieldR_certain = m('Field')->fetchRow($this->fieldId))
+            if ($fieldR_certain = m('Field')->row($this->fieldId))
                 return $this->appendChunk($queueTaskR, $fieldR_certain->foreign('entityId'), $fieldR_certain);
 
         // Foreach `entity` entry, having `system` = "n" (e.g. project's custom entities)
@@ -37,8 +37,8 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
         } else {
 
             // Create chunks
-            foreach (Indi::model('Entity')->fetchAll('`system` = "n"', '`table` ASC') as $entityR)
-                foreach ($entityR->nested('field', ['where' => '`l10n` = "y"']) as $fieldR)
+            foreach (m('Entity')->all('`system` = "n"', '`table` ASC') as $entityR)
+                foreach ($entityR->nested('field', ['where' => '`l10n` = "y" AND `relation` != "6"']) as $fieldR)
                     $this->appendChunk($queueTaskR, $entityR, $fieldR);
 
             // Order chunks to be sure that all dependen fields will be processed after their dependencies

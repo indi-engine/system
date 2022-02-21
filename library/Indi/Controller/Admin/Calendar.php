@@ -41,7 +41,7 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
     public function adjustTrail() {
 
         // If `spaceSince` field does not exists - return
-        if (!$fieldR_spaceSince = Indi::trail()->model->fields('spaceSince')) return;
+        if (!$fieldR_spaceSince = m()->fields('spaceSince')) return;
 
         // Set `spaceField` flag to `true`
         $this->spaceFields = true;
@@ -50,22 +50,22 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         foreach (ar('spaceSince,spaceUntil') as $field) {
 
             // Set format of time to include seconds
-            Indi::trail()->model->fields($field)->param('displayTimeFormat', 'H:i:s');
+            m()->fields($field)->param('displayTimeFormat', 'H:i:s');
 
             // Append to gridFields
-            if (Indi::trail()->gridFields) Indi::trail()->gridFields->append(Indi::trail()->model->fields($field));
+            if (t()->gridFields) t()->gridFields->append(m()->fields($field));
         }
 
         // Append filter
-        Indi::trail()->filters->append(array(
-            'sectionId' => Indi::trail()->section->id,
+        t()->filters->append([
+            'sectionId' => t()->section->id,
             'fieldId' => $fieldR_spaceSince->id,
             'title' => $fieldR_spaceSince->title,
             'toolbar' => 'master'
-        ));
+        ]);
 
         // Define colors
-        Indi::trail()->section->colors = $this->defineColors();
+        t()->section->colors = $this->defineColors();
 
         // If grouping is turned On - setup kanban cfg
         if ($fieldId_kanban = t()->section->groupBy) {
@@ -74,11 +74,11 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
             $combo = t()->filtersSharedRow->combo($fieldId_kanban);
 
             // Setup kanban props
-            t()->section->kanban = array(
+            t()->section->kanban = [
                 'prop' => $combo['name'],
                 'values' => $combo['store']['ids'],
                 'titles' => array_column($combo['store']['data'], 'title')
-            );
+            ];
         }
 
         // Check whether 'since' uri-param is given, and if yes - prefill current entry's
@@ -100,16 +100,16 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         if (!t()->row || t()->row->id) return;
 
         // If clicked timestamp is not given as an uri-param - return
-        if (!$since = Indi::uri('since')) return;
+        if (!$since = uri('since')) return;
 
         // Get 'until' uri-param, if given
-        $until = Indi::uri('until');
+        $until = uri('until');
 
         // Setup `extraUri`, for 'since' and 'until' uri-params being kept even if entry's form will be reloaded
         t()->action->extraUri = '/since/' . $since . ($until ? '/until/' . $until : '');
 
         // Get space scheme and fields
-        $space = t()->model->space();
+        $space = m()->space();
 
         // Prepare array of values, that space-start fields should be prefilled with
         foreach (explode('-', $space['scheme']) as $coord) switch ($coord) {
@@ -127,10 +127,10 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         }
 
         // Append kanban value into $prefill array
-        if (($k = t()->section->kanban) && ($v = Indi::uri()->kanban)) $prefill[$k['prop']] = $v;
+        if (($k = t()->section->kanban) && ($v = uri()->kanban)) $prefill[$k['prop']] = $v;
 
         // Assign prepared values
-        $this->row->assign($prefill);
+        $this->row->set($prefill);
     }
 
     /**
@@ -269,13 +269,13 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
     public function detectColors() {
 
         // Get id of ENUM column type
-        $ENUM_columnTypeId = Indi::model('ColumnType')->fetchRow('`type` = "ENUM"')->id;
+        $ENUM_columnTypeId = m('ColumnType')->row('`type` = "ENUM"')->id;
 
         // Get ENUM fields
-        $ENUM_fieldRs = Indi::trail()->model->fields()->select($ENUM_columnTypeId, 'columnTypeId');
+        $ENUM_fieldRs = m()->fields()->select($ENUM_columnTypeId, 'columnTypeId');
 
         // Try to find color definitions
-        $found = array();
+        $found = [];
         foreach ($ENUM_fieldRs as $ENUM_fieldR)
             foreach ($ENUM_fieldR->nested('enumset') as $enumsetR)
                 if ($color = Indi::rexm('/(background|color):([^;]+);?/', $enumsetR->title, 2))
@@ -286,17 +286,17 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
 
         // If major-color field and/or point-color field are explicitly defined - setup info
         foreach (ar('major,point') as $kind)
-            if ($$kind = t()->model->space('fields.colors.' . $kind))
-                $info[$kind] = array(
+            if ($$kind = m()->space('fields.colors.' . $kind))
+                $info[$kind] = [
                     'field' => $$kind,
                     'colors' => $found[$$kind]
-                );
+                ];
 
         // If $info was set up - return it
         if ($info) return $info;
 
         // Else auto-choose field having bigger qty of colored enum values
-        $info['major'] = array('field' => '', 'colors' => array());
+        $info['major'] = ['field' => '', 'colors' => []];
         foreach ($found as $field => $colors)
             if (count($colors) > count($info['major']['colors']) && $info['major']['field'] = $field)
                 $info['major']['colors'] = $colors;
@@ -341,13 +341,13 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
                     hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))) : '';
 
             // Build css
-            $css = array(
+            $css = [
                 'color' => sprintf('rgb(%d, %d, %d)', hexdec(substr($hex, 0, 2)) - 50,
                     hexdec(substr($hex, 2, 2)) - 50, hexdec(substr($hex, 4, 2)) - 50),
                 'border-color' => $color,
                 'background-color' => $background,
                 'background-color-selected' => $backgroundSelected
-            );
+            ];
 
             // Adjust it for custom needs
             $this->adjustColorsCss($option, $color, $css);
@@ -368,10 +368,10 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
     public function adjustColors(&$info) {
 
         // Set empty info
-        if (!$info) $info = array(
-            'major' => array('field' => '', 'colors' => array()),
-            'point' => array('field' => '', 'colors' => array())
-        );
+        if (!$info) $info = [
+            'major' => ['field' => '', 'colors' => []],
+            'point' => ['field' => '', 'colors' => []]
+        ];
 
         // Append one more color definition
         $info['major']['colors']['default'] = 'lime';

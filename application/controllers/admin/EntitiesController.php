@@ -1,20 +1,29 @@
 <?php
-class Admin_EntitiesController extends Indi_Controller_Admin {
+class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
+    /**
+     * Create php classes files
+     */
     public function phpAction() {
 
-        // PHP class files for sections of type 'system' - will be created in '/core',                                                          //$repositoryDirA = array('s' => 'core', 'o' => 'coref', 'p' => 'www');
-        // 'often' - in '/coref', 'project' - in '/www'
-        $repositoryDirA = array('y' => 'core', 'o' => 'coref', 'n' => 'www');
+        // PHP class files for entities of fraction:
+        // - 'system' - will be created in VDR . '/system',
+        // - 'public' -                 in VDR . '/public',
+        // - 'custom' -                 in ''
+        $repoDirA = [
+            'y' => VDR . '/system',
+            'o' => VDR . '/public',
+            'n' => ''
+        ];
 
         // If current section has a type, that is (for some reason) not in the list of known types
-        if (!in($this->row->system, array_keys($repositoryDirA)))
+        if (!in($this->row->system, array_keys($repoDirA)))
 
             // Flush an error
             jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen entity');
 
         // Build the dir name, that model's php-file will be created in
-        $dir = Indi::dir(DOC . STD . '/' . $repositoryDirA[$this->row->system] . '/application/models/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->system] . '/application/models/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -26,7 +35,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
         if (!is_file($modelFn = $dir . '/' . $model . '.php')) {
 
             // Build template model file name
-            $tplModelFn = DOC. STD . '/core/application/models/{Model}.php';
+            $tplModelFn = DOC. STD . VDR . '/system/application/models/{Model}.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
             if (!is_file($tplModelFn)) jflush(false, 'No template-model file found');
@@ -57,7 +66,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
         if (!is_file($modelRowFn = $dir . '/' . $model . '/Row.php')) {
 
             // Build template model's rowClass file name
-            $tplModelRowFn = DOC. STD . '/core/application/models/{Model}/Row.php';
+            $tplModelRowFn = DOC. STD . VDR . '/system/application/models/{Model}/Row.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model's rowClass file
             if (!is_file($tplModelRowFn)) jflush(false, 'No template file for model\'s rowClass found');
@@ -82,58 +91,58 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
     public function authorAction() {
 
         // Get model
-        $model = Indi::model($this->row->id);
+        $model = m($this->row->id);
 
         // If `author` field exists - flush error
         if ($model->fields('author'))
             jflush(false, 'Группа полей "Автор" уже существует в структуре сущности "' . $this->row->title . '"');
 
         // Get involded `element` entries
-        $elementRs = Indi::model('Element')->fetchAll('FIND_IN_SET(`alias`, "span,combo,datetime")');
+        $elementRs = m('Element')->all('FIND_IN_SET(`alias`, "span,combo,datetime")');
 
         // Prepare fields config
-        $fieldA = array(
-            'author' => array(
+        $fieldA = [
+            'author' => [
                 'title' => 'Создание',
                 'elementId' => $elementRs->gb('span', 'alias')->id
-            ),
-            'authorType' => array(
+            ],
+            'authorType' => [
                 'title' => 'Кто создал',
                 'storeRelationAbility' => 'one',
                 'elementId' => $elementRs->gb('combo', 'alias')->id,
                 'columnTypeId' => 3,
                 'defaultValue' => '<?=Indi::me(\'mid\')?>',
-                'relation' => Indi::model('Entity')->id(),
-                'filter' => '`id` IN (' . Indi::db()->query('
+                'relation' => m('Entity')->id(),
+                'filter' => '`id` IN (' . db()->query('
                     SELECT GROUP_CONCAT(DISTINCT IF(`entityId`, `entityId`, 11)) FROM `profile` WHERE `toggle` = "y"
                 ')->fetchColumn() . ')'
-            ),
-            'authorId' => array(
+            ],
+            'authorId' => [
                 'title' => 'Кто именно',
                 'storeRelationAbility' => 'one',
                 'elementId' => $elementRs->gb('combo', 'alias')->id,
                 'columnTypeId' => 3,
                 'defaultValue' => '<?=Indi::me(\'id\')?>',
-            ),
-            'authorTs' => array(
+            ],
+            'authorTs' => [
                 'title' => 'Когда',
                 'elementId' => $elementRs->gb('datetime', 'alias')->id,
                 'columnTypeId' => 9,
                 'defaultValue' => '<?=date(\'Y-m-d H:i:s\')?>'
-            )
-        );
+            ]
+        ];
 
         // Create fields
         foreach ($fieldA as $alias => $fieldI) {
-            $fieldRA[$alias] = Indi::model('Field')->createRow();
+            $fieldRA[$alias] = m('Field')->new();
             $fieldRA[$alias]->entityId = $this->row->id;
             $fieldRA[$alias]->alias = $alias;
-            $fieldRA[$alias]->assign($fieldI);
+            $fieldRA[$alias]->set($fieldI);
             $fieldRA[$alias]->save();
         }
 
         //$fieldRA[$alias]->satellite = $fieldRA['authorType']->id;
-        consider($this->row->id, 'authorId', 'authorType', array('required' => 'y'));
+        consider($this->row->id, 'authorId', 'authorType', ['required' => 'y']);
 
         // Flush success
         jflush(true, 'Группа полей "Создание" была добавлена в структуру сущности "' . $this->row->title . '"');
@@ -145,7 +154,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
     public function toggleAction() {
 
         // Get model
-        $model = Indi::model($this->row->id);
+        $model = m($this->row->id);
 
         // If `author` field exists - flush error
         if ($model->fields('toggle'))
@@ -155,18 +164,18 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
         // set up that column `toggle` was created not by using Indi Engine, so it does not have
         // assotiated entries neither in `field` table, nor in `enumset` table, so the below line
         // just remove the column, for the ability to re-create in as a part of the process of field creation
-        if ($this->row->table == 'action') Indi::db()->query('ALTER TABLE `action` DROP `toggle`');
+        if ($this->row->table == 'action') db()->query('ALTER TABLE `action` DROP `toggle`');
 
         // Create field
-        $fieldR = Indi::model('Field')->createRow(array(
+        $fieldR = m('Field')->new([
             'entityId' => $this->row->id,
             'title' => 'Статус',
             'alias' => 'toggle',
             'storeRelationAbility' => 'one',
-            'elementId' => Indi::model('Element')->fetchRow('`alias` = "combo"')->id,
-            'columnTypeId' => Indi::model('ColumnType')->fetchRow('`type` = "ENUM"')->id,
+            'elementId' => m('Element')->row('`alias` = "combo"')->id,
+            'columnTypeId' => m('ColumnType')->row('`type` = "ENUM"')->id,
             'defaultValue' => 'y'
-        ), true);
+        ]);
 
         // Save field
         $fieldR->save();
@@ -177,20 +186,13 @@ class Admin_EntitiesController extends Indi_Controller_Admin {
         $y->save();
 
         // Create one more enumset option within this field
-        Indi::model('Enumset')->createRow(array(
+        m('Enumset')->new([
             'fieldId' => $y->fieldId,
             'title' => '<span class="i-color-box" style="background: red;"></span>Выключен',
             'alias' => 'n'
-        ), true)->save();
+        ])->save();
 
         // Flush success
         jflush(true, 'Поле "Статус" было добавлено в структуру сущности "' . $this->row->title . '"');
-    }
-
-    /**
-     * Flush entity entry's creation expression, to be applied on another project running on Indi Engine
-     */
-    public function exportAction() {
-        jflush(true, '<textarea style="width: 500px; height: 400px;">' . $this->row->export() . '</textarea>');
     }
 }

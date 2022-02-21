@@ -14,7 +14,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      *
      * @var array
      */
-    protected $_aliases = array();
+    protected $_aliases = [];
 
     /**
      * Contains an array with fields ids as keys, and their indexes within $this->_rows array as values.
@@ -22,7 +22,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      *
      * @var array
      */
-    protected $_ids = array();
+    protected $_ids = [];
 
     /**
      * Constructor
@@ -35,12 +35,11 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         parent::__construct($config);
 
         // Foreach indexed prop - setup indexes
-        foreach (array('aliases' => 'alias', 'ids' => 'id') as $index => $prop)
+        foreach (['aliases' => 'alias', 'ids' => 'id'] as $index => $prop) {
             $this->{'_' . $index} = array_flip(
-                $config[$index]
-                    ? $config[$index]
-                    : parent::column($prop)
+                $config[$index] ?: parent::column($prop)
             );
+        }
     }
 
     /**
@@ -52,10 +51,10 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
     public function truncate() {
 
         // Reset $this->_aliases property
-        $this->_aliases = array();
+        $this->_aliases = [];
 
         // Reset $this->_ids property
-        $this->_ids = array();
+        $this->_ids = [];
 
         // Call the truncate() method of a parent class and return it's result - rowset itself
         return parent::truncate();
@@ -84,9 +83,10 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      *
      * @param $column
      * @param bool|string $imploded
+     * @param bool $unique
      * @return array
      */
-    public function column($column, $imploded = false) {
+    public function column($column, $imploded = false, $unique = false) {
 
         // If $column argument is 'alias'
         if ($column == 'alias') {
@@ -98,7 +98,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
             return $imploded ? implode(is_string($imploded) ? $imploded : ',', $valueA) : $valueA;
 
         // Else call ordinary function
-        } else return parent::column($column, $imploded);
+        } else return parent::column($column, $imploded, $unique);
     }
 
     /**
@@ -195,7 +195,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      * @param $nested
      * @return string
      */
-    public function keywordWHERE($keyword, $exclude = array(), array $nested = array()) {
+    public function keywordWHERE($keyword, $exclude = [], array $nested = []) {
 
         // Convert quotes and perform an urldecode
         $keyword = strip_tags(urldecode($keyword));
@@ -217,7 +217,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         if (mb_strlen($keyword, 'utf-8') == 0) return;
 
         // Clauses stack
-        $where = array();
+        $where = [];
 
         // Set up info about column types to be available within each grid field
         $this->foreign('columnTypeId');
@@ -231,10 +231,10 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
 
         // Append clauses, for deeper/nested keyword-search, if $nested argument is given
         if ($this[0]) {
-            $connector = Indi::model($this[0]->entityId)->table() . 'Id';
+            $connector = m($this[0]->entityId)->table() . 'Id';
             foreach ($nested as $table => $columns) {
-                if ($nestedWHERE = Indi::model($table)->fields($columns, 'rowset')->keywordWHERE($keyword)) {
-                    $idA = Indi::db()->query('
+                if ($nestedWHERE = m($table)->fields($columns, 'rowset')->keywordWHERE($keyword)) {
+                    $idA = db()->query('
                         SELECT `' . $connector . '` FROM `block` WHERE ' . $nestedWHERE
                     )->fetchAll(PDO::FETCH_COLUMN);
                     $where[] = count($idA) ? '`id` IN (' . implode(',', $idA) . ')' : 'FALSE';
@@ -243,7 +243,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         }
 
         // Setup $nonFalseClauseA array
-        $nonFALSE = array(); for ($i = 0; $i < count($where); $i++) if ($where[$i] != 'FALSE') $nonFALSE[] = $where[$i];
+        $nonFALSE = []; for ($i = 0; $i < count($where); $i++) if ($where[$i] != 'FALSE') $nonFALSE[] = $where[$i];
 
         // If we have at least one non-FALSE clause - return them all, imploded by 'OR', else if
         // we have only FALSE clauses - return single 'FALSE', otherwise, if we have no clauses at all - return null
@@ -305,12 +305,12 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
 
             // Inject new value in $this->_aliases array
             $this->_aliases = array_flip($this->_aliases);
-            array_splice($this->_aliases, $idx, 0, array($alias));
+            array_splice($this->_aliases, $idx, 0, [$alias]);
             $this->_aliases = array_flip($this->_aliases);
 
             // Inject new value in $this->_ids array
             $this->_ids = array_flip($this->_ids);
-            array_splice($this->_ids, $idx, 0, array($id));
+            array_splice($this->_ids, $idx, 0, [$id]);
             $this->_ids = array_flip($this->_ids);
 
             // Call parent
@@ -332,14 +332,14 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
     public function combo($name, $table, $multiple = false) {
 
         // Append
-        $this->append(array(
+        $this->append([
             'alias' => $name,
             'columnTypeId' => $multiple ? 1 : 3,
             'storeRelationAbility' => $multiple ? 'many' : 'one',
             'elementId' => 23,
             'defaultValue' => $multiple ? '' : 0,
-            'relation' => Indi::model($table)->id()
-        ));
+            'relation' => m($table)->id()
+        ]);
 
         // Return field itself
         return $this->field($name);
@@ -389,7 +389,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
             if ($fieldR->storeRelationAbility == 'none') continue;
 
             // Get further-foreign field
-            if (!$further = Indi::model($fieldR->relation)->fields($m[2])) continue;
+            if (!$further = m($fieldR->relation)->fields($m[2])) continue;
 
             // Use cloned field
             $further = clone $further;

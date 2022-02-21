@@ -12,10 +12,6 @@ username = empty
 password = empty
 dbname   = empty
 
-[ws]
-enabled = false
-socket =
-
 [mail]
 default.from.name = empty.local
 default.from.email = info@empty.local
@@ -36,8 +32,22 @@ gapi.key =
 scriptPath = application/views
 
 [upload]
-path = core/data/upload
+path = data/upload
 
 [ckeditor]
 key = 
 uploadPath = fck
+
+[ws]
+enabled = true
+realtime = true
+socket = empty.local
+port = 8888
+log = true
+
+[rabbitmq]
+enabled = true
+host = localhost
+port = 5672
+user = guest
+pass = guest

@@ -18,7 +18,7 @@ class Indi_View_Action_Admin_Row_Print extends Indi_View_Action_Admin_Row {
      *
      * @var array
      */
-    public $replace = array();
+    public $replace = [];
 
     /**
      * @return string
@@ -38,10 +38,10 @@ class Indi_View_Action_Admin_Row_Print extends Indi_View_Action_Admin_Row {
                     if (!preg_match('~\[w([0-9]+)\]v([A-Z0-9][a-zA-Z0-9]+)~s', strip_tags($expr), $m1)) continue;
 
                     // Prepare regexp snap points
-                    $rex = array(
+                    $rex = [
                         '<span[^>]+class=MsoCommentReference.*? id="_anchor_' . ($idx = $m1[1]) . '"',
                         'mso-special-character:comment\'>&nbsp;</span></span></span>'
-                    );
+                    ];
 
                     // If template variable is not empty/zero/unset/etc
                     if (!$this->replace[lcfirst($key = $m1[2])])
@@ -81,7 +81,7 @@ class Indi_View_Action_Admin_Row_Print extends Indi_View_Action_Admin_Row {
         ob_start();
 
         // Push rendered printable contents into special storage, accessible for javascript
-        Indi::trail()->row->view('#print', $this->plain);
+        t()->row->view('#print', $this->plain);
 
         // Return buffered output with parent's return-value
         return ob_get_clean() . parent::render();

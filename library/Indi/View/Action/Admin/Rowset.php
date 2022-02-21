@@ -6,7 +6,7 @@ class Indi_View_Action_Admin_Rowset extends Indi_View_Action_Admin {
         ob_start();
 
         // Setup filters
-        foreach (Indi::trail()->filters ?: array() as $filter)
+        foreach (t()->filters ?: [] as $filter)
             if ($field = $filter->foreign($filter->further ? 'further' : 'fieldId'))
                 if ($field->storeRelationAbility != 'none' || $field->columnTypeId == 12)
                     Indi::view()->filterCombo($filter);
@@ -29,23 +29,23 @@ class Indi_View_Action_Admin_Rowset extends Indi_View_Action_Admin {
         return;
 
         // Get the id
-        $id = Indi::trail()->scope->actionrowset['south']['activeTab'];
+        $id = t()->scope->actionrowset['south']['activeTab'];
 
         // If $id is null/empty
         if (!strlen($id)) return;
 
         // If last active tab was minimized - return
-        if (Indi::trail()->scope->actionrowset['south']['height'] == 25) return;
+        if (t()->scope->actionrowset['south']['height'] == 25) return;
 
         // Build url, depending on whether or not $id is non-zero
-        $url = '/' . Indi::trail()->section->alias . '/form/';
+        $url = '/' . t()->section->alias . '/form/';
         if ($id) $url .= 'id/' . $id . '/';
-        $url .= 'ph/' . Indi::trail()->scope->hash . '/';
-        if ($id) $url .= 'aix/' . Indi::trail()->model->detectOffset(
-            Indi::trail()->scope->WHERE, Indi::trail()->scope->ORDER, $id
+        $url .= 'ph/' . t()->scope->hash . '/';
+        if ($id) $url .= 'aix/' . m()->detectOffset(
+            t()->scope->WHERE, t()->scope->ORDER, $id
         ) . '/';
 
         // Get the response, and assign it into the scope' special place
-        Indi::trail()->scope->actionrowset['south']['activeTabResponse'][$id] = Indi::lwget($url);
+        t()->scope->actionrowset['south']['activeTabResponse'][$id] = Indi::lwget($url);
     }
 }

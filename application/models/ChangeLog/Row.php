@@ -17,7 +17,7 @@ class ChangeLog_Row extends Indi_Db_Table_Row {
         if (!in($this->foreign('fieldId')->foreign('elementId')->alias, $types)) {
 
             // Get titles of allowed field types
-            $titles = Indi::model('Element')->fetchAll('FIND_IN_SET(`alias`, "' . $types . '")')->column('title');
+            $titles = m('Element')->all('FIND_IN_SET(`alias`, "' . $types . '")')->column('title');
 
             // Get title of last allowed element
             $last = array_pop($titles);
@@ -31,9 +31,9 @@ class ChangeLog_Row extends Indi_Db_Table_Row {
             jflush(false, 'Восстановление недоступно для полей, являющихся внешними ключами');
 
         // Get field alias
-        $field = Indi::model($this->entityId)->fields($this->fieldId)->alias;
+        $field = m($this->entityId)->fields($this->fieldId)->alias;
 
         // Revert value
-        $this->foreign('key')->assign(array($field => $this->was))->save();
+        $this->foreign('key')->set([$field => $this->was])->save();
     }
 }

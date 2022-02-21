@@ -8,6 +8,13 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         // Setup sibling combo
         Indi::view()->siblingCombo();
 
+        // Create `realtime` entry having `type` = "context"
+        if (!m('realtime')->row([
+            '`type` = "context"',
+            '`token` = "' . t()->bid() . '"',
+            '`realtimeId` = "' . m('realtime')->row('`token` = "' . CID . '"')->id . '"'
+        ])) t()->context();
+
         // Prepare and assign raw response for rendering tab contents, if need
         $this->renderTab();
 
@@ -23,33 +30,33 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
     public function renderTab() {
 
         // If no subsections - return
-        if (!Indi::trail()->sections->count()) return;
+        if (!t()->sections->count()) return;
 
         // If `southSeparate` flag is `true` - return
-        if (Indi::trail()->section->southSeparate) return;
+        if (t()->section->southSeparate) return;
 
         // If presence of south panel should be automatically detected,
         // Check whether there are 10 or less visible fields,
         // and if yes - mark that south panel can be shown
-        if (Indi::trail()->action->south == 'auto')
-            if (Indi::trail()->fields->select(': != "hidden"', 'mode')->count() <= 10)
-                Indi::trail()->action->south = 'yes';
+        if (t()->action->south == 'auto')
+            if (t()->fields->select(': != "hidden"', 'mode')->count() <= 10)
+                t()->action->south = 'yes';
 
         // If there should be no south panel - return
-        if (Indi::trail()->action->south != 'yes') return;
+        if (t()->action->south != 'yes') return;
 
         // Get last active tab
-        $nested = Indi::trail()->scope->actionrow['south']['activeTab'];
+        $nested = t()->scope->actionrow['south']['activeTab'];
 
         // If last active tab was minimized - return
-        if (Indi::trail()->scope->actionrow['south']['height'] == 25) return;
+        if (t()->scope->actionrow['south']['height'] == 25) return;
 
         // If no last active tab, use first section alias instead
-        if (!$nested) $nested = Indi::trail()->sections->at(0)->alias;
+        if (!$nested) $nested = t()->sections->at(0)->alias;
 
         // Build url, even if parent entry is non yet existing entry
-        $url = '/' . $nested . '/index/id/' . (Indi::trail()->row->id ?: 0)
-            . '/ph/' . Indi::uri('ph') . '/aix/' . Indi::uri('aix') . '/';
+        $url = '/' . $nested . '/index/id/' . (t()->row->id ?: 0)
+            . '/ph/' . uri('ph') . '/aix/' . uri('aix') . '/';
 
         // Get the response
         $out = Indi::lwget($url);
@@ -74,6 +81,6 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         }
 
         // Assign response text
-        foreach (Indi::trail()->sections as $sectionR) if ($sectionR->alias == $nested) $sectionR->responseText = $out;
+        foreach (t()->sections as $sectionR) if ($sectionR->alias == $nested) $sectionR->responseText = $out;
     }
 }

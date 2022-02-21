@@ -20,44 +20,74 @@ class Indi_Db {
      *
      * @var array
      */
-    protected static $_modelA = array();
+    protected static $_modelA = [];
 
     /**
      * Array of existing entities, with capitalized entity table names as keys
      *
      * @var array
      */
-    protected static $_entityA = array();
+    protected static $_entityA = [];
 
     /**
      * Array of table names of existing entities, which have `useCache` flag turned on
      *
      * @var array
      */
-    protected static $_cacheA = array();
+    protected static $_cacheA = [];
 
     /**
      * Array of table names of existing entities, which have `alternate` flag turned on
      *
      * @var array
      */
-    protected static $_roleA = array();
+    protected static $_roleA = [];
 
     /**
      * Localized fields, grouped by table names
      *
      * @var array
      */
-    protected static $_l10nA = array();
+    protected static $_l10nA = [];
 
     /**
-     * Array of *_Row instances preloaded by Indi::model('ModelName')->preload(true) call
+     * Array of *_Row instances preloaded by m('ModelName')->preload(true) call
      * Those instances are grouped by entity table name and are used as a return value for
      * $row->foreign('foreignKeyName'), $rowset->foreign('foreignKeyName') and $schedule->distinct() calls
      *
      * @var array
      */
-    protected static $_preloadedA = array();
+    protected static $_preloadedA = [];
+
+    /**
+     * Arrays of config values. Default - are `field`.`alias` => `field`.`defaultFalue` pairs,
+     * grouped by entity's table name and entity entry id, e.g.
+     *     'default' => [
+     *         'element' => [
+     *             23 => [                            // 23 is the ID of `element` entry having `alias` = 'combo'
+     *                 'optionHeight' => 14,              // e.g 14px by default
+     *                 'groupBy' => '',                   // No options grouping by default
+     *                 ...
+     *             ]
+     *         ]
+     *     ]
+     * Certain - are `param`.`cfgField`->`field`.`alias` => `param`.`cfgValue` pairs
+     *     'certain' => [
+     *         'field' => [
+     *             19 => [                           // 19 is the ID of `field` entry having `alias` = 'entityId' and `elementId` = "23"
+     *                 'groupBy' => 'fraction'           // entity titles will be grouped by `entity`.`fraction`
+     *             ]
+     *         ]
+     *     ]
+     *
+     * So, default values are values specified by config fields definitions,
+     * and certain values are values that are explicitly defined, so they have the priority
+     * @var array
+     */
+    public static $_cfgValue = [
+        'default' => [],
+        'certain' => []
+    ];
 
     /**
      * Store queries count
@@ -69,7 +99,7 @@ class Indi_Db {
     /**
      * @var array
      */
-    public static $DELETEQueryA = array();
+    public static $DELETEQueryA = [];
 
     /**
      * Flag
@@ -85,7 +115,7 @@ class Indi_Db {
      * @param array $arg
      * @return null|Indi_Db
      */
-    public static function factory($arg = array())
+    public static function factory($arg = [])
     {
         // If singleton instance is not yet created or 'reload' key exists within $config array argument
         if (null === self::$_instance || is_int($arg)) {
@@ -160,22 +190,35 @@ class Indi_Db {
             // Get temporary table names array
             foreach($entityA as $entityI) $_[$entityI['id']] = $entityI['table'];
 
-            // Collect localized fields
-            foreach ($fieldA as $fieldI)
-                if ($fieldI['l10n'] == 'y' || $fieldI['l10n'] == 'qn')
-                    self::$_l10nA[$_[$fieldI['entityId']]][] = $fieldI['alias'];
+            // Make fields ids to be used as the keys
+            $fieldA = array_combine(array_column($fieldA, 'id'), $fieldA);
+
+            // Walk through fields, and
+            foreach ($fieldA as $fieldI) {
+
+                // Collect config-fields alias=>defaultValue pairs, grouped by entity and entry
+                if ($fieldI['entry'])
+                    self::$_cfgValue['default']
+                        [$_[$fieldI['entityId']]]
+                            [$fieldI['entry']]
+                                [$fieldI['alias']] = $fieldI['defaultValue'];
+
+                // Collect localized fields
+                if ($fieldI['storeRelationAbility'] == 'none' && in($fieldI['l10n'], 'y,qn'))
+                    self::$_l10nA[$_[$fieldI['entityId']]][$fieldI['id']] = $fieldI['alias'];
+            }
 
             // Unset tmp variable
             unset($_);
 
-            // Overwrite Indi::ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
+            // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
-            if (($lang = $_COOKIE['i-language']) && Indi::ini('lang')->admin != $lang
-                && in($lang, Indi::db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->fetchAll(PDO::FETCH_COLUMN)))
-                Indi::ini('lang')->admin = $_COOKIE['i-language'];
+            if (($lang = $_COOKIE['i-language']) && ini('lang')->admin != $lang
+                && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->fetchAll(PDO::FETCH_COLUMN)))
+                ini('lang')->admin = $_COOKIE['i-language'];
 
             // Setup json-templates for each possible fractions
-            if (Indi::db()->query('
+            if (db()->query('
                 SELECT COUNT(`column_name`) 
                 FROM `INFORMATION_SCHEMA`.`COLUMNS` 
                 WHERE 1
@@ -183,8 +226,8 @@ class Indi_Db {
                   AND `table_name` = "lang" 
                   AND `column_name` IN ("adminSystemUi", "move")
             ')->fetchColumn() == 2)
-                foreach (array('adminSystemUi', 'adminCustomUi', 'adminCustomData', 'adminSystemUi,adminCustomUi') as $fraction)
-                    Lang::$_jtpl[$fraction] = Indi::db()->query('
+                foreach (['adminSystemUi', 'adminCustomUi', 'adminCustomData', 'adminSystemUi,adminCustomUi'] as $fraction)
+                    Lang::$_jtpl[$fraction] = db()->query('
                     SELECT `alias`, "" AS `holder` 
                     FROM `lang` 
                     WHERE "y" IN (`' . im(ar($fraction), '`,`') . '`)
@@ -193,20 +236,20 @@ class Indi_Db {
 
             // Get info about existing control elements
             $elementA = self::$_instance->query('SELECT * FROM `element`')->fetchAll();
-            $iElementA = array(); foreach ($elementA as $elementI)
-                $iElementA[$elementI['id']] = new Indi_Db_Table_Row_Noeval(array(
+            $iElementA = []; foreach ($elementA as $elementI)
+                $iElementA[$elementI['id']] = new Indi_Db_Table_Row_Noeval([
                     'table' => 'element',
                     'original' => $elementI
-                ));
+                ]);
             unset($elementA);
 
             // Get info about existing column types
             $columnTypeA = self::$_instance->query('SELECT * FROM `columnType`')->fetchAll();
-            $iColumnTypeA = array(); foreach ($columnTypeA as $columnTypeI)
-                $iColumnTypeA[$columnTypeI['id']] = new ColumnType_Row(array(
+            $iColumnTypeA = []; foreach ($columnTypeA as $columnTypeI)
+                $iColumnTypeA[$columnTypeI['id']] = new ColumnType_Row([
                     'table' => 'columnType',
                     'original' => $columnTypeI
-                ));
+                ]);
             unset($columnTypeA);
 
             // If certain model should be reloaded, collect ids of it's fields, for use them as a part of WHERE clause
@@ -214,7 +257,7 @@ class Indi_Db {
             if ($entityId) {
 
                 // Declare array for collecting fields ids
-                $fieldIdA = array();
+                $fieldIdA = [];
 
                 // Fulfil that array
                 foreach ($fieldA as $fieldI) $fieldIdA[] = $fieldI['id'];
@@ -227,11 +270,11 @@ class Indi_Db {
             )->fetchAll();
 
             // Group them by `fieldId`
-            $fEnumsetA = array(); foreach ($enumsetA as $enumsetI)
-                $fEnumsetA[$enumsetI['fieldId']][] = new Enumset_Row(array(
+            $fEnumsetA = []; foreach ($enumsetA as $enumsetI)
+                $fEnumsetA[$enumsetI['fieldId']][] = new Enumset_Row([
                     'table' => 'enumset',
                     'original' => $enumsetI
-                ));
+                ]);
             unset($enumsetA);
 
             // Get info about existing consider-fields
@@ -241,45 +284,59 @@ class Indi_Db {
             )->fetchAll();
 
             // Group them by `fieldId`
-            $fConsiderA = array(); foreach ($considerA as $considerI)
-                $fConsiderA[$considerI['fieldId']][] = new Indi_Db_Table_Row_Noeval(array(
+            $fConsiderA = []; foreach ($considerA as $considerI)
+                $fConsiderA[$considerI['fieldId']][] = new Indi_Db_Table_Row_Noeval([
                     'table' => 'consider',
                     'original' => $considerI
-                ));
+                ]);
             unset($considerA);
 
-            // Get info about existing field params
-            // 1. Get info about possible field element params
-            $possibleElementParamA = self::$_instance->query('SELECT * FROM `possibleElementParam`')->fetchAll();
+            // Temporary flag indicating whether or not we have already removed legacy cfgFields implementation
+            if ($pep = self::$_instance->query('SHOW TABLES LIKE "possibleElementParam"')->fetchColumn()) {
 
-            // 2. Declare two arrays, where:
-            //   a. possible params as array of arrays, each having params aliases as keys, and devault values as
-            //      values, grouped by elementId
-            //   b. possible params as array, having params ids as keys, and aliases as values
-            // - respectively
-            $ePossibleElementParamA = array(); $possibleElementParamAliasA = array();
+                // Get info about existing field params
+                // 1. Get info about possible field element params
+                $possibleElementParamA = self::$_instance->query('SELECT * FROM `possibleElementParam`')->fetchAll();
 
-            // 3. Fulfil these two arrays
-            foreach (l10n($possibleElementParamA, 'defaultValue') as $possibleElementParamI) {
-                $ePossibleElementParamA[$possibleElementParamI['elementId']]
+                // 2. Declare two arrays, where:
+                //   a. possible params as array of arrays, each having params aliases as keys, and devault values as
+                //      values, grouped by elementId
+                //   b. possible params as array, having params ids as keys, and aliases as values
+                // - respectively
+                $ePossibleElementParamA = []; $possibleElementParamAliasA = [];
+
+                // 3. Fulfil these two arrays
+                foreach (l10n($possibleElementParamA, 'defaultValue') as $possibleElementParamI) {
+                    $ePossibleElementParamA[$possibleElementParamI['elementId']]
                     [$possibleElementParamI['alias']] = $possibleElementParamI['defaultValue'];
-                $possibleElementParamAliasA[$possibleElementParamI['id']] = $possibleElementParamI['alias'];
+                    $possibleElementParamAliasA[$possibleElementParamI['id']] = $possibleElementParamI['alias'];
+                }
+                unset($possibleElementParamA);
             }
-            unset($possibleElementParamA);
 
-            // 4. Get info about existing field parameters
+            // 4. Get info about explicit set (e.g. non-default) config-fields' values
             $paramA = self::$_instance->query('SELECT * FROM `param`' . (is_array($fieldIdA)
                 ? ' WHERE FIND_IN_SET(`fieldId`, "' . implode(',', $fieldIdA) . '") ' : ''))->fetchAll();
-            $fParamA = array(); foreach (l10n($paramA, 'value') as $paramI) $fParamA[$paramI['fieldId']]
-            [$possibleElementParamAliasA[$paramI['possibleParamId']]] = $paramI['value']; unset($paramA);
+            $fParamA = []; foreach (l10n($paramA, 'value') as $paramI) {
+                if ($pep) $fParamA[$paramI['fieldId']][$possibleElementParamAliasA[$paramI['possibleParamId']]] = $paramI['value'];
+                if (array_key_exists('cfgField', $paramI)) {
+                    if ($fieldA[$paramI['cfgField']]['relation'] == 5)  $paramI['cfgValue'] = $paramI['cfgValue']
+                        ? im(array_column(array_intersect_key($fieldA, array_flip(explode(',', $paramI['cfgValue']))), 'alias'))
+                        : '';
+                    self::$_cfgValue['certain']['field'][$paramI['fieldId']][$fieldA[$paramI['cfgField']]['alias']]
+                        = preg_match('~^{"[a-zA-Z]{2,5}":~', $paramI['cfgValue'])
+                            ? json_decode($paramI['cfgValue'])->{ini('lang')->admin}
+                            : $paramI['cfgValue'];
+                }
+            }
             unset($paramA);
 
             // Group fields by their entity ids, and append system info
-            $eFieldA = array();
+            $eFieldA = [];
             foreach ($fieldA as $fieldI) {
 
                 // Setup original data
-                $fieldI = array('original' => $fieldI);
+                $fieldI = ['original' => $fieldI];
 
                 // Setup foreign data for 'elementId' foreign key
                 $fieldI['foreign']['elementId'] = $iElementA[$fieldI['original']['elementId']];
@@ -290,42 +347,54 @@ class Indi_Db {
 
                 // Setup nested rowset with 'enumset' rows, if field contains foreign keys from 'enumset' table
                 if ($fieldI['original']['relation'] == '6') {
-                    $fieldI['nested']['enumset'] = new Indi_Db_Table_Rowset(array(
+                    $fieldI['nested']['enumset'] = new Indi_Db_Table_Rowset([
                         'table' => 'enumset',
                         'rows' => $fEnumsetA[$fieldI['original']['id']],
                         'rowClass' => 'Enumset_Row',
-                        'found' => count($fEnumsetA[$fieldI['original']['id']])
-                    ));
+                        'found' => count($fEnumsetA[$fieldI['original']['id']] ?: [])
+                    ]);
                     unset($fEnumsetA[$fieldI['id']]);
                 }
 
                 // Setup nested rowset with 'consider' rows, if there are consider-fields defined for current field
                 if ($fConsiderA[$fieldI['original']['id']]) {
-                    $fieldI['nested']['consider'] = new Indi_Db_Table_Rowset(array(
+                    $fieldI['nested']['consider'] = new Indi_Db_Table_Rowset([
                         'table' => 'consider',
                         'rows' => $fConsiderA[$fieldI['original']['id']],
                         'rowClass' => 'Indi_Db_Table_Row_Noeval',
                         'found' => count($fConsiderA[$fieldI['original']['id']])
-                    ));
+                    ]);
                     unset($fConsiderA[$fieldI['id']]);
                 }
 
+                // Shortcuts
+                $elementId = $fieldI['original']['elementId']; $fieldId = $fieldI['original']['id'];
+
                 // Setup params, as array, containing default values, and actual values arrays merged to single array
-                if ($ePossibleElementParamA[$fieldI['original']['elementId']] || $fParamA[$fieldI['original']['id']]) {
+                if ($ePossibleElementParamA[$elementId]
+                    || $fParamA[$fieldId]
+                    || self::$_cfgValue['default']['element'][$elementId]
+                    || self::$_cfgValue['certain']['field'][$fieldId]) {
+
+                    if ($pep) $fieldI['temporary']['params'] = array_merge(
+                        $ePossibleElementParamA[$elementId] ?: [],
+                        $fParamA[$fieldId] ?: []
+                    );
+
+                    // For now, config-fields is a new untested update, so it will should be turnable on/off
+                    if (ini('db')->cfgField || !$pep)
                     $fieldI['temporary']['params'] = array_merge(
-                        is_array($ePossibleElementParamA[$fieldI['original']['elementId']])
-                            ? $ePossibleElementParamA[$fieldI['original']['elementId']]
-                            : array(),
-                        is_array($fParamA[$fieldI['original']['id']])
-                            ? $fParamA[$fieldI['original']['id']]
-                            : array()
+                        self::$_cfgValue['default']['element'][$elementId] ?: [],
+                        self::$_cfgValue['certain']['field'][$fieldId] ?: []
                     );
                 }
 
                 // Append current field data to $eFieldA array
-                $eFieldA[$fieldI['original']['entityId']]['rows'][] = new Field_Row($fieldI);
-                $eFieldA[$fieldI['original']['entityId']]['aliases'][$fieldI['original']['id']] = $fieldI['original']['alias'];
-                $eFieldA[$fieldI['original']['entityId']]['ids'][$fieldI['original']['id']] = $fieldI['original']['id'];
+                if (!$fieldI['original']['entry']) {
+                    $eFieldA[$fieldI['original']['entityId']]['rows'][] = new Field_Row($fieldI);
+                    $eFieldA[$fieldI['original']['entityId']]['aliases'][$fieldI['original']['id']] = $fieldI['original']['alias'];
+                    $eFieldA[$fieldI['original']['entityId']]['ids'][$fieldI['original']['id']] = $fieldI['original']['id'];
+                }
             }
 
             // Release memory
@@ -347,7 +416,7 @@ class Indi_Db {
             }
 
             // Array for collecting "entityId => modelName" pairs
-            $modelNameA = array();
+            $modelNameA = [];
 
             // Foreach existing entity
             foreach ($entityA as $entityI) {
@@ -356,7 +425,7 @@ class Indi_Db {
                 $modelNameA[$entityI['id']] = ucfirst($entityI['table']);
 
                 // Create an item within self::$_entityA array, containing some basic info
-                self::$_entityA[$modelNameA[$entityI['id']]] = array(
+                self::$_entityA[$modelNameA[$entityI['id']]] = [
                     'id' => $entityI['id'],
                     'title' => $entityI['title'],
                     'extends' => $entityI['extends'],
@@ -365,21 +434,21 @@ class Indi_Db {
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
                     'type' => $entityI['system'],
-                    'fields' => new Field_Rowset_Base(array(
+                    'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],
-                        'aliases' => array_values($eFieldA[$entityI['id']]['aliases'] ?: array()),
-                        'ids' => array_values($eFieldA[$entityI['id']]['ids'] ?: array()),
+                        'aliases' => array_values($eFieldA[$entityI['id']]['aliases'] ?: []),
+                        'ids' => array_values($eFieldA[$entityI['id']]['ids'] ?: []),
                         'rowClass' => 'Field_Row',
-                        'found' => count($eFieldA[$entityI['id']]['rows'] ?: array())
-                    ))
-                );
+                        'found' => count($eFieldA[$entityI['id']]['rows'] ?: [])
+                    ])
+                ];
 
                 // Default value
                 if (!$entityI['spaceScheme']) $entityI['spaceScheme'] = 'none';
 
                 // Set space scheme settings
-                self::$_entityA[$modelNameA[$entityI['id']]]['space'] = array(
+                self::$_entityA[$modelNameA[$entityI['id']]]['space'] = [
                     'scheme' => $entityI['spaceScheme'],
                     'coords' => $entityI['spaceScheme'] != 'none'
                         ? array_combine(
@@ -388,8 +457,8 @@ class Indi_Db {
                                 array_flip($eFieldA[$entityI['id']]['aliases']),
                                 ar($entityI['spaceFields'])
                             ))
-                        ) : array()
-                );
+                        ) : []
+                ];
 
                 // Free memory, used by fields array for current entity
                 unset($eFieldA[$entityI['id']]);
@@ -410,10 +479,10 @@ class Indi_Db {
 
                 // Group notices by their entity ids, preliminary converting
                 // each notice into an instance of Indi_Db_Table_Row
-                $eNoticeA = array();
+                $eNoticeA = [];
                 foreach ($noticeA as $noticeI)
                     $eNoticeA[$modelNameA[$noticeI['entityId']]][]
-                        = new Notice_Row(array('original' => $noticeI));
+                        = new Notice_Row(['original' => $noticeI]);
 
                 // Free memory
                 unset($noticeA);
@@ -421,10 +490,10 @@ class Indi_Db {
                 // Convert array of notices into an instance of Indi_Db_Table_Rowset object,
                 // and inject into entity specs array, under 'notices' key
                 foreach ($eNoticeA as $modelName => $eNoticeRa)
-                    self::$_entityA[$modelName]['notices'] = new Indi_Db_Table_Rowset(array(
+                    self::$_entityA[$modelName]['notices'] = new Indi_Db_Table_Rowset([
                         'table' => 'notice',
                         'rows' => $eNoticeRa
-                    ));
+                    ]);
 
                 // Free memory
                 unset($eNoticeA);
@@ -532,7 +601,7 @@ class Indi_Db {
     public function query($sql) {
 
         // If more than 1 arg is given, assume that other args are values to be injected into a sql query
-        if (func_num_args() > 1) $sql = call_user_func_array(array($this, 'sql'), func_get_args());
+        if (func_num_args() > 1) $sql = call_user_func_array([$this, 'sql'], func_get_args());
 
         // Trim the query
         $sql = trim($sql);
@@ -549,10 +618,10 @@ class Indi_Db {
 
             // Collect DELETE queries
             if (preg_match('/^DELETE/', $sql))
-                self::$DELETEQueryA[] = array(
+                self::$DELETEQueryA[] = [
                     'sql' => $sql,
                     'affected' => $affected
-                );
+                ];
 
             // If no rows were affected and error reporting ($silence argument) is turned on
             // Display error message, backtrace info and make the global stop
@@ -562,7 +631,7 @@ class Indi_Db {
             return $affected;
 
         // If cache usage is turned on, and current query match cache usage requirements
-        } else if (Indi::ini()->db->cache && $params = self::shouldUseCache($sql)) {
+        } else if (ini()->db->cache && $params = self::shouldUseCache($sql)) {
 
             // Pass query to Indi_Cache::fetcher() method
             return Indi_Cache::fetcher($params);
@@ -689,7 +758,7 @@ class Indi_Db {
         // Rollback
         self::$_instance->query('ROLLBACK');
 
-        // Return `false`. Here we do it because we will be using 'return Indi::db()->rollback()' statements
+        // Return `false`. Here we do it because we will be using 'return db()->rollback()' statements
         return false;
     }
 
@@ -704,7 +773,7 @@ class Indi_Db {
         // if we a at the most top transaction level - commit the transaction,
         if (self::$_transactionLevel == 0) self::$_instance->query('COMMIT');
 
-        // Return `false`. Here we do it because we will be using 'return Indi::db()->rollback()' statements
+        // Return `false`. Here we do it because we will be using 'return db()->rollback()' statements
         return true;
     }
 
@@ -718,8 +787,8 @@ class Indi_Db {
      *  :p - already parsed query parts
      *
      * Example:
-     * $qpart = $someBool ? Indi::db()->sql(' AND `bar` = :s', $bar) : '';
-     * $sql = Indi::db()->sql('SELECT * FROM `table` WHERE `foo` = :s :p LIMIT :i', $foo, $qpart, $qty);
+     * $qpart = $someBool ? db()->sql(' AND `bar` = :s', $bar) : '';
+     * $sql = db()->sql('SELECT * FROM `table` WHERE `foo` = :s :p LIMIT :i', $foo, $qpart, $qty);
      * echo $sql;
      *
      * @param string $tpl - whatever expression that contains placeholders
@@ -831,10 +900,10 @@ class Indi_Db {
         $this->_preload($entity);
 
         // Pick *_Row instances from self::$_preloadedA[$entity]
-        $rows = array(); foreach(ar($keys) as $key) array_push($rows, self::$_preloadedA[$entity][$key]);
+        $rows = []; foreach(ar($keys) as $key) array_push($rows, self::$_preloadedA[$entity][$key]);
 
         // Wrap picked rows into a rowset and return it
-        return Indi::model($entity)->createRowset(array('rows' => $rows));
+        return m($entity)->createRowset(['rows' => $rows]);
     }
 
     /**
@@ -849,6 +918,6 @@ class Indi_Db {
         if (array_key_exists($entity, self::$_preloadedA)) return;
 
         // Else preload
-        foreach (Indi::model($entity)->fetchAll() as $row) self::$_preloadedA[$entity][$row->id] = $row;
+        foreach (m($entity)->all() as $row) self::$_preloadedA[$entity][$row->id] = $row;
     }
 }

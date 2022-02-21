@@ -13,12 +13,12 @@ class Search extends Indi_Db_Table {
      *
      * @var array
      */
-    protected $_evalFields = array('defaultValue', 'filter');
+    protected $_evalFields = ['defaultValue', 'filter'];
 
     /**
      * Info for l10n-fraction detection
      *
      * @var array
      */
-    protected $_fraction = array('field' => 'sectionId');
+    protected $_fraction = ['field' => 'sectionId'];
 }

@@ -13,12 +13,12 @@ class Entity extends Indi_Db_Table {
      *
      * @var array
      */
-    protected $_fraction = array(
+    protected $_fraction = [
         'field' => 'system',
-        'value' => array(
+        'value' => [
             'y' => 'adminSystemUi',
             'n' => 'adminCustomUi',
             'o' => 'adminPublicUi'
-        )
-    );
+        ]
+    ];
 }

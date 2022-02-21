@@ -25,26 +25,26 @@ class Indi_Controller_Admin extends Indi_Controller {
 
     /**
      * Rowset, containing Indi_Db_Table_Row instances according to current selection.
-     * Those instances are collected by `ids`, given by Indi::uri()->id and Indi::post()->others
+     * Those instances are collected by `ids`, given by uri()->id and Indi::post()->others
      *
      * @var Indi_Db_Table_Rowset|array
      */
-    public $selected = array();
+    public $selected = [];
 
     /**
      * Array of section ids, starting from current section and up to the top.
      *
      * @var array
      */
-    private $_routeA = array();
+    private $_routeA = [];
 
     /**
      * Modes and views for typical actions. Can be adjusted with adjustActionCfg() method
      *
      * @var array
      */
-    public $actionCfg = array(
-        'mode' => array(
+    public $actionCfg = [
+        'mode' => [
             'index' => 'rowset',
             'form' => 'row',
             'up' => 'row',
@@ -52,14 +52,14 @@ class Indi_Controller_Admin extends Indi_Controller {
             'toggle' => 'row',
             'print' => 'row',
             'call' => 'row'
-        ),
-        'view' => array(
+        ],
+        'view' => [
             'index' => 'grid',
             'form' => 'form',
             'print' => 'print',
             'call' => 'call'
-        )
-    );
+        ]
+    ];
 
     /**
      * If the purpose of current request is to build an excel spreadsheet - this variable will be used
@@ -68,12 +68,12 @@ class Indi_Controller_Admin extends Indi_Controller {
      *
      * @var array
      */
-    protected $_excelA = array();
+    protected $_excelA = [];
 
     /**
      * Array for explanation messages to be shown in case if some action was denied by $this->deny('myAction', 'some reason');
      */
-    protected $_deny = array();
+    protected $_deny = [];
     
     /**
      * Constructor
@@ -99,6 +99,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Perform authentication
         $this->auth();
 
+        // Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
+        $this->deleteContextIfNeed();
+
         // Jump, if need
         $this->jump();
 
@@ -106,7 +109,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->adjustCertainScope();
 
         // If we are in some section, mean not in just '/admin/', but at least in '/admin/somesection/'
-        if (Indi::trail(true) && Indi::trail()->model) {
+        if (t(true) && t()->model) {
 
             // Adjust trail
             $this->adjustTrail();
@@ -121,10 +124,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->adjustActionCfg();
 
             // Setup view. This call will create an action-view object instance, especially for current trail item
-            Indi::trail()->view();
+            t()->view();
 
             // If action is 'index'
-            if (Indi::trail()->action->rowRequired == 'n') {
+            if (t()->action->rowRequired == 'n') {
 
                 // Set rowset mode
                 $this->_isRowsetSeparate();
@@ -134,39 +137,39 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Set 'hash' scope param at least. Additionally, set scope info about primary hash and row index,
                 // related to parent section, if these params are passed within the uri.
-                $applyA = array('hash' => Indi::trail()->section->primaryHash);
-                if (Indi::uri()->ph) $applyA['upperHash'] = Indi::uri()->ph;
-                if (Indi::uri()->aix) $applyA['upperAix'] = Indi::uri()->aix;
+                $applyA = ['hash' => t()->section->primaryHash];
+                if (uri()->ph) $applyA['upperHash'] = uri()->ph;
+                if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
                 if (Indi::get()->filter) $applyA['filters'] = $this->_filter2search();
-                Indi::trail()->scope->apply($applyA);
+                t()->scope->apply($applyA);
 
                 // If there was no 'format' param passed within the uri
                 // we extract all fetch params from current scope
-                if (!Indi::uri()->format && !$this->_isRowsetSeparate) {
+                if (!uri()->format && !$this->_isRowsetSeparate) {
 
                     // Prepare search data for $this->filtersWHERE()
-                    Indi::get()->search = Indi::trail()->scope->filters == '[]'
-                        ? Indi::trail()->jsonDefaultFilters()
-                        : Indi::trail()->scope->filters;
+                    Indi::get()->search = t()->scope->filters == '[]'
+                        ? t()->jsonDefaultFilters()
+                        : t()->scope->filters;
 
                     // Prepare search data for $this->keywordWHERE()
-                    Indi::get()->keyword = urlencode(Indi::trail()->scope->keyword);
+                    Indi::get()->keyword = urlencode(t()->scope->keyword);
 
                     // Prepare sort params for $this->finalORDER()
-                    Indi::get()->sort = Indi::trail()->scope->order == '[]'
-                        ? Indi::trail()->section->jsonSort()
-                        : Indi::trail()->scope->order;
+                    Indi::get()->sort = t()->scope->order == '[]'
+                        ? t()->section->jsonSort()
+                        : t()->scope->order;
 
                     // Prepare sort params for $this->finalORDER()
-                    Indi::get()->page = Indi::trail()->scope->page ? Indi::trail()->scope->page : 1;
+                    Indi::get()->page = t()->scope->page ? t()->scope->page : 1;
 
                     // Prepare sort params for $this->finalORDER()
-                    Indi::get()->limit = Indi::trail()->section->rowsOnPage;
+                    Indi::get()->limit = t()->section->rowsOnPage;
                 }
 
                 // If a rowset should be fetched
-                if (Indi::uri()->format || Indi::uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(Indi::uri('single'))) {
+                if (uri()->format || uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(uri('single'))) {
 
                     // Get final WHERE clause, that will implode primaryWHERE, filterWHERE and keywordWHERE
                     $finalWHERE = $this->finalWHERE($primaryWHERE);
@@ -181,57 +184,97 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Get final ORDER clause, built regarding column name and sorting direction
                     $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort);
 
-                    // Try to get rowset
-                    do {
+                    // Build fetch method name
+                    $fetchMethod = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn']
+                        ? 'fetchTree'
+                        : 'fetchAll';
 
-                        // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
-                        // constructed with usage of Indi::get('limit') and Indi::get('page') params
-                        $this->rowset = Indi::trail()->model->{
-                        'fetch'. (Indi::trail()->model->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'] ? 'Tree' : 'All')
-                        }($finalWHERE, $finalORDER,
-                            $limit = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int) Indi::get('limit') : null,
-                            $page  = Indi::uri()->format == 'json' || !Indi::uri()->format ? (int) Indi::get('page') : null);
+                    // If $_GET['required'] given and it's a comma-separated list
+                    if (is_array($required = json_decode(Indi::get('required')))
+                        && Indi::rexm('int11list', $required = im($required))) {
 
-                        // If we're at 2nd or further page, but no results - try to detect new prev page
-                        $shift = $limit && $page > 1 && !$this->rowset->count() && ($found = $this->rowset->found()) ? ceil($found/$limit) : 0;
+                        // Fetch rowset consisting of required rows
+                        $this->rowset = m()->{$fetchMethod}(
+                            '`id` IN (' . $required . ')' . rif($finalWHERE, ' AND ($1)'),
+                            'FIND_IN_SET(`id`, "' . $required . '")'
+                        );
 
-                    // If we should try another page - do it
-                    } while ($shift && (Indi::get()->page = $shift));
+                    // Else if $_GET['required'] given and it's a integer
+                    } else if ($required = (int) Indi::get('required')) {
 
-                    /**
-                     * Remember current rowset properties SQL - WHERE, ORDER, LIMIT clauses - to be able to apply these properties in cases:
-                     *
-                     * 1. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page.
-                     *    After that we went to another section, and then decide to return to the first. So, by this function, system will be
-                     *    able to retrieve first section's params from $_SESSION, and display the grid in the exact same way as it was when
-                     *    we had left it.
-                     * 2. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page and
-                     *    clicked 'Details' on some row on that page, so the details form was displayed. So, this function is one of providing
-                     *    an ability to navigate/jump to current row's siblings - go to prev/next rows. Foк example if we have a States section,
-                     *    and we go to it, and types 'Ala' in fast-keyword-search field, so the corresponding results were displayed. Then, if we
-                     *    go to 'Alabama' form screen, there will be buttons titled "Prev" and "Next". For example, by clicking Next, the Alaska's
-                     *    editing form will be displayed instead of Alabama's. But there will be certainly no 'Ohio'.
-                     *
-                     * Actually, the only one param is stored as SQL-string - $primary param. This params includes all parts of WHERE clause, that
-                     * was used to retrieve a current rowset, but except parts, related to filters/keyword search usage. There parts are
-                     * stored as JSON-string, because it is much more easier to get last used filters's values from JSON rather than SQL.
-                     *
-                     * Function creates a hash-key (md5 from $primary param) to place the array of scope params under this key in $_SESSION
-                     *
-                     * $order param is stored in JSON format too, because it will be passed to Ext.grid
-                     */
-                    Indi::trail()->scope->apply(array(
-                        'primary' => $primaryWHERE, 'filters' => Indi::get()->search, 'keyword' => Indi::get()->keyword,
-                        'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
-                        'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => Indi::trail()->section->primaryHash
-                    ));
-        /* // */}
+                        // Fetch rowset consisting of only single row
+                        $this->rowset = m()->{$fetchMethod}('`id` = "' . $required . '"' . rif($finalWHERE, ' AND ($1)'));
+
+                    // Else behave in an standard way
+                    } else {
+
+                        // Try to get rowset
+                        do {
+
+                            // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
+                            // constructed with usage of Indi::get('limit') and Indi::get('page') params
+                            $this->rowset = m()->{$fetchMethod}($finalWHERE, $finalORDER,
+                                $limit = uri()->format == 'json' || !uri()->format ? (int)Indi::get('limit') : null,
+                                $page = uri()->format == 'json' || !uri()->format ? (int)Indi::get('page') : null,
+                                null,
+                                null,
+                                ($fetchMethod == 'fetchAll') ?: null,
+                                false,
+                                $fetchMethod == 'fetchTree');
+
+                            // If we're at 2nd or further page, but no results - try to detect new prev page
+                            $shift = $limit && $page > 1 && !$this->rowset->count() && ($found = $this->rowset->found()) ? ceil($found / $limit) : 0;
+
+                        // If we should try another page - do it
+                        } while ($shift && (Indi::get()->page = $shift));
+
+                        // Scope params
+                        $scope = [
+                            'primary' => $primaryWHERE, 'filters' => Indi::get()->search, 'keyword' => Indi::get()->keyword,
+                            'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
+                            'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
+                            'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
+                            'tree' => $fetchMethod == 'fetchTree',
+                            'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
+                            'sum' => m()->fields()->select(
+                                t()->grid->select('sum', 'summaryType')->column('fieldId')
+                            )->column('alias', ',')
+                        ];
+
+                        // Create context if need
+                        $this->createContextIfNeed($scope);
+
+                        /**
+                         * Remember current rowset properties SQL - WHERE, ORDER, LIMIT clauses - to be able to apply these properties in cases:
+                         *
+                         * 1. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page.
+                         *    After that we went to another section, and then decide to return to the first. So, by this function, system will be
+                         *    able to retrieve first section's params from $_SESSION, and display the grid in the exact same way as it was when
+                         *    we had left it.
+                         * 2. We were in one section, made some search by filters and/or keyword, did sorting by some column, went to some page and
+                         *    clicked 'Details' on some row on that page, so the details form was displayed. So, this function is one of providing
+                         *    an ability to navigate/jump to current row's siblings - go to prev/next rows. For example if we have a States section,
+                         *    and we go to it, and types 'Ala' in fast-keyword-search field, so the corresponding results were displayed. Then, if we
+                         *    go to 'Alabama' form screen, there will be buttons titled "Prev" and "Next". For example, by clicking Next, the Alaska's
+                         *    editing form will be displayed instead of Alabama's. But there will be certainly no 'Ohio'.
+                         *
+                         * Actually, the only one param is stored as SQL-string - $primary param. This params includes all parts of WHERE clause, that
+                         * was used to retrieve a current rowset, but except parts, related to filters/keyword search usage. There parts are
+                         * stored as JSON-string, because it is much more easier to get last used filters's values from JSON rather than SQL.
+                         *
+                         * Function creates a hash-key (md5 from $primary param) to place the array of scope params under this key in $_SESSION
+                         *
+                         * $order param is stored in JSON format too, because it will be passed to Ext.grid
+                         */
+                        t()->scope->apply($scope);
+                    }
+                }
 
             // Else if where is some another action
             } else {
 
                 // Array of selected entries initially contain only $this->row->id
-                if ($this->row->id) $idA[] = $this->row->id; else $idA = array();
+                if ($this->row->id) $idA[] = $this->row->id; else $idA = [];
 
                 // If 'others' param exists in $_POST, and it's not empty
                 if ($otherIdA = ar(Indi::post()->others)) {
@@ -245,20 +288,20 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Fetch selected rows
                 $this->selected = $idA
-                    ? Indi::trail()->model->fetchAll(array('`id` IN (' . im($idA) . ')', Indi::trail()->scope->WHERE), t()->scope->ORDER)
-                    : Indi::trail()->model->createRowset();
+                    ? m()->all(['`id` IN (' . im($idA) . ')', t()->scope->WHERE], t()->scope->ORDER)
+                    : m()->createRowset();
 
                 // Prepare scope params
-                $applyA = array('hash' => Indi::uri()->ph, 'aix' => Indi::uri()->aix, 'lastIds' => $this->selected->column('id'));
+                $applyA = ['hash' => uri()->ph, 'aix' => uri()->aix, 'lastIds' => $this->selected->column('id')];
 
                 // Append 'toggledSave' scope-param
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
 
                 // Apply prepared scope params
-                Indi::trail()->scope->apply($applyA);
+                t()->scope->apply($applyA);
 
                 // If we are here for just check of row availability, do it
-                if (Indi::uri()->check) jflush(true, $this->checkRowIsInScope());
+                if (uri()->check) jflush(true, $this->checkRowIsInScope());
 
                 // Set last accessed rows
                 $this->setScopeRow(false, null, $this->selected->column('id'));
@@ -273,41 +316,88 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function uiedit() {
 
         // If uri's 'uiedit' param is not given - return
-        if (!$ui = Indi::uri()->uiedit) return;
+        if (!$ui = uri()->uiedit) return;
 
         // If current user is not allowed to edit ui - flush failure
-        if (Indi::admin()->uiedit != 'y') jflush(false);
+        if (admin()->uiedit != 'y') jflush(false);
 
         // Setup mapping that will help to prevent cross-section ui-editing
-        $scope = array('grid' => 'grid', 'field' => 'fields', 'entity' => t()->model->id(),
-            'section' => 'sections', 'section2action' => 'actions', 'search' => 'filters');
+        $scope = ['grid' => 'grid', 'field' => 'fields', 'entity' => m()->id(),
+            'section' => 'sections', 'section2action' => 'actions', 'search' => 'filters'];
 
         // List of ui allowed for editing
         if (!in($ui, array_keys($scope))) jflush(false);
 
         // Validity check
-        $_ = jcheck(array('indiId' => array('req' => true, 'rex' => 'int11', 'key' => $ui)), Indi::post());
+        $_ = jcheck(['indiId' => ['req' => true, 'rex' => 'int11', 'key' => $ui]], Indi::post());
 
         // Access check
         if (!in($_['indiId']->id, is_numeric($scope[$ui]) ? $scope[$ui] : t()->{$scope[$ui]}->column('id'))) jflush(false);
+
+        // If we are editing grid column title, that was moved to tooltip due to icon
+        if (isset(Indi::post()->tooltip)
+            && $ui == 'grid'
+            && Indi::post()->icon
+            && !$_['indiId']->tooltip
+            && !$_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->tooltip) {
+
+            // Force 'rename' logic to be executed instead of 'tooltip' logic
+            Indi::post()->rename = Indi::post()->tooltip; unset(Indi::post()->tooltip);
+        }
 
         // If $_POST['rename'] is set, e.g editing type is 'rename'
         if (isset(Indi::post()->rename)) {
 
             // Map
-            $rename = array('grid' => 'alterTitle', 'field' => 'title', 'entity' => 'title', 'search' => 'alt');
+            $rename = ['grid' => 'alterTitle', 'field' => 'title', 'entity' => 'title', 'search' => 'alt'];
+
+            // If ctrl-key was hold and we were editing grid column title
+            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+
+                // Update grid column's underlying field's title
+                $_['indiId']
+                    ->foreign($_['indiId']->further ? 'further' : 'fieldId')
+                    ->set(['title' => Indi::post()->rename])->save();
+
+                // Force grid column's own title to be empty string,
+                // so that underlying field's title will be used
+                Indi::post()->rename = '';
+
+            // Else if no ctrl-key was hold but new own title for grid column is going to be
+            // the same as for it's underlying field - force own one to be empty
+            } else if ($ui == 'grid'
+                && $_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->title == Indi::post()->rename)
+                Indi::post()->rename = '';
 
             // Do rename
-            $_['indiId']->assign(array($rename[$ui] => Indi::post()->rename))->save();
+            $_['indiId']->set([$rename[$ui] => Indi::post()->rename])->save();
 
         // If $_POST['rename'] is set, e.g editing type is 'rename'
         } else if (isset(Indi::post()->tooltip)) {
 
             // Map
-            $rename = array('grid' => 'tooltip', 'section' => 'help', 'section2action' => 'rename', 'search' => 'tooltip');
+            $rename = ['grid' => 'tooltip', 'section' => 'help', 'section2action' => 'rename', 'search' => 'tooltip'];
+
+            // If ctrl-key was hold and we were editing grid column tooltip
+            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+
+                // Update grid column's underlying field's tooltip
+                $_['indiId']
+                    ->foreign($_['indiId']->further ? 'further' : 'fieldId')
+                    ->set(['tooltip' => Indi::post()->tooltip])->save();
+
+                // Force grid column's own tooltip to be empty string,
+                // so that underlying field's tooltip will be used
+                Indi::post()->tooltip = '';
+
+            // Else if no ctrl-key was hold but new own tooltip for grid column is going to be
+            // the same as for it's underlying field - force own one to be empty
+            } else if ($ui == 'grid'
+                && $_['indiId']->foreign($_['indiId']->further ? 'further' : 'fieldId')->tooltip == Indi::post()->tooltip)
+                Indi::post()->tooltip = '';
 
             // Do rename
-            $_['indiId']->assign(array($rename[$ui] => Indi::post()->tooltip))->save();
+            $_['indiId']->set([$rename[$ui] => Indi::post()->tooltip])->save();
 
         // Else if editing type if not rename
         } else {
@@ -316,22 +406,22 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($ui == 'grid') {
 
                 // Validity check
-                $_ += jcheck(array('gridId' => array('req' => false, 'rex' => 'int11', 'key' => $ui)), Indi::post());
+                $_ += jcheck(['gridId' => ['req' => false, 'rex' => 'int11', 'key' => $ui]], Indi::post());
 
-                // Get ids of grid columns that are currently accesible for current user
+                // Get ids of grid columns that are currently accessible for current user
                 $idA = t()->grid->select(': != 0')->column('id');
 
                 // Access check
                 if ($_['gridId'] && !in($_['gridId']->id, $idA)) jflush(false);
 
                 // Do reattach
-                $_['indiId']->assign(array('gridId' => Indi::post()->gridId, 'group' => Indi::post()->group))->save();
+                $_['indiId']->set(['gridId' => Indi::post()->gridId, 'group' => Indi::post()->group])->save();
 
                 // Validity check
-                jcheck(array('index' => array('req' => false, 'rex' => 'int11')), Indi::post());
+                jcheck(['index' => ['req' => false, 'rex' => 'int11']], Indi::post());
 
                 // Get all grid columns having same `gridId` and same level
-                $siblingIdA = Indi::db()->query('
+                $siblingIdA = db()->query('
                     SELECT `id` 
                     FROM `grid` 
                     WHERE 1 
@@ -378,7 +468,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function move($direction) {
 
         // Get the scope of rows to move within
-        $within = Indi::trail()->scope->WHERE;
+        $within = t()->scope->WHERE;
 
         // Get shift, 1 by default
         $shift = (int) Indi::post('shift') ?: 1;
@@ -397,8 +487,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Fetch rows that should be moved
-        $toBeMovedRs = Indi::trail()->model->fetchAll(
-            array('`id` IN (' . im($toBeMovedIdA) . ')', Indi::trail()->scope->WHERE),
+        $toBeMovedRs = m()->all(
+            ['`id` IN (' . im($toBeMovedIdA) . ')', t()->scope->WHERE],
             '`move` ' . ($direction == 'up' ? 'ASC' : 'DESC')
         );
 
@@ -411,21 +501,21 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (!$toBeMovedR->move($direction, $within, $groupBy)) break;
 
         // Get the page of results, that we were at
-        $wasPage = Indi::trail()->scope->page;
+        $wasPage = t()->scope->page;
 
         // If current model has a tree-column, detect new row index by a special algorithm
-        if (Indi::trail()->model->treeColumn()) Indi::uri()->aix = Indi::trail()->model->detectOffset(
-            Indi::trail()->scope->WHERE, Indi::trail()->scope->ORDER, $toBeMovedRs->at(0)->id);
+        if (m()->treeColumn()) uri()->aix = m()->detectOffset(
+            t()->scope->WHERE, t()->scope->ORDER, $toBeMovedRs->at(0)->id);
 
         // Else just shift current row index by inc/dec-rementing
-        else Indi::uri()->aix += ($direction == 'up' ? -1 : 1) * $shift;
+        else uri()->aix += ($direction == 'up' ? -1 : 1) * $shift;
 
         // Apply new index
         $this->setScopeRow(false, null, $toBeMovedRs->column('id'));
 
         // Flush json response, containing new page index, in case if now row
         // index change is noticeable enough for rowset current page was shifted
-        jflush(true, $wasPage != ($nowPage = Indi::trail()->scope->page) ? array('page' => $nowPage) : array());
+        jflush(true, $wasPage != ($nowPage = t()->scope->page) ? ['page' => $nowPage] : []);
     }
 
     /**
@@ -453,20 +543,23 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Fetch rows that should be moved
-        $toBeDeletedRs = Indi::trail()->model->fetchAll(
-            array('`id` IN (' . im($toBeDeletedIdA) . ')', Indi::trail()->scope->WHERE),
-            Indi::trail()->scope->ORDER
+        $toBeDeletedRs = m()->all(
+            ['`id` IN (' . im($toBeDeletedIdA) . ')', t()->scope->WHERE],
+            t()->scope->ORDER
         );
+
+        // Array of deleted ids
+        $deleted = [];
 
         // For each row
         foreach ($toBeDeletedRs as $toBeDeletedR) if ($deleted []= (int) $toBeDeletedR->delete()) {
 
             // Get the page of results, that we were at
-            $wasPage = Indi::trail()->scope->page;
+            $wasPage = t()->scope->page;
 
             // Decrement row index. This line, and one line below - are required to provide an ability to shift
             // the selection within rowset (grid, tile, etc) panel, after current row deletion
-            Indi::uri()->aix -= 1;
+            uri()->aix -= 1;
 
             // Apply new index
             $this->setScopeRow();
@@ -477,10 +570,10 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Prepare args for jflush() call, containing new page index, in case if now row
         // index change is noticeable enough for rowset current page was shifted
-        $args = array(
+        $args = [
             (bool) count($deleted),
-            $wasPage != ($nowPage = Indi::trail()->scope->page) ? array('page' => $nowPage) : array()
-        );
+            $wasPage != ($nowPage = t()->scope->page) ? ['page' => $nowPage] : []
+        ];
 
         // Flush or return json response, depending on $flush arg
         if ($flush) jflush($args[0], $args[1]); else return $args;
@@ -502,10 +595,10 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function setScopeRow($upper = false, Indi_Db_Table_Row $r = null, $lastIds = null) {
 
         // If no primary hash param passed within the uri - return
-        if (!Indi::uri()->ph) return;
+        if (!uri()->ph) return;
 
         // Get the current state of scope
-        $original = $_SESSION['indi']['admin'][Indi::trail((int) $upper)->section->alias][Indi::uri()->ph];
+        $original = $_SESSION['indi']['admin'][t((int) $upper)->section->alias][uri()->ph];
 
         // If there is no current state yet - return
         if (!is_array($original)) return;
@@ -521,22 +614,22 @@ class Indi_Controller_Admin extends Indi_Controller {
         // mean that page number should be recalculated, so 'page' param will store recalculated page number). After
         // all necessary operations will be done - valued from this ($modified) array will replace existing values
         // in scope
-        $modified = array('aix' => Indi::uri()->aix, 'lastIds' => ar($lastIds ?: $r->id));
+        $modified = ['aix' => uri()->aix != 'undefined' ? uri()->aix : 1, 'lastIds' => ar($lastIds ?: $r->id)];
 
         // Start and end indexes. We calculate them, because we should know, whether page number should be changed or no
-        $start = ($original['page'] - 1) * Indi::trail((int) $upper)->section->rowsOnPage + 1;
-        $end = ($original['page']) * Indi::trail((int) $upper)->section->rowsOnPage;
+        $start = ($original['page'] - 1) * t((int) $upper)->section->rowsOnPage + 1;
+        $end = ($original['page']) * t((int) $upper)->section->rowsOnPage;
 
         // If last accessed row index is out of latest fetched rowset page bounds
         if ($modified['aix'] < $start || $modified['aix'] > $end) {
 
             // Calculate new page number, so when user will return to grid panel - an appropriate page
             // will be displayed, and last accessed row will be within it
-            $modified['page'] = ceil($modified['aix']/Indi::trail((int) $upper)->section->rowsOnPage);
+            $modified['page'] = ceil($modified['aix']/t((int) $upper)->section->rowsOnPage);
         }
 
         // Remember all scope params in $_SESSION under a hash
-        Indi::trail((int) $upper)->scope->apply($modified);
+        t((int) $upper)->scope->apply($modified);
     }
 
     /**
@@ -558,13 +651,13 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function primaryWHERE() {
 
         // Define an array for WHERE clauses
-        $where = array();
+        $where = [];
 
         // Append a childs-by-parent clause to primaryWHERE stack
         if ($parentWHERE = $this->parentWHERE()) $where['parent'] = $parentWHERE;
 
         // If a special section's primary filter was defined, add it to primary WHERE clauses stack
-        if (strlen(Indi::trail()->section->compiled('filter'))) $where['static'] = '(' . Indi::trail()->section->compiled('filter') . ')';
+        if (strlen(t()->section->compiled('filter'))) $where['static'] = '(' . t()->section->compiled('filter') . ')';
 
         // Owner control. There can be a situation when some cms users are not stored in 'admin' db table - these users
         // called 'alternates'. Example: we have 'Experts' cms section (rows are fetched from 'expert' db table) and
@@ -580,16 +673,16 @@ class Indi_Controller_Admin extends Indi_Controller {
         $where = $this->adjustPrimaryWHERE($where);
 
         // If uri has 'single' param - append it to primary WHERE clause
-        if (strlen($single = Indi::uri('single')) && $single) $where['single'] = '`id` = "' . (int) Indi::uri('single') . '"';
+        if (strlen($single = uri('single')) && $single) $where['single'] = '`id` = "' . (int) uri('single') . '"';
 
         //
-        if (Indi::uri('action') == 'index') {
+        if (uri('action') == 'index') {
 
             // Get a string version of WHERE stack
             $whereS = count($where) ? implode(' AND ', $where) : null;
 
             // Set a hash
-            Indi::trail()->section->primaryHash = substr(md5($whereS), 0, 10);
+            t()->section->primaryHash = substr(md5($whereS), 0, 10);
         }
 
         // Return primary WHERE clauses stack
@@ -605,20 +698,20 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function alternateWHERE($trailStepsUp = 0) {
 
         // If current admin is not alternate - return
-        if (!Indi::admin()->alternate) return;
+        if (!admin()->alternate) return;
 
         // Get alternate-connector
-        $af = Indi::admin()->alternate(Indi::trail($trailStepsUp)->model->table());
+        $af = admin()->alternate(t($trailStepsUp)->model->table());
 
         // If one of model's fields relates to alternate
-        if ($alternateFieldR = Indi::trail($trailStepsUp)->model->fields($af))
+        if ($alternateFieldR = t($trailStepsUp)->model->fields($af))
             return $alternateFieldR->original('storeRelationAbility') == 'many'
-                ? 'FIND_IN_SET("' . Indi::admin()->id . '", `' . $af . '`)'
-                : '`' . $af . '` = "' . Indi::admin()->id . '"';
+                ? 'FIND_IN_SET("' . admin()->id . '", `' . $af . '`)'
+                : '`' . $af . '` = "' . admin()->id . '"';
 
         // Else if model itself is the same as alternate
-        else if (Indi::trail($trailStepsUp)->model->table() == Indi::admin()->alternate)
-            return '`id` = "' . Indi::admin()->id . '"';
+        else if (t($trailStepsUp)->model->table() == admin()->alternate)
+            return '`id` = "' . admin()->id . '"';
     }
 
     /**
@@ -627,45 +720,45 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function checkRowIsInScope(){
 
         // If row should be detected by it's index, within the current scope
-        if (Indi::uri()->aix && !Indi::uri()->id) {
+        if (uri()->aix && !uri()->id) {
 
             // Get row by it's index
-            $R = Indi::trail()->model->fetchRow(
-                Indi::trail()->scope->WHERE,
-                Indi::trail()->scope->ORDER,
-                Indi::uri()->aix - 1
+            $R = m()->row(
+                t()->scope->WHERE,
+                t()->scope->ORDER,
+                uri()->aix - 1
             );
 
             // Return basic data
-            return array('id' => $R->id, 'title' => $R->title);
+            return ['id' => $R->id, 'title' => $R->title];
 
         // Else if row index should be found by it's id within the current scope
-        } else if (Indi::uri()->id) {
+        } else if (uri()->id) {
 
             // Prepare checking-WHERE clause (for checking the row existence)
-            $where = array('`id` = "' . Indi::uri()->id . '"');
+            $where = ['`id` = "' . uri()->id . '"'];
 
             // Append current scope's WHERE clause to checking-WHERE clause
-            if (strlen(Indi::trail()->scope->WHERE)) $where[] = Indi::trail()->scope->WHERE;
+            if (strlen(t()->scope->WHERE)) $where[] = t()->scope->WHERE;
 
             // Check that row exists with such an id within the current scope
-            $R = Indi::trail()->model->fetchRow($where);
+            $R = m()->row($where);
 
             // If row index should be additionally detected
             if (Indi::post()->forceOffsetDetection && $R)
 
                 // Get that offset and return it along with row title
-                return array(
-                    'aix' => Indi::trail()->model->detectOffset(
-                        Indi::trail()->scope->WHERE,
-                        Indi::trail()->scope->ORDER,
+                return [
+                    'aix' => m()->detectOffset(
+                        t()->scope->WHERE,
+                        t()->scope->ORDER,
                         $R->id
                     ),
                     'title' => $R->title()
-                );
+                ];
 
             // Or just return the id, as an ensurement, that such row exists
-            else return $R ? array('id' => $R->id, 'title' => $R->title()) : array();
+            else return $R ? ['id' => $R->id, 'title' => $R->title()] : [];
         }
     }
 
@@ -677,29 +770,20 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function export($data, $format = 'excel'){
 
-        /** Include path **/
-        ini_set('include_path', ini_get('include_path').';../Classes/');
-
-        /** PHPExcel */
-        include 'PHPExcel.php';
-
         // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
+        $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
         // Set properties
         $objPHPExcel->getProperties()->setCreator($_SESSION['admin']['title']);
         $objPHPExcel->getProperties()->setLastModifiedBy($_SESSION['admin']['title']);
-        $objPHPExcel->getProperties()->setTitle(Indi::trail()->section->title);
+        $objPHPExcel->getProperties()->setTitle(t()->section->title);
 
         $font = 'Tahoma';
 
         // Set up $noBorder variable, containing style definition to be used as an argument while applyFromArray() calls
         // in cases then no borders should be displayed
-        $_noBorder = array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'ffffff'));
-        $noBorder = array('borders' => array('right' => $_noBorder, 'left' => $_noBorder, 'top' => $_noBorder));
-
-        // Set active sheet by index
-        $objPHPExcel->setActiveSheetIndex(0);
+        $_noBorder = ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'ffffff']];
+        $noBorder = ['borders' => ['right' => $_noBorder, 'left' => $_noBorder, 'top' => $_noBorder]];
 
         // Get the columns, that need to be presented in a spreadsheet
         $_columnA = json_decode(Indi::get()->columns, true);
@@ -715,7 +799,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Get grouping info
         $group = json_decode(Indi::get()->group, true);
-        if (!array_key_exists($group['property'], $data[0] ?: array())) $group = false;
+        if (!array_key_exists($group['property'], $data[0] ?: [])) $group = false;
 
         // Setup a row index, which data rows are starting from
         $currentRowIndex = 1;
@@ -741,23 +825,23 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($columnA as $n => $columnI) {
 
             // Get column letter
-            $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+            $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
             // Apply styles for all rows within current column (font and alignment)
             $objPHPExcel->getActiveSheet()
                 ->getStyle($columnL . '1:' . $columnL . $lastRowIndex)
-                ->applyFromArray(array(
-                    'font' => array(
+                ->applyFromArray([
+                    'font' => [
                         'size' => 8,
                         'name' => $font,
-                        'color' => array(
+                        'color' => [
                             'rgb' => '04408C'
-                        )
-                    ),
-                    'alignment' => array(
+                        ]
+                    ],
+                    'alignment' => [
                         'vertical' => 'center'
-                    )
-                )
+                    ]
+                    ]
             );
         }
 
@@ -768,10 +852,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         $objPHPExcel->getActiveSheet()->mergeCells('A1:' . $lastColumnLetter . '1');
 
         // Write bread crumbs, where current spreadsheet was got from
-        $crumbA = Indi::trail(true)->toString(false);
+        $crumbA = t(true)->toString(false);
 
         // Defined a PHPExcel_RichText object
-        $objRichText = new PHPExcel_RichText();
+        $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
         // For each crumb
         for ($i = 0; $i < count($crumbA); $i++) {
@@ -807,7 +891,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Write prepared rich text object to first row
         $objPHPExcel->getActiveSheet()->SetCellValue('A1', $objRichText);
-        if (Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
+        if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
 
         // Here we set row height, because OpenOffice Writer (unlike Microsoft Excel)
         // ignores previously set default height definition
@@ -817,9 +901,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         $currentRowIndex++;
 
         // Set total number of $data items
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, I_TOTAL . ': ' . count($data));
+        $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, I_TOTAL . ': ' . count($data));
         $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
-        if (Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
+        if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
         $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(15.75);
         $currentRowIndex++;
 
@@ -828,12 +912,12 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Before shifting current row index to provide a empty row for visual separation between bread
             // crumbs row and filters rows, we check if export type is 'pdf', and if so
-            if (Indi::uri()->format == 'pdf') {
+            if (uri()->format == 'pdf') {
 
                 // Insert a whitespace into first cell of that visual-separator-row, as DomPDF ignores height
                 // definition for empty row, and makes it tiny, so, by inserting a whitespace - we ensure that
                 // visual separation will be properly displayed
-                $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, ' ');
+                $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, ' ');
 
                 // Merge all cell within that separator-row before no-border-style apply
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -850,7 +934,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($this->_excelA as $alias => $excelI) {
 
                 // Create rich text object
-                $objRichText = new PHPExcel_RichText();
+                $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
                 // Merge all cell within current row
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -863,7 +947,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($excelI['type'] == 'date') {
 
                     // Get the format
-                    foreach (Indi::trail()->fields as $fieldR) {
+                    foreach (t()->fields as $fieldR) {
                         if ($fieldR->alias == $alias) {
                             $dformat = $fieldR->params['display' . ($fieldR->elementId == 12 ? '' : 'Date') . 'Format'];
                         }
@@ -957,22 +1041,22 @@ class Indi_Controller_Admin extends Indi_Controller {
                     imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                     // Pick hue bg and place it on canvas
-                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/core/i/admin/i-color-slider-bg.png';
+                    $hueFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . VDR . '/client/resources/images/icons/i-color-slider-bg.png';
                     $hueIm = imagecreatefrompng($hueFn);
                     imagecopy($canvasIm, $hueIm, 7, 2, 0, 0, 183, 11);
 
                     // Pick first thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/core/i/admin/i-color-slider-thumb-first.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . VDR . '/client/resources/images/icons/i-color-slider-thumb-first.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][0]), 0, 0, 0, 15, 15);
 
                     // Pick last thumb and place it on canvas
-                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . '/core/i/admin/i-color-slider-thumb-last.png';
+                    $firstThumbFn = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . STD . VDR . '/client/resources/images/icons/i-color-slider-thumb-last.png';
                     $firstThumbIm = imagecreatefrompng($firstThumbFn);
                     imagecopy($canvasIm, $firstThumbIm, floor(183/360*$excelI['value'][1]), 0, 0, 0, 15, 15);
 
                     //  Add the GD image to a spreadsheet
-                    $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                     $objDrawing->setCoordinates('A' . $currentRowIndex);
                     $objDrawing->setImageResource($canvasIm);
                     $objDrawing->setHeight(11)->setWidth(183)->setOffsetY(4)->setOffsetX($excelI['offset'] + 5);
@@ -982,10 +1066,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                 } else if ($excelI['table']) {
 
                     // Prepare the array of keys
-                    if (!is_array($excelI['value'])) $excelI['value'] = array($excelI['value']);
+                    if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
 
                     // Fetch rows by keys
-                    $rs = Indi::model($excelI['table'])->fetchAll('`id` IN (' . implode(',', $excelI['value']) . ')')->toArray();
+                    $rs = m($excelI['table'])->all('`id` IN (' . implode(',', $excelI['value']) . ')')->toArray();
 
                     // Foreach row
                     for ($i = 0; $i < count($rs); $i++) {
@@ -1024,13 +1108,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 } else if ($excelI['fieldId']) {
 
                     // Prepare the array of keys
-                    if (!is_array($excelI['value'])) $excelI['value'] = array($excelI['value']);
+                    if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
 
                     // Fetch rows by keys
-                    $rs = Indi::model('Enumset')->fetchAll(array(
+                    $rs = m('Enumset')->all([
                         '`fieldId` = "' . $excelI['fieldId'] . '"',
                         '`alias` IN ("' . implode('","', $excelI['value']) . '")'
-                    ))->toArray();
+                    ])->toArray();
 
                     // Foreach row
                     for ($i = 0; $i < count($rs); $i++) {
@@ -1067,11 +1151,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.5;
 
                                 //  Add the image to a worksheet
-                                $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                                 $objDrawing->setCoordinates('A' . $currentRowIndex);
                                 $objDrawing->setImageResource($gdImage);
-                                $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
-                                $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+                                $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
+                                $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
                                 $objDrawing->setHeight(11);
                                 $objDrawing->setWidth(14);
                                 $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
@@ -1087,7 +1171,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                                     //$additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
 
                                     //  Add the image to a worksheet
-                                    $objDrawing = new PHPExcel_Worksheet_Drawing();
+                                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                                     $objDrawing->setPath($abs);
                                     $objDrawing->setCoordinates('A' . $currentRowIndex);
                                     //$objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1123,8 +1207,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set rich text object as a cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, $objRichText);
-                if (Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
+                $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, $objRichText);
+                if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
 
                 // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously setted default height
                 $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(15.75);
@@ -1138,15 +1222,15 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (Indi::get()->keyword) {
 
             // Setup new rich text object for keyword search usage mention
-            $objRichText = new PHPExcel_RichText();
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
             // Merge current row sells and set alignment as 'right'
             $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
             $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->getAlignment()
-                ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Write the keyword search method title, with a separator
-            $objSelfStyled = $objRichText->createTextRun('Искать -» ');
+            $objSelfStyled = $objRichText->createTextRun(trim(I_ACTION_INDEX_KEYWORD_LABEL, '…') . ' -» ');
             $objSelfStyled->getFont()->setName($font)->setSize('8');
             $objSelfStyled->getFont()->getColor()->setRGB('04408C');
 
@@ -1156,10 +1240,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             $objSelfStyled->getFont()->getColor()->setRGB('7EAAE2');
 
             // Set rich text object as cell value
-            $objPHPExcel->getActiveSheet()->SetCellValue('A' . $currentRowIndex, $objRichText);
+            $objPHPExcel->getActiveSheet()->setCellValue('A' . $currentRowIndex, $objRichText);
 
             // Set no-border style
-            if (Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
+            if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle('A' . $currentRowIndex)->applyFromArray($noBorder);
 
             // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously setted default height
             $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(15.75);
@@ -1176,7 +1260,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(15.75);
 
             // Set no-border style
-            if (Indi::uri()->format == 'pdf') {
+            if (uri()->format == 'pdf') {
 
                 // Merge all cell within that separator-row before no-border-style apply
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -1196,10 +1280,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($columnA as $n => $columnI) {
 
             // Get column letter
-            $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+            $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
             // Setup column width
-            $m = Indi::uri()->format == 'excel' ? 7.43 : 6.4;
+            $m = uri()->format == 'excel' ? 7.43 : 6.4;
             $objPHPExcel->getActiveSheet()->getColumnDimension($columnL)->setWidth(ceil($columnI['width']/$m));
 
             // Replace &nbsp;
@@ -1215,7 +1299,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $additionalOffsetX = ceil(($columnI['width']-16)/2);
 
                     //  Add the image to a worksheet
-                    $objDrawing = new PHPExcel_Worksheet_Drawing();
+                    $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                     $objDrawing->setPath($abs);
                     $objDrawing->setCoordinates($columnL . $currentRowIndex);
                     $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1242,12 +1326,12 @@ class Indi_Controller_Admin extends Indi_Controller {
                 imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
 
                 // Pick hue bg and place it on canvas
-                $iconFn = DOC . STD . '/core/library/extjs4/resources/themes/images/default/grid/sort_' . strtolower($order->direction) . '.gif';
+                $iconFn = DOC . STD . VDR . '/client/resources/images/icons/sort_' . strtolower($order->direction) . '.gif';
                 $iconIm = imagecreatefromgif($iconFn);
                 imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
 
                 //  Add the GD image to a spreadsheet
-                $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setImageResource($canvasIm);
                 $objDrawing->setWidth(13)->setHeight(5)->setOffsetY(10)->setOffsetX($columnI['titleWidth'] + 6);
@@ -1258,97 +1342,96 @@ class Indi_Controller_Admin extends Indi_Controller {
             $objPHPExcel->getActiveSheet()
                 ->getStyle($columnL . $currentRowIndex)
                 ->applyFromArray(
-                array(
-                    'borders' => array(
-                        'right' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
+                [
+                    'borders' => [
+                        'right' => [
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'aaccf6':'c5c5c5')
-                            )
-                        ),
-                        'top' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
+                            ]
+                        ],
+                        'top' => [
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
-                            )
-                        ),
-                        'bottom' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
+                            ]
+                        ],
+                        'bottom' => [
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'A7C7EE':'c5c5c5')
-                            )
-                        ),
-                    ),
-                    'fill' => array(
-                        'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                            ]
+                        ],
+                    ],
+                    'fill' => [
+                        'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                         'rotation' => 90,
-                        'startcolor' => array(
+                        'startcolor' => [
                             'rgb' => ($columnI['dataIndex'] == $order->property ? 'ebf3fd' : 'F9F9F9'),
-                        ),
-                        'endcolor' => array(
+                        ],
+                        'endcolor' => [
                             'rgb' => ($columnI['dataIndex'] == $order->property ? 'd9e8fb' : 'E3E4E6'),
-                        ),
-                    )
-                )
+                        ],
+                    ]
+                ]
             );
 
 
             // Ensure header title to be wrapped, if need
             if ($columnI['height']) {
                 $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setWrapText(true);
-                $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                 if ($wrap < $columnI['height']) $wrap = $columnI['height'];
             }
 
             // Apply style for first cell within header row
-            if (!$n && Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)
-                ->applyFromArray(array(
-                    'borders' => array(
-                        'left' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
+            if (!$n && uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)
+                ->applyFromArray([
+                    'borders' => [
+                        'left' => [
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
-                            )
-                        ),
-                    )
-                )
+                            ]
+                        ],
+                    ]
+                    ]
             );
 
             // Apply align for all rows within current column, except header rows
             $objPHPExcel->getActiveSheet()
                 ->getStyle($columnL . ($currentRowIndex + 1) . ':' . $columnL . $lastRowIndex)
-                ->applyFromArray(array(
-                    'alignment' => array(
+                ->applyFromArray([
+                    'alignment' => [
                         'horizontal' => $columnI['align']
-                    )
-                )
+                    ]
+                ]
             );
 
             // Apply background color for all cells within current column,
             // in case if current column is a rownumberer-column
             if ($columnA[$n]['type'] == 'rownumberer') $objPHPExcel->getActiveSheet()
                 ->getStyle($columnL . ($currentRowIndex + 1) . ':' . $columnL . $lastRowIndex)
-                ->applyFromArray(
-                array(
-                    'borders' => array(
-                        'right' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
+                ->applyFromArray([
+                    'borders' => [
+                        'right' => [
+                            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
                                 'rgb' => ($columnI['dataIndex'] == $order->property ? 'BDD5F1':'d5d5d5')
-                            )
-                        ),
-                    ),
-                    'fill' => array(
-                        'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                            ]
+                        ],
+                    ],
+                    'fill' => [
+                        'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                         'rotation' => 0,
-                        'startcolor' => array(
+                        'startcolor' => [
                             'rgb' => 'F9F9F9',
-                        ),
-                        'endcolor' => array(
+                        ],
+                        'endcolor' => [
                             'rgb' => 'E3E4E6',
-                        ),
-                    )
-                )
+                        ],
+                    ]
+                ]
             );
 
         }
@@ -1370,7 +1453,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objPHPExcel->getActiveSheet()->getRowDimension($currentRowIndex)->setRowHeight(20.75);
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex(0);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1);
 
                 // Merge cells
                 $objPHPExcel->getActiveSheet()->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
@@ -1381,20 +1464,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Set style
                 $objPHPExcel->getActiveSheet()
                     ->getStyle($columnL . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex)
-                    ->applyFromArray(array(
-                        'borders' => array(
-                            'bottom' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
-                                'color' => array('rgb' => '7EAAE2')
-                            ),
-                        ),
-                        'alignment' => array('vertical' => 'bottom', 'horizontal' => 'left', 'indent' => 2),
-                        'fill' => array('type' => PHPExcel_Style_Fill::FILL_NONE)
-                    ));
+                    ->applyFromArray([
+                        'borders' => [
+                            'bottom' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                                'color' => ['rgb' => '7EAAE2']
+                            ],
+                        ],
+                        'alignment' => ['vertical' => 'bottom', 'horizontal' => 'left', 'indent' => 2],
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE]
+                    ]);
 
                 //  Add the image to a worksheet
-                $objDrawing = new PHPExcel_Worksheet_Drawing();
-                $objDrawing->setPath(DOC . STD . '/core/library/extjs4/resources/themes/images/default/grid/group-collapse.gif');
+                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                $objDrawing->setPath(DOC . STD . VDR . '/client/resources/images/icons/group-collapse.gif');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
                 $objDrawing->setOffsetY(10)->setOffsetX(6);
                 $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
@@ -1413,7 +1496,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($columnA as $n => $columnI) {
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the index/value
                 if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']];
@@ -1436,11 +1519,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $additionalOffsetX = ceil(($columnI['width']-14)/2) - 2;
 
                         //  Add the image to a worksheet
-                        $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
                         $objDrawing->setCoordinates($columnL . $currentRowIndex);
                         $objDrawing->setImageResource($gdImage);
-                        $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
-                        $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+                        $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
+                        $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
                         $objDrawing->setHeight(11);
                         $objDrawing->setWidth(14);
                         $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
@@ -1457,7 +1540,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             $additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
 
                             //  Add the image to a worksheet
-                            $objDrawing = new PHPExcel_Worksheet_Drawing();
+                            $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                             $objDrawing->setPath($abs);
                             $objDrawing->setCoordinates($columnL . $currentRowIndex);
                             $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1504,7 +1587,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $additionalOffsetX = ceil(($columnI['width']-16)/2);
 
                         //  Add the image to a worksheet
-                        $objDrawing = new PHPExcel_Worksheet_Drawing();
+                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                         $objDrawing->setPath($abs);
                         $objDrawing->setCoordinates($columnL . $currentRowIndex);
                         $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1529,49 +1612,48 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Replace some special characters definitions to its actual symbols
                 $value = str_replace(
-                    array('&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;'),
-                    array(' ','«','»','—','"','<','>'), $value);
+                    ['&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;'],
+                    [' ','«','»','—','"','<','>'], $value);
 
                 // Set right and bottom border, because cell fill will hide default Excel's ot OpenOffice Write's cell borders
                 $objPHPExcel->getActiveSheet()
                     ->getStyle($columnL . $currentRowIndex)
-                    ->applyFromArray(
-                    array(
-                        'borders' => array(
-                            'right' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
-                                'color' => array(
+                    ->applyFromArray([
+                        'borders' => [
+                            'right' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => [
                                     'rgb' => 'D0D7E5'
-                                )
-                            ),
-                            'bottom' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
-                                'color' => array(
+                                ]
+                            ],
+                            'bottom' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => [
                                     'rgb' => 'D0D7E5'
-                                )
-                            )
-                        )
-                    )
+                                ]
+                            ]
+                        ]
+                    ]
                 );
 
                 // Apply style for first cell within header row
-                if (!$n && Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)
-                    ->applyFromArray(array(
-                        'borders' => array(
-                            'left' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
-                                'color' => array(
+                if (!$n && uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . $currentRowIndex)
+                    ->applyFromArray([
+                        'borders' => [
+                            'left' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => [
                                     'rgb' => 'c5c5c5'
-                                )
-                            ),
-                        )
-                    )
+                                ]
+                            ],
+                        ]
+                        ]
                 );
 
                 // Get the control element
                 $el = $columnI['dataIndex'] == 'id'
                     ? 'number'
-                    : Indi::trail()->model->fields($columnI['dataIndex'])->foreign('elementId')->alias;
+                    : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // If control element is 'price' or 'number'
                 if (in($el, 'price,number')) {
@@ -1588,14 +1670,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue($columnL . $currentRowIndex, $value);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnL . $currentRowIndex, $value);
 
                 // Set odd-even rows background difference
                 if ($i%2 && $columnA[$n]['type'] != 'rownumberer') {
                     $objPHPExcel->getActiveSheet()
                         ->getStyle($columnL . $currentRowIndex)
                         ->getFill()
-                        ->setFillType(PHPExcel_Style_Fill::FILL_SOLID)
+                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                         ->getStartColor()->setRGB('FAFAFA');
                 }
 
@@ -1610,32 +1692,31 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Apply right border for the most right column
         $objPHPExcel->getActiveSheet()
             ->getStyle($lastColumnLetter . $dataStartAtRowIndex . ':' . $lastColumnLetter . $lastRowIndex)
-            ->applyFromArray(array(
-                'borders' => array(
-                    'right' => array(
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
-                        'color' => array(
+            ->applyFromArray([
+                'borders' => [
+                    'right' => [
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => [
                             'rgb' => 'c5c5c5'
-                        )
-                    )
-                )
-            )
+                        ]
+                    ]
+                ]
+            ]
         );
 
         // Apply last row style (bottom border)
         $objPHPExcel->getActiveSheet()
             ->getStyle('A' . (count($data) + $dataStartAtRowIndex - 1) . ':' . $columnL . (count($data) + $groupQty + $dataStartAtRowIndex - 1))
-            ->applyFromArray(
-            array(
-                'borders' => array(
-                    'bottom' => array(
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
-                        'color' => array(
+            ->applyFromArray([
+                'borders' => [
+                    'bottom' => [
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => [
                             'rgb' => 'c5c5c5'
-                        )
-                    )
-                )
-            )
+                        ]
+                    ]
+                ]
+            ]
         );
 
         // Append summary row
@@ -1645,7 +1726,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($columnA as $n => $columnI) {
 
                 // Convert the column index to excel column letter
-                $columnL = PHPExcel_Cell::stringFromColumnIndex($n);
+                $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the value
                 $value = $summary->{$columnI['dataIndex']};
@@ -1653,7 +1734,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Get the control element
                 $el = $columnI['dataIndex'] == 'id'
                     ? 'number'
-                    : Indi::trail()->model->fields($columnI['dataIndex'])->foreign('elementId')->alias;
+                    : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // If control element is 'price' or 'number'
                 if (in($el, 'price,number')) {
@@ -1670,21 +1751,21 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // Set cell value
-                $objPHPExcel->getActiveSheet()->SetCellValue($columnL . $currentRowIndex, $value);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnL . $currentRowIndex, $value);
 
                 // Set up no-border style
-                if (Indi::uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . (count($data) + $dataStartAtRowIndex - 1 + 1))
+                if (uri()->format == 'pdf') $objPHPExcel->getActiveSheet()->getStyle($columnL . (count($data) + $dataStartAtRowIndex - 1 + 1))
                     ->applyFromArray($noBorder)
-                    ->applyFromArray(array(
-                    'borders' => array(
-                        'bottom' => array(
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => array(
-                                'rgb' => 'ffffff'
-                            )
-                        )
-                    )
-                ));
+                    ->applyFromArray([
+                        'borders' => [
+                            'bottom' => [
+                                'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => [
+                                    'rgb' => 'ffffff'
+                                ]
+                            ]
+                        ]
+                    ]);
             }
 
             // Increment current row index
@@ -1692,7 +1773,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle(Indi::trail()->section->title);
+        $objPHPExcel->getActiveSheet()->setTitle(t()->section->title);
 
         // Freeze header
         $objPHPExcel->getActiveSheet()->freezePane('A' . ($dataStartAtRowIndex));
@@ -1701,47 +1782,32 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->adjustExport($objPHPExcel);
 
         // Apply adjustments, especially for a given kind of format
-        if (in(Indi::uri()->format, 'pdf,excel')) $this->{'adjust' . ucfirst(Indi::uri()->format) . 'Export'}($objPHPExcel);
+        if (in(uri()->format, 'pdf,excel')) $this->{'adjust' . ucfirst(uri()->format) . 'Export'}($objPHPExcel);
 
         // Possible formats details
-        $formatCfg = array(
-            'excel' => array(
+        $formatCfg = [
+            'excel' => [
                 'ext' => 'xlsx',
                 'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'writer' => 'Excel2007'
-            ),
-            'pdf' => array(
+                'writer' => 'Xlsx'
+            ],
+            'pdf' => [
                 'ext' => 'pdf',
                 'mime' => 'application/pdf',
-                'writer' => 'PDF_DomPDF',
-                'renderer' => PHPExcel_Settings::PDF_RENDERER_DOMPDF
-            ),
-        );
+                'writer' => 'Mpdf',
+            ],
+        ];
 
         // Output
         $file = $this->exportFname() . '.' . $formatCfg[$format]['ext'];
+
         if (preg_match('/MSIE/', $_SERVER['HTTP_USER_AGENT'])) $file = iconv('utf-8', 'windows-1251', $file);
         header('Content-Type: ' . $formatCfg[$format]['mime']);
         header('Content-Disposition: attachment; filename="' . $file . '"');
 
-        // Load PHPExcel's IO Factory class
-        require_once 'PHPExcel/IOFactory.php';
-
-        // If export format is 'pdf'
-        if ($format == 'pdf') {
-
-            // Setup $rName and $rPath
-            $rName = $formatCfg[$format]['renderer'];
-            $rPath = DOC . STD . '/core/library/' . $rName;
-
-            // Try to set up pdf renderer
-            if (!PHPExcel_Settings::setPdfRenderer($rName, $rPath))
-                jflush(false, 'Can\'t set up pdf renderer with such name and/or path');
-        }
-
         // Create writer
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $formatCfg[$format]['writer']);
-
+        $objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, $formatCfg[$format]['writer']);
+        if ($format == 'pdf') $objWriter->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
 
         // Create temporary file
         $tmp = tempnam(ini_get('upload_tmp_dir'), 'xls');
@@ -1781,7 +1847,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * Default export file name builder
      */
     public function exportFname() {
-        return Indi::trail()->section->title;
+        return t()->section->title;
     }
 
     /**
@@ -1836,7 +1902,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @return array|mixed
      */
     protected function _findSigninUserData($username, $password, $place = 'admin', $profileId = null,
-                                           $level1ToggledSectionIdA = array()) {
+                                           $level1ToggledSectionIdA = []) {
 
         // If $username arg is an instance of Indi_Db_Table_Row class, this means that
         // there are some user already logged in, but wants to switch to another account
@@ -1848,9 +1914,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             $password = $switchTo->password;
         }
 
-        $profileId = Indi::model($place)->fields('profileId') ? '`a`.`profileId`' : '"' . $profileId . '"';
-        $adminToggle = Indi::model($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
-        return Indi::db()->query('
+        $profileId = m($place)->fields('profileId') ? '`a`.`profileId`' : '"' . $profileId . '"';
+        $adminToggle = m($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
+        return db()->query('
             SELECT
                 `a`.*,
                 `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), PASSWORD(:s)) AS `passwordOk`,
@@ -1888,14 +1954,14 @@ class Indi_Controller_Admin extends Indi_Controller {
     private function _authLevel1($username, $password = null) {
 
         // Get array of most top toggled 'On' sections ids
-        $level0ToggledOnSectionIdA = Indi::db()->query('
+        $level0ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
             WHERE `sectionId` = "0" AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_COLUMN);
 
         // Get array of level 1 toggled 'On' sections ids.
-        $level1ToggledOnSectionIdA = Indi::db()->query('
+        $level1ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
             WHERE FIND_IN_SET(`sectionId`, "' . implode(',', $level0ToggledOnSectionIdA) . '") AND `toggle` = "y"
@@ -1908,7 +1974,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$data['id']) {
 
             // Get the list of other possible places, there user with given credentials can be found
-            $profile2tableA = Indi::db()->query('
+            $profile2tableA = db()->query('
                 SELECT `e`.`table`, `p`.`id` AS `profileId`
                 FROM `entity` `e`, `profile` `p`
                 WHERE `p`.`entityId` != "0"
@@ -1971,7 +2037,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $action)) return I_URI_ERROR_ACTION_FORMAT;
 
         // Try to find use data
-        $data = Indi::db()->query('
+        $data = db()->query('
             SELECT
                 `s`.`id`,
                 `s`.`toggle` != "n" AS `sectionToggle`,
@@ -2009,19 +2075,19 @@ class Indi_Controller_Admin extends Indi_Controller {
         else if (!$data['section2actionToggle']) $error = I_ACCESS_ERROR_ACTION_IS_OFF_IN_SUCH_SECTION;
 
         // 7. User have no rights on that action in that section
-        else if (!$data['granted'] && !Indi::uri('consider')) $error = I_ACCESS_ERROR_ACTION_IS_NOT_ACCESSIBLE;
+        else if (!$data['granted'] && !uri('consider')) $error = I_ACCESS_ERROR_ACTION_IS_NOT_ACCESSIBLE;
 
         // 8. One of parent sections for current section - is switched off
         else {
 
             // Start fulfil section id stack
-            $this->_routeA = array($data['id'], $data['sectionId']);
+            $this->_routeA = [$data['id'], $data['sectionId']];
 
             // Setup initial id of parent section
-            $parent = array('sectionId' => $data['sectionId']);
+            $parent = ['sectionId' => $data['sectionId']];
 
             // Navigate through parent sections up to the root
-            while ($parent = Indi::db()->query('
+            while ($parent = db()->query('
                 SELECT `sectionId`, `toggle` FROM `section` WHERE `id` = "' . $parent['sectionId'] . '" LIMIT 1
             ')->fetch()) {
 
@@ -2055,22 +2121,22 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$_SESSION['admin']) {
 
             // If 'consider' param is passed within the uri
-            if (Indi::uri('consider')) {
+            if (uri('consider')) {
 
                 // Do the second level access check
-                $data = $this->_authLevel2(Indi::uri()->section, Indi::uri()->action);
+                $data = $this->_authLevel2(uri()->section, uri()->action);
 
                 // If $data is not an array, e.g some error there, output it as json with that error
                 if (!is_array($data)) jflush(false, $data);
 
                 // Else go further and perform last auth check, within Indi_Trail_Admin::__construct()
-                else Indi::trail($this->_routeA, $this)->authLevel3();
+                else t($this->_routeA, $this)->authLevel3();
 
             // Else do ordinary check
             } else {
 
                 // If he is trying to do that
-                if (Indi::post()->enter && Indi::uri('section') == 'index' && Indi::uri('action') == 'index') {
+                if (Indi::post()->enter && uri('section') == 'index' && uri('action') == 'index') {
 
                     // If no username given
                     if (!Indi::post()->username) $data = I_LOGIN_ERROR_ENTER_YOUR_USERNAME;
@@ -2085,11 +2151,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if (!is_array($data)) jflush(false, $data);
 
                     // Else start a session for user and report that sing-in was ok
-                    $allowedA = array('id', 'title', 'email', 'password', 'profileId', 'profileTitle', 'alternate', 'mid');
+                    $allowedA = ['id', 'title', 'email', 'password', 'profileId', 'profileTitle', 'alternate', 'mid'];
                     foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
+                    // Create `realtime` entry having `type` = 'session'
+                    m('Realtime')->new([
+                        'type' => 'session',
+                        'profileId' => $_SESSION['admin']['profileId'],
+                        'adminId' => $_SESSION['admin']['id'],
+                        'token' => session_id(),
+                        'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+                    ])->save();
+
                     // Flush response
-                    jflush(true, APP ? $this->info() : array('ok' => '1'));
+                    jflush(true, APP ? $this->info() : ['ok' => '1']);
                 }
 
                 // If user was thrown out from the system, assign a throwOutMsg to Indi::view() object, for this message
@@ -2103,20 +2178,21 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (APP) {
 
                     // Flush basic info
-                    jflush(true, array(
+                    jflush(true, [
                         'std' => STD,
                         'com' => COM ? '' : '/admin',
                         'pre' => PRE,
-                        'uri' => Indi::uri()->toArray(),
-                        'title' => Indi::ini('general')->title ?: 'Indi Engine',
+                        'vdr' => VDR,
+                        'uri' => uri()->toArray(),
+                        'title' => ini('general')->title ?: 'Indi Engine',
                         'throwOutMsg' => Indi::view()->throwOutMsg,
                         'lang' => $this->lang(),
                         'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
-                        'logo' => Indi::ini('general')->logo
-                    ));
+                        'logo' => ini('general')->logo
+                    ]);
 
-                // Else if '/admin' folder exists and contains Indi standalone client app
-                } else if (file_exists($client = DOC . STD . '/admin/index.html') && !isset(Indi::get()->classic)) {
+                // Else if '/client' folder exists and contains Indi standalone client app
+                } else if (file_exists($client = DOC . STD . VDR . '/client/index.html') && !isset(Indi::get()->classic)) {
 
                     // Flush client app's bootstrap file
                     iexit(readfile($client));
@@ -2163,21 +2239,33 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Logout
                 if (APP) $this->logout(); else
-                if (Indi::uri()->section == 'index') iexit(header('Location: ' . PRE . '/logout/'));
-                else if (!Indi::uri()->format) iexit('<script>top.window.location="' . PRE .'/logout/"</script>');
-                else jflush(false, array('throwOutMsg' => $data));
+                if (uri()->section == 'index') iexit(header('Location: ' . PRE . '/logout/'));
+                else if (!uri()->format) iexit('<script>top.window.location="' . PRE .'/logout/"</script>');
+                else jflush(false, ['throwOutMsg' => $data]);
 
-            // Else if current section is 'index', e.g we are in the root of interface
-            } else if (Indi::uri()->section != 'index') {
+            // Else if current section is not 'index', e.g we are not in the root of interface
+            } else if (uri()->section != 'index') {
 
                 // Do the second level access check
-                $data = $this->_authLevel2(Indi::uri()->section, Indi::uri()->action);
+                $data = $this->_authLevel2(uri()->section, uri()->action);
 
                 // If $data is not an array, e.g some error there, output it as json with that error
                 if (!is_array($data)) jflush(false, $data);
 
                 // Else go further and perform last auth check, within Indi_Trail_Admin::__construct()
-                else Indi::trail($this->_routeA, $this)->authLevel3();
+                else t($this->_routeA, $this)->authLevel3();
+
+            // Else if current section is 'index', e.g we are in the root of interface
+            } else if (!m('Realtime')->row(['`type` = "session"', '`token` = "' . session_id() . '"'])) {
+
+                // Create `realtime` entry having `type` = 'session'
+                m('Realtime')->new([
+                    'type' => 'session',
+                    'profileId' => $_SESSION['admin']['profileId'],
+                    'adminId' => $_SESSION['admin']['id'],
+                    'token' => session_id(),
+                    'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+                ])->save();
             }
         }
 
@@ -2201,15 +2289,15 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If all possible results are already fetched, and if section view type is grid - return,
         // as in such sutuation we can fully rely on grid's own summary feature, built on javascript
-        if ((Indi::trail()->section->rowsOnPage >= Indi::trail()->scope->found && !$force) && !Indi::trail()->model->treeColumn())
-            if ($this->actionCfg['view']['index'] == 'grid' && !in(Indi::uri('format'), 'excel,pdf'))
+        if ((t()->section->rowsOnPage >= t()->scope->found && !$force) && !m()->treeColumn())
+            if ($this->actionCfg['view']['index'] == 'grid' && !in(uri('format'), 'excel,pdf'))
                 if (!APP) return;
 
         // Define an array containing extjs summary types and their sql representatives
-        $js2sql = array('sum' => 'SUM', 'min' => 'min', 'max' => 'MAX', 'average' => 'AVG');//, 'count' => 'COUNT');
+        $js2sql = ['sum' => 'SUM', 'min' => 'min', 'max' => 'MAX', 'average' => 'AVG'];//, 'count' => 'COUNT');
 
         // Get grid columns aliases
-        $cols = Indi::trail()->gridFields->column('alias');
+        $cols = t()->gridFields->column('alias');
 
         // Build an array containing sql-function calls for each column, that have a summary to be retrieved for
         foreach ($js2sql as $type => $fn)
@@ -2222,18 +2310,18 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$sql) return;
 
         // Build basic sql query for summaries calculation
-        $sql = 'SELECT ' . implode(', ', $sql) . ' FROM `' . Indi::trail()->model->table() . '`';
+        $sql = 'SELECT ' . implode(', ', $sql) . ' FROM `' . m()->table() . '`';
 
         // Declare array for WHERE clauses stack
-        $where = array();
+        $where = [];
 
         // If current model has a tree column, and it is not forced to be ignored - append special
         // clause to WHERE-clauses stack for summaries to be calculated only for top-level entries
-        if (Indi::trail()->model->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'])
-            $where['rootRowsOnly'] = '`' . Indi::trail()->model->treeColumn() . '` = "0"';
+        if (m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'])
+            $where['rootRowsOnly'] = '`' . m()->treeColumn() . '` = "0"';
 
         // Append scope's WHERE clause to the stack
-        if (strlen(Indi::trail()->scope->WHERE)) $where[] = Indi::trail()->scope->WHERE;
+        if (strlen(t()->scope->WHERE)) $where[] = t()->scope->WHERE;
 
         // Adjust WHERE clause
         $where = $this->adjustRowsetSummaryWHERE($where);
@@ -2241,8 +2329,14 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Append WHERE clause to that query
         if ($where) $sql .= ' WHERE ' . im($where, ' AND ');
 
+        // Fetch summary
+        $summary = db()->query($sql)->fetchObject();
+
+        // Convert to integer
+        array_walk($summary, function(&$v) {$v += 0;});
+
         // Fetch and return calculated summaries
-        return Indi::db()->query($sql)->fetchObject();
+        return $summary;
     }
 
     /**
@@ -2265,7 +2359,10 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function postDispatch($return = false) {
 
         // If we are in a root of interface, build the general layout
-        if (Indi::uri('section') == 'index' && Indi::uri('action') == 'index') {
+        if (uri('section') == 'index' && uri('action') == 'index') {
+
+            // If it's a refresh-menu request - flush fresh menu
+            if (isset(Indi::get()->menu)) jflush(true, ['menu' => $this->menu()]);
 
             // Get info
             $info = $this->info();
@@ -2273,8 +2370,8 @@ class Indi_Controller_Admin extends Indi_Controller {
             // If request was made via Indi Engine client app - flush info right now
             if (APP) jflush(true, $info);
 
-            // Else if '/admin' folder exists and contains Indi standalone client app
-            else if (file_exists($client = DOC . STD . '/admin/index.html') && !isset(Indi::get()->classic))
+            // Else if '/client' folder exists and contains Indi standalone client app
+            else if (file_exists($client = DOC . STD . VDR . '/client/index.html') && !isset(Indi::get()->classic))
 
                 // Flush client app's bootstrap file
                 iexit(readfile($client));
@@ -2291,10 +2388,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         } else {
 
             // Prevent sub-request
-            Indi::trail()->section->southSeparate = $this->_isNestedSeparate;
+            t()->section->southSeparate = $this->_isNestedSeparate;
 
             // Get the action
-            $action = Indi::trail()->view(true);
+            $action = t()->view(true);
 
             // If action is an object-instance of Indi_View_Action_Admin class, call render() method,
             // otherwise assume that action is just a view script
@@ -2325,42 +2422,54 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
+     * Get menu, accessible for current user
+     *
+     * @return array
+     */
+    protected function menu() {
+
+        // Get menu
+        $menu = Section::menu(); $this->menuNotices($menu); $this->adjustMenu($menu);
+
+        // Return menu
+        return $menu;
+    }
+
+    /**
      * Prepare params to be flushed on successful sign-in or on existing session resume
      *
      * @return array
      */
     protected function info() {
 
-        // Get menu, accessible for current user
-        $menu = Section::menu(); $this->menuNotices($menu); $this->adjustMenu($menu);
-
         // Return
-        return array(
+        return [
             'std' => STD,
             'com' => COM ? '' : '/admin',
             'pre' => PRE,
-            'uri' => Indi::uri()->toArray(),
+            'vdr' => VDR,
+            'uri' => uri()->toArray(),
             'time' => time(),
-            'ini' => array(
-                'ws' => array_merge((array) Indi::ini('ws'), array('pem' => is_file(DOC . STD . '/core/application/ws.pem'))),
+            'ini' => [
+                'ws' => array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/application/ws.pem')]),
                 'demo' => Indi::demo(false)
-            ),
+            ],
             'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
             'lang' => $this->lang(),
-            'logo' => Indi::ini('general')->logo,
-            'title' => Indi::ini('general')->title ?: 'Indi Engine',
-            'user' => array(
-                'title' => Indi::admin()->title(),
-                'uid' => Indi::admin()->profileId . '-' . Indi::admin()->id,
-                'role' => Indi::admin()->foreign('profileId')->title,
-                'menu' => $menu,
-                'auth' => session_id() . ':' . Indi::ini('lang')->admin,
-                'dashboard' => Indi::admin()->foreign('profileId')->dashboard ?: false,
-                'maxWindows' => Indi::admin()->foreign('profileId')->maxWindows ?: 15,
-                'uiedit' => Indi::admin()->uiedit == 'y',
-                'isDev' => Indi::admin()->profileId == '1'
-            )
-        );
+            'logo' => ini('general')->logo,
+            'title' => ini('general')->title ?: 'Indi Engine',
+            'user' => [
+                'title' => admin()->title(),
+                'uid' => admin()->profileId . '-' . admin()->id,
+                'role' => admin()->foreign('profileId')->title,
+                'menu' => $this->menu(),
+                'auth' => session_id() . ':' . ini('lang')->admin,
+                'dashboard' => admin()->foreign('profileId')->dashboard ?: false,
+                'maxWindows' => admin()->foreign('profileId')->maxWindows ?: 15,
+                'uiedit' => admin()->uiedit == 'y',
+                'isDev' => admin()->profileId == '1'
+            ]
+        ];
     }
 
     /**
@@ -2380,20 +2489,20 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$location) {
 
             // Setup parentness
-            if (Indi::trail(1)->row) $id = Indi::trail(1)->row->id;
+            if (t(1)->row) $id = t(1)->row->id;
 
             // Get scope data
-            if (Indi::uri()->ph) $scope = $_SESSION['indi']['admin'][Indi::uri('section')][Indi::uri()->ph];
+            if (uri()->ph) $scope = $_SESSION['indi']['admin'][uri('section')][uri()->ph];
 
             // Build uri location for redirect
-            $location = '/' . Indi::trail()->section->alias  . '/' .
+            $location = '/' . t()->section->alias  . '/' .
                 ($id ? 'index/id/' . $id . '/' : ($scope ? 'index/' : '')) .
                 ($scope['upperHash'] ? 'ph/' . $scope['upperHash'] . '/aix/' . $scope['upperAix'] . '/' : '');
 
         }
 
         // Redirect
-        if ($return) return $location; else jflush(true, array('redirect' => $location));
+        if ($return) return $location; else jflush(true, ['redirect' => $location]);
     }
 
     /**
@@ -2405,7 +2514,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::demo();
 
         // Toggle
-        Indi::trail()->row->toggle();
+        t()->row->toggle();
 
         // If 'others' param exists in $_POST, and it's not empty
         if ($otherIdA = ar(Indi::post()->others)) {
@@ -2417,7 +2526,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($otherIdA) {
 
                 // Fetch rows
-                $otherRs = Indi::trail()->model->fetchAll(array('`id` IN (' . im($otherIdA) . ')', Indi::trail()->scope->WHERE));
+                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
 
                 // For each row
                 foreach ($otherRs as $otherR) $otherR->toggle();
@@ -2440,7 +2549,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function m4dAction() {
 
         // Toggle
-        Indi::trail()->row->m4d();
+        t()->row->m4d();
 
         // If 'others' param exists in $_POST, and it's not empty
         if ($otherIdA = ar(Indi::post()->others)) {
@@ -2452,7 +2561,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($otherIdA) {
 
                 // Fetch rows
-                $otherRs = Indi::trail()->model->fetchAll(array('`id` IN (' . im($otherIdA) . ')', Indi::trail()->scope->WHERE));
+                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
 
                 // For each row
                 foreach ($otherRs as $otherR) $otherR->m4d();
@@ -2505,7 +2614,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::demo();
 
         // If 'ref' or 'cell' uri-param given
-        if (($ref = Indi::uri()->ref) || $cell = Indi::uri()->cell) {
+        if (($ref = uri()->ref) || $cell = uri()->cell) {
 
             // Assign 'ref' it into entry's system props
             $this->row->system('ref', $ref ?: 'rowset');
@@ -2515,10 +2624,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Get array of aliases of fields, that are actually represented in database table
-        $possibleA = Indi::trail()->model->fields(null, 'columns');
+        $possibleA = m()->fields(null, 'columns');
 
         // Pick values from Indi::post()
-        $data = array();
+        $data = [];
         foreach ($possibleA as $possibleI)
             if (array_key_exists($possibleI, (array) Indi::post()))
                 $data[$possibleI] = Indi::post($possibleI);
@@ -2529,21 +2638,21 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If there was disabled fields defined for current section, we check if default value was additionally set up
         // and if so - assign that default value under that disabled field alias in $data array, or, if default value
         // was not set - drop corresponding key from $data array
-        foreach (Indi::trail()->fields as $fieldR)
+        foreach (t()->fields as $fieldR)
             if (in($fieldR->mode, 'hidden,readonly'))
                 if (!strlen($fieldR->defaultValue) || $this->row->id || $this->row->isModified($fieldR->alias)) unset($data[$fieldR->alias]);
                 else $data[$fieldR->alias] = $fieldR->compiled('defaultValue');
 
         // If current cms user is an alternate, and if there is corresponding field within current entity structure
-        if ($this->alternateWHERE() && Indi::admin()->alternate 
-            && in($aid = Indi::admin()->alternate . 'Id', $possibleA) && !$this->allowOtherAlternateForSave())
+        if ($this->alternateWHERE() && admin()->alternate
+            && in($aid = admin()->alternate . 'Id', $possibleA) && !$this->allowOtherAlternateForSave())
 
             // Prevent alternate field to be set via POST, as it was already (properly)
             // set at the stage of trail item row initialization
             unset($data[$aid]);
 
         // Update current row properties with values from $data array
-        $this->row->assign($data);
+        $this->row->set($data);
 
         // If some of the fields are CKEditor-fields, we shoudl check whether they contain '<img>' and other tags
         // having STD injections at the beginning of 'src' or other same-aim html attributes, and if found - trim
@@ -2552,8 +2661,8 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Get the aliases of fields, that are file upload fields, and that are not disabled,
         // and are to be some changes applied on
-        $filefields = array();
-        foreach (Indi::trail()->fields as $fieldR)
+        $filefields = [];
+        foreach (t()->fields as $fieldR)
             if (!in($fieldR->mode, 'hidden,readonly'))
                 if ($fieldR->foreign('elementId')->alias == 'upload')
                     if (preg_match('/^m|d$/', Indi::post($fieldR->alias)) ||
@@ -2570,8 +2679,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->preSave();
 
         // Setup 'zeroValue'-mismatches
-        /*foreach (Indi::trail()->fields as $fieldR)
-            if ($fieldR->mode == 'required' && $this->row->fieldIsZero($fieldR->alias))
+        /*foreach (t()->fields as $fieldR)
+            if ($fieldR->mode == 'required' && $this->row->zero($fieldR->alias))
                 $this->row->mismatch($fieldR->alias, sprintf(I_ROWSAVE_ERROR_VALUE_REQUIRED, $fieldR->title));
 
         // Flush 'zeroValue'-mismatches
@@ -2583,7 +2692,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If current row has been just successfully created
         if ($updateAix && $this->row->id) {
 
-            // Update Indi::uri('aix')
+            // Update uri('aix')
             $this->updateAix($this->row);
 
             // Update parent id, so nested entries will be mapped under entry, that was just saved
@@ -2602,37 +2711,37 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Get the primary hash either from $location, or from current trail item scope info
             $hash = ($inLocation = preg_match('#/ph/([0-9a-f]+)/#', $location, $matches))
                 ? $matches[1]
-                : Indi::trail()->scope->hash;
+                : t()->scope->hash;
 
             // Remember the fact that save button was toggled on
-            $_SESSION['indi']['admin'][Indi::uri()->section][$hash]['toggledSave'] = true;
+            $_SESSION['indi']['admin'][uri()->section][$hash]['toggledSave'] = true;
 
             // Chech if $url contains primary hash value
             if ($inLocation) {
 
                 // If it was a new row, that we've just saved
-                if (!Indi::uri()->id) {
+                if (!uri()->id) {
 
                     // Increment 'found' scope param
-                    $_SESSION['indi']['admin'][Indi::uri()->section][$hash]['found']++;
+                    $_SESSION['indi']['admin'][uri()->section][$hash]['found']++;
 
                     // Replace the null id with id of newly created row
-                    $location = str_replace(array('/id/null/', '/id//'), '/id/' . Indi::trail()->row->id . '/', $location);
-                    $location = str_replace(array('/aix/null/', '/aix//'), '/aix/' . Indi::uri()->aix . '/', $location);
-                    $location = str_replace(array('/parent/null/', '/parent//'), '/parent/' . Indi::trail()->row->id . '/', $location);
+                    $location = str_replace(['/id/null/', '/id//'], '/id/' . t()->row->id . '/', $location);
+                    $location = str_replace(['/aix/null/', '/aix//'], '/aix/' . uri()->aix . '/', $location);
+                    $location = str_replace(['/parent/null/', '/parent//'], '/parent/' . t()->row->id . '/', $location);
                 }
 
             // Replace the null id with id of newly created row
-            } else if (!Indi::uri()->id) {
+            } else if (!uri()->id) {
 
-                $location = str_replace(array('/id/null/', '/id//'), '/id/' . Indi::trail()->row->id . '/', $location);
-                $location = str_replace(array('/aix/null/', '/aix//'), '/aix/' . Indi::uri()->aix . '/', $location);
-                $location = str_replace(array('/parent/null/', '/parent//'), '/parent/' . Indi::trail()->row->id . '/', $location);
+                $location = str_replace(['/id/null/', '/id//'], '/id/' . t()->row->id . '/', $location);
+                $location = str_replace(['/aix/null/', '/aix//'], '/aix/' . uri()->aix . '/', $location);
+                $location = str_replace(['/parent/null/', '/parent//'], '/parent/' . t()->row->id . '/', $location);
             }
         }
 
         // Prepare response. Here we mention a number of properties, related to saved row, as a proof that row saved ok
-        $response = array('title' => $this->row->title(), 'aix' => Indi::uri()->aix, 'id' => $this->row->id);
+        $response = ['title' => $this->row->title(), 'aix' => uri()->aix, 'id' => $this->row->id];
 
         // If redirect should be performed, include the location address under 'redirect' key within $response array
         if ($redirect) $response['redirect'] = $this->redirect($location, true);
@@ -2655,7 +2764,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function affected($phantom = false) {
 
         // Wrap row in a rowset, process it by $this->adjustGridDataRowset(), and unwrap back
-        $this->rowset = Indi::trail()->model->createRowset(array('rows' => array($this->row)));
+        $this->rowset = m()->createRowset(['rows' => [$this->row]]);
         $this->adjustGridDataRowset();
         $this->row = $this->rowset->at(0);
 
@@ -2666,7 +2775,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $dataColumns = $phantom ? t()->gridFields->column('alias') : $this->affected4grid();
 
         // Wrap data entry in an array, process it by $this->adjustGridData(), and uwrap back
-        $data = array($this->row->toGridData($dataColumns));
+        $data = [$this->row->toGridData($dataColumns)];
         $this->adjustGridData($data);
 
         // Adjust grid each data item
@@ -2702,21 +2811,21 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
-     * Assign Indi::uri()->aix according to given $r instance
+     * Assign uri()->aix according to given $r instance
      *
      * @param Indi_Db_Table_Row $r
      */
     public function updateAix(Indi_Db_Table_Row $r) {
 
         // If $scope's WHERE clause is not empty
-        if (Indi::trail()->scope->WHERE) {
+        if (t()->scope->WHERE) {
 
             // Prepare WHERE clause to ensure that newly created row does match all the requirements, that are
             // used for fetching rows that are suitable for displaying in rowset (grid, calendar, etc) panel
-            $where = '`id` = "' . $r->id . '" AND ' . Indi::trail()->scope->WHERE;
+            $where = '`id` = "' . $r->id . '" AND ' . t()->scope->WHERE;
 
             // Do the check
-            $R = Indi::trail()->model->fetchRow($where);
+            $R = m()->row($where);
 
             // Else we assume that there are no requirements for current row to be displayed in rowset panel
         } else $R = $r;
@@ -2724,8 +2833,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Here we should do check for row existence, because there can be situation when we have just created
         // a row, but values of some of it's properties do not match the requirements of current scope, and in that
         // case current scope 'aix' and/or 'page' params should not be adjusted
-        if ($R) Indi::uri()->aix = Indi::trail()->model
-            ->detectOffset(Indi::trail()->scope->WHERE, Indi::trail()->scope->ORDER, $R->id);
+        if ($R) uri()->aix = t()->model
+            ->detectOffset(t()->scope->WHERE, t()->scope->ORDER, $R->id);
     }
 
     /**
@@ -2739,7 +2848,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function parentWHERE() {
 
         // If current section does not have a parent section, or have, but is a root section - return
-        if (!Indi::trail(1)->section->sectionId) return;
+        if (!t(1)->section->sectionId) return;
 
         // Force parent WHERE to be 'FALSE' for cases when we're going to browse nested section
         // mapped under non yet existing parent entry, so we prevent `<parent>Id` = "0" clause because
@@ -2747,7 +2856,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // e.g. if we're going to display UI with create-form for `country` entry and grid
         // of `city` entries in same UI's south panel, that grid should have NO entries, despite even
         // if there are actually do exist entries in `city` db table having `countryId` = "0"
-        if (Indi::uri('action') == 'index' && Indi::uri('id') === '0') return 'FALSE';
+        if (uri('action') == 'index' && uri('id') === '0') return 'FALSE';
 
         // We check if a non-standard parent connector field name should be used to fetch childs
         // For example, if we have 'Countries' section (displayed rows a fetched from 'country' db table)
@@ -2755,19 +2864,19 @@ class Indi_Controller_Admin extends Indi_Controller {
         // where country identifier of each city is specified, but this column is not named (for some reason)
         // as 'countryId', and we need it to have some another name - so in that cases we use parentSectionConnector
         // logic.
-        $connectorAlias = Indi::trail()->section->parentSectionConnector
-            ? Indi::trail()->section->foreign('parentSectionConnector')->alias
-            : Indi::trail(1)->model->table() . 'Id';
+        $connectorAlias = t()->section->parentSectionConnector
+            ? t()->section->foreign('parentSectionConnector')->alias
+            : t(1)->model->table() . 'Id';
 
         // Get the connector value. For 'jump' uris, we we are getting it as is - from a certain row's prop
-        $connectorValue = Indi::uri('action') == 'index'
-            ? Indi::uri('id')
-            : (Indi::uri('jump')
-                ? Indi::trail()->model->fetchRow('`id` = "' . Indi::uri('id') . '"')->$connectorAlias
-                : $_SESSION['indi']['admin']['trail']['parentId'][Indi::trail(1)->section->id]);
+        $connectorValue = uri('action') == 'index'
+            ? uri('id')
+            : (uri('jump')
+                ? m()->row(uri('id'))->$connectorAlias
+                : $_SESSION['indi']['admin']['trail']['parentId'][t(1)->section->id]);
 
         // Connector field shortcut
-        $connectorField = t()->model->fields($connectorAlias);
+        $connectorField = m()->fields($connectorAlias);
 
         // Return clause
         $return = $connectorField->storeRelationAbility == 'many'
@@ -2808,7 +2917,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function loginAction() {
 
         // Force signin for selected user
-        if (Indi::trail()->model->table() == 'user')  {
+        if (m()->table() == 'user')  {
 
             $_SESSION['user'] = $this->row->toArray();
 
@@ -2817,8 +2926,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Check that current model is linked to some role, and if not - flush failure
-        if (!Indi::trail()->model->hasRole())
-            jflush(false, sprintf('Model "%s" is not linked to any role', Indi::trail()->model->title()));
+        if (!m()->hasRole())
+            jflush(false, sprintf('Model "%s" is not linked to any role', m()->title()));
 
         // If no username given
         if (!$this->row->email) $data = I_LOGIN_ERROR_ENTER_YOUR_USERNAME;
@@ -2832,12 +2941,29 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If $data is not an array, e.g some error there, output it as json with that error
         if (!is_array($data)) jflush(false, $data);
 
-        // Else start a session for user and report that sing-in was ok
+        // Delete current `realtime` entry, representing the session
+        m('Realtime')->row([
+            '`token` = "' . session_id() . '"',
+            '`type` = "session"',
+            'profileId' => $_SESSION['admin']['profileId'],
+            'adminId' => $_SESSION['admin']['id'],
+        ])->delete();
+
+        // Start a session for user and report that sing-in was ok
         foreach (ar('id,title,email,password,profileId,profileTitle,alternate,mid') as $allowedI)
             $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
+        // Create `realtime` entry having `type` = 'session'
+        m('Realtime')->new([
+            'type' => 'session',
+            'profileId' => $_SESSION['admin']['profileId'],
+            'adminId' => $_SESSION['admin']['id'],
+            'token' => session_id(),
+            'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
+        ])->save();
+
         // Reload main window for new session data to be picked
-        jflush(true, array('throwOutMsg' => true));
+        jflush(true, ['throwOutMsg' => true]);
     }
 
     /**
@@ -2855,17 +2981,44 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Unset session
         if ($_SESSION['admin']['id'])  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
 
+        // If `realtime` entry of `type` = "session" exists
+        if ($_ = m('Realtime')->row([
+            '`type` = "session"',
+            '`token` = "' . session_id() . '"'
+        ])) {
+
+            // Refresh other tabs
+            foreach($channelA = db()->query('
+                SELECT `token` 
+                FROM `realtime` 
+                WHERE 1
+                  AND `type` = "channel" 
+                  AND `realtimeId` = "' . $_->id . '" 
+                  AND `token` != "' . CID . '"
+            ')->fetchAll(PDO::FETCH_COLUMN) as $channel)
+
+                // Reload tabs
+                Indi::ws([
+                    'type' => 'F5',
+                    'to' => $channel
+                ]);
+
+            // Delete `realtime` entry
+            $_->delete();
+        }
+
         // Flush basic info
-        if (APP) jflush(true, array(
+        if (APP) jflush(true, [
             'std' => STD,
             'com' => COM ? '' : '/admin',
             'pre' => PRE,
-            'uri' => Indi::uri()->toArray(),
-            'title' => Indi::ini('general')->title ?: 'Indi Engine',
+            'vdr' => VDR,
+            'uri' => uri()->toArray(),
+            'title' => ini('general')->title ?: 'Indi Engine',
             'throwOutMsg' => $_SESSION['indi']['throwOutMsg'],
             'lang' => $this->lang(),
-            'logo' => Indi::ini('general')->logo
-        ));
+            'logo' => ini('general')->logo
+        ]);
 
         // Else redirect
         else iexit('<script>window.location.replace("' . PRE . '/")</script>');
@@ -2875,7 +3028,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * Default 'print' action
      */
     public function printAction() {
-        Indi::trail()->view->mode = 'view';
+        t()->view->mode = 'view';
     }
 
     /**
@@ -2884,13 +3037,13 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function call($action) {
 
         // If no trail - call action and return
-        if (!Indi::trail(true)) return $this->{$action . 'Action'}();
+        if (!t(true)) return $this->{$action . 'Action'}();
 
         // Adjust access rights
         $this->adjustAccess();
 
         // If we're operating in single-row mode
-        if ($row = Indi::trail()->row) {
+        if ($row = t()->row) {
 
             // Adjust trailing row access with no attention to whether is existing or new
             $this->adjustTrailingRowAccess($row);
@@ -2902,23 +3055,23 @@ class Indi_Controller_Admin extends Indi_Controller {
         } else $this->adjustRowsetAccess();
 
         // If only row creation is allowed, but now we deal with existing row - prevent it from being saved
-        if (Indi::trail()->section->disableAdd == 2 && Indi::trail()->row->id) $this->deny('save');
+        if (t()->section->disableAdd == 2 && t()->row->id) $this->deny('save');
 
         // If action was not excluded from the list of allowed actions
-        if (Indi::trail()->actions->select($action, 'alias')->at(0)) {
+        if (t()->actions->select($action, 'alias')->at(0)) {
 
             // Call that action it
             $this->{$action . 'Action'}();
 
             // If new entry is going to be created via grid rather than via form - flush entry template
-            if ($action == 'form' && !t()->row->id && Indi::uri()->phantom)
-                jflush(array('success' => true, 'phantom' => $this->affected(true)));
+            if ($action == 'form' && !t()->row->id && uri()->phantom)
+                jflush(['success' => true, 'phantom' => $this->affected(true)]);
 
         // Else flush an error message
         } else {
         
             // Get title
-            $title = Indi::model('Action')->fetchRow('`alias` = "' . $action . '"')->title;
+            $title = m('Action')->row('`alias` = "' . $action . '"')->title;
             
             // Get reason
             foreach ($this->_deny as $actions => $reason)
@@ -2961,17 +3114,17 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (in('create', $actions)) {
 
             // Setup current section's `disableAdd` property as 1
-            Indi::trail()->section->disableAdd = 1;
+            t()->section->disableAdd = 1;
 
             // If we deal with a new row - ensure it wouldn't be saved, and creation form wouldn't even be displayed
-            if (Indi::trail()->row && !Indi::trail()->row->id) {
+            if (t()->row && !t()->row->id) {
                 $actions[] = 'save';
                 $actions[] = 'form';
             }
         }
 
         // Apply exclusions to the list of allowed actions
-        Indi::trail()->actions->exclude($actions, 'alias');
+        t()->actions->exclude($actions, 'alias');
         
         // Remember the reason, if given
         if ($msg) $this->_deny[im($actions)] = $msg;
@@ -2997,13 +3150,13 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function jump() {
 
         // If uri has no 'jump' param - return
-        if (!Indi::uri('jump')) return;
+        if (!uri('jump')) return;
 
         // Backup current trail's items
         $ti = Indi_Trail_Admin::$items;
 
         // Get the navigation steps
-        $nav = Indi::trail(true)->nav();
+        $nav = t(true)->nav();
 
         // Set up $_GET 'jump' param, that will tell controllers to perform only preDispatch() call
         Indi::get('jump', 1); $ph = ''; $aix = '';
@@ -3027,21 +3180,21 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $to = preg_replace(':/(id|aix)//:', '/', array_pop($nav));
 
                 // Now we have proper (containing `ph` and `aix` params) uri, so we dispatch it
-                jflush(true, array('redirect' => $to));
+                jflush(true, ['redirect' => $to]);
 
             // Simulate as if rowset panel was loaded
-            } else Indi::uri()->dispatch($nav[$i]);
+            } else uri()->dispatch($nav[$i]);
 
             // Setup sorting
-            if (Indi::trail()->section->defaultSortField)
-                Indi::get('sort', json_encode(array(array(
-                    'property' => Indi::trail()->section->foreign('defaultSortField')->alias,
-                    'direction' => Indi::trail()->section->defaultSortDirection
-                ))));
+            if (t()->section->defaultSortField)
+                Indi::get('sort', json_encode([[
+                    'property' => t()->section->foreign('defaultSortField')->alias,
+                    'direction' => t()->section->defaultSortDirection
+                ]]));
 
             // Simulate as if rowset data was loaded into rowset panel. This provide
-            // Indi::trail()->scope's fulfilness with `found` and `ORDER` properties
-            //if (preg_match('~/index/~', $nav[$i])) Indi::uri()->dispatch($nav[$i]. 'format/json/');
+            // t()->scope's fulfilness with `found` and `ORDER` properties
+            //if (preg_match('~/index/~', $nav[$i])) uri()->dispatch($nav[$i]. 'format/json/');
 
             // Get the id of a row, that we will be simulating navigation
             // to subsection, there that row's nested entries are located
@@ -3051,10 +3204,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             if ($ti[$i+1]) {
 
                 // Get row index
-                $aix = $ti[$i+1]->model->detectOffset(Indi::trail()->scope->WHERE, Indi::trail()->scope->ORDER, $id);
+                $aix = $ti[$i+1]->model->detectOffset(t()->scope->WHERE, t()->scope->ORDER, $id);
 
                 // Use the primary hash and row index for building corresponding parts of the uri for the next iteration
-                $ph = 'ph/' . Indi::trail()->scope->hash . '/';
+                $ph = 'ph/' . t()->scope->hash . '/';
                 $aix = 'aix/' . $aix . '/';
             }
         }
@@ -3063,7 +3216,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::get('jump', null);
 
         // Now we have proper (containing `ph` and `aix` params) uri, so we dispatch it
-        jflush(true, array('redirect' => array_pop($nav)));
+        jflush(true, ['redirect' => array_pop($nav)]);
     }
 
     /**
@@ -3108,26 +3261,26 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function createOnly($ownerCheck = false) {
 
         // If entries creation is disabled - do nothing
-        if (Indi::trail()->section->disableAdd) return;
+        if (t()->section->disableAdd) return;
 
         // If we do not deal with an existing row - do nothing
-        if (!Indi::trail()->row->id) return;
+        if (!t()->row->id) return;
 
         // If current entry belongs to current system user- do nothing
         if ($ownerCheck)
 
             // If belonging mode is represented with a pairof special 'authorType' and 'authorId' fields
-            if (Indi::trail()->model->fields('authorId') && Indi::trail()->model->fields('authorType')) {
+            if (m()->fields('authorId') && m()->fields('authorType')) {
 
                 // If current entry does not belongto current system user - return
-                if (Indi::trail()->row->authorId == Indi::me('id') && Indi::trail()->row->authorType == Indi::me('mid'))
+                if (t()->row->authorId == Indi::me('id') && t()->row->authorType == Indi::me('mid'))
                     return;
 
             // Else if belonging mode is represented by 'alternate' concept, and current system user is an alternate
-            } else if (Indi::admin()->alternate && Indi::trail()->model->fields($af = Indi::admin()->alternate(t()->model->table()))) {
+            } else if (admin()->alternate && m()->fields($af = admin()->alternate(m()->table()))) {
 
                 // If current entry does not belongto current system user - return
-                if (in(Indi::admin()->id, $this->row->$af)) return;
+                if (in(admin()->id, $this->row->$af)) return;
             
             // Else if there is no any kind of belonging
             } else return;
@@ -3136,7 +3289,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->deny('save');
 
         // Setup special value for section's `disableAdd` prop, indicating that creation is still possible
-        Indi::trail()->section->disableAdd = 2;
+        t()->section->disableAdd = 2;
     }
 
     /**
@@ -3186,67 +3339,67 @@ class Indi_Controller_Admin extends Indi_Controller {
         $sectionIdA = array_column($menu, 'id');
 
         // If no 'Notice' entity found - return
-        if (!Indi::model('NoticeGetter', true) || !Indi::model('NoticeGetter')->fields('criteriaRelyOn')) return;
+        if (!m('NoticeGetter', true) || !m('NoticeGetter')->fields('criteriaRelyOn')) return;
 
         // Get ids of relyOnGetter-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnGetter = Indi::db()->query('
+        $noticeIdA_relyOnGetter = db()->query('
             SELECT `noticeId`
             FROM `noticeGetter`
             WHERE 1
               AND `criteriaRelyOn` = "getter"
-              AND `profileId` = "' . Indi::admin()->profileId . '"
+              AND `profileId` = "' . admin()->profileId . '"
               AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_COLUMN);
 
         // Get ids of relyOnEvent-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnEvent = Indi::db()->query('
+        $noticeIdA_relyOnEvent = db()->query('
             SELECT `noticeId`, `criteriaEvt`
             FROM `noticeGetter`
             WHERE 1
               AND `criteriaRelyOn` = "event"
-              AND `profileId` = "' . Indi::admin()->profileId . '"
+              AND `profileId` = "' . admin()->profileId . '"
               AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_KEY_PAIR);
 
         // Remove relyOnEvent-notices having criteria that current user/getter not match
         foreach ($noticeIdA_relyOnEvent as $noticeId => $criteriaEvt)
-            if ($criteriaEvt && !Indi::admin()->model()->fetchRow('`id` = "' . Indi::admin()->id . '" AND ' . $criteriaEvt))
+            if ($criteriaEvt && !admin()->model()->row('`id` = "' . admin()->id . '" AND ' . $criteriaEvt))
                 unset($noticeIdA_relyOnEvent[$noticeId]);
                 $noticeIdA_relyOnEvent = array_keys($noticeIdA_relyOnEvent);
 
         // Get notices
-        $_noticeRs = Indi::model('Notice')->fetchAll(array(
-            'FIND_IN_SET("' . Indi::admin()->profileId . '", `profileId`)',
+        $_noticeRs = m('Notice')->all([
+            'FIND_IN_SET("' . admin()->profileId . '", `profileId`)',
             'CONCAT(",", `sectionId`, ",") REGEXP ",(' . im($sectionIdA, '|') . '),"',
             'FIND_IN_SET(`id`, IF(`qtyDiffRelyOn` = "event", "' . im($noticeIdA_relyOnEvent) . '", "' . im($noticeIdA_relyOnGetter) . '"))',
             '`toggle` = "y"'
-        ));
+        ]);
 
         // If no notices - return
         if (!$_noticeRs->count()) return;
 
         // Qtys array, containing quantities of rows, matched for each notice, per each section/menu-item
-        $qtyA = array();
+        $qtyA = [];
 
         // Foreach notice
         foreach ($_noticeRs as $_noticeR) {
 
             // Get qty
-            $_noticeR->qty = Indi::db()->query('
+            $_noticeR->qty = db()->query('
                 SELECT COUNT(`id`)
-                FROM `' . Indi::model($_noticeR->entityId)->table().'`
+                FROM `' . m($_noticeR->entityId)->table().'`
                 WHERE ' . $_noticeR->compiled('qtySql')
             )->fetchColumn();
 
             // Collect qtys for each sections
             foreach (ar($_noticeR->sectionId) as $sectionId)
-                $qtyA[$sectionId][] = array(
+                $qtyA[$sectionId][] = [
                     'qty' => $_noticeR->qty ?: 0,
                     'id' => $_noticeR->id,
                     'bg' => $_noticeR->colorHex('bg'),
                     'fg' => $_noticeR->colorHex('fg'),
                     'tip' => $_noticeR->tooltip
-                );
+                ];
         }
 
         // Foreach menu item
@@ -3270,7 +3423,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function _isRowsetSeparate() {
 
         // Setup shortcut
-        $mode = Indi::trail()->section->rowsetSeparate;
+        $mode = t()->section->rowsetSeparate;
 
         // If mode feature is not yet implemented - set it as 'auto'
         if (!$mode) $mode = 'auto';
@@ -3279,14 +3432,14 @@ class Indi_Controller_Admin extends Indi_Controller {
         if ($mode == 'auto') {
 
             // If current section is a first-level section - set data to be loaded via separate request
-            if (Indi::trail()->level == 1) $mode = 'yes';
+            if (t()->level == 1) $mode = 'yes';
 
             // Else if grid columns count is more than 10 - set data to be loaded via separate request
-            else if (Indi::trail()->gridFields->count() > 10) $mode = 'yes';
+            else if (t()->gridFields->count() > 10) $mode = 'yes';
         }
 
         // Set trail section's `rowsetSeparate` prop` and _isRowsetSeparate` flag
-        $this->_isRowsetSeparate = ((Indi::trail()->section->rowsetSeparate = $mode) == 'yes');
+        $this->_isRowsetSeparate = ((t()->section->rowsetSeparate = $mode) == 'yes');
     }
 
     /**
@@ -3296,18 +3449,18 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @param array $ctor
      * @return mixed
      */
-    public function inclGridProp($propS, $ctor = array()) {
+    public function inclGridProp($propS, $ctor = []) {
 
         // Get fields
         $fieldRs = $this->callParent();
 
         // Call patent
-        if (Indi::trail()->grid)
+        if (t()->grid)
             foreach ($fieldRs as $fieldR)
-                Indi::trail()->grid->append(array_merge(array(
+                t()->grid->append(array_merge([
                     'fieldId' => $fieldR->id,
                     'gridId' => 0
-                ), $ctor));
+                ], $ctor));
 
         // Return
         return $fieldRs;
@@ -3325,7 +3478,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $fieldIds = $this->callParent();
 
         // Exclude grid columns
-        if (Indi::trail()->grid) Indi::trail()->grid->exclude($fieldIds, 'fieldId');
+        if (t()->grid) t()->grid->exclude($fieldIds, 'fieldId');
 
         // Return
         return $fieldIds;
@@ -3338,7 +3491,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      *
      * @param array $columnA
      */
-    public function adjustExportColumns(&$columnA = array()) {
+    public function adjustExportColumns(&$columnA = []) {
 
     }
 
@@ -3348,20 +3501,20 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function callAction() {
 
         // Check that 'sipnet' section exists within loaded configuration file
-        if (!$sipnet = Indi::ini('sipnet')) jflush(false, 'No "sipnet" section found in config.ini');
+        if (!$sipnet = ini('sipnet')) jflush(false, 'No "sipnet" section found in config.ini');
 
         // Check other required configuration options
         foreach (ar('url,uid,pwd') as $key) if (!$sipnet->$key)
             jflush(false, 'No "' . $key . '" key found within "sipnet" section in config.ini');
 
         // Basic params
-        $_paramA = array(
+        $_paramA = [
             'sipuid' => $sipnet->uid,
             'password' => $sipnet->pwd,
             'format' => '2',
-            'lang' => Indi::ini('lang')->admin,
+            'lang' => ini('lang')->admin,
             'operation' => 'balance'
-        );
+        ];
 
         // If we're only going to check given phone number validity - skip balance detection
         if (!Indi::get()->count()) {
@@ -3374,14 +3527,14 @@ class Indi_Controller_Admin extends Indi_Controller {
             if (!$out['Result']) jflush($out['Result'], 'SIPNET: ' . $out['ErrorStr']);
 
             // Pass balance info
-            Indi::trail()->data['sipnet']['balance'] = $out;
+            t()->data['sipnet']['balance'] = $out;
         }
 
         // If 'phone' key exists within $_POST
         if (array_key_exists('phone', Indi::post())) {
 
             // Check that phone
-            jcheck(array('phone' => array('req' => true)), Indi::post());
+            jcheck(['phone' => ['req' => true]], Indi::post());
         
             // Pick that phone
             $phone = Indi::post('phone');
@@ -3390,7 +3543,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         } else {
         
             // Check entry's phone
-            jcheck(array('phone' => array('req' => true)), array('phone' => $this->row->clientPhone));
+            jcheck(['phone' => ['req' => true]], ['phone' => $this->row->clientPhone]);
             
             // Pick that phone
             $phone = $this->row->clientPhone;
@@ -3403,10 +3556,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (array_key_exists('pricing', Indi::get())) {
 
             // Prepare params for getting price per minute
-            $paramA = array(
+            $paramA = [
                 'operation' => 'getphoneprice',
                 'Phone' => $phone,
-            ) + $_paramA;
+                ] + $_paramA;
 
             // Get price per minute
             $pricing = file_get_contents($sipnet->url . '?' . http_build_query($paramA));
@@ -3417,10 +3570,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Pass pricing info
-        Indi::trail()->data['sipnet']['pricing'] = $pricing ?: array();
+        t()->data['sipnet']['pricing'] = $pricing ?: [];
 
         // Pass demo phone
-        if (Indi::demo(false) || true) Indi::trail()->data['sipnet']['demophone'] = $sipnet->demophone;
+        if (Indi::demo(false) || true) t()->data['sipnet']['demophone'] = $sipnet->demophone;
 
         // If no 'make' $_GET key given - return, so if there is pricing error - it will be picked by dialer UI
         if (!array_key_exists('make', Indi::get())) return;
@@ -3435,10 +3588,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         i($button, 'a');*/
 
         // Params for new button's request
-        $paramA = array(
+        $paramA = [
             'operation' => 'addwebbutton',
             'phone' => $phone
-        ) + $_paramA;
+            ] + $_paramA;
 
         // Get button json
         $button = Indi::demo(false) || true
@@ -3482,13 +3635,16 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @param array $cfg
      * @return mixed
      */
-    public function prompt($msg, $cfg = array()) {
+    public function prompt($msg, $cfg = []) {
+
+        // Answer index
+        $answerIdx = rif(Indi::$answer, count(Indi::$answer) + 1);
 
         // Get answer
-        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
+        $answer = Indi::get()->{'answer' . $answerIdx};
 
         // Build meta
-        $meta = array(); foreach($cfg as $field) $meta[$field['name']] = $field;
+        $meta = []; foreach($cfg as $field) $meta[$field['name']] = $field;
         
         // If no answer, flush confirmation prompt
         if (!$answer) jprompt($msg, $cfg);
@@ -3500,7 +3656,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::$answer[count(Indi::$answer)] = $answer;
 
         // Return prompt data
-        return json_decode(Indi::post('_prompt'), true) + array('_meta' => $meta);
+        return json_decode(Indi::post('_prompt' . $answerIdx), true) + ['_meta' => $meta];
     }
 
     /**
@@ -3521,12 +3677,12 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function rwuAction() {
 
         // Check request data for 'widthUsage' prop, that should be json
-        $_ = jcheck(array(
-            'widthUsage' => array(
+        $_ = jcheck([
+            'widthUsage' => [
                 'req' => true,
                 'rex' => 'json'
-            )
-        ), Indi::post());
+            ]
+        ], Indi::post());
 
         // Foreach key-value pair within $_['widthUsage']
         foreach ($_['widthUsage'] as $gridId => $width) {
@@ -3559,7 +3715,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Convert filter values format
         // from {param1: value1, param2: value2}
         // to [{param1: value1}, {param2: value2}]
-        $search = array(); foreach ($filter as $param => $value) $search []= array($param => $value);
+        $search = []; foreach ($filter as $param => $value) $search []= [$param => $value];
 
         // Json-encode and return
         return json_encode($search);
@@ -3589,22 +3745,22 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (Indi::view()->lang) return Indi::view()->lang;
 
         // Get available languages
-        $langA = Indi::db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
+        $langA = db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
 
         // Get default/current language
-        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : Indi::ini('lang')->admin;
+        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
 
         // Get all languages' versions for 4 constants
         foreach ($langA as &$langI) {
 
             // Declare
-            $langI['const'] = array();
+            $langI['const'] = [];
 
             // Foreach dir
-            foreach (ar('core,www') as $dir) {
+            foreach (['', VDR . '/system'] as $dir) {
 
                 // Build filename of a php-file, containing l10n constants
-                $l10n_file = DOC . STD . '/' . $dir . '/application/lang/admin/' . $langI['alias'] . '.php';
+                $l10n_file = DOC . STD . $dir . '/application/lang/admin/' . $langI['alias'] . '.php';
 
                 // If no file - skip
                 if (!file_exists($l10n_file)) continue;
@@ -3613,26 +3769,79 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (!$php = file_get_contents($l10n_file)) continue;
 
                 // Collect all-languages versions of small number of constants, required for loginbox
-                foreach (array(
+                foreach ([
                      'I_LOGIN_BOX_USERNAME',
                      'I_LOGIN_BOX_PASSWORD',
                      'I_LOGIN_BOX_ENTER',
                      'I_LOGIN_ERROR_MSGBOX_TITLE',
                      'I_MSG',
                      'I_ERROR'
-                ) as $const) if (preg_match('~define\(\'' . $const . '\', \'(.*?)\'\);~', $php, $m))
+                         ] as $const) if (preg_match('~define\(\'' . $const . '\', \'(.*?)\'\);~', $php, $m))
                     $langI['const'][$const] = $m[1];
 
                 // Collect all l10n constants for a default/current language
-                if ($langI['alias'] == $lang && Indi::admin(true)) {
+                if ($langI['alias'] == $lang && admin(true)) {
                     $const = Indi::rexma('~define\(\'(.*?)\', ?\'(.*?)\'\);~', $php);
                     foreach ($const[2] as &$value) $value = stripslashes($value);
-                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?: array());
+                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?: []);
                 }
             }
         }
 
         // Setup list of possible translations and current/last chosen one
-        return Indi::view()->lang = array('odata' => $langA, 'name' => $lang) + ($l10n ?: array());
+        return Indi::view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?: []);
+    }
+
+    /**
+     * Create `realtime` entry having `type` = "context", if not yet created, and assign `scope` and `entries` props
+     *
+     * @param $scope
+     */
+    public function createContextIfNeed($scope) {
+
+        // Prevent `realtime` entry from being created in case of excel-export
+        if (uri()->format == 'excel') return;
+
+        // Track involved entries
+        if ($_ = m('realtime')->row([
+            '`type` = "context"',
+            '`token` = "' . t()->bid() . '"',
+            '`realtimeId` = "' . m('realtime')->row('`token` = "' . CID . '"')->id . '"'
+        ]) ?: t()->context()) $_->set([
+            'entries' => $this->rowset->column('id', ','),
+            'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
+        ])->save();
+    }
+
+    /**
+     * Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
+     */
+    public function deleteContextIfNeed() {
+
+        // If $_POST['destroy'] is only given
+        if ((count(Indi::post()) == 1) && ($ctx = Indi::post('destroy'))) {
+
+            // Check $token format and CID format
+            jcheck([
+                'ctx' => ['rex' => 'ctx'],
+                'cid' => ['rex' => 'wskey']
+            ], ['ctx' => $ctx, 'cid' => CID]);
+
+            // If websocket-channel is known - remove context
+            if (CID
+                && ($chl = m('realtime')->row(['`type` = "channel"', '`token` = "' . CID . '"']))
+                && ($ctx = m('realtime')->row(['`type` = "context"', '`token` = "' . $ctx . '"', '`realtimeId` = "' . $chl->id . '"']))
+            ) {
+
+                // Delete context
+                $ctx->delete();
+
+                // Flush success
+                jflush(true);
+            }
+
+            // Flush success if realtime is turned Off, else flush failure
+            jflush(!ini('ws')->realtime);
+        }
     }
 }

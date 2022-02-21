@@ -84,7 +84,7 @@ class Indi_View_Helper_Admin_FormCombo {
      * @return Field_Row
      */
     public function getField($name) {
-        return Indi::trail()->model->fields($name);
+        return m()->fields($name);
     }
 
     /**
@@ -152,15 +152,15 @@ class Indi_View_Helper_Admin_FormCombo {
 
             // Setup an info about selected value
             if (strlen($key)) {
-                $selected = array(
+                $selected = [
                     'title' => $options[$key]['title'],
                     'value' => $key
-                ); 
+                ];
             } else {
-                $selected = array(
+                $selected = [
                     'title' => null,
                     'value' => null
-                );            
+                ];
             }
 
         // Else if current field column type is ENUM or SET, and current row have no selected value, we use first
@@ -183,10 +183,10 @@ class Indi_View_Helper_Admin_FormCombo {
             }
 
             // Setup an info about selected value
-            $selected = array(
+            $selected = [
                 'title' => $options[$key]['title'],
                 'value' => $key
-            );
+            ];
 
             if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
 
@@ -196,7 +196,7 @@ class Indi_View_Helper_Admin_FormCombo {
 
             // Set up html attributes for hidden input, if optionAttrs param was used
             if ($options[$selected['value']]['attrs']) {
-                $attrs = array();
+                $attrs = [];
                 foreach ($options[$selected['value']]['attrs'] as $k => $v) {
                     $attrs[] = $k . '="' . $v . '"';
                 }
@@ -207,11 +207,11 @@ class Indi_View_Helper_Admin_FormCombo {
         } else if ($this->field->storeRelationAbility == 'many' || ($this->filter && $this->filter->any())) {
 
             // Set value for hidden input
-            $selected = array('value' => $selected);
+            $selected = ['value' => $selected];
 
             // Set up html attributes for hidden input, if optionAttrs param was used
             $exploded = explode(',', $selected['value']);
-            $attrs = array();
+            $attrs = [];
             for ($i = 0; $i < count($exploded); $i++) {
                 if ($options[$exploded[$i]]['attrs']) {
                     foreach ($options[$exploded[$i]]['attrs'] as $k => $v) {
@@ -223,14 +223,14 @@ class Indi_View_Helper_Admin_FormCombo {
         }
 
         // Prepare options data
-        $options = array(
+        $options = [
             'ids' => array_keys($options),
             'data' => array_values($options),
             'found' => $comboDataRs->found(),
             'page' => $comboDataRs->page(),
             'enumset' => $comboDataRs->enumset,
             'titleMaxLength' => $this->titleMaxLength
-        );
+        ];
 
         // Setup tree flag in entity has a tree structure
         if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
@@ -250,7 +250,7 @@ class Indi_View_Helper_Admin_FormCombo {
         $this->pageUpDisabled = $this->getRow()->$name ? 'false' : 'true';
 
         // Assign local variables to public class variables
-        foreach (array('name', 'selected', 'params', 'attrs', 'comboDataRs', 'keyProperty') as $var) $this->$var = $$var;
+        foreach (['name', 'selected', 'params', 'attrs', 'comboDataRs', 'keyProperty'] as $var) $this->$var = $$var;
 
         // Prepare a data object containing all involved info
         $this->extjs($options);
@@ -282,19 +282,19 @@ class Indi_View_Helper_Admin_FormCombo {
     public function extjs($options) {
 
         // Prepare view params
-        $view = array(
-            'subTplData' => array(
+        $view = [
+            'subTplData' => [
                 'attrs' => $this->attrs,
                 'pageUpDisabled' => $this->pageUpDisabled,
-            ),
+            ],
             'store' => $options
-        );
+        ];
 
         // Setup view data,related to currenty selected value(s)
         if ($this->isMultiSelect()) {
             $view['subTplData']['selected'] = $this->selected;
             foreach($this->comboDataRs->selected as $selectedR) {
-                $item = self::detectColor(array('title' => ($_tc = $this->field->param('titleColumn')) ? $selectedR->$_tc : $selectedR->title()));
+                $item = self::detectColor(['title' => ($_tc = $this->field->param('titleColumn')) ? $selectedR->$_tc : $selectedR->title()]);
                 $item['id'] = $selectedR->{$this->keyProperty};
                 $view['subTplData']['selected']['items'][] = $item;
             }
@@ -320,7 +320,7 @@ class Indi_View_Helper_Admin_FormCombo {
         ($t = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', $option['title'], $color)) ||
         ($s = preg_match('/color[:=][ ]*[\'"]{0,1}([#a-zA-Z0-9]+)/i', $option['title'], $color)) ||
         ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: ([#0-9a-zA-Z]{3,20});[^"]*"[^>]*>/', $option['title'], $color)) ||
-        ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\(.*\));[^"]*"[^>]*>/', $option['title'], $color));
+        ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\(.*\).*?);[^"]*"[^>]*>/', $option['title'], $color));
 
         // If color was detected somewhere
         if ($v || $t || $s || $b || $option['boxColor']) {

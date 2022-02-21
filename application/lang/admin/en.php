@@ -200,6 +200,7 @@ define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_MSG', 'Options are already empt
 
 define('I_ACTION_DELETE_CONFIRM_TITLE', 'Confirm');
 define('I_ACTION_DELETE_CONFIRM_MSG', 'Are you sure you want to delete');
+define('I_ENTRY_TBQ', 'entry,entries,entries');
 
 define('I_SOUTH_PLACEHOLDER_TITLE', 'Contents of this tab is opened in a separate window');
 define('I_SOUTH_PLACEHOLDER_GO', 'Go to');
@@ -236,6 +237,18 @@ define('I_WHEN_TM_AT', 'at');
 define('I_LANG_LAST', 'It is not allowed to delete the last remaining "%s" entry');
 define('I_LANG_CURR', 'It is not allowed to delete the translation, that is used as your current translation');
 define('I_LANG_FIELD_L10N_DENY', 'Localization cannot be turned on for field "%s"');
+define('I_LANG_QYQN_CONFIRM', 'If you want %s language "%s" for fraction "%s" press "%s". If you just need to bring it into line with the current state - press "%s"');
+define('I_LANG_QYQN_CONFIRM2', 'For fraction "%s", language "%s" will be manually marked as "%s". Proceed?');
+define('I_LANG_QYQN_SELECT', 'Select source language');
+define('I_LANG_EXPORT_HEADER', 'Select export params');
+define('I_LANG_IMPORT_HEADER', 'Select import params');
+define('I_LANG_NOT_SUPPORTED', 'Not supported so far');
+define('I_LANG_SELECT_CURRENT', 'Select current language of fraction "%s"');
+define('I_LANG_MIGRATE_META', 'Prepare fields');
+define('I_LANG_MIGRATE_DATA', 'Migrate titles');
+define('I_ADD', 'Add');
+define('I_DELETE', 'Delete');
+define('I_SECTION_CLONE_SELECT_PARENT', 'Select the parent section, which should be subordinate to duplicates of the selected sections');
 
 define('I_TILE_NOTHUMB', 'No thumb');
 define('I_TILE_NOFILE', 'No file');

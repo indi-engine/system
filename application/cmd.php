@@ -18,4 +18,4 @@ unlink($tmp);
 include('index.php');
 
 // Dispatch method
-Indi::uri()->dispatch((COM ? '' : '/admin') . '/cmd/' . $method . '/', $args);
+uri()->dispatch((COM ? '' : '/admin') . '/cmd/' . $method . '/', $args);

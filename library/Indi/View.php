@@ -5,10 +5,10 @@ class Indi_View {
      *
      * @var array
      */
-    private $_path = array(
-        'script' => array(),
-        'helper' => array()
-    );
+    private $_path = [
+        'script' => [],
+        'helper' => []
+    ];
 
     /**
      * Script file name to execute
@@ -22,20 +22,20 @@ class Indi_View {
      *
      * @var array
      */
-    private $_helper = array();
+    private $_helper = [];
 
     /**
      * Map of helper => class pairs to help in determining helper class from
      * name
      * @var array
      */
-    private $_helperLoaded = array();
+    private $_helperLoaded = [];
 
     /**
      * Map of helper => classfile pairs to aid in determining helper classfile
      * @var array
      */
-    private $_helperLoadedDir = array();
+    private $_helperLoadedDir = [];
 
     /**
      * Callback for escaping.
@@ -54,20 +54,20 @@ class Indi_View {
      * Plugin loaders
      * @var array
      */
-    private $_loaders = array();
+    private $_loaders = [];
 
     /**
      * Plugin types
      * @var array
      */
-    private $_loaderTypes = array('helper');
+    private $_loaderTypes = ['helper'];
 
     /**
      * Constructor.
      *
      * @param array $config Configuration key-value pairs.
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         // set inital paths and properties
         $this->setScriptPath(null);
@@ -109,7 +109,7 @@ class Indi_View {
      * @return mixed
      */
     public function __get($property) {
-        if (preg_match('/^row(set|)$/i', $property) && Indi::trail(true)) return Indi::trail()->$property;
+        if (preg_match('/^row(set|)$/i', $property) && t(true)) return t()->$property;
         else if (preg_match('/^user$/', $property)) return Indi::user();
     }
 
@@ -122,7 +122,7 @@ class Indi_View {
      */
     public function __isset($key)
     {
-        if (preg_match('/^row(set|)$/i', $key)) return isset(Indi::trail()->$key);
+        if (preg_match('/^row(set|)$/i', $key)) return isset(t()->$key);
 
         if ('_' != substr($key, 0, 1)) {
             return isset($this->$key);
@@ -146,8 +146,8 @@ class Indi_View {
      */
     public function __set($key, $val)
     {
-        if (preg_match('/^row(set|)$/i', $key) && Indi::trail(true)) {
-            Indi::trail()->$key = $val;
+        if (preg_match('/^row(set|)$/i', $key) && t(true)) {
+            t()->$key = $val;
             return;
         }
 
@@ -190,7 +190,7 @@ class Indi_View {
 
         // call the helper method
         return call_user_func_array(
-            array($helper, $name),
+            [$helper, $name],
             $args
         );
     }
@@ -269,7 +269,7 @@ class Indi_View {
      */
     public function setScriptPath($path)
     {
-        $this->_path['script'] = array();
+        $this->_path['script'] = [];
         $this->_addPath('script', $path);
         return $this;
     }
@@ -298,9 +298,9 @@ class Indi_View {
                 default:
                     $prefix     .= $pType;
                     $pathPrefix .= $pType;
-                    $loader = new Indi_Loader_PluginLoader(array(
+                    $loader = new Indi_Loader_PluginLoader([
                         $prefix => $pathPrefix
-                    ));
+                    ]);
                     $this->_loaders[$type] = $loader;
                     break;
             }
@@ -398,6 +398,18 @@ class Indi_View {
     }
 
     /**
+     * Alias for assign
+     *
+     * @param $spec
+     * @param null $value
+     * @return $this
+     * @throws Exception
+     */
+    public function set($spec, $value = null) {
+        return $this->assign($spec, $value);
+    }
+
+    /**
      * Processes a view script and returns the output.
      *
      * @param string $name The script name to process.
@@ -425,7 +437,7 @@ class Indi_View {
      */
     public function escape($var)
     {
-        if (in_array($this->_escape, array('htmlspecialchars', 'htmlentities'))) {
+        if (in_array($this->_escape, ['htmlspecialchars', 'htmlentities'])) {
             return call_user_func($this->_escape, $var, ENT_COMPAT, $this->_encoding);
         }
 
@@ -461,7 +473,7 @@ class Indi_View {
         }
 
         $message = "script '$name' not found in path ("
-                 . implode(PATH_SEPARATOR, $this->_path['script'])
+                 . var_export($this->_path['script'], true)
                  . ")";
         $e = new Exception($message);
         throw $e;
@@ -511,7 +523,7 @@ class Indi_View {
                 case 'helper':
                 default:
                     // add as array with prefix and dir keys
-                    array_push($this->_path[$type], array('prefix' => $prefix, 'dir' => $dir));
+                    array_push($this->_path[$type], ['prefix' => $prefix, 'dir' => $dir]);
                     break;
             }
         }
@@ -530,16 +542,16 @@ class Indi_View {
 
         switch ($type) {
             case 'script':
-                $this->_path[$type] = array(dirname(__FILE__) . $dir);
+                $this->_path[$type] = [dirname(__FILE__) . $dir];
                 $this->_addPath($type, $path);
                 break;
             case 'filter':
             case 'helper':
             default:
-                $this->_path[$type] = array(array(
+                $this->_path[$type] = [[
                     'prefix' => 'Indi_View_' . ucfirst($type) . '_',
                     'dir'    => dirname(__FILE__) . $dir
-                ));
+                ]];
                 $this->_addPath($type, $path, $classPrefix);
                 break;
         }
@@ -657,7 +669,7 @@ class Indi_View {
      * @param $name
      * @param array $vars
      */
-    public function other($name, array $vars = array()) {
+    public function other($name, array $vars = []) {
         extract($vars);
         $file = str_replace('\\', '/', array_shift(array_shift(debug_backtrace(false))));
         include preg_replace('/\/[a-z0-9A-Z]+\.php/', '/' . $name . '.php', $file);
@@ -679,8 +691,8 @@ class Indi_View {
     public function same($name) {
         $file = str_replace('\\', '/', array_shift(array_shift(debug_backtrace(false))));
         $rex = '~\/[a-z0-9A-Z]+\/([a-z0-9A-Z]+)\.php~';
-        $lang = '-' . Indi::ini('lang')->admin;
-        if (!file_exists($tpl = preg_replace($rex, '/' . $name . '/$1-' . Indi::ini('lang')->admin . '.php', $file)))
+        $lang = '-' . ini('lang')->admin;
+        if (!file_exists($tpl = preg_replace($rex, '/' . $name . '/$1-' . ini('lang')->admin . '.php', $file)))
             $tpl = preg_replace($rex, '/' . $name . '/$1.php', $file);
         include $tpl;
     }

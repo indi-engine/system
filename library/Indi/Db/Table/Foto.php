@@ -40,7 +40,7 @@ class Indi_Db_Table_Foto extends Indi_Db_Table {
     public function adjustFotoTitles($_withinFieldValue) {
 
         // Get fotos array
-        $_fotoA = Indi::db()->query('
+        $_fotoA = db()->query('
             SELECT `id`
             FROM `' . $this->_table . '`
             ' . ($this->_withinField ? 'WHERE `' . $this->_withinField . '` = "' . $_withinFieldValue . '"' : '') . '
@@ -48,10 +48,10 @@ class Indi_Db_Table_Foto extends Indi_Db_Table {
         ')->fetchAll();
 
         // For each foto update `title` prop
-        for ($i = 0; $i < count($_fotoA); $i++) if ($r = $this->fetchRow(array(
+        for ($i = 0; $i < count($_fotoA); $i++) if ($r = $this->row([
             '`id` = "' . $_fotoA[$i]['id'] . '"',
             '`title` RLIKE "' . sprintf($this->_titlePref, '[0-9]+') . '"',
             '`toggle` = "y"'
-        ))) $r->assign(array('title' => sprintf($this->_titlePref, $i+1)))->basicUpdate();
+        ])) $r->set(['title' => sprintf($this->_titlePref, $i+1)])->basicUpdate();
     }
 }

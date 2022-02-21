@@ -44,7 +44,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $langId_filter = '"y" IN (`' . im($fraction = ar(t()->row->fraction()), '`, `') . '`)';
 
         // Create phantom `langId` field
-        $langId_combo = Indi::model('Field')->createRow([
+        $langId_combo = m('Field')->new([
             'alias' => 'langId',
             'columnTypeId' => 'INT(11)',
             'elementId' => 'combo',
@@ -53,13 +53,13 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
             'filter' => $langId_filter,
             'mode' => 'hidden',
             'defaultValue' => 0
-        ], true);
+        ]);
 
         // Append to fields list
-        t()->model->fields()->append($langId_combo);
+        m()->fields()->append($langId_combo);
 
         // Set active value
-        t()->row->langId = m('lang')->fetchRow($langId_filter, '`move`')->id;
+        t()->row->langId = m('lang')->row($langId_filter, '`move`')->id;
 
         // Build config for langId-combo
         $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');
@@ -84,7 +84,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
         // Get target langs
         $target = [];
-        foreach ($fraction as $fractionI) $target[$fractionI] = Indi::model('Lang')->fetchAll([
+        foreach ($fraction as $fractionI) $target[$fractionI] = m('Lang')->all([
             '`' . $fractionI . '` = "y"',
             '`alias` != "' . $_['langId']->alias . '"'
         ])->column('alias', true);
@@ -106,6 +106,6 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process
-        Indi::cmd('queue', array('queueTaskId' => $queueTaskR->id));
+        Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
     }
 }

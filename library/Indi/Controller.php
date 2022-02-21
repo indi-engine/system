@@ -14,25 +14,25 @@ class Indi_Controller {
     public function __construct() {
 
         // Set locale
-        if (Indi::ini()->lang->{Indi::uri()->module} == 'ru')
+        if (ini()->lang->{uri()->module} == 'ru')
             setlocale(LC_TIME, 'ru_RU.UTF-8', 'ru_utf8', 'Russian_Russia.UTF8', 'ru_RU', 'Russian');
 
         // Create an Indi_View instance
 		$view = class_exists('Project_View') ? new Project_View : new Indi_View();
 
         // Get the script path
-        $spath = Indi::ini('view')->scriptPath;
+        $spath = ini('view')->scriptPath;
 
         // Get db table, that current admin user entry is stored in, if logged in
-        $admin = Indi::admin() ? Indi::admin()->table() : false;
+        $admin = admin() ? admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
-        if (Indi::ini()->general->seoUri) Indi::ini()->design = array();
+        if (ini()->general->seoUri) ini()->design = [];
 
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
         // additional paths for both scripts and helpers
-        if (Indi::uri('module') == 'front' && is_array($dsdirA = (array) Indi::ini('view')->design))
+        if (uri('module') == 'front' && is_array($dsdirA = (array) ini('view')->design))
             foreach($dsdirA as $dsdirI => $domainS) foreach (explode(' ', $domainS) as $domain) {
 
                 // Split $domain by domain name itself and admin-type, that may be specified
@@ -44,26 +44,26 @@ class Indi_Controller {
                 if ($d != $_SERVER['HTTP_HOST']) continue;
 
                 // If design is in public access, or is not, but is accessible for current admin - append design
-                if (!$u || $u == $admin) Indi::ini()->design[] = $dsdirI;
+                if (!$u || $u == $admin) ini()->design[] = $dsdirI;
             }
 
         // If more than 1 designs detected for current domain
-        if (count((array) Indi::ini()->design) > 1) {
+        if (count((array) ini()->design) > 1) {
 
             // Views dir shortcut
-            $dir = DOC . STD . '/www/application/views/';
+            $dir = DOC . STD . '/application/views/';
 
             // Build tpl for current action within current section
-            $actionTpl = Indi::uri('section') . '/' . Indi::uri('action');
+            $actionTpl = uri('section') . '/' . uri('action');
 
             // Foreach design
-            foreach (Indi::ini()->design as $design) {
+            foreach (ini()->design as $design) {
 
                 // Get template filename, applicable for section/action combination
                 $tpl = $dir . $design . '/' . $actionTpl . '.php';
 
                 // If template exists - force usage of current design especially for section/action combination
-                if (file_exists($tpl) && (Indi::ini()->design = $design)) {
+                if (file_exists($tpl) && (ini()->design = $design)) {
 
                     // Force action-tpl to be used as inner tpl
                     $view->innerTpl = $actionTpl;
@@ -73,13 +73,13 @@ class Indi_Controller {
                 }
 
                 // Build name of tpl especially for certain entry
-                $entryTpl = $actionTpl . rif(Indi::uri('id'), '-$1');
+                $entryTpl = $actionTpl . rif(uri('id'), '-$1');
 
                 // Get custom template filename, applicable for section/action/entry combination
                 $tpl = $dir . $design . '/' . $entryTpl . '.php';
 
                 // If template exists - force usage of current design especially for section/action/entry combination
-                if (file_exists($tpl) && (Indi::ini()->design = $design)) {
+                if (file_exists($tpl) && (ini()->design = $design)) {
 
                     // For entry-tpl to be used as inner tpl
                     $view->innerTpl = $entryTpl;
@@ -93,43 +93,43 @@ class Indi_Controller {
             }
 
         // Else use first
-        } else Indi::ini()->design = Indi::ini()->design[0];
+        } else ini()->design = ini()->design[0];
 
         // Do paths setup twice: first for module-specific paths, second for general-paths
         for ($i = 0; $i < 2; $i++) {
 
             // Get the module paths and prefixes
-            $mpath =  !$i ? '/' . Indi::uri('module') : '';
-            $mhpp =   !$i ? '/' . ucfirst(Indi::uri('module')) : '';
-            $mhcp =   !$i ? ucfirst(Indi::uri('module')) . '_' : '';
+            $mpath =  !$i ? '/' . uri('module') : '';
+            $mhpp =   !$i ? '/' . ucfirst(uri('module')) : '';
+            $mhcp =   !$i ? ucfirst(uri('module')) . '_' : '';
 
             // Add script paths for certain/current project
-            if (is_dir(DOC . STD . '/www/' . $spath)) {
+            if (is_dir(DOC . STD . '/' . $spath)) {
 
                 // Add design-specific script path
-                if (Indi::ini()->design) $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath . '/' . Indi::ini()->design);
+                if (ini()->design) $view->addScriptPath(DOC . STD . '/' . $spath . $mpath . '/' . ini()->design);
 
                 // Add general script path
-                $view->addScriptPath(DOC . STD . '/www/' . $spath . $mpath);
+                $view->addScriptPath(DOC . STD . '/' . $spath . $mpath);
             }
 
-            // Add script paths for major core part and for front core part
-            $view->addScriptPath(DOC . STD . '/coref/' . $spath . $mpath);
-            $view->addScriptPath(DOC . STD . '/core/' . $spath . $mpath);
+            // Add script paths for major system part and for front core part
+            $view->addScriptPath(DOC . STD . VDR . '/public/' . $spath . $mpath);
+            $view->addScriptPath(DOC . STD . VDR . '/system/' . $spath . $mpath);
 
             // If certain project has 'library' dir
-            if (is_dir(DOC . STD . '/www/library')) {
+            if (is_dir(DOC . STD . '/library')) {
 
                 // Add design-specific helper path
-                if (Indi::ini()->design) $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp . '/' . Indi::ini()->design, 'Project_View_Helper_'. $mhcp);
+                if (ini()->design) $view->addHelperPath(DOC . STD . '/library/Project/View/Helper' . $mhpp . '/' . ini()->design, 'Project_View_Helper_'. $mhcp);
 
                 // Add default helper path
-                $view->addHelperPath(DOC . STD . '/www/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
+                $view->addHelperPath(DOC . STD . '/library/Project/View/Helper' . $mhpp, 'Project_View_Helper_'. $mhcp);
             }
 
-            // Add helper paths for major core part and for front core part
-            $view->addHelperPath(DOC . STD . '/coref/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
-            $view->addHelperPath(DOC . STD . '/core/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            // Add helper paths for major system part and for front core part
+            $view->addHelperPath(DOC . STD . VDR . '/public/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
+            $view->addHelperPath(DOC . STD . VDR . '/system/library/Indi/View/Helper' . $mhpp, 'Indi_View_Helper_' . $mhcp);
         }
 
         // Put view object into the registry
@@ -139,7 +139,7 @@ class Indi_Controller {
     /**
      * Dispatch the request
      */
-    public function dispatch($args = array()) {
+    public function dispatch($args = []) {
 
         // Setup the Content-Type header
         header('Content-Type: text/html; charset=' . $this->encoding);
@@ -149,10 +149,10 @@ class Indi_Controller {
 
         // Here we provide an ability for operations, required for
         // a certain item to be performed, instead actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', Indi::uri()->consider)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider)) {
 
             // Call the function, that will do these operations
-            $this->{Indi::uri()->action . 'ActionI' . ucfirst(Indi::uri()->consider)}(Indi::post());
+            $this->{uri()->action . 'ActionI' . ucfirst(uri()->consider)}(Indi::post());
 
             // Force to stop the execution. Usually, execution won't reach this line, as in most cases
             // jflush() is called earlier than here at this line
@@ -160,10 +160,10 @@ class Indi_Controller {
         }
 
         // Here we provide an ability for a combo options data to be fetched instead of actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', Indi::uri()->odata)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata)) {
 
             // Fetch the combo options data
-            $this->{Indi::uri()->action . 'ActionOdata'}(Indi::uri()->odata, Indi::post());
+            $this->{uri()->action . 'ActionOdata'}(uri()->odata, Indi::post());
 
             // Force to stop the execution. Usually, execution won't reach this line, as in most cases
             // execution is stopped earlier than here at this line
@@ -174,7 +174,7 @@ class Indi_Controller {
         if (Indi::get('jump')) return;
 
         // Call the desired action method
-        $this->call(Indi::uri()->action, $args);
+        $this->call(uri()->action, $args);
 
         // Do the post-dispatch maintenance
         $this->postDispatch();
@@ -183,8 +183,8 @@ class Indi_Controller {
     /**
      * Call the desired action method
      */
-    public function call($action, $args = array()) {
-        call_user_func_array(array($this, $action . 'Action'), $args);
+    public function call($action, $args = []) {
+        call_user_func_array([$this, $action . 'Action'], $args);
     }
 
     /**
@@ -208,7 +208,7 @@ class Indi_Controller {
      * @return mixed
      */
     public function __get($property) {
-        if (preg_match('/^row(set|)$/i', $property)) return Indi::trail()->$property;
+        if (preg_match('/^row(set|)$/i', $property)) return t()->$property;
     }
 
     /**
@@ -218,7 +218,7 @@ class Indi_Controller {
      * @param $value
      */
     public function __set($property, $value) {
-        if (preg_match('/^row(set|)$/i', $property)) Indi::trail()->$property = $value;
+        if (preg_match('/^row(set|)$/i', $property)) t()->$property = $value;
     }
 
     /**
@@ -228,7 +228,7 @@ class Indi_Controller {
      * @return bool
      */
     public function __isset($property) {
-        if (preg_match('/^row(set|)$/i', $property)) return isset(Indi::trail()->$property);
+        if (preg_match('/^row(set|)$/i', $property)) return isset(t()->$property);
     }
 
     /**
@@ -256,7 +256,7 @@ class Indi_Controller {
         if (!$json || $json == '[]') return null;
 
         // Array for ORDER clauses
-        $orderA = array();
+        $orderA = [];
 
         // Decode json
         $jsonA = json_decode($json, 1);
@@ -275,10 +275,10 @@ class Indi_Controller {
             if (!$column) continue;
 
             // Find a field, that column is linked to
-            foreach (Indi::trail()->fields as $fieldR) if ($fieldR->alias == $column) break;
+            foreach (t()->fields as $fieldR) if ($fieldR->alias == $column) break;
 
             // Skip further-foreign fields. todo: add support for such fields
-            if ($fieldR->entityId != t()->model->id()) continue;
+            if ($fieldR->entityId != m()->id()) continue;
 
             // If no direction - set as ASC by default
             if (!preg_match('/^(ASC|DESC)$/', $direction)) $direction = 'ASC';
@@ -313,16 +313,16 @@ class Indi_Controller {
     public function filtersWHERE($FROM = '', $search = '') {
 
         // Setup model, that should have fields, mentioned as filtering params names
-        $model = $FROM ? Indi::model($FROM) : Indi::trail()->model;
+        $model = $FROM ? m($FROM) : t()->model;
 
         // Defined an array for collecting data, that may be used in the process of building an excel spreadsheet
-        $excelA = array();
+        $excelA = [];
 
         // Use Indi::get()->search if $search arg is not given
         $search = $search ?: Indi::get()->search;
 
         // Clauses stack
-        $where = array();
+        $where = [];
 
         // If we have no 'search' param in query string, there is nothing to do here
         if ($search) {
@@ -353,7 +353,7 @@ class Indi_Controller {
                         $found = $fieldR;
 
                 // Set $further flag
-                $lookupBy = ($further = $found && $found->entityId != t()->model->id()) ? 'further' : 'fieldId';
+                $lookupBy = ($further = $found && $found->entityId != m()->id()) ? 'further' : 'fieldId';
 
                 // If further-foreign field detected - detect $foreign (e.g. filter->fieldId->alias)
                 // and $further (e.g. filter->further->alias)
@@ -363,11 +363,11 @@ class Indi_Controller {
                 if (array_key_exists($found->alias, $excelA) == false) {
 
                     // Get filter `alt` property
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset)
-                        $alt = Indi::trail()->filters->select($found->id, $lookupBy)->current()->alt;
+                    if (t()->filters instanceof Indi_Db_Table_Rowset)
+                        $alt = t()->filters->select($found->id, $lookupBy)->current()->alt;
 
                     // Set excel filter mention title
-                    $excelA[$found->alias] = array('title' => $alt ? $alt : $found->title);
+                    $excelA[$found->alias] = ['title' => $alt ? $alt : $found->title];
                 }
 
                 // If field is not storing foreign keys
@@ -395,14 +395,14 @@ class Indi_Controller {
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['type'] = 'color';
-                        $excelA[$found->alias]['value'] = array($hueFrom, $hueTo);
+                        $excelA[$found->alias]['value'] = [$hueFrom, $hueTo];
                         $excelA[$found->alias]['offset'] = $searchOnField['_xlsLabelWidth'];
 
                     // Else if $found field's control element is 'Check' or 'Combo', we use '=' clause
                     } else if ($found->elementId == 9 || $found->elementId == 23) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = Indi::db()->sql('`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
+                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
 
                         // Pick the current filter value to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue ? I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_YES : I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_NO;
@@ -411,7 +411,7 @@ class Indi_Controller {
                     } else if ($found->elementId == 1) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = Indi::db()->sql('`' . $filterSearchFieldAlias . '` LIKE :s', '%' . $filterSearchFieldValue . '%');
+                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` LIKE :s', '%' . $filterSearchFieldValue . '%');
 
                         // Pick the current filter value to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
@@ -457,16 +457,16 @@ class Indi_Controller {
                                 $filterSearchFieldValue .= preg_match('/gte$/', $filterSearchFieldAlias) ? ' 00:00:00' : ' 23:59:59';
 
                             // Use a '>=' or '<=' clause, according to specified range border's type
-                            $where[$found->alias][$matches[2]] = Indi::db()->sql('`' . $matches[1] . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
+                            $where[$found->alias][$matches[2]] = db()->sql('`' . $matches[1] . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
 
                         // Else
-                        } else $where[$found->alias] = Indi::db()->sql('`' . $found->alias . '` = :s', $filterSearchFieldValue);
+                        } else $where[$found->alias] = db()->sql('`' . $found->alias . '` = :s', $filterSearchFieldValue);
 
                     // If $found field's column type is TEXT ( - control elements 'Text' and 'HTML')
                     } else if ($found->columnTypeId == 4) {
 
                         // Use 'MATCH AGAINST' clause
-                        $where[$found->alias] = Indi::db()->sql('MATCH(`' . $filterSearchFieldAlias . '`) AGAINST(:s IN BOOLEAN MODE)', $filterSearchFieldValue . '*');
+                        $where[$found->alias] = db()->sql('MATCH(`' . $filterSearchFieldAlias . '`) AGAINST(:s IN BOOLEAN MODE)', $filterSearchFieldValue . '*');
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
@@ -479,10 +479,10 @@ class Indi_Controller {
                     $any = false;
 
                     // Try to find filter
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset) {
+                    if (t()->filters instanceof Indi_Db_Table_Rowset) {
 
                         // Get filter row
-                        $filterR = Indi::trail()->filters->gb($found->id, $lookupBy);
+                        $filterR = t()->filters->gb($found->id, $lookupBy);
 
                         // If filter is multiple (desipite field is singe) set up $mode as `any`
                         if ($filterR->any()) $any = true;
@@ -492,22 +492,22 @@ class Indi_Controller {
                     if ($further) {
 
                         // Get WHERE clause to be run on table, that filter's field's relation points to
-                        $furtherWHERE = Indi::db()->sql(
+                        $furtherWHERE = db()->sql(
                             $any ? 'FIND_IN_SET(`' . $further . '`, :s)' : '`' . $further . '` = :s',
                             $filterSearchFieldValue
                         );
 
                         // Get ids
-                        $idA = Indi::db()->query(
+                        $idA = db()->query(
                             'SELECT `id` FROM `:p` WHERE ' . $furtherWHERE,
-                            Indi::model($found->entityId)->table()
+                            m($found->entityId)->table()
                         )->fetchAll(PDO::FETCH_COLUMN);
 
                         // Set up WHERE clause according to value of $any flag
-                        $where[$found->alias] = Indi::db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
+                        $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
 
                     // Else set up WHERE clause according to value of $any flag
-                    } else $where[$found->alias] = Indi::db()->sql($any
+                    } else $where[$found->alias] = db()->sql($any
                         ? 'FIND_IN_SET(`' . $filterSearchFieldAlias . '`, :s)'
                         : '`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
 
@@ -524,16 +524,16 @@ class Indi_Controller {
                 } else if ($found->original('storeRelationAbility') == 'many') {
 
                     // Declare array for FIND_IN_SET clauses
-                    $fisA = array();
+                    $fisA = [];
 
                     // Set $any as `false`
                     $any = false;
 
                     // Try to find filter
-                    if (Indi::trail()->filters instanceof Indi_Db_Table_Rowset) {
+                    if (t()->filters instanceof Indi_Db_Table_Rowset) {
 
                         // Get filter row
-                        $filterR = Indi::trail()->filters->gb($found->id, $lookupBy);
+                        $filterR = t()->filters->gb($found->id, $lookupBy);
 
                         // If filter should search any match rather than all matches
                         if ($filterR->any()) $any = true;
@@ -545,7 +545,7 @@ class Indi_Controller {
 
                     // Fill that array
                     foreach ($filterSearchFieldValue as $filterSearchFieldValueItem)
-                        $fisA[] = Indi::db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
+                        $fisA[] = db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
 
                     // Implode array of FIND_IN_SET clauses with AND, and enclose by round brackets
                     $where[$found->alias] = '(' . implode(' ' . ($any ? 'OR' : 'AND') . ' ', $fisA) . ')';
@@ -584,13 +584,13 @@ class Indi_Controller {
     public function indexActionOdata($for, $post) {
 
         // Get the field
-        $field = Indi::trail()->model->fields($for);
+        $field = m()->fields($for);
 
         // Get filter
-        if (Indi::trail()->filters) $filter = Indi::trail()->filters->select($field->id, 'fieldId')->at(0);
+        if (t()->filters) $filter = t()->filters->select($field->id, 'fieldId')->at(0);
 
         // Declare WHERE array
-        $where = array();
+        $where = [];
 
         // Append statiс WHERE, defined for filter
         if (strlen($filter->filter)) $where[] = $filter->filter;
@@ -599,19 +599,19 @@ class Indi_Controller {
         if ($filter->consistence && $relation = $field->relation) {
 
             // Get table name
-            $tbl = Indi::trail()->model->table();
+            $tbl = m()->table();
 
             // Setup a shortcut for scope WHERE
-            $sw = Indi::trail()->scope->WHERE;
+            $sw = t()->scope->WHERE;
 
             // Append part of WHERE clause, that will be involved in the process of fetching filter combo data
-            $where[] = '`id` IN (' . (($in = Indi::db()->query('
+            $where[] = '`id` IN (' . (($in = db()->query('
                 SELECT DISTINCT `'. $for . '` FROM `' . $tbl .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
             )->fetchAll(PDO::FETCH_COLUMN)) ? trim(implode(',', $in), ',') : 0) . ')';
         }
 
         // Setup a row
-        $this->row = Indi::trail()->filtersSharedRow;
+        $this->row = t()->filtersSharedRow;
 
         // Prepare and flush json-encoded combo options data
         $this->_odata($for, $post, $field, $where);
@@ -633,21 +633,21 @@ class Indi_Controller {
 
             // Create pseudo field for sibling combo
             $field = Indi_View_Helper_Admin_SiblingCombo::createPseudoFieldR(
-                $for, Indi::trail()->section->entityId, Indi::trail()->scope->WHERE);
-            $this->row->$for = Indi::uri()->id;
-            $order = is_array(Indi::trail()->scope->ORDER) ? end(Indi::trail()->scope->ORDER) : Indi::trail()->scope->ORDER;
+                $for, t()->section->entityId, t()->scope->WHERE);
+            $this->row->$for = uri()->id;
+            $order = is_array(t()->scope->ORDER) ? end(t()->scope->ORDER) : t()->scope->ORDER;
             $dir = array_pop(explode(' ', $order));
             $order = trim(preg_replace('/ASC|DESC/', '', $order), ' `');
-            if (preg_match('/\(/', $order)) $offset = Indi::uri()->aix - 1;
+            if (preg_match('/\(/', $order)) $offset = uri()->aix - 1;
 
         // Else if options data is for combo, associated with a existing form field - pick that field
-        } else $field = Indi::trail()->model->fields($for);
+        } else $field = m()->fields($for);
 
         // If field having $for as it's `alias` was not found in existing fields, try to finв it within pseudo fields
-        if (!$field) $field = Indi::trail()->pseudoFields->field($for);
+        if (!$field) $field = t()->pseudoFields->field($for);
 
         // Do some things, custom for certain field, before odata fetch
-        if (($method = 'formActionOdata' . ucfirst(Indi::uri()->odata)) && method_exists($this, $method))
+        if (($method = 'formActionOdata' . ucfirst(uri()->odata)) && method_exists($this, $method))
             $this->$method(json_decode(Indi::post('consider'), true));
 
         // Prepare and flush json-encoded combo options data
@@ -673,10 +673,10 @@ class Indi_Controller {
         if (!$field instanceof Field_Row) jflush(false, sprintf(I_COMBO_ODATA_FIELD404, $for));
 
         // Decode consider-fields values
-        $consider = json_decode($post['consider'], true) ?: array();
+        $consider = json_decode($post['consider'], true) ?: [];
 
         // Array for valid values of consider-fields
-        $picked = array();
+        $picked = [];
 
         // Foreach consider-field, linked to current field
         foreach ($field->nested('consider') as $considerR) {
@@ -695,7 +695,7 @@ class Indi_Controller {
                 $picked[$cField->alias] = $consider[$cField->alias];
 
             // Check format, and if ok - assign value
-            $this->row->mcheck(array($cField->alias => array('rex' => '~^[a-zA-Z0-9,]*$~')), $consider);
+            $this->row->mcheck([$cField->alias => ['rex' => '~^[a-zA-Z0-9,]*$~']], $consider);
         }
 
         // Remember picked values within row's system data
@@ -708,12 +708,12 @@ class Indi_Controller {
         if ($post->selected && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
 
             // Check $_POST['selected']
-            jcheck(array(
-                'selected' => array(
+            jcheck([
+                'selected' => [
                     'rex' => 'int11',
                     'key' => $field->relation
-                )
-            ), $post);
+                ]
+            ], $post);
 
             // Assign
             $this->row->$for = $post->selected;
@@ -730,7 +730,7 @@ class Indi_Controller {
         $options = $comboDataA['options'];
         $titleMaxLength = $comboDataA['titleMaxLength'];
 
-        $options = array('ids' => array_keys($options), 'data' => array_values($options));
+        $options = ['ids' => array_keys($options), 'data' => array_values($options)];
 
         // Setup number of found rows
         if ($comboDataRs->found()) $options['found'] = $comboDataRs->found();
@@ -766,7 +766,7 @@ class Indi_Controller {
         $call = array_pop(array_slice(debug_backtrace(), 1, 1));
 
         // Make the call
-        return call_user_func_array(array($this, get_parent_class($call['class']) . '::' .  $call['function']), func_num_args() ? func_get_args() : $call['args']);
+        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
     }
     
     /**
@@ -775,13 +775,13 @@ class Indi_Controller {
     public function indexAction() {
 
         // If data should be got as json or excel
-        if (Indi::uri('format') || (!$this->_isRowsetSeparate && Indi::trail(true))) {
+        if (uri('format') || (!$this->_isRowsetSeparate && t(true))) {
 
             // Adjust rowset, before using it as a basement of grid data
             $this->adjustGridDataRowset();
 
             // Build the grid data, based on current rowset
-            $data = $this->rowset->toGridData(Indi::trail()->gridFields ? Indi::trail()->gridFields->column('alias') : array());
+            $data = $this->rowset->toGridData(t()->gridFields ? t()->gridFields->column('alias') : []);
 
             // Adjust grid data
             $this->adjustGridData($data);
@@ -793,34 +793,40 @@ class Indi_Controller {
                 $this->renderGridDataItem($item, $r);
             }
 
+            // If $_GET['required'] given as ingeter - flush required entry
+            if ((int) Indi::get('required')) jflush(true,  ['required' => array_pop($data)]);
+
+            // Else if $_GET['required'] given as json-encoded array of integers - flush all found required entries
+            else if (Indi::rexm('int11list', trim(Indi::get('required'), '[]'))) jflush(true, ['required' => $data]);
+
             // Else if data is gonna be used in the excel spreadsheet building process, pass it to a special function
-            if (in(Indi::uri('format'), 'excel,pdf')) $this->export($data, Indi::uri('format'));
+            if (in(uri('format'), 'excel,pdf')) $this->export($data, uri('format'));
 
             // If data is needed as json for extjs grid store - we convert $data to json with a proper format and flush it
             else {
 
                 // Get scope
-                $scope = Indi::trail()->scope->toArray();
+                $scope = t()->scope->toArray();
 
                 // Unset tabs definitions from json-encoded scope data, as we'd already got it previously
                 unset($scope['actionrowset']['south']['tabs']);
 
                 // Setup basic data
-                $pageData = array(
+                $pageData = [
                     'totalCount' => $this->rowset->found(),
                     'blocks' => $data,
-                );
+                ];
 
                 // Setup meta data
-                $metaData = array(
+                $metaData = [
                     'scope' => $scope
-                );
+                ];
 
                 // Append summary data
                 if ($summary = $this->rowsetSummary()) $pageData['summary'] = $summary;
 
                 // Provide combo filters consistence
-                foreach (Indi::trail()->filters ?: array() as $filter) {
+                foreach (t()->filters ?: [] as $filter) {
 
                     // If `consistence` flag is Off - skip
                     if (!$filter->consistence) continue;
@@ -838,7 +844,7 @@ class Indi_Controller {
                     Indi::view()->filterCombo($filter);
 
                     // Pick combo data
-                    $metaData['filter'][$field->alias] = array_pop(Indi::trail()->filtersSharedRow->view($field->alias));
+                    $metaData['filter'][$field->alias] = array_pop(t()->filtersSharedRow->view($field->alias));
                 }
 
                 // If current request was made using Indi Engine standalone
@@ -850,10 +856,10 @@ class Indi_Controller {
                 $this->adjustJsonExport($pageData);
 
                 // If uri's 'format' param is specified, and it is 'json' - flush json-encoded $pageData
-                if (Indi::uri('format') == 'json') jflush(true, $pageData);
+                if (uri('format') == 'json') jflush(true, $pageData);
 
                 // Else assign that data into scope's `pageData` prop
-                else Indi::trail()->scope->pageData = $pageData;
+                else t()->scope->pageData = $pageData;
             }
         }
     }
@@ -871,22 +877,22 @@ class Indi_Controller {
     public function finalWHERE($primaryWHERE, $customWHERE = null, $merge = true) {
 
         // Empty array yet
-        $finalWHERE = array();
+        $finalWHERE = [];
 
         // If there was a primaryHash passed instead of $primaryWHERE param - then we extract all scope params from
         if (is_string($primaryWHERE) && preg_match('/^[0-9a-zA-Z]{10}$/', $primaryWHERE)) {
 
             // Prepare $primaryWHERE
-            $primaryWHERE = Indi::trail()->scope->primary;
+            $primaryWHERE = t()->scope->primary;
 
             // Prepare search data for $this->filtersWHERE()
-            Indi::get()->search = Indi::trail()->scope->filters;
+            Indi::get()->search = t()->scope->filters;
 
             // Prepare search data for $this->keywordWHERE()
-            Indi::get()->keyword = urlencode(Indi::trail()->scope->keyword);
+            Indi::get()->keyword = urlencode(t()->scope->keyword);
 
             // Prepare sort params for $this->finalORDER()
-            Indi::get()->sort = Indi::trail()->scope->order;
+            Indi::get()->sort = t()->scope->order;
         }
 
         // Push primary part
@@ -936,12 +942,12 @@ class Indi_Controller {
 
         // Exclude further-foreign fields, as no support yet implemented for
         $exclude = array_merge($exclude, 
-            t()->fields->select(': != ' . t()->model->id(), 'entityId')->column('alias'),
+            t()->fields->select(': != ' . m()->id(), 'entityId')->column('alias'),
             t()->fields->select(': #[a-zA-Z]+#', 'id')->column('alias')
         );
 
         // Use keywordWHERE() method call on fields rowset to obtain a valid WHERE clause for the given keyword
-        return Indi::trail()->{Indi::trail()->gridFields ? 'gridFields' : 'fields'}->keywordWHERE($keyword, $exclude);
+        return t()->{t()->gridFields ? 'gridFields' : 'fields'}->keywordWHERE($keyword, $exclude);
     }
 
     /**
@@ -980,11 +986,11 @@ class Indi_Controller {
     public function appendDisabledField($alias, $displayInForm = false, $defaultValue = '') {
 
         // Support for $alias arg, containing 'myPrefix*' values
-        $aliasA = array();
+        $aliasA = [];
         foreach (ar($alias) as $a)
             if (!preg_match('#([a-zA-Z0-9]+)\*$#', $a, $prefix)) $aliasA []= $a; else {
                 $selector = ': #^' . trim($a, '*') . '#';
-                $selected = t()->model->fields()->select($selector, 'alias')->column('alias');
+                $selected = m()->fields()->select($selector, 'alias')->column('alias');
                 $aliasA = array_merge($aliasA, $selected);
             }
 
@@ -992,7 +998,7 @@ class Indi_Controller {
         foreach ($aliasA as $a) {
 
             // Check if such field exists, an if no - skip
-            if (!$_ = t()->model->fields($a)) continue;
+            if (!$_ = m()->fields($a)) continue;
 
             // Alter field's `mode` prop
             $_->mode = $displayInForm ? 'readonly' : 'hidden';
@@ -1034,7 +1040,7 @@ class Indi_Controller {
         foreach(ar($fields) as $a) {
 
             // Check if such field exists, and if no - skip
-            if (!$_ = Indi::trail()->model->fields($a)) continue;
+            if (!$_ = m()->fields($a)) continue;
 
             // If $mode arg is given - set `mode` according to $mode arg,
             // else if $mode arg is NOT given and `mode` prop is NOT modified
@@ -1086,10 +1092,10 @@ class Indi_Controller {
         $this->exclGridProp($propS);
 
         // Get `field` instances rowset with value of `alias` prop, mentioned in $propS arg
-        $fieldRs = Indi::trail()->model->fields(im(ar($propS)), 'rowset');
+        $fieldRs = m()->fields(im(ar($propS)), 'rowset');
 
         // Merge existing grid fields with additional
-        if (Indi::trail()->gridFields) Indi::trail()->gridFields->merge($fieldRs);
+        if (t()->gridFields) t()->gridFields->merge($fieldRs);
 
         // Return
         return $fieldRs;
@@ -1104,13 +1110,13 @@ class Indi_Controller {
     public function exclGridProp($propS) {
 
         // If no gridFields object - return
-        if (!Indi::trail()->gridFields) return '';
+        if (!t()->gridFields) return '';
 
         // If ids of fields to be excluded
-        $fieldIds = Indi::trail()->gridFields->select($propS, 'alias')->column('id', true);
+        $fieldIds = t()->gridFields->select($propS, 'alias')->column('id', true);
 
         // Merge existing grid fields with additional
-        Indi::trail()->gridFields->exclude($fieldIds);
+        t()->gridFields->exclude($fieldIds);
 
         // Return ids of excluded fields
         return $fieldIds;
@@ -1130,7 +1136,7 @@ class Indi_Controller {
         if ($fh = Indi::post('fromHour')) $data['fromHour'] = $fh;
 
         // Flush info about disabled options (dates and others)
-        jflush(true, array('disabled' => $this->row->spaceDisabledValues($data)));
+        jflush(true, ['disabled' => $this->row->spaceDisabledValues($data)]);
     }
 
     /**
@@ -1153,7 +1159,7 @@ class Indi_Controller {
         if ($t = t()->section->tileField) {
 
             // Get field alias
-            $field = t()->model->fields($t)->alias;
+            $field = m()->fields($t)->alias;
 
             // Get thumb
             $_thumb = t()->section->foreign('tileThumb')->alias;
@@ -1239,7 +1245,7 @@ class Indi_Controller {
             if (is_array($jump)) {
 
                 // Foreach jump - build <span> containing destination, hover title
-                $spanA = array(); foreach ($jump as $dest)
+                $spanA = []; foreach ($jump as $dest)
                     $spanA []= '<span jump="' . $dest['href'] . '"'
                         . rif($dest['over'], ' title="$1"')
                         . rif($dest['ibox'], ' $1')
@@ -1302,7 +1308,7 @@ class Indi_Controller {
      * @param array $cfg
      * @return mixed
      */
-    public function prompt($msg, $cfg = array()) {
+    public function prompt($msg, $cfg = []) {
 
         // Get $_GET['answer']
         $answer = Indi::get()->answer;

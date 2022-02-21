@@ -13,12 +13,12 @@ class Action extends Indi_Db_Table {
      *
      * @var array
      */
-    protected $_fraction = array(
+    protected $_fraction = [
         'field' => 'type',
-        'value' => array(
+        'value' => [
             's' => 'adminSystemUi,adminCustomUi',
             'p' => 'adminCustomUi',
             'o' => 'adminPublicUi'
-        )
-    );
+        ]
+    ];
 }

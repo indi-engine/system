@@ -47,7 +47,7 @@ class Indi_Trail_Item {
      *
      * @var array
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * Constructor
@@ -55,7 +55,7 @@ class Indi_Trail_Item {
     public function __construct() {
 
         // Setup `pseudoFields` prop as an empty instance of Field_Rowset class
-        $this->pseudoFields = new Field_Rowset(array('table' => 'field'));
+        $this->pseudoFields = new Field_Rowset(['table' => 'field']);
     }
     /**
      * Getter. Currently declared only for getting 'model' and 'fields' property
@@ -65,8 +65,8 @@ class Indi_Trail_Item {
      */
     public function __get($property) {
         if ($this->section->entityId)
-            if ($property == 'model') return Indi::model($this->section->entityId);
-            else if ($property == 'fields') return Indi::model($this->section->entityId)->fields();
+            if ($property == 'model') return m($this->section->entityId);
+            else if ($property == 'fields') return m($this->section->entityId)->fields();
     }
 
     /**
@@ -82,17 +82,17 @@ class Indi_Trail_Item {
         if (!$this->model) return;
 
         // Setup filters shared row
-        $this->filtersSharedRow = $this->model->createRow();
+        $this->filtersSharedRow = $this->model->new();
 
         // Prevent non-zero values
         foreach ($this->filtersSharedRow->original() as $prop => $value)
             if ($prop != 'id') $this->filtersSharedRow->zero($prop, true);
 
         // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-        if (Indi::admin()->alternate && in($aid = Indi::admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
+        if (admin()->alternate && in($aid = admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
 
             // Force setup of that field value as id of current cms user, within filters shared row
-            $this->filtersSharedRow->$aid = Indi::admin()->id;
+            $this->filtersSharedRow->$aid = admin()->id;
 
         // Setup several temporary properties within the existing row, as these may be involved in the
         // process of parent trail items rows retrieving
@@ -103,16 +103,16 @@ class Indi_Trail_Item {
             // field autosetup only if it was set and only in case of one-level-up parent section. This
             // mean that if we have 'Continents' as upper level, and we are creating city, city's property
             // name will be determined as `continentId` mean parentSectionConnector logic won't be used for that
-            $connector = $i == 1 && Indi::trail($i-1)->section->parentSectionConnector
-                ? Indi::trail($i-1)->section->foreign('parentSectionConnector')->alias
-                : Indi::trail($i)->model->table() . 'Id';
+            $connector = $i == 1 && t($i-1)->section->parentSectionConnector
+                ? t($i-1)->section->foreign('parentSectionConnector')->alias
+                : t($i)->model->table() . 'Id';
 
 
             // Get the connector value from session special place and assign it to current row, but only
             // in case if that connector is not a one of existing fields
             if ($this->model->fields($connector))
                 $this->filtersSharedRow->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                [Indi::trail($i)->section->id];
+                [t($i)->section->id];
         }
     }
 
@@ -122,11 +122,14 @@ class Indi_Trail_Item {
      * @return array
      */
     public function toArray() {
-        $array = array();
+        $array = [];
         if ($this->section) {
             $array['section'] = $this->section->toArray();
             if ($this->section->defaultSortField)
-                $array['section']['defaultSortFieldAlias'] = $this->section->foreign('defaultSortField')->alias;
+                $array['section']['defaultSortFieldAlias']
+                    = $this->section->defaultSortField == -1
+                        ? 'id'
+                        : $this->section->foreign('defaultSortField')->alias;
         }
         if ($this->sections) $array['sections'] = $this->sections->toArray();
         if ($this->action) $array['action'] = $this->action->toArray();
@@ -136,7 +139,7 @@ class Indi_Trail_Item {
             $array['row']['_system']['title'] = $this->row->title();
 
             // Append original values for fields that are modified by calendar space pre-selection
-            $space = t()->model->space();
+            $space = m()->space();
             if ($space['scheme'] != 'none')
                 foreach (explode('-', $space['scheme']) as $coord)
                     if ($this->row->isModified($space['coords'][$coord]))
@@ -159,7 +162,7 @@ class Indi_Trail_Item {
                 if ($fieldR->param('shade')) $array['row'][$fieldR->alias] = '';
 
             // Collect aliases of all CKEditor-fields
-            $ckeFieldA = array();
+            $ckeFieldA = [];
             foreach ($this->fields as $fieldR)
                 if ($fieldR->foreign('elementId')->alias == 'html')
                     $ckeFieldA[] = $fieldR->alias;
@@ -168,9 +171,9 @@ class Indi_Trail_Item {
             $ckeDataA = array_intersect(array_keys($array['row']), $ckeFieldA);
 
             // Here were omit STD's one or more dir levels at the ending, in case if
-            // Indi::ini('upload')->path is having one or more '../' at the beginning
+            // ini('upload')->path is having one or more '../' at the beginning
             $std = STD;
-            if (preg_match(':^(\.\./)+:', Indi::ini('upload')->path, $m)) {
+            if (preg_match(':^(\.\./)+:', ini('upload')->path, $m)) {
                 $lup = count(explode('/', rtrim($m[0], '/')));
                 for ($i = 0; $i < $lup; $i++) $std = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std);
             }
@@ -188,7 +191,7 @@ class Indi_Trail_Item {
         if ($this->grid) {
 
             // Create blank row
-            $blank = t()->model->createRow();
+            $blank = m()->new();
 
             // Foreach grid column
             foreach (t()->grid as $r) {
@@ -200,7 +203,7 @@ class Indi_Trail_Item {
                 if (t()->fields($r->fieldId)->relation != 6) continue;
 
                 // Pick store
-                $r->editor = array('store' => $blank->combo($r->fieldId, true));
+                $r->editor = ['store' => $blank->combo($r->fieldId, true)];
             }
 
             // Convert to nesting tree and then to array
@@ -239,7 +242,7 @@ class Indi_Trail_Item {
 
         // Make the call
         return call_user_func_array(
-            array(Indi::model($this->section->entityId), $call['function']),
+            [m($this->section->entityId), $call['function']],
             func_num_args() ? func_get_args() : $call['args']
         );
     }

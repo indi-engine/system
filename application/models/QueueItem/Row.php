@@ -13,8 +13,8 @@ class QueueItem_Row extends Indi_Db_Table_Row {
             $queueTaskR = $this->foreign('queueTaskId');
 
             // Prepare `queueChunk` and `queueItems` entries for reapply
-            $this->foreign('queueChunkId')->assign(['applyState' => 'waiting'])->save();
-            $this->foreign('queueChunkId')->nested('queueItem')->assign(['stage' => 'queue'])->basicUpdate();
+            $this->foreign('queueChunkId')->set(['applyState' => 'waiting'])->save();
+            $this->foreign('queueChunkId')->nested('queueItem')->set(['stage' => 'queue'])->basicUpdate();
 
             // Reapply
             $queueClassName = 'Indi_Queue_' . ucfirst($queueTaskR->title);

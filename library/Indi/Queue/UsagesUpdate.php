@@ -10,7 +10,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
     public function chunk($params) {
 
         // Fetch usage map entries
-        $considerRs = Indi::model('Consider')->fetchAll('`id` IN (' . im($params['considerIdA']) . ')');
+        $considerRs = m('Consider')->all('`id` IN (' . im($params['considerIdA']) . ')');
 
         // Group usages by: affected field's id (`foreign` or `consider`) and then by `entityId`
         foreach ($considerRs as $considerR)
@@ -25,10 +25,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
         if (!$considerRA_byAffected) return;
         
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->createRow(array(
+        $queueTaskR = m('QueueTask')->new([
             'title' => array_pop(explode('_', __CLASS__)),
             'params' => json_encode($params, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
-        ), true);
+        ]);
 
         // Save `queueTask` entries
         $queueTaskR->save();
@@ -37,19 +37,19 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
         foreach ($considerRA_byAffected as $fieldId_affected => $considerRA_byEntityId) {
 
             // Create `queueChunk` entry
-            $queueChunkR_affected = Indi::model('QueueChunk')->createRow([
+            $queueChunkR_affected = m('QueueChunk')->new([
                 'queueTaskId' => $queueTaskR->id,
                 'queueState' => $queueTaskR->queueState,
                 'where' => 'FALSE',
                 'location' => $params['table'] . ':' . m($params['table'])->fields($fieldId_affected)->alias
-            ], true);
+            ]);
 
             // Save `queueChunk` entry
             $queueChunkR_affected->save();
 
             // Update `queueTask` entry chunk counter
             $queueTaskR->chunk ++;
-            $queueTaskR->basicUpdate();
+            $queueTaskR->basicUpdate(false, false);
 
             // Foreach entity, that affected-field's dependent-field is in
             foreach ($considerRA_byEntityId as $entityId => $considerRA) {
@@ -64,10 +64,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     if ($m->fields($fieldId)->storeRelationAbility != 'none') continue;
 
                     // If it's consider-field is an enumset-field
-                    if ($m->fields($consider)->rel()->table() == 'enumset') {
+                    if (($rel = $m->fields($consider)->rel()) && $rel->table() == 'enumset') {
 
                         // Get enumset alias
-                        $alias = m('enumset')->fetchRow($params['entry'])->alias;
+                        $alias = m('enumset')->row($params['entry'])->alias;
 
                         // Build WHERE clause
                         $where = $m->fields($consider)->storeRelationAbility == 'one'
@@ -78,25 +78,25 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     } else $where = '`' . $m->fields($consider)->alias . '` = "' . $params['entry'] . '"';
 
                     // Create `queueChunk` entry
-                    $queueChunkR = Indi::model('QueueChunk')->createRow([
+                    $queueChunkR = m('QueueChunk')->new([
                         'queueTaskId' => $queueTaskR->id,
                         'queueChunkId' => $queueChunkR_affected->id,
                         'queueState' => $queueTaskR->queueState,
                         'where' => $where,
                         'location' => $t . ':' . $m->fields($fieldId)->alias
-                    ], true);
+                    ]);
 
                     // Mind that `section2action` entries have second field, that is fraction-dependent
                     // todo: implement more beautiful solution
                     if ($queueChunkR->location == 'section2action:title' && $m->fields($consider)->alias == 'actionId')
-                        $queueChunkR->where .= ' AND FIND_IN_SET(`sectionId`, "' . m('Section')->fetchAll('`type` != "o"')->column('id', true) . '")';
+                        $queueChunkR->where .= ' AND FIND_IN_SET(`sectionId`, "' . m('Section')->all('`type` != "o"')->column('id', true) . '")';
 
                     // Save `queueChunk` entry
                     $queueChunkR->save();
 
                     // Increment `queueTask` entry's chunk counter
                     $queueTaskR->chunk ++;
-                    $queueTaskR->basicUpdate();
+                    $queueTaskR->basicUpdate(false, false);
                 }
             }
         }
@@ -113,20 +113,19 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
         $queueTaskR->state = 'progress';
         $queueTaskR->queueState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -145,7 +144,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             if ($queueChunkR->system('disabled')) continue;
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('queueState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
@@ -154,10 +153,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             $targets = $params->source;
 
             // Check whether we should use setter method call instead of google translate api call
-            $setter = $queueChunkR->queueChunkId && method_exists(m($table)->createRow(), $_ = 'set' . ucfirst($field)) ? $_ : false;
+            $setter = $queueChunkR->queueChunkId && method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
 
             // Get queue items by 50 entries at a time
-            Indi::model('QueueItem')->batch(function(&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $targets, $table, $field, $setter) {
+            m('QueueItem')->batch(function(&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $targets, $table, $field, $setter) {
 
                 // If chunk's field is a dependent field and setter method exists
                 if ($setter) {
@@ -166,16 +165,16 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     foreach ($rs as $idx => $r) {
 
                         // Get target entry
-                        $te = m($table)->fetchRow($r->target);
+                        $te = m($table)->row($r->target);
 
                         // Backup current language
-                        $_lang = Indi::ini('lang')->admin;
+                        $_lang = ini('lang')->admin;
 
                         // Foreach target language
                         foreach (ar($targets) as $target) {
 
                             // Spoof current language
-                            Indi::ini('lang')->admin = $target;
+                            ini('lang')->admin = $target;
 
                             // Rebuild value
                             $te->{$setter}();
@@ -185,7 +184,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                         }
 
                         // Restore current language
-                        Indi::ini('lang')->admin = $_lang;
+                        ini('lang')->admin = $_lang;
                     }
 
                 // Else
@@ -224,16 +223,16 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     }
 
                     // Write translation result
-                    //$r->assign(array('result' => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT), 'stage' => 'queue'))->basicUpdate();
+                    //$r->set(array('result' => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT), 'stage' => 'queue'))->basicUpdate();
 
                     // Write updated result
-                    $r->assign(array('result' => $result->$target, 'stage' => 'queue'))->basicUpdate();
+                    $r->set(['result' => $result->$target, 'stage' => 'queue'])->basicUpdate();
 
                     // Increment `queueSize` prop on `queueChunk` entry and save it
                     $queueChunkR->queueSize ++; $queueChunkR->basicUpdate();
 
                     // Increment `queueSize` prop on `queueTask` entry and save it
-                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate();
+                    $queueTaskR->queueSize ++; $queueTaskR->basicUpdate(false, false);
 
                     // Increment $deduct
                     $deduct ++;
@@ -242,11 +241,11 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             }, $where, '`id` ASC', 50, true);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('queueState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'queueState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -257,13 +256,13 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params);
@@ -278,7 +277,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             if ($queueChunkR->system('disabled')) continue;
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('applyState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "queue"';
@@ -290,10 +289,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             $queueChunkR->fieldR = m($table)->fields($field);
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, $hasLD) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, $hasLD) {
 
                 // Get cell's current value
-                $json = Indi::db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
+                $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
 
                 // If cell value is not an empty string, but is not a json - force it to be json
                 if ($queueChunkR->fieldR->l10n == 'y') {
@@ -305,10 +304,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                 }
 
                 // Update cell value
-                Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $table, $field, $value, $r->target);
+                db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $table, $field, $value, $r->target);
 
                 // Write translation result
-                $r->assign(array('stage' => 'apply'))->basicUpdate();
+                $r->set(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct ++;
@@ -317,16 +316,16 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                 $queueChunkR->applySize ++; $queueChunkR->basicUpdate();
 
                 // Increment `applySize` prop on `queueTask` entry and save it
-                $queueTaskR->applySize ++; $queueTaskR->basicUpdate();
+                $queueTaskR->applySize ++; $queueTaskR->basicUpdate(false, false);
 
             }, $where, '`id` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
 
         // Delete `queueTask` entry
         //$queueTaskR->delete();

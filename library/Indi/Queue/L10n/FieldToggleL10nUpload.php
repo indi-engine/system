@@ -9,11 +9,11 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function chunk($params) {
 
         // Create `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->createRow(array(
+        $queueTaskR = m('QueueTask')->new([
             'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
             'params' => json_encode($params),
             'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-        ), true);
+        ]);
 
         // Save `queueTask` entries
         $queueTaskR->save();
@@ -37,7 +37,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function count($queueTaskId) {
 
         // Fetch `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -51,7 +51,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('countState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['countState' => 'progress'])->basicUpdate();
 
             //
             $lang = [$source]; foreach ($target as $fraction => $targets) $lang = array_merge($lang, ar($targets));
@@ -60,15 +60,15 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             $queueChunkR->countSize = count($lang);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('countState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['countState' => 'finished'])->basicUpdate();
 
             // Update `queueTask` entry's `countSize` prop
             $queueTaskR->countSize += $queueChunkR->countSize;
-            $queueTaskR->basicUpdate();
+            $queueTaskR->basicUpdate(false, false);
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'countState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'countState' => 'finished'])->save();
     }
 
     /**
@@ -80,13 +80,13 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function items($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'items';
         $queueTaskR->state = 'progress';
         $queueTaskR->itemsState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -100,7 +100,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('itemsState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['itemsState' => 'progress'])->basicUpdate();
 
             //
             $langA = [$source]; foreach ($target as $fraction => $targets) $langA = array_merge($langA, ar($targets));
@@ -112,12 +112,12 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             foreach ($langA as $lang) {
 
                 // Create `queueItem` entry
-                $queueItemR = Indi::model('QueueItem')->createRow(array(
+                $queueItemR = m('QueueItem')->new([
                     'queueTaskId' => $queueTaskR->id,
                     'queueChunkId' => $queueChunkR->id,
                     'target' => preg_replace('~\.php$~', '-' . $lang . '$0', $queueChunkR->location),
                     'value' => $lang
-                ), true);
+                ]);
 
                 // Save `queueItem` entry
                 $queueItemR->save();
@@ -131,15 +131,15 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
                 // Increment `itemsSize` prop on `queueTask` entry and save it
                 $queueTaskR->itemsSize ++;
                 $queueTaskR->itemsBytes += $bytes;
-                $queueTaskR->basicUpdate();
+                $queueTaskR->basicUpdate(false, false);
             }
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('itemsState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['itemsState' => 'finished'])->basicUpdate();
         }
 
         // Mark first stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'itemsState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'itemsState' => 'finished'])->save();
     }
 
     /**
@@ -150,20 +150,19 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
         $queueTaskR->state = 'progress';
         $queueTaskR->queueState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get source and target languages
         $params = json_decode($queueTaskR->params);
@@ -183,13 +182,13 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             $value = str_replace(['<?', '?>'], ['<!-- <?', '?> -->'], $value);
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('queueState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
 
             // Get queue items by 50 entries at a time
-            Indi::model('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $value, $tpl) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $value, $tpl) {
 
                 // Try to call Google Cloud Translate API
                 try {
@@ -220,13 +219,13 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
                 file_put_contents($tmp, $result);
 
                 // Write translation result
-                $r->assign(array('result' => $tmp, 'stage' => 'queue'))->basicUpdate();
+                $r->set(['result' => $tmp, 'stage' => 'queue'])->basicUpdate();
 
                 // Increment `queueSize` prop on `queueChunk` entry and save it
                 $queueChunkR->queueSize ++; $queueChunkR->basicUpdate();
 
                 // Increment `queueSize` prop on `queueTask` entry and save it
-                $queueTaskR->queueSize ++; $queueTaskR->basicUpdate();
+                $queueTaskR->queueSize ++; $queueTaskR->basicUpdate(false, false);
 
                 // Increment $deduct
                 $deduct ++;
@@ -235,11 +234,11 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             }, $where, '`id` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('queueState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'queueState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -250,13 +249,13 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -268,7 +267,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('applyState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
@@ -277,7 +276,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
             $localizable = $this->getLocalizable($params);
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params) {
 
                 $current = DOC . STD . $r->target;
 
@@ -296,7 +295,7 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
                 } else file_put_contents($current, file_get_contents($r->result));
 
                 // Write translation result
-                $r->assign(array('stage' => 'apply'))->basicUpdate();
+                $r->set(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct ++;
@@ -305,22 +304,22 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
                 $queueChunkR->applySize ++; $queueChunkR->basicUpdate();
 
                 // Increment `applySize` prop on `queueTask` entry and save it
-                $queueTaskR->applySize ++; $queueTaskR->basicUpdate();
+                $queueTaskR->applySize ++; $queueTaskR->basicUpdate(false, false);
 
             }, $where, '`id` ASC');
 
             // Switch field's l10n-prop from intermediate to final value
-            $localizable->assign(['l10n' => $params['toggle'] ?: 'y'])->save();
+            $localizable->set(['l10n' => $params['toggle'] ?: 'y'])->save();
 
             // Remove original tpldoc file
             if ($params['toggle'] != 'n') unlink(DOC . STD . $queueChunkR->location);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
     }
 
     /**

@@ -22,16 +22,16 @@ class Year extends Indi_Db_Table {
         list($y) = explode('-', $year ?: date('Y'));
 
         // If current 4-digit year not exists within `year` table
-        if (!$yearI = Indi::db()->query('SELECT `id`, `title` FROM `year` WHERE `title` = "' . $y . '"')->fetch()) {
+        if (!$yearI = db()->query('SELECT `id`, `title` FROM `year` WHERE `title` = "' . $y . '"')->fetch()) {
 
             // Create it
-            Indi::db()->query('INSERT INTO `year` SET `title` = "' . $y . '"');
+            db()->query('INSERT INTO `year` SET `title` = "' . $y . '"');
 
             // Get it's id
-            $yearO = (object) array(
-                'id' => Indi::db()->getPDO()->lastInsertId(),
+            $yearO = (object) [
+                'id' => db()->getPDO()->lastInsertId(),
                 'title' => $y
-            );
+            ];
 
             // Else convert got $yearA into an stdClass instance
         } else $yearO = (object) $yearI;

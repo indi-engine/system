@@ -1,7 +1,9 @@
 <?php
 /**
- * Autoloader function. Here we provide an ability for classes to be loaded from 'coref', if they are used in admin module,
- * so all classes located in coref/application/controller/admin, and coref/Indi/Controller/Admin will be loaded if need
+ * Autoloader function. Here we provide an ability for classes to be loaded from 'public',
+ * if they are used in admin module, so all classes located
+ *     in VDR . '/public/application/controller/admin',
+ * and in VDR . '/public/Indi/Controller/Admin' will be loaded if need
  *
  * @param $class
  */
@@ -23,16 +25,16 @@ function autoloader($class) {
             if (preg_match('/^Indi_Controller_Admin_([a-zA-Z]*)$/', $class, $l))
 
                 // Prepend an appropriate dir to filename
-                $cf = '../coref/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
+                $cf = '..' . VDR . '/public/library/Indi/Controller/Admin/' . str_replace('_', '/', $l[1]) . '.php';
 
             // Else if $class is an admin module controller
             else if (is_array($c) && count($c)) {
 
                 // Prepend an appropriate dir to filename
-                $cf = '../coref/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
+                $cf = '..' . VDR . '/public/application/controllers/admin/' . str_replace('_', '/', $c[1]) . '.php';
 
             // Else if $class is some other class, we assume it's a model class
-            } else $cf = '../coref/application/models/' . $cf;
+            } else $cf = '..' . VDR . '/public/application/models/' . $cf;
 
             // Include class file
             @include_once($cf);
@@ -66,7 +68,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $error = error_get_last();
 
         //if ($error !== null && $error["type"] != E_NOTICE && $error["type"] != E_DEPRECATED) extract($error);
-        if ($error === null || in($error['type'], array(E_NOTICE, E_DEPRECATED))) return;
+        if ($error === null || in($error['type'], [E_NOTICE, E_DEPRECATED])) return;
 
         // Extract error info
         extract($error);
@@ -89,13 +91,13 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
 function jerror($errno, $errstr, $errfile, $errline) {
 
     // Build an array, containing error information
-    $error = array(
+    $error = [
         'code' => $errno,
         'text' => $errstr,
         'file' => $errfile,
         'line' => $errline,
         'trace' => array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2)
-    );
+    ];
 
     // Log this error if logging of 'jerror's is turned On
     if (Indi::logging('jerror')) Indi::log('jerror', $error);
@@ -105,7 +107,7 @@ function jerror($errno, $errstr, $errfile, $errline) {
 
     // If Indi Engine standalone client-app is in use - flush first error
     // todo: collect all non-fatal errors and flush collected either on end on execution or on fatal-error
-    if (APP) jflush(false, array('errors' => array($error)));
+    if (APP) jflush(false, ['errors' => [$error]]);
 
     // Return that info via json encode, wrapped with '<error>' tag, for error to be easy pickable with javascript
     return '<error>' . json_encode($error) . '</error>';
@@ -132,23 +134,14 @@ function d($value) {
  */
 function i($value, $type = 'w', $file = 'debug.txt') {
 
-    // Get the document root, with trimmed right trailing slash
-    $doc = rtrim($_SERVER['DOCUMENT_ROOT'], '\\/');
-
-    // Get the array of directory branches, from current directory and up to the document root (non-inclusive)
-    $dir = explode('/', substr(str_replace('\\', '/', __DIR__), strlen($doc)));
-
-    // Get the STD path, if project run not from the document root, but from some-level subdirectory of document root
-    $std = implode('/', array_slice($dir, 0, count($dir) -2));
-
     // Get the absolute path of a file, that will be used for writing data to
-    $abs = $doc . $std. '/www/' . $file;
+    $abs = rtrim(__DIR__, '\\/') . '/../../../../' . $file;
 
     // Renew the $dir, where we assume that output file is/will be located
     // Here we do not use existing $dir value, because $file arg can be
     // not only 'someOutputFile.txt', for example, but 'someSubDir/someOutputFile.txt' also
     // e.g. it can contain additional (deeper) directory specification
-    $dir = Indi::dir(pathinfo($abs, PATHINFO_DIRNAME) . '/');
+    $dir = Indi::dir(str_replace('\\', '/', pathinfo(realpath($abs), PATHINFO_DIRNAME)) . '/');
 
     // If $dir is not a directory name
     if (!Indi::rexm('dir', $dir)) {
@@ -276,24 +269,24 @@ function ago($date1, $date2 = null, $mode = 'ago', $exact = false) {
     $duration = max($date1, $date2) - min($date1, $date2);
 
     // Build an array of difference levels and their values
-    $levelA = array(
+    $levelA = [
         'Y' => date('Y', $duration) - 1970,
         'n' => date('n', $duration) - 1,
         'j' => date('j', $duration) - 1,
         'G' => date('G', $duration) - 3,
         'i' => ltrim(date('i', $duration), '0'),
         's' => ltrim(date('s', $duration), '0')
-    );
+    ];
 
     // Build an array of difference levels quantity spelling, depends on their values
-    $tbqA = array(
+    $tbqA = [
         'Y' => 'лет,год,года',
         'n' => 'месяцев,месяц,месяца',
         'j' => 'дней,день,дня',
         'G' => 'часов,час,часа',
         'i' => 'минут,минута,минуты',
         's' => 'секунд,секунда,секунды'
-    );
+    ];
 
     // If $exact arg is true
     if ($exact) {
@@ -324,7 +317,7 @@ function ago($date1, $date2 = null, $mode = 'ago', $exact = false) {
 function tbq($q = 2, $versions012 = '', $showNumber = true, $lang = null) {
 
     // If lang is not 'ru' - use different logic
-    if (($lang ?: Indi::ini('lang')->admin) != 'ru' && count(ar($versions012)) == 2) {
+    if (($lang ?: ini('lang')->admin) != 'ru' && count(ar($versions012)) == 2) {
 
         // Convert $versions012 string into an array
         // We assume that we need only 2 versions, for example 'item,items'
@@ -421,7 +414,7 @@ function ua($uaK) {
     $ua = $_SERVER['HTTP_USER_AGENT'];
 
     // Declare the array of keys and their identifiers
-    $uaA = array('ie8' => 'MSIE 8', 'ipad' => 'iPad');
+    $uaA = ['ie8' => 'MSIE 8', 'ipad' => 'iPad'];
 
     // Detect
     return preg_match('/' . $uaA[$uaK] . '/', $ua) ? true : false;
@@ -440,7 +433,7 @@ function rgb2hsl($rgb) {
     $delMax=$varMax-$varMin;$l=($varMax+$varMin)/2;if($delMax==0){$H=0;$S = 0;}else{if($l<0.5){$s=$delMax/($varMax+$varMin);
     }else{$s=$delMax/(2-$varMax-$varMin);}$delR=((($varMax-$varR)/6)+($delMax/2))/$delMax;$delG=((($varMax-$varG)/6)+($delMax
     /2))/$delMax;$delB=((($varMax-$varB)/6)+($delMax/2))/$delMax;if($varR==$varMax){$h=$delB-$delG;}else if($varG==$varMax)
-    {$h=(1/3)+$delR-$delB;}else if($varB==$varMax){$h=(2/3)+$delG-$delR;}if($h<0){$h++;}if($h>1){$h--;}}return array($h,$s,$l);
+    {$h=(1/3)+$delR-$delB;}else if($varB==$varMax){$h=(2/3)+$delG-$delR;}if($h<0){$h++;}if($h>1){$h--;}}return [$h,$s,$l];
 }
 
 /**
@@ -460,7 +453,7 @@ function hrgb($rgb = '') {
     $b = hexdec(substr($rgb, 4, 2));
 
     // Get the hue value
-    list($hue) = rgb2hsl(array($r, $g, $b));
+    list($hue) = rgb2hsl([$r, $g, $b]);
 
     // Append the hue value to a color and return it
     return str_pad(round($hue*360), 3, '0', STR_PAD_LEFT) . '#' . $rgb;
@@ -476,7 +469,7 @@ function hrgb($rgb = '') {
 function grs($length = 15, $charTypes = 'an') {
 
     // Set of characters
-    $chars = array();
+    $chars = [];
 
     // Strip unsupported values from $charTypes arg
     $charTypes = preg_replace('/[^ans]/', '', $charTypes);
@@ -485,7 +478,7 @@ function grs($length = 15, $charTypes = 'an') {
     if (!$charTypes) $charTypes = 'an';
 
     // If $charTypes arg contains 'a' letter, include alpha-characters in the chars list
-    if (preg_match('/a/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/a/', $charTypes)) $chars = array_merge($chars, [
         'a', 'b', 'c', 'd', 'e', 'f',
         'g', 'h', 'i', 'j', 'k', 'l',
         'm', 'n', 'o', 'p', 'q', 'r',
@@ -495,20 +488,20 @@ function grs($length = 15, $charTypes = 'an') {
         'K', 'L', 'M', 'N', 'O', 'P',
         'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z'
-    ));
+    ]);
 
     // If $charTypes arg contains 'a' letter, include numeric-characters in the chars list
-    if (preg_match('/n/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/n/', $charTypes)) $chars = array_merge($chars, [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
-    ));
+    ]);
 
     // If $charTypes arg contains 's' letter, include special-characters in the chars list
-    if (preg_match('/s/', $charTypes)) $chars = array_merge($chars, array(
+    if (preg_match('/s/', $charTypes)) $chars = array_merge($chars, [
         '.', ',', '(', ')', '[', ']',
         '!', '?', '&', '^', '%', '@',
         '*', '$', '<', '>', '/', '|',
         '+', '-', '{', '}', '`', '~'
-    ));
+    ]);
 
     // Generate
     $s = ''; for ($i = 0; $i < $length; $i++) $s .= $chars[rand(0, count($chars) - 1)];
@@ -547,7 +540,7 @@ function ldate($format, $date = '', $when = '') {
         $date = ldate(Indi::date2strftime($format), $date);
 
         // Force Russian-style month name endings
-        if (in('month', $when)) foreach (array('ь' => 'я', 'т' => 'та', 'й' => 'я') as $s => $r) {
+        if (in('month', $when)) foreach (['ь' => 'я', 'т' => 'та', 'й' => 'я'] as $s => $r) {
             $date = preg_replace('/([а-яА-Я]{2,})' . $s . '\b/u', '$1' . $r, $date);
             $date = preg_replace('/' . $s . '(\s)/u', $r . '$1', $date);
             $date = preg_replace('/' . $s . '$/u', $r, $date);
@@ -555,7 +548,7 @@ function ldate($format, $date = '', $when = '') {
 
         // Force Russian-style weekday name endings, suitable for version, spelling-compatible for question 'When?'
         if (in('weekday', $when))
-            foreach (array('а' => 'у') as $s => $r) {
+            foreach (['а' => 'у'] as $s => $r) {
                 $date = preg_replace('/' . $s . '\b/u', $r, $date);
                 $date = preg_replace('/' . $s . '(\s)/u', $r . '$1', $date);
                 $date = preg_replace('/' . $s . '$/u', $r, $date);
@@ -589,7 +582,7 @@ if (!function_exists('mb_lcfirst')) {
  */
 if (!function_exists('array_column')) {
     function array_column(array $array, $column_key, $index_key = null) {
-        $column = array();
+        $column = [];
         foreach ($array as $item) {
             if ($index_key) {
                 $column[$item[$index_key]] = $item[$column_key];
@@ -616,13 +609,13 @@ if (!function_exists('http_parse_headers')) {
  *
  */
 function parsepairs($raw, $delimiter = ':'){
-    $headers = array(); $key = '';
+    $headers = []; $key = '';
     foreach(explode("\n", $raw) as $h) {
         $h = explode($delimiter, $h, 2);
         if (isset($h[1])){
             if (!isset($headers[$h[0]])) $headers[$h[0]] = trim($h[1]);
-            else if (is_array($headers[$h[0]])) $headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1])));
-            else $headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1])));
+            else if (is_array($headers[$h[0]])) $headers[$h[0]] = array_merge($headers[$h[0]], [trim($h[1])]);
+            else $headers[$h[0]] = array_merge([$headers[$h[0]]], [trim($h[1])]);
             $key = $h[0];
         } else {
             if (substr($h[0], 0, 1) == "\t") $headers[$key] .= "\r\n\t".trim($h[0]);
@@ -641,7 +634,7 @@ if (!function_exists('apache_request_headers')) {
     function apache_request_headers() {
         
         // Cased headers
-        $casedHeaderA = array(
+        $casedHeaderA = [
 
             // HTTP
             'Dasl'             => 'DASL',
@@ -656,10 +649,10 @@ if (!function_exists('apache_request_headers')) {
             'Content-Md5'      => 'Content-MD5',
             'Content-Id'       => 'Content-ID',
             'Content-Features' => 'Content-features',
-        );
+        ];
         
         // Headers array
-        $httpHeaderA = array();
+        $httpHeaderA = [];
 
         // Pick headers info from $_SERVER
         foreach($_SERVER as $k => $v) {
@@ -743,10 +736,10 @@ function ar($items, $allowEmpty = false) {
     if (is_array($items)) return $items;
 
     // Else if $items arg is strict null - return array containing that null as a first item
-    if ($items === null) return $allowEmpty ? array(null) : array();
+    if ($items === null) return $allowEmpty ? [null] : [];
 
     // Else if $items arg is a boolean value - return array containing that boolean value as a first item
-    if (is_bool($items)) return array($items);
+    if (is_bool($items)) return [$items];
 
     // Else if $items arg is an object we either return result of toArray() call on that object,
     // or return result, got by php's native '(array)' cast-prefix expression, depending whether
@@ -757,7 +750,7 @@ function ar($items, $allowEmpty = false) {
     if (is_string($items)) {
 
         // If $items is an empty string - return empty array
-        if (!strlen($items) && !$allowEmpty) return array();
+        if (!strlen($items) && !$allowEmpty) return [];
 
         // Explode $items arg by comma
         foreach ($items = explode(',', $items) as $i => $item) {
@@ -773,7 +766,7 @@ function ar($items, $allowEmpty = false) {
     }
 
     // Else return array, containing $items arg as a single item
-    return array($items);
+    return [$items];
 }
 
 /**
@@ -808,22 +801,22 @@ function un($array, $unset, $strict = true, $preserveKeys = false) {
 function num2str($num, $iunit = true, $dunit = true) {
     if(!function_exists('num2str_')){function num2str_($n,$f1,$f2,$f5){$n=abs(intval($n))%100;if($n>10&&$n<20)return$f5;
     $n=$n%10;if($n>1&&$n<5)return$f2;if($n==1)return $f1;return $f5;}}
-    $nul=I_NUM2STR_ZERO; $ten=array(
-        array_merge(array(''), ar(I_NUM2STR_1TO9)),
-        array_merge(array(''), ar(I_NUM2STR_1TO9_2))
-    ,);
+    $nul=I_NUM2STR_ZERO; $ten= [
+        array_merge([''], ar(I_NUM2STR_1TO9)),
+        array_merge([''], ar(I_NUM2STR_1TO9_2))
+    ,];
     $a20 = ar(I_NUM2STR_10TO19);
     $tens = array_combine(array_keys(array_fill(2, 8, '')), ar(I_NUM2STR_20TO90));
-    $hundred=array_merge(array(''), ar(I_NUM2STR_100TO900));
-    $unit=array(
-        array_merge(ar(I_NUM2STR_TBQ_KOP), array(1)),
-        array_merge(ar(I_NUM2STR_TBQ_RUB), array(0)),
-        array_merge(ar(I_NUM2STR_TBQ_THD), array(1)),
-        array_merge(ar(I_NUM2STR_TBQ_MLN), array(0)),
-        array_merge(ar(I_NUM2STR_TBQ_BLN), array(0))
-    ,);
+    $hundred=array_merge([''], ar(I_NUM2STR_100TO900));
+    $unit= [
+        array_merge(ar(I_NUM2STR_TBQ_KOP), [1]),
+        array_merge(ar(I_NUM2STR_TBQ_RUB), [0]),
+        array_merge(ar(I_NUM2STR_TBQ_THD), [1]),
+        array_merge(ar(I_NUM2STR_TBQ_MLN), [0]),
+        array_merge(ar(I_NUM2STR_TBQ_BLN), [0])
+    ,];
 
-    list($rub,$kop)=explode('.',sprintf("%015.2f",floatval($num)));$out=array();
+    list($rub,$kop)=explode('.',sprintf("%015.2f",floatval($num)));$out= [];
     if(intval($rub)>0){foreach(str_split($rub,3)as$uk=>$v){if(!intval($v))continue;$uk=sizeof($unit)-$uk-1;$gender=$unit
     [$uk][3];list($i1,$i2,$i3)=array_map('intval',str_split($v,1));$out[]=$hundred[$i1];if($i2>1)$out[]=$tens[$i2].' '.
     $ten[$gender][$i3];else$out[]=$i2>0?$a20[$i3]:$ten[$gender][$i3];if($uk>1)$out[]=num2str_($v,$unit[$uk][0],$unit[$uk][1],
@@ -842,19 +835,19 @@ function num2str($num, $iunit = true, $dunit = true) {
 function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
 
     // Start building data for flushing
-    $flush = is_array($success) && array_key_exists('success', $success) ? $success : array('success' => $success);
+    $flush = is_array($success) && array_key_exists('success', $success) ? $success : ['success' => $success];
 
     // Deal with first data-argument
     if (func_num_args() > 1 && func_get_arg(1) != null)
         $mrg1 = is_object($msg1)
             ? (in('toArray', get_class_methods($msg1)) ? $msg1->toArray() : (array) $msg1)
-            : (is_array($msg1) ? $msg1 : array('msg' => $msg1));
+            : (is_array($msg1) ? $msg1 : ['msg' => $msg1]);
 
     // Deal with second data-argument
     if (func_num_args() > 2 && func_get_arg(2) != null)
         $mrg2 = is_object($msg2)
             ? (in('toArray', get_class_methods($msg2)) ? $msg2->toArray() : (array) $msg2)
-            : (is_array($msg2) ? $msg2 : array('msg' => $msg2));
+            : (is_array($msg2) ? $msg2 : ['msg' => $msg2]);
 
     // Merge the additional data to the $flush array
     if ($mrg1) $flush = array_merge($flush, $mrg1);
@@ -917,7 +910,7 @@ function isEdge() {
 function mflush($field, $msg = '') {
 
     // Mismatches array
-    $mismatch = array();
+    $mismatch = [];
 
     // If $field arg is a string - add $msg into $mismatch array using $field arg as a key
     if (is_string($field) && $msg) $mismatch[$field] = $msg;
@@ -927,11 +920,11 @@ function mflush($field, $msg = '') {
     else if (is_array($field)) $mismatch = $field;
 
     // Flush
-    jflush(false, array('mismatch' => array(
+    jflush(false, ['mismatch' => [
         'direct' => true,
         'errors' => $mismatch,
         'trace' => array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1)
-    )));
+    ]]);
 }
 /**
  * Flush the json-encoded message, containing `status` property, and other optional properties, especially for confirm
@@ -942,7 +935,7 @@ function mflush($field, $msg = '') {
 function jconfirm($msg, $buttons = 'OKCANCEL') {
 
     // Start building data for flushing
-    $flush = array('confirm' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'buttons' => $buttons);
+    $flush = ['confirm' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'buttons' => $buttons];
 
     // Send content type header
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
@@ -964,7 +957,13 @@ function jconfirm($msg, $buttons = 'OKCANCEL') {
 function jprompt($msg, array $cfg) {
 
     // Start building data for flushing
-    $flush = array('prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg);
+    $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg];
+
+    // Append prev prompts data
+    if ($flush['prompt'] > 1)
+        for ($i = 1; $i < $flush['prompt']; $i++)
+            if ($name = '_prompt' . rif($i - 1, $i))
+                $flush[$name] = json_decode(Indi::post($name));
 
     // Send content type header
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
@@ -1032,16 +1031,16 @@ function decimal($value, $precision = 2, $formatted = false) {
 function alias($title){
 
     // Symbols
-    $s = array('а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ',
+    $s = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ',
         'ъ','ы','ь','э','ю','я','№',' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
         't','u','v','w','x','y','z','-','0','1','2','3','4','5','6','7','8','9','Ë','À','Ì','Â','Í','Ã','Î','Ä','Ï',
-        'Ç','Ò','È','Ó','É','Ô','Ê','Õ','Ö','ê','Ù','ë','Ú','î','Û','ï','Ü','ô','Ý','õ','â','û','ã','ÿ','ç','&', '/', '_');
+        'Ç','Ò','È','Ó','É','Ô','Ê','Õ','Ö','ê','Ù','ë','Ú','î','Û','ï','Ü','ô','Ý','õ','â','û','ã','ÿ','ç','&', '/', '_'];
 
     // Replacements
-    $r = array('a','b','v','g','d','e','yo','zh','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','ch','sh','shh',
+    $r = ['a','b','v','g','d','e','yo','zh','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','ch','sh','shh',
         '','y','','e','yu','ya','','-','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
         't','u','v','w','x','y','z','-','0','1','2','3','4','5','6','7','8','9','e','a','i','a','i','a','i','a','i',
-        'c','o','e','o','e','o','e','o','o','e','u','e','u','i','u','i','u','o','u','o','a','u','a','y','c','-and-', '-', '_');
+        'c','o','e','o','e','o','e','o','o','e','u','e','u','i','u','i','u','o','u','o','a','u','a','y','c','-and-', '-', '_'];
 
     // Declare variable for alias
     $alias = '';
@@ -1072,6 +1071,9 @@ function iexit($msg = null) {
     // Send all DELETE queries to an special email address, for debugging
     Indi::mailDELETE();
 
+    // Close websocket-client connection
+    Indi::ws(false);
+
     // Exit
     exit($msg);
 }
@@ -1095,7 +1097,7 @@ function sign($n) {
 function size2str($size) {
 
     // Postixes
-    $postfix = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
+    $postfix = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
 
     // Pow
     $pow = (int) floor(strlen($size)/3);
@@ -1254,7 +1256,7 @@ function phone($str) {
  * @return string
  */
 function when($date, $time = '') {
-    $when = array(); $when_ = '';
+    $when = []; $when_ = '';
 
     // Detect yesterday/today/tomorrow/etc part
     if ($date == date('Y-m-d', time() - 60 * 60 * 24 * 2)) $when_ = I_WHEN_DBY;
@@ -1290,23 +1292,23 @@ function when($date, $time = '') {
  * @author Tamlyn Rhodes <http://tamlyn.org>
  * @license http://creativecommons.org/publicdomain/mark/1.0/ Public Domain
  */
-function xml2ar($xml, $options = array()) {
-    $defaults = array(
+function xml2ar($xml, $options = []) {
+    $defaults = [
         'namespaceSeparator' => ':',//you may want this to be something other than a colon
         'attributePrefix' => '@',   //to distinguish between attributes and nodes with the same name
-        'alwaysArray' => array(),   //array of xml tag names which should always become arrays
+        'alwaysArray' => [],   //array of xml tag names which should always become arrays
         'autoArray' => true,        //only create arrays for tags which appear more than once
         'textContent' => '$',       //key used for the text content of elements
         'autoText' => true,         //skip textContent key if node has no attributes or child nodes
         'keySearch' => false,       //optional search and replace on tag and attribute names
         'keyReplace' => false       //replace values for above search values (as passed to str_replace())
-    );
+    ];
     $options = array_merge($defaults, $options);
     $namespaces = $xml->getDocNamespaces();
     $namespaces[''] = null; //add base (empty) namespace
 
     //get attributes from all namespaces
-    $attributesArray = array();
+    $attributesArray = [];
     foreach ($namespaces as $prefix => $namespace) {
         foreach ($xml->attributes($namespace) as $attributeName => $attribute) {
             //replace characters in attribute name
@@ -1320,7 +1322,7 @@ function xml2ar($xml, $options = array()) {
     }
 
     //get child nodes from all namespaces
-    $tagsArray = array();
+    $tagsArray = [];
     foreach ($namespaces as $prefix => $namespace) {
         foreach ($xml->children($namespace) as $childXml) {
             //recurse into child nodes
@@ -1338,7 +1340,7 @@ function xml2ar($xml, $options = array()) {
                 //test if tags of this type should always be arrays, no matter the element count
                 $tagsArray[$childTagName] =
                     in_array($childTagName, $options['alwaysArray']) || !$options['autoArray']
-                        ? array($childProperties) : $childProperties;
+                        ? [$childProperties] : $childProperties;
             } elseif (
                 is_array($tagsArray[$childTagName]) && array_keys($tagsArray[$childTagName])
                 === range(0, count($tagsArray[$childTagName]) - 1)
@@ -1347,13 +1349,13 @@ function xml2ar($xml, $options = array()) {
                 $tagsArray[$childTagName][] = $childProperties;
             } else {
                 //key exists so convert to integer indexed array with previous value in position 0
-                $tagsArray[$childTagName] = array($tagsArray[$childTagName], $childProperties);
+                $tagsArray[$childTagName] = [$tagsArray[$childTagName], $childProperties];
             }
         }
     }
 
     //get text content of node
-    $textContentArray = array();
+    $textContentArray = [];
     $plainText = trim((string)$xml);
     if ($plainText !== '') $textContentArray[$options['textContent']] = $plainText;
 
@@ -1362,9 +1364,9 @@ function xml2ar($xml, $options = array()) {
         ? array_merge($attributesArray, $tagsArray, $textContentArray) : $plainText;
 
     //return node as array
-    return array(
+    return [
         $xml->getName() => $propertiesArray
-    );
+    ];
 }
 
 function l10n($dataA, $props = '') {
@@ -1382,7 +1384,7 @@ function l10n_dataI($dataI, $props) {
     foreach(ar($props) as $prop)
         if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop]))
             if ($json = json_decode($dataI[$prop], true))
-            $dataI[$prop] = $json[array_key_exists(Indi::ini('lang')->admin, $json) ? Indi::ini('lang')->admin : key($json)];
+            $dataI[$prop] = $json[array_key_exists(ini('lang')->admin, $json) ? ini('lang')->admin : key($json)];
 
     // Return
     return $dataI;
@@ -1400,7 +1402,7 @@ function l10n_dataI($dataI, $props) {
 function jcheck($ruleA, $data, $fn = 'jflush') {
 
     // Declare $rowA array
-    $rowA = array();
+    $rowA = [];
 
     // Foreach prop having mismatch rules
     foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
@@ -1409,7 +1411,7 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
         $value = $data[$prop];
 
         // Get meta
-        $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : array();
+        $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : [];
         
         // Get label, or use $prop if label/meta is not given
         $label = $meta['fieldLabel'] ?: $prop;
@@ -1438,21 +1440,27 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
         // If prop's value should be an identifier of an existing object, but such object not found - flush error
         if ($rule['key'] && strlen($value) && $value != '0') {
 
+            // Parse key expr
+            preg_match('~^(.+?)(\*)?(:I_[A-Z0-9_]+)?$~', $rule['key'], $expr);
+
             // Get model/table name
-            $m = preg_replace('/\*$/', '', $rule['key']);
+            $m = $expr[1];
+
+            // Get error msg constant name
+            $const = trim($expr[3], ':') ?: $c . 'KEY';
 
             // Setup $s as a flag indicating whether *_Row (single row) or *_Rowset should be fetched
-            $s = $m == $rule['key'];
+            $s = !$expr[2];
 
             // Setup WHERE clause and method name to be used for fetching
             $w = $s ? '`id` = "' . $value . '"' : '`id` IN (' . $value . ')';
             $f = $s ? 'fetchRow' : 'fetchAll';
 
             // Fetch
-            $rowA[$prop] = Indi::model($m)->$f($w);
+            $rowA[$prop] = m($m)->$f($w);
 
             // If no *_Row was fetched, or empty *_Rowset was fetched - flush error
-            if (!($s ? $rowA[$prop] : $rowA[$prop]->count())) $flushFn($arg1, sprintf(constant($c . 'KEY'), $rule['key'], $value));
+            if (!($s ? $rowA[$prop] : $rowA[$prop]->count())) $flushFn($arg1, sprintf(constant($const), $m, $value));
         }
 
         // If prop's value should be equal to some certain value, but it's not equal - flush error
@@ -1460,9 +1468,9 @@ function jcheck($ruleA, $data, $fn = 'jflush') {
             $flushFn($arg1, sprintf(constant($c . 'EQL'), $rule['eql'], $value));
         
         // If prop's value should be unique within the whole database table, but it's not - flush error
-        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && Indi::model($_[0])->fetchRow(array(
+        if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && m($_[0])->row([
             '`' . $_[1] . '` = "' . $value . '"'
-        ))) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
+            ])) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
     }
 
     // Return *_Row objects, collected for props, that have 'key' rule
@@ -1490,7 +1498,7 @@ function _2sec($expr) {
     if (Indi::rexm('time', $expr)) {
 
         // Prepare type mapping
-        $type = array('h', 'm', 's'); $s = 0;
+        $type = ['h', 'm', 's']; $s = 0;
 
         // Foreach type append it's value converted to seconds
         foreach (explode(':', $expr) as $index => $value) $s += _2sec($value . $type[$index]);
@@ -1503,13 +1511,13 @@ function _2sec($expr) {
     if (!preg_match('~^([0-9]+)(s|m|h|d|w)$~', $expr, $m)) jflush(false, 'Incorrect $expr arg format');
 
     // Multipliers for $expr conversion
-    $frame2sec = array(
+    $frame2sec = [
         's' => 1,
         'm' => 60,
         'h' => 60 * 60,
         'd' => 60 * 60 * 24,
         'w' => 60 * 60 * 24 * 7
-    );
+    ];
 
     // Return number of seconds
     return $m[1] * $frame2sec[$m[2]];
@@ -1520,8 +1528,8 @@ function _2sec($expr) {
  *
  * @return Indi_Trail_Admin/Indi_Trail_Front
  */
-function t($arg = null) {
-    return Indi::trail($arg);
+function t() {
+    return forward_static_call_array(['Indi', 'trail'], func_get_args());
 }
 
 /**
@@ -1529,8 +1537,8 @@ function t($arg = null) {
  *
  * @return Indi_Db_Table
  */
-function m($arg = null) {
-    return func_num_args() ? Indi::model($arg) : t()->model;
+function m($arg = null, $check = false) {
+    return func_num_args() ? Indi::model($arg, $check) : t()->model;
 }
 
 /**
@@ -1545,6 +1553,13 @@ function u() {
     return class_exists('Project', false) && method_exists('Project', 'user')
         ? Project::user()
         : Indi::user();
+}
+
+/**
+ * Shorthand function for Indi::ini()
+ */
+function ini() {
+    return forward_static_call_array(['Indi', 'ini'], func_get_args());
 }
 
 /**
@@ -1571,13 +1586,13 @@ function wrap($val, $html, $cond = null) {
  * @param array $ctor Props to be involved in insert/update
  * @return Entity_Row|null
  */
-function entity($table, array $ctor = array()) {
+function entity($table, array $ctor = []) {
 
     // If $table arg is an integer - assume it's an `entity` entry's `id`, otherwise assume it's a `table`
     $byprop = Indi::rexm('int11', $table) ? 'id' : 'table';
 
     // Return `entity` entry
-    $entityR = Indi::model('Entity')->fetchRow('`' . $byprop . '` = "' . $table . '"');
+    $entityR = m('Entity')->row('`' . $byprop . '` = "' . $table . '"');
 
     // If $ctor arg is an empty array - return `entity` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1588,10 +1603,10 @@ function entity($table, array $ctor = array()) {
     if (!array_key_exists('table', $ctor)) $ctor['table'] = $table;
 
     // If `entity` entry was not found - create it
-    if (!$entityR) $entityR = Indi::model('Entity')->createRow();
+    if (!$entityR) $entityR = m('Entity')->new();
 
     // Assign other props and save
-    $entityR->assign($ctor)->save();
+    $entityR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `entity` entry (newly created, or existing but updated)
     return $entityR;
@@ -1607,7 +1622,7 @@ function entity($table, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Field_Row|null
  */
-function field($table, $alias, array $ctor = array()) {
+function field($table, $alias, array $ctor = []) {
 
     // Get `entityId` according to $table arg
     $entityId = entity($table)->id;
@@ -1615,11 +1630,19 @@ function field($table, $alias, array $ctor = array()) {
     // If $alias arg is an integer - assume it's a `field` entry's `id`, otherwise it's a `alias`
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
+    // Check whether `field`.`entry` column was already created
+    // This is a temporary check, to be used until all Indi Engine projects are updated
+    $entryColumn = db()->query('
+        SELECT * FROM `information_schema`.`columns` 
+        WHERE `table_name`="field" AND `column_name`="entry"
+    ')->fetch();
+
     // Try to find `field` entry
-    $fieldR = Indi::model('Field')->fetchRow(array(
+    $fieldR = m('Field')->row([
         '`entityId` = "' . $entityId . '"',
+        rif($entryColumn, '`entry` = "' . (int) $ctor['entry'] . '"', 'TRUE'),
         '`' . $byprop . '` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1633,13 +1656,68 @@ function field($table, $alias, array $ctor = array()) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$fieldR) $fieldR = Indi::model('Field')->createRow();
+    if (!$fieldR) $fieldR = m('Field')->new();
 
     // Assign `entityId` prop first
     if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $fieldR->assign($ctor)->save();
+    $fieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `field` entry (newly created, or existing but updated)
+    return $fieldR;
+}
+
+/**
+ * Short-hand function that allows to manipulate on config-field, stored as `field` entry,
+ * and identified by $table, $entry and $alias args.
+ * If only three args given - function will fetch and return appropriate `field` entry (or null, if not found)
+ * If $ctor arg is given and it's a non-empty array - function will create new `field` entry, or update existing if found
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string|int $entry ID or alias of an entry, that config-field is applicable for
+ * @param string $alias Field's alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Field_Row|null
+ */
+function cfgField($table, $entry, $alias, array $ctor = []) {
+
+    // Get `entityId` according to $table arg
+    $entityId = entity($table)->id;
+
+    // If $alias arg is an integer - assume it's a `field` entry's `id`, otherwise it's a `alias`
+    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+    // If entry's alias is specified instead of id - get the id,
+    // as we need it to check whether such cfgField is already defined for that entry
+    if (!Indi::rexm('int11', $entry)) $entry = m($table)->row('`alias` = "' . $entry . '"')->id;
+
+    // Try to find `field` entry
+    $fieldR = m('Field')->row([
+        '`entityId` = "' . $entityId . '"',
+        '`entry` = "' . $entry . '"',
+        '`' . $byprop . '` = "' . $alias . '"'
+    ]);
+
+    // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $table and $alias args - is not enough for `field` entry to be created
+    if (!$ctor) return $fieldR;
+
+    // If `entityId`, `entry` and/or `alias` prop are not defined within $ctor arg
+    // - use values given by $table and $alias args
+    foreach (ar('entityId,entry,alias') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `grid` entry was not found - create it
+    if (!$fieldR) $fieldR = m('Field')->new();
+
+    // Assign `entityId` prop first
+    if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
+
+    // Assign other props and save
+    $fieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `field` entry (newly created, or existing but updated)
     return $fieldR;
@@ -1654,13 +1732,13 @@ function field($table, $alias, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Section_Row|null
  */
-function section($alias, array $ctor = array()) {
+function section($alias, array $ctor = []) {
 
     // If $alias arg is an integer - assume it's a section ID, or assume it's a section alias otherwise
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
     // Try to find `section` entry
-    $sectionR = Indi::model('Section')->fetchRow('`' . $byprop . '` = "' . $alias . '"');
+    $sectionR = m('Section')->row('`' . $byprop . '` = "' . $alias . '"');
 
     // If $ctor arg is an empty array - return `section` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1671,13 +1749,13 @@ function section($alias, array $ctor = array()) {
     if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
 
     // If `section` entry was not found - create it
-    if (!$sectionR) $sectionR = Indi::model('Section')->createRow();
+    if (!$sectionR) $sectionR = m('Section')->new();
 
     // Assign `entityId` prop first
     if ($ctor['entityId'] && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $sectionR->assign($ctor)->save();
+    $sectionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `section` entry (newly created, or existing but updated)
     return $sectionR;
@@ -1704,7 +1782,7 @@ function grid($section, $field, $ctor = false) {
     if (!$fieldId) $alias = $field;
 
     // Build WHERE clause
-    $w = array('`sectionId` = "' . $sectionId . '"');
+    $w = ['`sectionId` = "' . $sectionId . '"'];
 
     // If $field arg points to existing `field` entry
     if ($fieldId) {
@@ -1726,7 +1804,7 @@ function grid($section, $field, $ctor = false) {
     } else $w []= '`alias` = "' . $field . '"';
 
     // Try to find `grid` entry
-    $gridR = Indi::model('Grid')->fetchRow($w);
+    $gridR = m('Grid')->row($w);
 
     // If $ctor arg is non-false and is not and empty array - return found `grid` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -1735,13 +1813,13 @@ function grid($section, $field, $ctor = false) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $fields args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId,alias,further') as $prop)
         if (!array_key_exists($prop, $ctor) && isset($$prop))
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$gridR) $gridR = Indi::model('Grid')->createRow();
+    if (!$gridR) $gridR = m('Grid')->new();
 
     // Assign `sectionId` prop first, to be able to detect `fieldId`
     if ($ctor['sectionId'] && $gridR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
@@ -1750,7 +1828,7 @@ function grid($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $gridR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $gridR->assign($ctor)->save();
+    $gridR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `grid` entry (newly created, or existing but updated)
     return $gridR;
@@ -1776,17 +1854,17 @@ function enumset($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $enumsetR = Indi::model('Enumset')->fetchRow(array(
+    $enumsetR = m('Enumset')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not and empty array - return `grid` entry, else
     if (!$ctor && !is_array($ctor)) return $enumsetR;
 
     // If `fieldId` and/or `alias` prop are not defined within $ctor arg
     // - use values given by $table+$field and $alias args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('fieldId,alias') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -1795,14 +1873,67 @@ function enumset($table, $field, $alias, $ctor = false) {
     if ($enumsetR) unset($ctor['fieldId']);
 
     // Else - create it
-    else $enumsetR = Indi::model('Enumset')->createRow();
+    else $enumsetR = m('Enumset')->new();
 
     // If $ctor['color'] is given - apply color-box
     if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
         . $ctor['color'] . ';"></span>' . strip_tags($ctor['title']);
 
     // Assign other props and save
-    $enumsetR->assign($ctor)->save();
+    $enumsetR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `enumset` entry (newly created, or existing but updated)
+    return $enumsetR;
+}
+
+/**
+ * Short-hand function that allows to manipulate `entry` entry, identified by $table, $field and $alias args.
+ * If only those two args given - function will fetch and return appropriate `entry` entry (or null, if not found)
+ * If 4th arg - $ctor - is given and it's `true` or an (even empty) array - function will create new `enumset`
+ * entry, or update existing if found
+ *
+ * If 4th arg is an array containing value under 'color' key - color box will be injected into `enumset` entry's `title`
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string|int $entry ID or alias of an entry, that config-field is applicable for
+ * @param string $field Field alias
+ * @param string $alias Enumset alias
+ * @param bool|array $ctor
+ * @return Enumset_Row|null
+ */
+function cfgEnumset($table, $entry, $field, $alias, $ctor = false) {
+
+    // Get `fieldId` according to $table and $field args
+    $fieldId = cfgField($table, $entry, $field)->id;
+
+    // Try to find `grid` entry
+    $enumsetR = m('Enumset')->row([
+        '`fieldId` = "' . $fieldId . '"',
+        '`alias` = "' . $alias . '"'
+    ]);
+
+    // If $ctor arg is non-false and is not and empty array - return `grid` entry, else
+    if (!$ctor && !is_array($ctor)) return $enumsetR;
+
+    // If `fieldId` and/or `alias` prop are not defined within $ctor arg
+    // - use values given by $table+$field and $alias args
+    if (!is_array($ctor)) $ctor = [];
+    foreach (ar('fieldId,alias') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `enumset` entry already exists - do not allow re-linking it from one field to another
+    if ($enumsetR) unset($ctor['fieldId']);
+
+    // Else - create it
+    else $enumsetR = m('Enumset')->new();
+
+    // If $ctor['color'] is given - apply color-box
+    if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
+        . $ctor['color'] . ';"></span>' . strip_tags($ctor['title']);
+
+    // Assign other props and save
+    $enumsetR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `enumset` entry (newly created, or existing but updated)
     return $enumsetR;
@@ -1826,17 +1957,17 @@ function thumb($table, $field, $alias, $ctor = false) {
     $fieldId = field($table, $field)->id;
 
     // Try to find `grid` entry
-    $thumbR = Indi::model('Resize')->fetchRow(array(
+    $thumbR = m('Resize')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not an empty array - return `thumb` entry, else
     if (!$ctor && !is_array($ctor)) return $thumbR;
 
     // If `fieldId` and/or `alias` prop are not defined within $ctor arg
     // - use values given by $table+$field and $alias args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('fieldId,alias') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
@@ -1845,28 +1976,79 @@ function thumb($table, $field, $alias, $ctor = false) {
     if ($thumbR) unset($ctor['fieldId']);
 
     // Else - create it
-    else $thumbR = Indi::model('Resize')->createRow();
+    else $thumbR = m('Resize')->new();
 
     // Assign other props and save
-    $thumbR->assign($ctor)->save();
+    $thumbR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `thumb` entry (newly created, or existing but updated)
     return $thumbR;
 }
 
 /**
- * Short-hand function for getting `element` entry by it's `alias`
+ * Get `element` entry either by alias or by ID, or create/update it
  *
- * @param string $alias
+ * @param string|int $alias Element ID or alias
+ * @param array $ctor Props to be involved in insert/update
  * @return Indi_Db_Table_Row|null
  */
-function element($alias) {
+function element($alias, array $ctor = []) {
 
-    // If $alias arg is an integer - assume it's an `element` entry's `id`, otherwise assume it's a `type`
+    // If $alias arg is an integer - assume it's an entry's `id`, otherwise assume it's a `alias`
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
-    // Return `element` entry
-    return Indi::model('Element')->fetchRow('`' . $byprop . '` = "' . $alias . '"');
+    // Get entry
+    $entry = m('element')->row('`' . $byprop . '` = "' . $alias . '"');
+
+    // If $ctor arg is an empty array - return entry, if found, or null otherwise.
+    if (!$ctor) return $entry;
+
+    // If `alias` prop is not defined within $ctor arg - use value given by $alias arg
+    if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
+
+    // If `role` entry was not found - create it
+    if (!$entry) $entry = m('element')->new();
+
+    // Assign other props and save
+    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return entry (newly created, or existing but updated)
+    return $entry;
+}
+
+/**
+ * Get `admin` entry either by login or by ID, or create/update it
+ * If no args given - currently logged in admin would be returned
+ *
+ * @param string|int $alias Element ID or alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Indi_Db_Table_Row|null
+ */
+function admin($login = null, array $ctor = []) {
+
+    // If no args given - call Indi::admin() and return current user
+    if (!func_num_args() || is_bool($login)) return Indi::admin($login);
+
+    // If $login arg is an integer - assume it's an entry's `id`, otherwise assume it's a `email`
+    $byprop = Indi::rexm('int11', $login) ? 'id' : 'email';
+
+    // Get entry
+    $entry = m('admin')->row('`' . $byprop . '` = "' . $login . '"');
+
+    // If $ctor arg is an empty array - return entry, if found, or null otherwise.
+    if (!$ctor) return $entry;
+
+    // If `email` prop is not defined within $ctor arg - use value given by $login arg
+    if (!array_key_exists('email', $ctor)) $ctor['email'] = $login;
+
+    // If `role` entry was not found - create it
+    if (!$entry) $entry = m('admin')->new();
+
+    // Assign other props and save
+    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return entry (newly created, or existing but updated)
+    return $entry;
 }
 
 /**
@@ -1881,7 +2063,7 @@ function coltype($type) {
     $byprop = Indi::rexm('int11', $type) ? 'id' : 'type';
 
     // Return `columnType` entry
-    return Indi::model('ColumnType')->fetchRow('`' . $byprop . '` = "' . $type . '"');
+    return m('ColumnType')->row('`' . $byprop . '` = "' . $type . '"');
 }
 
 /**
@@ -1894,7 +2076,7 @@ function coltype($type) {
  * @param bool|array $ctor Props to be involved in insert/update
  * @return Section2action_Row|null
  */
-function section2action($section, $action, array $ctor = array()) {
+function section2action($section, $action, array $ctor = []) {
 
     // Get `sectionId` and `actionId` according to $section and $action args
     $sectionR = section($section);
@@ -1902,10 +2084,10 @@ function section2action($section, $action, array $ctor = array()) {
     $actionId = action($action)->id;
 
     // Try to find `section2action` entry
-    $section2actionR = Indi::model('Section2action')->fetchRow(array(
+    $section2actionR = m('Section2action')->row([
         '`sectionId` = "' . $sectionId . '"',
         '`actionId` = "' . $actionId . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `section2action` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1919,10 +2101,10 @@ function section2action($section, $action, array $ctor = array()) {
             $ctor[$prop] = $$prop;
 
     // If `grid` entry was not found - create it
-    if (!$section2actionR) $section2actionR = Indi::model('Section2action')->createRow();
+    if (!$section2actionR) $section2actionR = m('Section2action')->new();
 
     // Assign props and save
-    $section2actionR->assign($ctor)->save();
+    $section2actionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `section2action` entry (newly created, or existing but updated)
     return $section2actionR;
@@ -1935,13 +2117,13 @@ function section2action($section, $action, array $ctor = array()) {
  * @param array $ctor Props to be involved in insert/update
  * @return Indi_Db_Table_Row|null
  */
-function action($alias, array $ctor = array()) {
+function action($alias, array $ctor = []) {
 
     // If $alias arg is an integer - assume it's an `action` entry's `id`, otherwise assume it's a `alias`
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
     // Return `action` entry
-    $actionR = Indi::model('Action')->fetchRow('`' . $byprop . '` = "' . $alias . '"');
+    $actionR = m('Action')->row('`' . $byprop . '` = "' . $alias . '"');
 
     // If $ctor arg is an empty array - return `action` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1952,13 +2134,46 @@ function action($alias, array $ctor = array()) {
     if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
 
     // If `action` entry was not found - create it
-    if (!$actionR) $actionR = Indi::model('Action')->createRow();
+    if (!$actionR) $actionR = m('Action')->new();
 
     // Assign other props and save
-    $actionR->assign($ctor)->save();
+    $actionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `action` entry (newly created, or existing but updated)
     return $actionR;
+}
+
+/**
+ * Get `role` entry either by alias or by ID, or create/update it
+ *
+ * @param string|int $alias Role ID or alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Indi_Db_Table_Row|null
+ */
+function role($alias, array $ctor = []) {
+
+    // If $alias arg is an integer - assume it's an `role` entry's `id`, otherwise assume it's a `alias`
+    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+    // Get `role` entry
+    $roleR = m('Profile')->row('`' . $byprop . '` = "' . $alias . '"');
+
+    // If $ctor arg is an empty array - return `role` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $alias - is not enough for `role` entry to be created
+    if (!$ctor) return $roleR;
+
+    // If `alias` prop is not defined within $ctor arg - use value given by $alias arg
+    if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
+
+    // If `role` entry was not found - create it
+    if (!$roleR) $roleR = m('Profile')->new();
+
+    // Assign other props and save
+    $roleR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `role` entry (newly created, or existing but updated)
+    return $roleR;
 }
 
 /**
@@ -1971,7 +2186,7 @@ function action($alias, array $ctor = array()) {
  * @param bool|array $ctor Props to be involved in insert/update
  * @return AlteredField_Row|null
  */
-function alteredField($section, $field, array $ctor = array()) {
+function alteredField($section, $field, array $ctor = []) {
 
     // Get `sectionId` and `fieldId` according to $section and $field args
     $sectionR = section($section);
@@ -1979,10 +2194,10 @@ function alteredField($section, $field, array $ctor = array()) {
     $fieldId = field($sectionR->foreign('entityId')->table, $field)->id;
 
     // Try to find `alteredField` entry
-    $alteredFieldR = Indi::model('AlteredField')->fetchRow(array(
+    $alteredFieldR = m('AlteredField')->row([
         '`sectionId` = "' . $sectionId . '"',
         '`fieldId` = "' . $fieldId . '"'
-    ));
+    ]);
 
     // If $ctor arg is an empty array - return `alteredField` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -1991,19 +2206,19 @@ function alteredField($section, $field, array $ctor = array()) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $field args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
 
     // If `alteredField` entry was not found - create it
-    if (!$alteredFieldR) $alteredFieldR = Indi::model('AlteredField')->createRow();
+    if (!$alteredFieldR) $alteredFieldR = m('AlteredField')->new();
 
     // Assign `sectionId` prop first
     if ($ctor['sectionId'] && $alteredFieldR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
 
     // Assign other props and save
-    $alteredFieldR->assign($ctor)->save();
+    $alteredFieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `alteredField` entry (newly created, or existing but updated)
     return $alteredFieldR;
@@ -2029,7 +2244,7 @@ function filter($section, $field, $ctor = false) {
     $fieldId = $fieldR->id;
 
     // Initial WHERE clause
-    $w = array('`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"');
+    $w = ['`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"'];
 
     // Detect $further
     if (func_num_args() > 3) {
@@ -2039,10 +2254,10 @@ function filter($section, $field, $ctor = false) {
     }
 
     // Mind `further` field
-    if ($further) $w []= '`further` = "' . $fieldR->rel()->fields($further)->id . '"';
+    $w []= '`further` = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `filter` entry
-    $filterR = Indi::model('Search')->fetchRow($w);
+    $filterR = m('Search')->row($w);
 
     // If $ctor arg is non-false and is not and empty array - return found `filter` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -2051,13 +2266,13 @@ function filter($section, $field, $ctor = false) {
 
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $fields args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('sectionId,fieldId,further') as $prop)
         if (isset($$prop) && !array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
 
     // If `filter` entry was not found - create it
-    if (!$filterR) $filterR = Indi::model('Search')->createRow();
+    if (!$filterR) $filterR = m('Search')->new();
 
     // Assign `sectionId` prop first
     if ($ctor['sectionId'] && $filterR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
@@ -2066,7 +2281,7 @@ function filter($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $filterR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $filterR->assign($ctor)->save();
+    $filterR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `filter` entry (newly created, or existing but updated)
     return $filterR;
@@ -2089,35 +2304,53 @@ function param($table, $field, $alias, $value = null) {
     // Get `fieldId` according to $table and $field args
     $fieldR = field($table, $field); $fieldId = $fieldR->id;
 
-    // Get underlying `possibleElementParam` entry's id
-    $possibleParamId = Indi::model('PossibleElementParam')->fetchRow(array(
-        '`elementId` = "' . $fieldR->elementId . '"',
-        '`alias` = "' . $alias . '"'
-    ))->id;
+    // Where clause for finding `param` entry
+    $where = ['`fieldId` = "' . $fieldId . '"'];
+
+    // If 'possibleElementParam' model still exists, it means we're yet using legacy logic
+    if (m('PossibleElementParam', true) && (!is_array($value) || isset($value['value']))) {
+
+        // Get underlying `possibleElementParam` entry's id
+        $possibleParamId = m('PossibleElementParam')->row([
+            '`elementId` = "' . $fieldR->elementId . '"',
+            '`alias` = "' . $alias . '"'
+        ])->id;
+
+        // Use it in WHERE clause
+        $where []= '`possibleParamId` = "' . $possibleParamId . '"';
+
+    // Else
+    } else {
+
+        // Get config-field id
+        $cfgField = cfgField('element', $fieldR->elementId, $alias)->id;
+
+        // Use it in WHERE clause
+        $where []= '`cfgField` = "' . $cfgField . '"';
+    }
 
     // Try to find `param` entry
-    $paramR = Indi::model('Param')->fetchRow(array(
-        '`fieldId` = "' . $fieldId . '"',
-        '`possibleParamId` = "' . $possibleParamId . '"'
-    ));
+    $paramR = m('Param')->row($where);
 
     // If $ctor arg is non-false and is not and empty array - return `param` entry, else
     if (func_num_args() < 4) return $paramR;
 
     // Build $ctor
-    $ctor = is_array($value) ? $value : array('value' => $value);
-    foreach (ar('fieldId,possibleParamId,value') as $prop)
+    $ctor = is_array($value) ? $value : ['value' => $value, 'cfgValue' => $cfgValue = $value];
+    foreach (ar('fieldId,possibleParamId,cfgField'
+        . rif(!is_array($value), ',value')
+        . rif(!is_array($cfgValue), ',cfgValue')) as $prop)
         if (!array_key_exists($prop, $ctor))
-            $ctor[$prop] = $$prop;
+            $ctor[$prop] = $$prop ?? 0;
 
     // If `param` entry already exists - do not allow re-linking it from one field to another
-    if ($paramR) unset($ctor['fieldId'], $ctor['possibleParamId']);
+    if ($paramR) unset($ctor['fieldId'], $ctor['possibleParamId'], $ctor['cfgField']);
 
     // Else - create it
-    else $paramR = Indi::model('Param')->createRow();
+    else $paramR = m('Param')->new();
 
     // Assign other props and save
-    $paramR->assign($ctor)->save();
+    $paramR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `param` entry (newly created, or existing but updated)
     return $paramR;
@@ -2143,11 +2376,11 @@ function consider($entity, $field, $consider, $ctor = false) {
     $consider = field($entity, $consider)->id ?: 0;
 
     // Try to find such `consider` entry
-    $considerR = Indi::model('Consider')->fetchRow(array(
+    $considerR = m('Consider')->row([
         '`entityId` = "' . $entityId . '"',
         '`fieldId` = "' . $fieldId . '"',
         '`consider` = "' . $consider . '"'
-    ));
+    ]);
 
     // If $ctor arg is non-false and is not an empty array - return found `consider` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -2156,20 +2389,20 @@ function consider($entity, $field, $consider, $ctor = false) {
 
     // If any of `sectionId`, `fieldId` and `consider` prop are not defined
     // within $ctor arg - use values given by $entity, $field and $consider args
-    if (!is_array($ctor)) $ctor = array();
+    if (!is_array($ctor)) $ctor = [];
     foreach (ar('entityId,fieldId,consider') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
 
     // If `consider` entry was not found - create it
-    if (!$considerR) $considerR = Indi::model('Consider')->createRow();
+    if (!$considerR) $considerR = m('Consider')->new();
 
     // Assign some props first
     foreach (ar('entityId,fieldId,consider') as $prop)
         if ($ctor[$prop] && $considerR->$prop = $ctor[$prop]) unset($ctor[$prop]);
 
     // Assign other props and save
-    $considerR->assign($ctor)->save();
+    $considerR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
 
     // Return `consider` entry (newly created, or existing but updated)
     return $considerR;
@@ -2257,7 +2490,7 @@ function between($since, $until, $html) {
     $splitFn_until = preg_match($rex, $until) ? 'preg_split' : 'explode';
 
     // Collect items
-    $itemA = array();
+    $itemA = [];
     foreach ($splitFn_since($since, $html) as $i => $_)
         if ($i) $itemA []= array_shift($splitFn_until($until, $_));
 
@@ -2285,9 +2518,9 @@ function innerHtml($node, $html) {
     if (($chunkQty = count($chunkA)) < 2) return;
 
     // Ignore non-pair tags while watching on tag nesting levels
-    $ignore = array_flip(array(
+    $ignore = array_flip([
         'img', 'link', 'meta', 'input', 'br', 'hr', 'base', 'basefont', 'source', 'col', 'embed', 'area', 'param', 'track'
-    ));
+    ]);
 
     // Regular expression for searching tags (opening an closing)
     $rex = '~(</?[a-zA-Z-0-9-:]+(?(?= ) [^>]*|)>)~';
@@ -2316,7 +2549,7 @@ function innerHtml($node, $html) {
     $targetLevel = $level;
 
     // Array for inner html of found nodes
-    $innerHtml = array();
+    $innerHtml = [];
 
     // Foreach chunk since 2nd
     for ($i = 1; $i < $chunkQty; $i++) {
@@ -2374,9 +2607,9 @@ function innerHtml($node, $html) {
 function rootNodes($innerHtml, $debug = false) {
 
     // Ignore non-pair tags while watching on tag nesting levels
-    $ignoreRex = '~^<(' . implode('|', array(
+    $ignoreRex = '~^<(' . implode('|', [
         'img', 'link', 'meta', 'input', 'br', 'hr', 'base', 'basefont', 'source', 'col', 'embed', 'area', 'param', 'track'
-    )) . ')~';
+        ]) . ')~';
 
     // Regular expression for searching tags (opening an closing)
     $rex = '~(</?[a-zA-Z-0-9-:]+(?(?= ) [^>]*|)>)~u';
@@ -2391,7 +2624,7 @@ function rootNodes($innerHtml, $debug = false) {
     $level = 0;
 
     // Root nodes array
-    $rootNodes = array();
+    $rootNodes = [];
 
     // Split html, that appear after target node's opening tag, and capture tags and offsets
     foreach($s = preg_split($rex, $innerHtml, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE) as $chunk) {
@@ -2452,7 +2685,7 @@ function stack() {
  * @param array $fileA
  * @return array list of all files in $dir and it's ALL subdirs
  */
-function scandirr($dir, &$fileA = array()) {
+function scandirr($dir, &$fileA = []) {
 
     // Foreach path-entry inside $dir
     if (is_dir($dir)) foreach (scandir($dir) as $value) {
@@ -2480,9 +2713,9 @@ function scandirr($dir, &$fileA = array()) {
 function appjs($dir = '/js/admin') {
 
     // Collect raw contents
-    $raw = array();
+    $raw = [];
     foreach (ar($dir) as $_dir)
-        foreach (scandirr(DOC . STD . '/www' . $_dir) as $file)
+        foreach (scandirr(DOC . STD . $_dir) as $file)
             $raw[$file] = file_get_contents($file);
 
     // Return all app's js files concatenated into single string
@@ -2494,8 +2727,8 @@ function appjs($dir = '/js/admin') {
  *
  * @param $msg
  */
-function wslog($msg, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/core/application') . '/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+function wslog($msg) {
+    file_put_contents(rtrim(__DIR__, '\\/') . '/../../../../application/ws.err', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**
@@ -2509,7 +2742,7 @@ function wslog($msg, $path = null) {
  * @param $msg
  */
 function wsmsglog($msg, $logtype, $path = null) {
-    file_put_contents(($path ?: DOC . STD . '/core/application') . '/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
+    file_put_contents(rtrim(__DIR__, '\\/') . '/../../../../application/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
 /**
@@ -2540,13 +2773,13 @@ function __($str) {
     if (substr($str, 0, 2) == 'I_' && preg_match('~^I_[A-Z0-9_]+$~', $str)) {
 
         // If initial language is not same as current
-        if ($COOKIE['i-language'] != Indi::ini('lang')->admin) {
+        if ($COOKIE['i-language'] != ini('lang')->admin) {
 
             // Load other-language constants as a variables, if not yet loaded
-            if (!$GLOBALS['const'][Indi::ini('lang')->admin]) {
+            if (!$GLOBALS['const'][ini('lang')->admin]) {
 
                 // Build filename of a php-file, containing l10n constants for required language
-                $l10n_source_abs = DOC . STD . '/www/application/lang/admin/' . Indi::ini('lang')->admin . '.php';
+                $l10n_source_abs = DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php';
 
                 // If no file - skip
                 if (!file_exists($l10n_source_abs)) jflush(false, 'File ' . $l10n_source_abs . ' - not found');
@@ -2558,11 +2791,11 @@ function __($str) {
                 $const = Indi::rexma('~define\(\'(.*?)\', ?\'(.*?)\'\);~', $l10n_source_raw);
 
                 // Load all constants from constants-file into global variable
-                $GLOBALS['const'][Indi::ini('lang')->admin] = array_combine($const[1], $const[2]);
+                $GLOBALS['const'][ini('lang')->admin] = array_combine($const[1], $const[2]);
             }
 
             // Mind current language
-            $str = $GLOBALS['const'][Indi::ini('lang')->admin][$str];
+            $str = $GLOBALS['const'][ini('lang')->admin][$str];
 
         // Get constant value by name
         } else  $str = constant($str);
@@ -2573,4 +2806,65 @@ function __($str) {
 
     // Call sprintf using $args and return result
     return call_user_func_array('sprintf', $args);
+}
+
+/**
+ * Function used in *_Row->_ctor() calls.
+ * Same as native php's var_export() but do some styling for array definitions
+ *
+ * @param $ctor
+ * @param int $oneLine
+ * @return mixed|string|string[]|null
+ */
+function _var_export($ctor, $oneLine = 3) {
+
+    // If $ctor is empty - return 'true'
+    if (count($ctor) == 0) return 'true';
+
+    // Collect props having newlines in values
+    $nl = [];
+    foreach ($ctor as $prop => $value)
+        if (preg_match('~\n~', $value))
+            $nl [] = $prop;
+
+    // Stringify
+    $ctorS = var_export($ctor, true);
+
+    // Replace newlines with \n
+    foreach ($nl as $nlI) $ctorS = preg_replace_callback(
+        '~(\'' . $nlI . '\' => )(\')(.*)(\')(,\n)~s',
+        function($m) { return $m[1] . '"' . str_replace(["\r\n", "\n"], '\n', $m[3]) . '"' . $m[5]; },
+        $ctorS
+    );
+
+    // Style
+    $ctorS = preg_replace('~\)$~', ']', preg_replace('~^array \(~', '[', $ctorS));
+
+    // If $ctor contains $oneLine props or less - remove newlines
+    if (count($ctor) <= $oneLine) {
+        $ctorS = preg_replace('~^\[\n\s\s~', '[', $ctorS);
+        $ctorS = preg_replace('~,\n\s\s\'(' .  im(array_keys($ctor), '|'). ')\'~', ', \'$1\'', $ctorS);
+        $ctorS = preg_replace('~,\n\]$~', ']', $ctorS);
+    }
+
+    // Return ctor string
+    return $ctorS;
+}
+
+/**
+ * Shortcut to Indi::db()
+ *
+ * @return Indi_Db
+ */
+function db() {
+    return forward_static_call_array(['Indi', 'db'], func_get_args());
+}
+
+/**
+ * Shortcut to Indi::uri()
+ *
+ * @return Indi_Uri
+ */
+function uri() {
+    return forward_static_call_array(['Indi', 'uri'], func_get_args());
 }

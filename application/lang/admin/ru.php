@@ -199,7 +199,8 @@ define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_TITLE', 'Сброс всех ф
 define('I_ACTION_INDEX_FILTERS_ARE_ALREADY_EMPTY_MSG', 'Фильтры уже сброшены или на текущий момент не используются вовсе');
 
 define('I_ACTION_DELETE_CONFIRM_TITLE', 'Подтверждение');
-define('I_ACTION_DELETE_CONFIRM_MSG', 'Вы уверены что хотите удалить запись');
+define('I_ACTION_DELETE_CONFIRM_MSG', 'Вы уверены что хотите удалить');
+define('I_ENTRY_TBQ', 'записей,запись,записи');
 
 define('I_SOUTH_PLACEHOLDER_TITLE', 'Содержимое этой панели открыто в отдельном окне');
 define('I_SOUTH_PLACEHOLDER_GO', 'Перейти');
@@ -236,6 +237,18 @@ define('I_WHEN_TM_AT', 'в');
 define('I_LANG_LAST', 'Нельзя удалять последнюю запись типа "%s"');
 define('I_LANG_CURR', 'Нельзя удалять язык, являющийся текущим языком системы');
 define('I_LANG_FIELD_L10N_DENY', 'Нельзя включить локализацию для поля "%s"');
+define('I_LANG_QYQN_CONFIRM', 'Если вы хотите %s язык "%s" для фракции "%s" нажмите "%s". Если просто нужно привести в соответствие с текущим состоянием - нажмите "%s"');
+define('I_LANG_QYQN_CONFIRM2', 'Для фракции "%s" язык "%s" будет вручную помечен как "%s". Продолжить?');
+define('I_LANG_QYQN_SELECT', 'Выберите исходный язык');
+define('I_LANG_EXPORT_HEADER', 'Выберите параметры экспорта');
+define('I_LANG_IMPORT_HEADER', 'Выберите параметры импорта');
+define('I_LANG_NOT_SUPPORTED', 'Пока не поддерживается');
+define('I_LANG_SELECT_CURRENT', 'Выберите текущий язык фракции "%s"');
+define('I_LANG_MIGRATE_META', 'Подготовка полей');
+define('I_LANG_MIGRATE_DATA', 'Миграция переводов');
+define('I_ADD', 'Добавить');
+define('I_DELETE', 'Удалить');
+define('I_SECTION_CLONE_SELECT_PARENT', 'Выберите родительский раздел, в подчинении у которого должны быть<br>созданы дубликаты выбранных разделов');
 
 define('I_TILE_NOTHUMB', 'Нет превью');
 define('I_TILE_NOFILE', 'Нет файла');

@@ -25,7 +25,7 @@ class Indi_Controller_Admin_Chart extends Indi_Controller_Admin {
 
         // Here we assume that yAxisField-field has DATETIME or DATE
         // as it's mysql column type so we search for it and return first found
-        return $this->xAxisField = Indi::trail()->fields->select('9,6', 'columnTypeId')->at(0)->alias;
+        return $this->xAxisField = t()->fields->select('9,6', 'columnTypeId')->at(0)->alias;
     }
 
     /**
@@ -52,7 +52,7 @@ class Indi_Controller_Admin_Chart extends Indi_Controller_Admin {
     public function adjustGridData(&$data) {
 
         // Detect numeric fields
-        $fieldRs_numeric = Indi::trail()->model->fields()->select('18,24,25', 'elementId');
+        $fieldRs_numeric = m()->fields()->select('18,24,25', 'elementId');
 
         // Foreach data item - cast numeric values
         for ($i = 0; $i < count($data); $i++)

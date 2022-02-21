@@ -12,20 +12,20 @@ class Indi_Cache {
         $model = ucfirst($table);
 
         // Get the columns array
-        $columnA = Indi::model($model)->fields(null, 'columns');
+        $columnA = m($model)->fields(null, 'columns');
 
         // Prepend columns array with 'id' item
         array_unshift($columnA, 'id');
 
         // Fetch all data from database table
-		$dataA = Indi::model($model)->fetchAll()->toArray();
+		$dataA = m($model)->all()->toArray();
 
         // Start building data section of cache file
         $php = "<?php \$GLOBALS['cache']['" . $table . "']['myd'] = Array";
         $php .= "\n(\n";
 
         // Declare array for database table columns values data representation
-        $cacheColumnA = array();
+        $cacheColumnA = [];
 
         // For each column within $columnA array
 		foreach ($columnA as $columnI) {
@@ -34,7 +34,7 @@ class Indi_Cache {
             $cacheColumnI = "    '" . $columnI . "'=>Array(";
 
             // Declare/Reset array for certain column values data representation
-            $cacheColumnDataA = array();
+            $cacheColumnDataA = [];
 
             // For each item within fetched data
 			foreach ($dataA as $dataI)
@@ -56,7 +56,7 @@ class Indi_Cache {
         $php .= "\n(\n";
 
         // Reset array for database table columns values representation
-        $cacheColumnA = array();
+        $cacheColumnA = [];
 
         // For each column within $columnA array
         foreach ($columnA as $columnI) {
@@ -65,7 +65,7 @@ class Indi_Cache {
             $cacheColumnI = "    '" . $columnI . "'=>Array(";
 
             // Declare/Reset array for certain column values usage representation
-            $cacheColumnValueUsageA = array();
+            $cacheColumnValueUsageA = [];
 
             // For each item within fetched data - get the usage
             foreach ($dataA as $i => $dataI)
@@ -113,7 +113,7 @@ class Indi_Cache {
      * @return string
      */
     public static function file($table) {
-		return DOC . STD . '/www/application/cache/' . $table . '.php';
+		return DOC . STD . '/application/cache/' . $table . '.php';
 	}
 
 
@@ -133,8 +133,8 @@ class Indi_Cache {
      * @static
      */
     public static function load() {
-        if (Indi::ini()->db->cache)
-            foreach (glob(DOC . STD . '/www/application/cache/*.php') as $cacheI)
+        if (ini()->db->cache)
+            foreach (glob(DOC . STD . '/application/cache/*.php') as $cacheI)
                 require_once($cacheI);
     }
 }

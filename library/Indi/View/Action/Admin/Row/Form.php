@@ -7,7 +7,7 @@ class Indi_View_Action_Admin_Row_Form extends Indi_View_Action_Admin_Row {
     public function render() {
 
         // Prepare file-data and combo-data only for visible fields
-        foreach (Indi::trail()->fields as $fieldR) {
+        foreach (t()->fields as $fieldR) {
 
             // Skip hidden fields
             if ($fieldR->mode == 'hidden') continue;

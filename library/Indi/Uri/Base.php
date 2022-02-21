@@ -7,9 +7,9 @@ class Indi_Uri_Base {
     public function __construct() {
 
         // Include l10n constants
-        foreach (ar('www,coref,core') as $fraction)
-            foreach (array('', '/admin') as $_)
-                if (file_exists($file = DOC . STD . '/'. $fraction . '/application/lang' . $_ . '/' . Indi::ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
+        foreach (['', VDR . '/public', VDR . '/system'] as $fraction)
+            foreach (['', '/admin'] as $_)
+                if (file_exists($file = DOC . STD . $fraction . '/application/lang' . $_ . '/' . ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
                     include_once($file);
 
         // Parse the existing $_SERVER['REQUEST_URI']
@@ -86,7 +86,7 @@ class Indi_Uri_Base {
      * @param string $uri
      * @param array $args
      */
-    public function dispatch($uri = '', $args = array()){
+    public function dispatch($uri = '', $args = []){
 
         // If $uri argument is given - parse it
         if ($uri) $this->parse($uri);
@@ -98,16 +98,16 @@ class Indi_Uri_Base {
         $this->trailingSlash();
 
         // If section name is not valid - throw an error message
-        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', Indi::uri('section'))) die(I_URI_ERROR_SECTION_FORMAT);
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', uri('section'))) die(I_URI_ERROR_SECTION_FORMAT);
 
         // Build the controller class name
-        $controllerClass = 'Admin_' . ucfirst(Indi::uri()->section) . 'Controller';
+        $controllerClass = 'Admin_' . ucfirst(uri()->section) . 'Controller';
 
         // If such controller class does not exist
         if (!class_exists($controllerClass)) {
 
             // Try to find
-            $sectionR = Indi::model('Section')->fetchRow('`alias` = "' . Indi::uri()->section . '"');
+            $sectionR = m('Section')->row('`alias` = "' . uri()->section . '"');
 
             // If section was found, and it has non-empty `extends` property - set $controllerParentClass as the value
             // of that property, or set it as 'Project_Controller_Admin'
@@ -145,8 +145,8 @@ class Indi_Uri_Base {
         session_start();
 
         // Set current language
-        @include_once(DOC . STD . '/core/application/lang/admin/' . Indi::ini('lang')->admin . '.php');
-        @include_once(DOC . STD . '/www/application/lang/admin/' . Indi::ini('lang')->admin . '.php');
+        @include_once(DOC . STD . VDR . '/system/application/lang/admin/' . ini('lang')->admin . '.php');
+        @include_once(DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php');
     }
 
     /**
@@ -155,10 +155,10 @@ class Indi_Uri_Base {
     public function setCookieDomain(){
         
         // Detect domain
-        $domainA = explode(' ', Indi::ini()->general->domain);
+        $domainA = explode(' ', ini()->general->domain);
         foreach ($domainA as $domainI) 
             if (preg_match('/' . preg_quote($domainI) . '$/', $_SERVER['HTTP_HOST']))
-                $domain = Indi::ini('general')->domain = $domainI;
+                $domain = ini('general')->domain = $domainI;
 
         // If session is already active - prevent 'PHP Warning: ini_set(): A session is active. You cannot change the session module's ini settings at this time' error msg
         if (session_id()) return;

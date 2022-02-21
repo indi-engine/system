@@ -18,18 +18,38 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
      */
     public function preDispatch() {
 
-        if (Indi::uri()->action == 'index' || Indi::uri()->id != Indi::admin()->id) {
+        // Force redirect to certain row
+        if (uri()->action == 'index' || uri()->id != admin()->id) {
 
-            Indi::uri()->format = 'json';
+            // Set format to 'json', so scope things will be set up
+            uri()->format = 'json';
+
+            // Call parent
             parent::preDispatch();
 
-            Indi::uri()->action = $this->action;
-            Indi::uri()->id = Indi::admin()->id;
-            Indi::uri()->ph = Indi::trail()->scope->hash;
-            Indi::uri()->aix = Indi::trail()->scope->aix;
+            // Spoof uri params to force row-action
+            uri()->action = $this->action;
+            uri()->id = admin()->id;
+            uri()->ph = t()->scope->hash;
+            uri()->aix = t()->scope->aix;
         }
 
+        // Call parent
         parent::preDispatch();
+    }
+
+    /**
+     *
+     *
+     * @param $scope
+     */
+    public function createContextIfNeed($scope) {
+
+        // Do nothing for index-action
+        if (uri()->action == 'index' || uri()->id != admin()->id) return;
+
+        // Call parent
+        parent::createContextIfNeed($scope);
     }
 
     /**
@@ -41,7 +61,7 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
     public function adjustPrimaryWHERE($where) {
 
         // Prevent user from accessing someone else's details
-        $where['static'] = '`id` = "' . Indi::admin()->id . '"';
+        $where['static'] = '`id` = "' . admin()->id . '"';
 
         // Return
         return $where;

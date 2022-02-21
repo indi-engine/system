@@ -18,10 +18,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         parent::__construct();
 
         // Setup $this->section
-        $config = array();
-        $dataTypeA = array('original', 'temporary', 'compiled', 'foreign');
+        $config = [];
+        $dataTypeA = ['original', 'temporary', 'compiled', 'foreign'];
         foreach ($dataTypeA as $dataTypeI) $config[$dataTypeI] = $sectionR->$dataTypeI();
-        $this->section = Indi::model('Section')->createRow($config);
+        $this->section = m('Section')->createRow($config);
 
         // Setup index
         $this->level = $level;
@@ -30,16 +30,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $this->section->href = (COM ? '' : '/admin') . '/' . $this->section->alias;
 
         // Setup $this->actions
-        $this->actions = Indi::model('Action')->createRowset();
+        $this->actions = m('Action')->createRowset();
         foreach ($sectionR->nested('section2action') as $section2actionR) {
             $actionI = $section2actionR->foreign('actionId')->toArray();
             if (strlen($section2actionR->rename)) $actionI['title'] = $section2actionR->rename;
             $actionI['id'] = $section2actionR->id;
             $actionI['south'] = $section2actionR->south;
             $actionI['fitWindow'] = $section2actionR->fitWindow;
-            $actionI['indi'] = array('ui' => 'section2action', 'id' => $section2actionR->id);
+            $actionI['indi'] = ['ui' => 'section2action', 'id' => $section2actionR->id];
             $actionI['l10n'] = $section2actionR->l10n;
-            $actionR = m('Action')->createRow()->assign($actionI);
+            $actionR = m('Action')->new($actionI);
             $this->actions->append($actionR);
         }
 
@@ -47,16 +47,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $this->sections = $sectionR->nested('section');
 
         // Setup nested section2action-s for subsections
-        $sectionR->nested('section')->nested('section2action', array(
-            'where' => array(
+        $sectionR->nested('section')->nested('section2action', [
+            'where' => [
                 '`toggle` = "y"',
                 'FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `profileIds`)',
                 'FIND_IN_SET(`actionId`, "' . implode(',', Indi_Trail_Admin::$toggledActionIdA) . '")',
                 '`actionId` IN (1, 2, 3)'
-            ),
+            ],
             'order' => 'move',
             'foreign' => 'actionId'
-        ));
+        ]);
 
         // Collect inaccessbile subsections ids from subsections list
         foreach ($sectionR->nested('section') as $subsection)
@@ -91,18 +91,18 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Setup action
             foreach ($this->actions as $actionR)
-                if ($actionR->alias == Indi::uri('action'))
+                if ($actionR->alias == uri('action'))
                     $this->action = $actionR;
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
-            if ($this->action->rowRequired == 'n' || Indi::uri()->phantom) $this->gridFields($sectionR);
+            if ($this->action->rowRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
 
             // Alter fields
-            $originalDefaults = array();
+            $originalDefaults = [];
             foreach ($sectionR->nested(entity('alteredField') ? 'alteredField' : 'disabledField') as $_) {
 
                 // Prepare modifications
-                $modify = array();
+                $modify = [];
                 if (strlen($_->rename)) $modify['title'] = $_->rename;
                 if (strlen($_->defaultValue)) $modify['defaultValue'] = $_->defaultValue;
                 if (!$_->mode) $modify['mode'] = $_->displayInForm ? 'readonly' : 'hidden';
@@ -111,7 +111,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                 // Apply modifications
                 $fieldR = $this->fields->gb($_->fieldId);
-                $fieldR->assign($modify);
+                $fieldR->set($modify);
 
                 // If field's `defaultValue` prop changed - collect 'field's alias' => 'original default value' pairs
                 if ($fieldR->isModified('defaultValue'))
@@ -145,14 +145,14 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If `groupBy` is non-zero, and there is no such grid column yet - append
         if ($sectionR->groupBy && !$this->grid->gb($sectionR->groupBy, 'fieldId'))
-            $this->grid->append(array('fieldId' => $sectionR->groupBy));
+            $this->grid->append(['fieldId' => $sectionR->groupBy]);
 
         // If `tileField` is non-zero, and there is no such grid column yet - append
         if ($sectionR->tileField && !$this->grid->gb($sectionR->tileField, 'fieldId'))
-            $this->grid->append(array('fieldId' => $sectionR->tileField));
+            $this->grid->append(['fieldId' => $sectionR->tileField]);
 
         // Build and assign `gridFields` prop
-        $this->gridFields = Indi::model('Field')->createRowset();
+        $this->gridFields = m('Field')->createRowset();
 
         // Foreach grid column
         foreach ($this->grid as $gridR) {
@@ -198,7 +198,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if ($index == 0) {
 
             // If there is an id
-            if (Indi::uri('id')) {
+            if (uri('id')) {
 
                 // If action is not 'index', so it mean that we are dealing with not rowset, but certain row
                 if ($this->action->rowRequired == 'y') {
@@ -208,12 +208,12 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                     // Prepend an additional part to WHERE clause array, so if row would be found,
                     // it will mean that that row match all necessary requirements
-                    array_unshift($where, Indi::db()->sql('`id` = :s', Indi::uri('id')));
+                    array_unshift($where, db()->sql('`id` = :s', uri('id')));
                     //i($where, 'a');
 
                     // Try to find a row by given id, that, hovewer, also match all requirements,
                     // mentioned in all other WHERE clause parts
-                    if (!($this->row = $this->model->fetchRow($where)))
+                    if (!($this->row = $this->model->row($where)))
 
                         // If row was not found, return an error
                         return I_ACCESS_ERROR_ROW_DOESNT_EXIST;
@@ -230,24 +230,24 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             // field autosetup only if it was set and only in case of one-level-up parent section. This
                             // mean that if we have 'Continents' as upper level, and we are creating city, city's property
                             // name will be determined as `continentId` mean parentSectionConnector logic won't be used for that
-                            $connector = $i == 1 && Indi::trail($i-1)->section->parentSectionConnector
-                                ? Indi::trail($i-1)->section->foreign('parentSectionConnector')->alias
-                                : Indi::trail($i)->model->table() . 'Id';
+                            $connector = $i == 1 && t($i-1)->section->parentSectionConnector
+                                ? t($i-1)->section->foreign('parentSectionConnector')->alias
+                                : t($i)->model->table() . 'Id';
 
                             // Get the connector value from session special place and assign it to current row, but only
                             // in case if that connector is not a one of existing fields
                             if (!$this->model->fields($connector))
                                 $this->row->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                                [Indi::trail($i)->section->id];
+                                [t($i)->section->id];
                         }
                 }
 
             // Else there was no id passed within uri, and action is 'form' or 'save', so we assume that
             // user it trying to add a new row within current section
-            } else if (Indi::uri('action') == 'form' || Indi::uri('action') == 'save') {
+            } else if (uri('action') == 'form' || uri('action') == 'save') {
 
                 // Create an empty row object
-                $this->row = $this->model->createRow();
+                $this->row = $this->model->new();
 
                 // If original defaults collected
                 if ($od = $this->section->system('originalDefaults'))
@@ -263,10 +263,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     }
 
                 // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-                if (Indi::admin()->alternate && in($aid = Indi::admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
+                if (admin()->alternate && in($aid = admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
 
                     // Force setup of that field value as id of current cms user
-                    $this->row->$aid = Indi::admin()->id;
+                    $this->row->$aid = admin()->id;
 
                 // Setup several properties within the empty row, e.g if we are trying to create a 'City' row, and
                 // a moment ago we were browsing cities list within Canada - we should autosetup a proper `countryId`
@@ -278,14 +278,14 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     // set and only in case of one-level-up parent section. This mean that if we have 'Continents' as
                     // upper level, and we are creating city, city's property name will be determined as `continentId`
                     // mean parentSectionConnector logic won't be used for that
-                    $connector = $i == 1 && Indi::trail($i-1)->section->parentSectionConnector
-                        ? Indi::trail($i-1)->section->foreign('parentSectionConnector')->alias
-                        : Indi::trail($i)->model->table() . 'Id';
+                    $connector = $i == 1 && t($i-1)->section->parentSectionConnector
+                        ? t($i-1)->section->foreign('parentSectionConnector')->alias
+                        : t($i)->model->table() . 'Id';
 
                     // Get the connector value from session special place
                     //if ($this->model->fields($connector))
                         $this->row->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                        [Indi::trail($i)->section->id];
+                        [t($i)->section->id];
                 }
             }
 
@@ -293,31 +293,31 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         } else {
 
             // Declare array for WHERE clause
-            $where = array();
+            $where = [];
 
             // Determine the connector field
-            $connector = Indi::trail($index-1)->section->parentSectionConnector
-                ? Indi::trail($index-1)->section->foreign('parentSectionConnector')->alias
-                : Indi::trail($index)->model->table() . 'Id';
+            $connector = t($index-1)->section->parentSectionConnector
+                ? t($index-1)->section->foreign('parentSectionConnector')->alias
+                : t($index)->model->table() . 'Id';
 
             // Create empty row to be used as parent row, if need
-            if (Indi::uri('id') === '0' && Indi::trail($index-1)->action->rowRequired == 'n' && $index == 1)
-                if ($this->row = $this->model->createRow())
+            if (uri('id') === '0' && t($index-1)->action->rowRequired == 'n' && $index == 1)
+                if ($this->row = $this->model->new())
                     return;
 
             // Get the id
-            $id = Indi::trail($index-1)->action->rowRequired == 'n' && $index == 1
-                ? Indi::uri('id')
-                : (preg_match('/,/', Indi::trail($index-1)->row->$connector) // ambiguous check
+            $id = t($index-1)->action->rowRequired == 'n' && $index == 1
+                ? uri('id')
+                : (preg_match('/,/', t($index-1)->row->$connector) // ambiguous check
                     ? $_SESSION['indi']['admin']['trail']['parentId'][$this->section->id]
-                    : Indi::trail($index-1)->row->$connector);
+                    : t($index-1)->row->$connector);
 
             // Add main item to WHERE clause stack
             $where[] = '`id` = "' . $id . '"';
 
             // If a special section's primary filter was defined add it to WHERE clauses stack
-            if (strlen(Indi::trail($index)->section->compiled('filter')))
-                $where[] = Indi::trail($index)->section->compiled('filter');
+            if (strlen(t($index)->section->compiled('filter')))
+                $where[] = t($index)->section->compiled('filter');
 
             // Owner control
             if ($alternateWHERE = Indi_Trail_Admin::$controller->alternateWHERE($index))
@@ -325,7 +325,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Try to find a row by given id, that, hovewer, also match all requirements,
             // mentioned in all other WHERE clause parts
-            if (!($this->row = $this->model->fetchRow($where)))
+            if (!($this->row = $this->model->row($where)))
 
                 // If row was not found, return an error
                 return false;//I_ACCESS_ERROR_ROW_DOESNT_EXIST;
@@ -356,24 +356,24 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'])) {
                 $tabA = array_unique(ar($tabs));
                 if ($tabIdA = array_filter($tabA)) {
-                    $where = array('`id` IN (' . implode(',', $tabIdA) . ')');
+                    $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
                     if (strlen($array['scope']['WHERE'])) $where[] = $array['scope']['WHERE'];
-                    $tabRs = $this->model->fetchAll($where);
+                    $tabRs = $this->model->all($where);
                 }
                 foreach ($tabA as $i => $id) {
                     if ($id) {
                         if ($tabRs && $r = $tabRs->gb($id)) {
-                            $tabA[$i] = array(
+                            $tabA[$i] = [
                                 'id' => $id,
                                 'title' => $r->title(),
                                 'aix' => $this->model->detectOffset(
                                     $array['scope']['WHERE'], $array['scope']['ORDER'], $id
                                 )
-                            );
+                            ];
                         } else {
                             unset($tabA[$i]);
                         }
-                    } else if ($id == '0') $tabA[$i] = array('id' => $id, 'title' => I_CREATE);
+                    } else if ($id == '0') $tabA[$i] = ['id' => $id, 'title' => I_CREATE];
                     else unset($tabA[$i]);
                 }
                 $array['scope']['actionrowset']['south']['tabs'] = $tabA;
@@ -392,7 +392,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     public function jsonDefaultFilters() {
 
         // Json
-        $json = array();
+        $json = [];
 
         // Array of range-filters
         $rangeA = ar('number,calendar,datetime');
@@ -421,10 +421,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $boundA = json_decode(str_replace('\'', '"', $compiled));
                 foreach ($boundA as $bound => $value)
                     if (in($bound, ar('lte,gte')))
-                        $json[] = array($fieldR->alias . '-' . $bound => $value);
+                        $json[] = [$fieldR->alias . '-' . $bound => $value];
 
             // Append filter's default value as an array, containing single kay and value
-            } else $json[] = array($fieldR->alias => $compiled);
+            } else $json[] = [$fieldR->alias => $compiled];
         }
 
         // Return json-encoded default filters values
@@ -458,7 +458,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Else if current trail item doesn't have a row, but parent trail item do - append it's id
         else if ($this->parent()->row)
-            $bid .= '-parentrow-' + (int) $this->parent()->row->id;
+            $bid .= '-parentrow-' . (int) $this->parent()->row->id;
 
         // Return base id
         return $bid;
@@ -480,7 +480,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $section = $this->section->alias;
 
         // Construct filename of the template, that should be rendered by default
-        $script = $section . '/' . $action . rif($this->action->l10n == 'y', '-' . Indi::ini('lang')->admin) . '.php';
+        $script = $section . '/' . $action . rif($this->action->l10n == 'y', '-' . ini('lang')->admin) . '.php';
 
         // Build action-view class name
         $actionClass = 'Admin_' . ucfirst($section) . 'Controller' . ucfirst($action) . 'ActionView';
@@ -490,7 +490,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If template with such filename exists, render the template
         if ($actionClassFile = Indi::view()->exists($script)
-            ?: Indi::view()->exists($script = $section . '/' . $action . '-' . Indi::ini('lang')->admin . '.php')) {
+            ?: Indi::view()->exists($script = $section . '/' . $action . '-' . ini('lang')->admin . '.php')) {
 
             // If $render argument is set to `true`
             if ($render) {
@@ -623,12 +623,50 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if ($summary = Indi::get('summary')) return $json ? $summary : json_decode($summary);
 
         // Else collect default definitions
-        $summary = array();
+        $summary = [];
         foreach ($this->grid as $gridR)
             if ($gridR->summaryType != 'none')
                 $summary[$gridR->summaryType] []= $gridR->foreign('fieldId')->alias;
 
         // Return array, but before json-encode it if need
         return $json ? json_encode($summary) : $summary;
+    }
+
+    /**
+     * Create `realtime` entry having `type` = "context"
+     *
+     * @return Indi_Db_Table_Row
+     */
+    public function context() {
+
+        // If channel found
+        if ($channel = m('realtime')->row('`token` = "' . CID . '"')) {
+
+            // Get data to be copied
+            $data = $channel->original(); unset($data['id'], $data['spaceSince']);
+
+            // Get involved fields
+            $fields = t()->row
+                ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+                : t()->gridFields->select(': > 0')->column('id', ',');
+
+            // Create `realtime` entry of `type` = "context"
+            $realtimeR = m('realtime')->new([
+                'realtimeId' => $channel->id,
+                'type' => 'context',
+                'token' => t()->bid(),
+                'sectionId' => t()->section->id,
+                'entityId' => t()->section->entityId,
+                'fields' => $fields,
+                'title' => t(true)->toString(),
+                'mode' => $this->action->rowRequired == 'y' ? 'row' : 'rowset'
+            ] + $data);
+
+            // Save it
+            $realtimeR->save();
+
+            // Return it
+            return $realtimeR;
+        }
     }
 }

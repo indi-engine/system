@@ -10,19 +10,19 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
     public function downloadAction(){
 
         // If 'id' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', Indi::uri('id'))) die(I_DOWNLOAD_ERROR_NO_ID);
+        if (!preg_match('/^[0-9]+$/', uri('id'))) die(I_DOWNLOAD_ERROR_NO_ID);
 
         // If 'field' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', Indi::uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
+        if (!preg_match('/^[0-9]+$/', uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
 
         // Get the field
-        $fieldR = Indi::model('Field')->fetchRow('`id` = "' . Indi::uri('field') . '"');
+        $fieldR = m('Field')->row(uri('field'));
 
         // If field was not found
         if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
 
         // Get extended info about field
-        $fieldR = Indi::model($fieldR->entityId)->fields($fieldR->alias);
+        $fieldR = m($fieldR->entityId)->fields($fieldR->alias);
 
         // If field was not found
         if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
@@ -31,7 +31,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if ($fieldR->foreign('elementId')->alias != 'upload') die(I_DOWNLOAD_ERROR_FIELD_DOESNT_DEAL_WITH_FILES);
 
         // Get the row
-        $r = Indi::model($fieldR->entityId)->fetchRow('`id` = "' . Indi::uri('id') . '"');
+        $r = m($fieldR->entityId)->row(uri('id'));
 
         // If row was not found
         if (!$r) die(I_DOWNLOAD_ERROR_NO_SUCH_ROW);
@@ -43,10 +43,10 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!$abs) die(I_DOWNLOAD_ERROR_NO_FILE);
 
         // Declare an array, for containing downloading file title parts
-        $title = array();
+        $title = [];
 
         // Append entity title to filename parts array, if needed
-        //if ($fieldR->params['prependEntityTitle'] == 'true') $title[] = Indi::model($fieldR->entityId)->title() . ',';
+        //if ($fieldR->params['prependEntityTitle'] == 'true') $title[] = m($fieldR->entityId)->title() . ',';
 
         // Append row title to filename parts array
         if ($fieldR->params['rowTitle'] != 'false') $title[] = $r->dftitle($fieldR->alias);
@@ -120,7 +120,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         session_write_close();
 
         // Get lock file
-        $wsLock = DOC . STD . '/core/application/ws.pid';
+        $wsLock = DOC . STD . '/application/ws.pid';
         
         // If websocket-server lock-file exists, and contains websocket-server's process ID, and it's an integer
         if (is_file($wsLock) && $wsPid = (int) trim(file_get_contents($wsLock))) {
@@ -133,20 +133,26 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!is_writable($wsLock)) jflush(false, 'ws.pid file is not writable');
 
         // Check whether err-file is writable
-        if (!is_writable(DOC . STD . '/core/application/ws.err')) jflush(false, 'ws.err file is not writable');
+        if (!is_writable(DOC . STD . '/application/ws.err')) jflush(false, 'ws.err file is not writable');
         
         // Path to websocket-server php script
-        $wsServer = '/core/application/ws.php';
+        $wsServer = ltrim(VDR, '/') . '/system/application/ws.php';
         
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
-            ? sprintf('start /B %sphp ..%s 2>&1', rif(Indi::ini('general')->phpdir, '$1/'), $wsServer)
-            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . STD . $wsServer . '" > /dev/null &';
+            ? sprintf('start /B %sphp %s 2>&1', rif(ini('general')->phpdir, '$1/'), $wsServer)
+            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . STD . '/' . $wsServer . '" > /dev/null &';
 
         // Start websocket server
         wslog('------------------------------');
         wslog('Exec: ' . $result['cmd']);
-        exec($result['cmd'], $result['output'], $result['return']);
+
+        // Exec
+        preg_match('/^WIN/i', PHP_OS)
+            ? pclose(popen($result['cmd'], "r"))
+            : exec($result['cmd'], $result['output'], $result['return']);
+
+        // Log output
         wslog('Output: ' . print_r($result['output'], true) . ', return: ' . $result['return']);
 
         // Unset 'cmd'-key
@@ -165,8 +171,8 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         header('Content-Type: application/javascript');
 
         // Check whether `lang` uri-param is given
-        $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', Indi::uri()->lang))
-            ? '/../core/js/admin/app/locale/' . $lang
+        $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', uri()->lang))
+            ? VDR . '/client/classic/resources/locale/' . $lang
             : '/js/admin/app/proxy,/js/admin/app/data,/js/admin/app/lib,/js/admin/app/controller';
 
         // Flush

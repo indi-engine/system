@@ -34,9 +34,10 @@ class Search_Row extends Indi_Db_Table_Row {
     /**
      * Build a string, that will be used in Search_Row->export()
      *
+     * @param string $certain
      * @return string
      */
-    protected function _ctor() {
+    protected function _ctor($certain = '') {
 
         // Use original data as initial ctor
         $ctor = $this->_original;
@@ -47,6 +48,9 @@ class Search_Row extends Indi_Db_Table_Row {
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('sectionId,fieldId,further') as $arg) unset($ctor[$arg]);
 
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
+
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {
 
@@ -54,10 +58,10 @@ class Search_Row extends Indi_Db_Table_Row {
             $fieldR = $this->model()->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($fieldR->defaultValue == $value) unset($ctor[$prop]);
+            if ($fieldR->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Exclude `title` prop, if it was auto-created
-            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none')
+            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none'  && !in($prop, $certain))
                 unset($ctor[$prop]);
 
             // Else if prop contains keys - use aliases instead
@@ -66,38 +70,30 @@ class Search_Row extends Indi_Db_Table_Row {
             }
         }
 
-        // Stringify
-        $ctorS = preg_replace("~(array \()\n~", 'array(', var_export($ctor, true));
-        $ctorS = preg_replace("~  ('[a-zA-Z0-9_]+' => '.*?',)\n~", '$1 ', $ctorS);
-        $ctorS = preg_replace("~, \)~", ')', $ctorS);
-
-        // Minify
-        if (count($ctor) == 1) $ctorS = preg_replace('~^array \(\s+(.*),\s+\)$~', 'array($1)', $ctorS);
-        else if (count($ctor) == 0) $ctorS = 'true';
-
-        // Return
-        return $ctorS;
+        // Return stringified $ctor
+        return _var_export($ctor);
     }
 
     /**
      * Build an expression for creating the current `filter` entry in another project, running on Indi Engine
      *
+     * @param string $certain
      * @return string
      */
-    public function export() {
+    public function export($certain = '') {
 
         // Return creation expression
         if ($this->further) return "filter('" .
             $this->foreign('sectionId')->alias . "', '" .
             $this->foreign('fieldId')->alias . "', '" .
             $this->foreign('fieldId')->rel()->fields($this->further)->alias . "', " .
-            $this->_ctor() . ");";
+            $this->_ctor($certain) . ");";
 
         // Build and return `filter` entry creation expression
         else return "filter('" .
             $this->foreign('sectionId')->alias . "', '" .
             $this->foreign('fieldId')->alias . "', " .
-            $this->_ctor() . ");";
+            $this->_ctor($certain) . ");";
     }
 
     /**
@@ -105,5 +101,12 @@ class Search_Row extends Indi_Db_Table_Row {
      */
     public function setTitle() {
         $this->_setTitle();
+    }
+
+    /**
+     * Make sure `profileIds` will be empty if `access` is 'all'
+     */
+    public function onBeforeSave() {
+        if ($this->access == 'all') $this->zero('profileIds', true);
     }
 }

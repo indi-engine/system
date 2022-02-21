@@ -24,11 +24,11 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         if (is_array($params)) {
 
             // Create `queueTask` entry
-            $queueTaskR = Indi::model('QueueTask')->createRow(array(
+            $queueTaskR = m('QueueTask')->new([
                 'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
                 'params' => json_encode($params),
                 'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
-            ), true);
+            ]);
 
             // Save `queueTask` entries
             $queueTaskR->save();
@@ -40,16 +40,33 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         $master = $this->master;
 
         // Additional info for detecting entries
-        foreach ($master as $table => &$info) $info += array(
-            'entityId' => Indi::model($table)->id(),
-            'instances' => Indi::model($table)->fetchAll('`' . $info['field'] . '` IN ("' . im(ar($info['value']), '","') . '")')->column('id', true) ?: 0
-        );
+        foreach ($master as $table => &$info) $info += [
+            'entityId' => m($table)->id(),
+            'instances' => m($table)->all('`' . $info['field'] . '` IN ("' . im(ar($info['value']), '","') . '")')->column('id', true) ?: 0
+        ];
 
         // Collect id of enties
         $masterIds = array_column($master, 'entityId');
 
-        // Foreach `entity` entry, having `system` = "n" (e.g. project's custom entities)
-        foreach (Indi::model('Entity')->fetchAll('`system` = "y"') as $entityR) {
+        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
+        if ($master['entity']['value'] == 'n') foreach (m('Entity')->all('`system` = "n"') as $entityR) {
+
+            // If $this->fieldId prop is set, it means that we're here
+            // because of Indi_Queue_L10n_FieldToggleL10n->getFractionChunkWHERE() call
+            // so out aim here to obtain WHERE clause for certain field's chunk,
+            // and appendChunk() call will return WHERE clause rather than `queueChunk` instance
+            if ($this->fieldId) {
+                if ($fieldR_certain = m($entityR->id)->fields($this->fieldId))
+                    return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
+
+                // Foreach `field` entry, having `l10n` = "y"
+            } else foreach (m($entityR->id)->fields()->select('y', 'l10n') as $fieldR_having_l10nY)
+                if ($fieldR_having_l10nY->relation == 6)
+                    $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
+        }
+
+        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
+        foreach (m('Entity')->all('`system` = "y"', '`table`') as $entityR) {
 
             // If current entity is a multi-fraction entity
             if ($master[$entityR->table])
@@ -59,8 +76,8 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                         : ' = "' . $v . '"');
 
             // Else if entries of current entity are nested under at least one of multi-purpose entities entries
-            else if ($fieldR = Indi::model($entityR->id)->fields()->select($masterIds, 'relation')->at(0))
-                $where = '`' . $fieldR->alias . '` IN (' . $master[Indi::model($fieldR->relation)->table()]['instances'] . ')';
+            else if ($fieldR = m($entityR->id)->fields()->select($masterIds, 'relation')->at(0))
+                $where = '`' . $fieldR->alias . '` IN (' . $master[m($fieldR->relation)->table()]['instances'] . ')';
 
             // Else no WHERE clause
             else $where = false;
@@ -71,11 +88,11 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             if ($entityR->table == 'changeLog') {
 
                 // Get distinct `fieldId`-values
-                $fieldIds = im(Indi::db()->query('SELECT DISTINCT `fieldId` FROM `changeLog`')->fetchAll(PDO::FETCH_COLUMN));
+                $fieldIds = im(db()->query('SELECT DISTINCT `fieldId` FROM `changeLog`')->fetchAll(PDO::FETCH_COLUMN));
 
                 // Collect ids of applicable fields
                 $fieldIdA = [];
-                foreach (m('Field')->fetchAll('`id` IN (0' . rif($fieldIds, ',$1') . ') AND (`l10n` = "y" OR `storeRelationAbility` != "none")') as $fieldR)
+                foreach (m('Field')->all('`id` IN (0' . rif($fieldIds, ',$1') . ') AND (`l10n` = "y" OR `storeRelationAbility` != "none")') as $fieldR)
                     if ($fieldR->l10n == 'y' || $fieldR->rel()->titleField()->l10n == 'y')
                         $fieldIdA []= $fieldR->id;
 
@@ -94,22 +111,49 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             } else if ($entityR->table == 'param') {
 
                 //
-                $possibleParamIds = m('possibleElementParam')->fetchAll(
-                    '`alias` IN ("displayDateFormat", "measure", "inputMask")'
-                )->column('id', true);
+                if ($this->fieldId) {
 
-                // Get field ids
-                $fieldIds = im(Indi::db()->query('
-                    SELECT DISTINCT `p`.`fieldId` 
-                    FROM `param` `p`, `field` `f`
-                    WHERE 1
-                      AND `p`.`possibleParamId` IN (' . $possibleParamIds . ')
-                      AND `p`.`fieldId` = `f`.`id`
-                      AND `f`.`entityId` IN (' . $master['entity']['instances'] . ')
-                ')->fetchAll(PDO::FETCH_COLUMN));
+                    //
+                    if (m('Field')->row($this->fieldId)->entityId == $entityR->id) {
+
+                        // Get config field ids
+                        $cfgFieldIds = im(db()->query('
+                            SELECT DISTINCT `p`.`cfgField` 
+                            FROM `param` `p`, `field` `f`
+                            WHERE 1
+                              AND `p`.`cfgField` = `f`.`id`
+                              AND `f`.`entityId` IN (' . $master['entity']['instances'] . ')
+                        ')->fetchAll(PDO::FETCH_COLUMN)) ?: 0;
+
+                        //
+                        $where = '`cfgField` IN ('. $cfgFieldIds . ')';
+
+                    //
+                    } else {
+
+                        // Get config field ids
+                        $cfgFieldIds = m('Field')->all([
+                            '`entityId` = "4"',
+                            '`entry` != "0"',
+                            '`id` = "' . $this->fieldId . '"',
+                        ])->column('id', true) ?: 0;
+
+                        // Get field ids
+                        $fieldIds = im(db()->query('
+                            SELECT DISTINCT `p`.`fieldId` 
+                            FROM `param` `p`, `field` `f`
+                            WHERE 1
+                              AND `p`.`cfgField` IN (' . $cfgFieldIds . ')
+                              AND `p`.`fieldId` = `f`.`id`
+                              AND `f`.`entityId` IN (' . $master['entity']['instances'] . ')
+                        ')->fetchAll(PDO::FETCH_COLUMN)) ?: 0;
+
+                        //
+                        $where = '`fieldId` IN ('. $fieldIds . ') AND `cfgField` IN (' . $cfgFieldIds . ')';
+                    }
 
                 //
-                $where = '`fieldId` IN ('. $fieldIds . ') AND `possibleParamId` IN (' . $possibleParamIds . ')';
+                } else $where = 'FALSE';
             }
 
             // If $this->fieldId prop is set, it means that we're here
@@ -117,9 +161,18 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             // so out aim here to obtain WHERE clause for certain field's chunk,
             // and appendChunk() call will return WHERE clause rather than `queueChunk` instance
             if ($this->fieldId) {
-                if ($fieldR_certain = m($entityR->id)->fields($this->fieldId))
+
+                // If certain field is a regular field
+                if ($fieldR_certain = m($entityR->id)->fields($this->fieldId)) {
                     if ($master['entity']['value'] == 'y' || ($where && $fieldR_certain->relation != 6))
                         return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
+
+                // Else if it's a config field
+                } else if ($fieldR_certain = m('Field')->row(['`id` = "' . $this->fieldId . '"', '`entry` != "0"'])) {
+                    if ($entityR->table == 'param' && $where && $fieldR_certain->relation != 6) return $where;
+                    else if ($entityR->table == 'enumset' && $fieldR_certain->relation == 6)
+                        return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
+                }
 
             // Foreach `field` entry, having `l10n` = "y"
             } else foreach (m($entityR->id)->fields()->select('y', 'l10n') as $fieldR_having_l10nY)
@@ -127,7 +180,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                     $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
         }
 
-        // Order chunks to be sure that all dependen fields will be processed after their dependencies
+        // Order chunks to be sure that all dependent fields will be processed after their dependencies
         $this->orderChunks($queueTaskR->id);
 
         // Return `queueTask` entry
@@ -142,20 +195,19 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
     public function queue($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // If `queueState` is 'noneed' - do nothing
         if ($queueTaskR->queueState == 'noneed') return;
 
         // Require and instantiate Google Cloud Translation PHP API and
-        require_once('google-cloud-php-translate-1.6.0/vendor/autoload.php');
-        $gapi = new Google\Cloud\Translate\V2\TranslateClient(array('key' => Indi::ini('lang')->gapi->key));
+        $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'queue';
         $queueTaskR->state = 'progress';
         $queueTaskR->queueState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get source and target languages
         $source = json_decode($queueTaskR->params)->source;
@@ -168,7 +220,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('queueState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "items"';
@@ -177,7 +229,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Check whether we should use setter method call instead of google translate api call
-            $setter = $field && method_exists(m($table)->createRow(), $_ = 'set' . ucfirst($field)) ? $_ : false;
+            $setter = $field && method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
 
             // If setter-method exists, it means that we won't be calling google translate api for this chunk,
             // but we'll be calculating translations by calling setter-methods, preliminary prodiving master-fields
@@ -188,14 +240,14 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                 list ($ptable, $pfield) = explode(':', $queueChunkI['location']);
 
                 // Load tarnslations
-                foreach(Indi::db()->query('
+                foreach(db()->query('
                     SELECT `target`, `result` FROM `queueItem` WHERE `queueChunkId` = "' . $queueChunkI['queueChunkId'] . '"
                 ')->fetchAll(PDO::FETCH_KEY_PAIR) as $entryId => $targetTranslation)
                     Indi_Queue_L10n_FieldToggleL10n::$l10n[$ptable][$pfield][$entryId] = json_encode([$target => $targetTranslation], JSON_UNESCAPED_UNICODE);
             }
 
             // Get queue items by 50 entries at a time
-            Indi::model('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $setter) {
+            m('QueueItem')->batch(function (&$rs, &$deduct) use (&$queueTaskR, &$queueChunkR, &$gapi, $source, $target, $table, $field, $setter) {
 
                 // If chunk's field is a dependent field and setter method exists
                 if ($setter) {
@@ -204,13 +256,13 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                     foreach ($rs as $idx => $r) {
 
                         // Get target entry
-                        $te = m($table)->fetchRow($r->target);
+                        $te = m($table)->row($r->target);
 
                         // Backup current language
-                        $_lang = Indi::ini('lang')->admin;
+                        $_lang = ini('lang')->admin;
 
                         // Spoof current language
-                        Indi::ini('lang')->admin = $target;
+                        ini('lang')->admin = $target;
 
                         // Rebuild value
                         $te->{$setter}();
@@ -219,7 +271,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                         $result[$idx] = $te->$field;
 
                         // Restore current language
-                        Indi::ini('lang')->admin = $_lang;
+                        ini('lang')->admin = $_lang;
                     }
 
                 // Else
@@ -252,7 +304,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                     $this->amendResult($result[$idx], $r);
 
                     // Write translation result
-                    $r->assign(array('result' => $result[$idx], 'stage' => 'queue'))->basicUpdate();
+                    $r->set(['result' => $result[$idx], 'stage' => 'queue'])->basicUpdate();
 
                     // Increment `queueSize` prop on `queueChunk` entry and save it
                     $queueChunkR->queueSize++;
@@ -260,7 +312,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
 
                     // Increment `queueSize` prop on `queueTask` entry and save it
                     $queueTaskR->queueSize++;
-                    $queueTaskR->basicUpdate();
+                    $queueTaskR->basicUpdate(false, false);
 
                     // Increment $deduct
                     $deduct++;
@@ -269,11 +321,11 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             }, $where, '`id` ASC', 50, true);
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('queueState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['queueState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'queueState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'queueState' => 'finished'])->save();
     }
 
     /**
@@ -284,13 +336,13 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
     public function apply($queueTaskId) {
 
         // Get `queueTask` entry
-        $queueTaskR = Indi::model('QueueTask')->fetchRow($queueTaskId);
+        $queueTaskR = m('QueueTask')->row($queueTaskId);
 
         // Update `stage` and `state`
         $queueTaskR->stage = 'apply';
         $queueTaskR->state = 'progress';
         $queueTaskR->applyState = 'progress';
-        $queueTaskR->basicUpdate();
+        $queueTaskR->basicUpdate(false, false);
 
         // Get params
         $params = json_decode($queueTaskR->params, true);
@@ -302,7 +354,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         ]) as $queueChunkR) {
 
             // Remember that we're going to count
-            $queueChunkR->assign(array('applyState' => 'progress'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
             $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
@@ -311,10 +363,10 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Get queue items
-            Indi::model('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field) {
+            m('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field) {
 
                 // Get cell's current value
-                $json = Indi::db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
+                $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
 
                 // If cell value is not a json - force it to be json
                 if (!preg_match('~^{"~', $json)) $json = json_encode([$params['source'] => $json], JSON_UNESCAPED_UNICODE);
@@ -329,10 +381,10 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                 $json = json_encode($data, JSON_UNESCAPED_UNICODE);
 
                 // Update cell value
-                Indi::db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $table, $field, $json, $r->target);
+                db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $table, $field, $json, $r->target);
 
                 // Write translation result
-                $r->assign(array('stage' => 'apply'))->basicUpdate();
+                $r->set(['stage' => 'apply'])->basicUpdate();
 
                 // Reset batch offset
                 $deduct++;
@@ -343,19 +395,19 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
 
                 // Increment `applySize` prop on `queueTask` entry and save it
                 $queueTaskR->applySize++;
-                $queueTaskR->basicUpdate();
+                $queueTaskR->basicUpdate(false, false);
 
             }, $where, '`id` ASC');
 
             // Remember that our try to count was successful
-            $queueChunkR->assign(array('applyState' => 'finished'))->basicUpdate();
+            $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
         }
 
         // Mark stage as 'Finished' and save `queueTask` entry
-        $queueTaskR->assign(array('state' => 'finished', 'applyState' => 'finished'))->save();
+        $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
 
         // Update target `lang` entry's state for current fraction
-        $langR_target = Indi::model('Lang')->fetchRow('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
+        $langR_target = m('Lang')->row('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
         $langR_target->{lcfirst(preg_replace('~^Indi_Queue_L10n_~', '', get_class($this)))} = $params['toggle'] ?: 'y';
         $langR_target->save();
     }
@@ -380,9 +432,11 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
          * @param $item
          * @param $ordered
          */
-        function ___($dict, $item, &$ordered) {
-            foreach ($item['consider'] ?: [] as $fieldId) if ($dict[$fieldId]) ___($dict, $dict[$fieldId], $ordered);
-            $ordered[$item['fieldId']] = $item['queueChunkId'];
+        if (!function_exists('___')) {
+            function ___($dict, $item, &$ordered) {
+                foreach ($item['consider'] ?: [] as $fieldId) if ($dict[$fieldId]) ___($dict, $dict[$fieldId], $ordered);
+                $ordered[$item['fieldId']] = $item['queueChunkId'];
+            }
         }
 
         // Build new order as index => queueChunkId pairs
@@ -392,7 +446,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         $ordered = array_values($ordered);
 
         // Apply new order
-        foreach ($ordered as $idx => $queueChunkId) Indi::db()->query('
+        foreach ($ordered as $idx => $queueChunkId) db()->query('
             UPDATE `queueChunk` SET `move` = "' . ($idx + 1) . '" WHERE `id` = "' . $queueChunkId . '"
         ');
     }
@@ -406,7 +460,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
     protected function _dict($queueTaskId) {
 
         // Get `queueChunk` entries
-        $rs = m('QueueChunk')->fetchAll('`queueTaskId` = "' . $queueTaskId . '"');
+        $rs = m('QueueChunk')->all('`queueTaskId` = "' . $queueTaskId . '"', '`id` ASC');
 
         // Build dictionary
         $dict = [];
@@ -430,7 +484,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                 list($table, $field) = explode(':', $r->location); $item['fieldId'] = m($table)->fields($field)->id;
 
                 // Collect dependencies
-                if ($_ = Indi::db()->query('
+                if ($_ = db()->query('
                     SELECT IF(`foreign` = "0", `consider`, `foreign`) AS `consider` 
                     FROM `consider`
                     WHERE `fieldId` = "' . $item['fieldId'] . '"
