@@ -2187,7 +2187,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'title' => ini('general')->title ?: 'Indi Engine',
                         'throwOutMsg' => Indi::view()->throwOutMsg,
                         'lang' => $this->lang(),
-                        'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
+                        'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
                         'logo' => ini('general')->logo
                     ]);
 
@@ -2454,7 +2454,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 'ws' => array_merge((array) ini('ws'), ['pem' => is_file(DOC . STD . '/application/ws.pem')]),
                 'demo' => Indi::demo(false)
             ],
-            'css' => @file_get_contents(DOC . STD . '/www/css/admin/app.css') ?: '',
+            'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
             'lang' => $this->lang(),
             'logo' => ini('general')->logo,
             'title' => ini('general')->title ?: 'Indi Engine',
