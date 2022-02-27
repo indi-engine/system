@@ -206,6 +206,9 @@ trait Indi_Queue_L10n_AdminExport {
         // Build filename of a php-file, containing l10n constants for source language
         $l10n_target_abs = DOC . STD . $this->fractionDir . '/application/lang/' . $this->type . '/' . $params['source'] . '.php';
 
+        // Create dir if not exists
+        if (!is_dir($dir = dirname($l10n_target_abs))) mkdir($dir, umask(), true);
+
         // Put opening php tag
         file_put_contents($l10n_target_abs, '<?php' . "\n");
 
