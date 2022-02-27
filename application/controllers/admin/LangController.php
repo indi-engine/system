@@ -335,6 +335,9 @@ class Admin_LangController extends Indi_Controller_Admin {
 
     public function importAction() {
 
+        // Set no time limit
+        set_time_limit(0);
+
         // Show prompt
         $prompt = $this->_prompt(I_LANG_IMPORT_HEADER);
 
