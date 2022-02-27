@@ -112,7 +112,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             $field = m('Section')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Else if $prop is 'move' - get alias of the section, that current section is after,
             // among sections with same parent sectionId
