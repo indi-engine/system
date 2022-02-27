@@ -178,7 +178,7 @@ class Indi_Trail_Item {
                 for ($i = 0; $i < $lup; $i++) $std = preg_replace(':/[a-zA-Z0-9_\-]+$:', '', $std);
             }
 
-            // Left-trim the {STD . '/www'} from the values of 'href' and 'src' attributes
+            // Left-trim the {STD} from the values of 'href' and 'src' attributes
             foreach ($ckeDataA as $ckeDataI) $array['row'][$ckeDataI]
                 = preg_replace(':(\s*(src|href)\s*=\s*[\'"])(/[^/]):', '$1' . $std . '$3', $array['row'][$ckeDataI]);
 

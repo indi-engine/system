@@ -5310,9 +5310,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get the aliases of fields, that are CKEditor-fields
         $ckePropA = array_intersect(array_keys($this->_original), $ckeFieldA);
 
-        // Left-trim the {STD . '/www'} from the values of 'href' and 'src' attributes
+        // Left-trim the {STD} from the values of 'href' and 'src' attributes
         foreach ($ckePropA as $ckePropI)
-            $this->$ckePropI = preg_replace(':(\s*(src|href)\s*=\s*[\'"])' . STD . '/www/:', '$1/', $this->$ckePropI);
+            $this->$ckePropI = preg_replace(':(\s*(src|href)\s*=\s*[\'"])' . STD . '/:', '$1/', $this->$ckePropI);
 
         // Return
         return $this;

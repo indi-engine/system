@@ -126,7 +126,7 @@ function d($value) {
 }
 
 /**
- * Write the contents of $value to a file - 'debug.txt' by default, located in the 'www' folder of the document root
+ * Write the contents of $value to a file - 'debug.txt' by default, located in the indi engine custom app instance root
  *
  * @param $value
  * @param string $type
@@ -2707,7 +2707,7 @@ function scandirr($dir, &$fileA = []) {
 /**
  * Get imploded contents of all files, found in $dir
  *
- * @param string $dir Can be array or comma-separated list of directory names relative to DOC . STD . '/www'
+ * @param string $dir Can be array or comma-separated list of directory names relative to DOC . STD
  * @return string
  */
 function appjs($dir = '/js/admin') {

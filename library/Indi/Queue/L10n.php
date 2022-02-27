@@ -230,7 +230,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             $section2actionR = section2action($section, $action);
 
             // Get tpldoc file abs path
-            $tpl = DOC . STD . '/www/' . ini('view')->scriptPath . '/admin/'
+            $tpl = DOC . STD . '/' . ini('view')->scriptPath . '/admin/'
                 . $section . '/' . $action . rif($section2actionR->l10n == 'y', '-' . $params['source']) . '.php';
 
             // If exists

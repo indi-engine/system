@@ -1911,7 +1911,7 @@ class Indi_Db_Table
     public function tpldoc($field, $abs = false, $lang = '') {
 
         // Append script path
-        Indi::view()->addScriptPath($dir = DOC . STD . '/www/data/tpldoc');
+        Indi::view()->addScriptPath($dir = DOC . STD . '/data/tpldoc');
 
         // If localization is turned On for this field - append language definition to file name
         if ($this->fields($field)->l10n == 'y' && !$lang && $lang !== false) $lang = ini('lang')->admin;
