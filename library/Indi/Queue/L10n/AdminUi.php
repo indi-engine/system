@@ -480,8 +480,16 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             // Else
             } else {
 
+                // Get table and field from location which may look like either
+                // just '<table>:<field>' or /data/tpldoc/<table>-<field>(-<lang>).php
+                if (preg_match('~/([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)(-[a-zA-Z\-]+)?\.php~', $r->location, $m)) {
+                    $table = $m[1]; $field = $m[2];
+                } else {
+                    list($table, $field) = explode(':', $r->location);
+                }
+
                 // Get `fieldId` from `location`
-                list($table, $field) = explode(':', $r->location); $item['fieldId'] = m($table)->fields($field)->id;
+                $item['fieldId'] = m($table)->fields($field)->id;
 
                 // Collect dependencies
                 if ($_ = db()->query('
