@@ -213,7 +213,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         }
 
         // If useCache property was changed
-        if (isset($modified['useCache'])) {
+        if (isset($modified['useCache']) && false) {
 
             // If it was switched on
             if ($modified['useCache']) {
