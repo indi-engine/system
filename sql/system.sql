@@ -85,13 +85,13 @@ INSERT INTO `admin` VALUES (1,1,'{\"ru\":\"Павел Перминов\",\"en\":
 UNLOCK TABLES;
 
 --
--- Table structure for table `alteredfield`
+-- Table structure for table `alteredField`
 --
 
-DROP TABLE IF EXISTS `alteredfield`;
+DROP TABLE IF EXISTS `alteredField`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `alteredfield` (
+CREATE TABLE `alteredField` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sectionId` int(11) NOT NULL DEFAULT '0',
   `fieldId` int(11) NOT NULL DEFAULT '0',
@@ -115,13 +115,13 @@ CREATE TABLE `alteredfield` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `alteredfield`
+-- Dumping data for table `alteredField`
 --
 
-LOCK TABLES `alteredfield` WRITE;
-/*!40000 ALTER TABLE `alteredfield` DISABLE KEYS */;
-INSERT INTO `alteredfield` VALUES (216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1),(219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0),(220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0);
-/*!40000 ALTER TABLE `alteredfield` ENABLE KEYS */;
+LOCK TABLES `alteredField` WRITE;
+/*!40000 ALTER TABLE `alteredField` DISABLE KEYS */;
+INSERT INTO `alteredField` VALUES (216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1),(219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0),(220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0);
+/*!40000 ALTER TABLE `alteredField` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -557,13 +557,13 @@ LOCK TABLES `notice` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `noticegetter`
+-- Table structure for table `noticeGetter`
 --
 
-DROP TABLE IF EXISTS `noticegetter`;
+DROP TABLE IF EXISTS `noticeGetter`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `noticegetter` (
+CREATE TABLE `noticeGetter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `noticeId` int(11) NOT NULL DEFAULT '0',
   `profileId` int(11) NOT NULL DEFAULT '0',
@@ -592,12 +592,12 @@ CREATE TABLE `noticegetter` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `noticegetter`
+-- Dumping data for table `noticeGetter`
 --
 
-LOCK TABLES `noticegetter` WRITE;
-/*!40000 ALTER TABLE `noticegetter` DISABLE KEYS */;
-/*!40000 ALTER TABLE `noticegetter` ENABLE KEYS */;
+LOCK TABLES `noticeGetter` WRITE;
+/*!40000 ALTER TABLE `noticeGetter` DISABLE KEYS */;
+/*!40000 ALTER TABLE `noticeGetter` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -669,13 +669,13 @@ INSERT INTO `profile` VALUES (1,'{\"ru\":\"Разработчик\",\"en\":\"Dev
 UNLOCK TABLES;
 
 --
--- Table structure for table `queuechunk`
+-- Table structure for table `queueChunk`
 --
 
-DROP TABLE IF EXISTS `queuechunk`;
+DROP TABLE IF EXISTS `queueChunk`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `queuechunk` (
+CREATE TABLE `queueChunk` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `queueTaskId` int(11) NOT NULL DEFAULT '0',
   `location` varchar(255) NOT NULL DEFAULT '',
@@ -705,22 +705,22 @@ CREATE TABLE `queuechunk` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `queuechunk`
+-- Dumping data for table `queueChunk`
 --
 
-LOCK TABLES `queuechunk` WRITE;
-/*!40000 ALTER TABLE `queuechunk` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queuechunk` ENABLE KEYS */;
+LOCK TABLES `queueChunk` WRITE;
+/*!40000 ALTER TABLE `queueChunk` DISABLE KEYS */;
+/*!40000 ALTER TABLE `queueChunk` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `queueitem`
+-- Table structure for table `queueItem`
 --
 
-DROP TABLE IF EXISTS `queueitem`;
+DROP TABLE IF EXISTS `queueItem`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `queueitem` (
+CREATE TABLE `queueItem` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `queueTaskId` int(11) NOT NULL DEFAULT '0',
   `queueChunkId` int(11) NOT NULL DEFAULT '0',
@@ -738,22 +738,22 @@ CREATE TABLE `queueitem` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `queueitem`
+-- Dumping data for table `queueItem`
 --
 
-LOCK TABLES `queueitem` WRITE;
-/*!40000 ALTER TABLE `queueitem` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queueitem` ENABLE KEYS */;
+LOCK TABLES `queueItem` WRITE;
+/*!40000 ALTER TABLE `queueItem` DISABLE KEYS */;
+/*!40000 ALTER TABLE `queueItem` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `queuetask`
+-- Table structure for table `queueTask`
 --
 
-DROP TABLE IF EXISTS `queuetask`;
+DROP TABLE IF EXISTS `queueTask`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `queuetask` (
+CREATE TABLE `queueTask` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL DEFAULT '',
   `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -786,12 +786,12 @@ CREATE TABLE `queuetask` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `queuetask`
+-- Dumping data for table `queueTask`
 --
 
-LOCK TABLES `queuetask` WRITE;
-/*!40000 ALTER TABLE `queuetask` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queuetask` ENABLE KEYS */;
+LOCK TABLES `queueTask` WRITE;
+/*!40000 ALTER TABLE `queueTask` DISABLE KEYS */;
+/*!40000 ALTER TABLE `queueTask` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -832,7 +832,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=2853 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=2856 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -841,6 +841,7 @@ CREATE TABLE `realtime` (
 
 LOCK TABLES `realtime` WRITE;
 /*!40000 ALTER TABLE `realtime` DISABLE KEYS */;
+INSERT INTO `realtime` VALUES (2853,0,'session',1,1,'ebr6vddn3eocra3ujgprh38o15','2022-03-01 20:18:03','0000-00-00 00:00:00',0,1,0,0,'','','{\"ru\":\"Сессия - ebr6vddn3eocra3ujgprh38o15, Русский\",\"en\":\"Session - ebr6vddn3eocra3ujgprh38o15, Русский\"}','none',''),(2854,2853,'channel',1,1,'mlGXJINq5d9Qwb9xM2bsjA==','2022-03-01 20:18:03','2022-03-01 20:18:11',0,1,0,0,'','','{\"ru\":\"Вкладка - mlGXJINq5d9Qwb9xM2bsjA==\",\"en\":\"Tab - mlGXJINq5d9Qwb9xM2bsjA==\"}','none',''),(2855,2854,'context',1,1,'i-section-entities-action-index','2022-03-01 20:18:06','2022-03-01 20:18:11',0,1,5,2,'310','4,5,612,2320','{\"ru\":\"Конфигурация » Сущности\",\"en\":\"Конфигурация » Сущности\"}','rowset','{\"primary\":[],\"filters\":\"[]\",\"keyword\":\"getter\",\"order\":\"[{\\u0022property\\u0022:\\u0022title\\u0022,\\u0022direction\\u0022:\\u0022ASC\\u0022}]\",\"page\":\"1\",\"found\":\"1\",\"WHERE\":\"(`title` LIKE \'%getter%\' OR `table` LIKE \'%getter%\')\",\"ORDER\":[\"SUBSTRING_INDEX(`title`, \'\\u0022ru\\u0022:\\u0022\', -1) ASC\"],\"hash\":\"d41d8cd98f\",\"pgupLast\":null,\"rowsOnPage\":\"50\",\"tree\":false,\"rowReqIfAffected\":\"\",\"sum\":\"\"}');
 /*!40000 ALTER TABLE `realtime` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1070,4 +1071,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-03-01 22:12:56
+-- Dump completed on 2022-03-01 23:24:02
