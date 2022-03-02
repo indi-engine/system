@@ -1765,7 +1765,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (func_num_args() > 1) $assign = [$assign => $value];
 
         // Return rowset itself
-        return $this->set($assign);
+        return $this->assign($assign);
     }
 
     /**
