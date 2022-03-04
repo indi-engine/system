@@ -135,13 +135,13 @@ function d($value) {
 function i($value, $type = 'w', $file = 'debug.txt') {
 
     // Get the absolute path of a file, that will be used for writing data to
-    $abs = rtrim(__DIR__, '\\/') . '/../../../../' . $file;
+    $abs = dirname(rtrim(__DIR__, '\\/'), 4) . '/' . $file;
 
     // Renew the $dir, where we assume that output file is/will be located
     // Here we do not use existing $dir value, because $file arg can be
     // not only 'someOutputFile.txt', for example, but 'someSubDir/someOutputFile.txt' also
     // e.g. it can contain additional (deeper) directory specification
-    $dir = Indi::dir(str_replace('\\', '/', pathinfo(realpath($abs), PATHINFO_DIRNAME)) . '/');
+    $dir = Indi::dir(str_replace('\\', '/', pathinfo($abs, PATHINFO_DIRNAME)) . '/');
 
     // If $dir is not a directory name
     if (!Indi::rexm('dir', $dir)) {
