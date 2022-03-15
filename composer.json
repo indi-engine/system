@@ -1,14 +1,7 @@
 {
-    "name": "perminov/system",
-    "description": "Indi Engine",
-    "type": "project",
-    "repositories": [{
-        "type": "git",
-        "url": "https://github.com/perminov/ckeditor.git"
-    }, {
-        "type": "git",
-        "url": "https://github.com/perminov/ckfinder.git"
-    }],
+    "name": "indi-engine/system",
+    "description": "Indi Engine system package, should be used as composer dependency only",
+    "type": "package",
     "require": {
         "php-amqplib/php-amqplib": "2.12.0",
         "google/cloud-translate": "1.6.0",
