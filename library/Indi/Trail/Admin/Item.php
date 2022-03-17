@@ -489,8 +489,8 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $actionClassDefinition = false;
 
         // If template with such filename exists, render the template
-        if ($actionClassFile = Indi::view()->exists($script)
-            ?: Indi::view()->exists($script = $section . '/' . $action . '-' . ini('lang')->admin . '.php')) {
+        if ($actionClassFile = view()->exists($script)
+            ?: view()->exists($script = $section . '/' . $action . '-' . ini('lang')->admin . '.php')) {
 
             // If $render argument is set to `true`
             if ($render) {
@@ -512,10 +512,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                         if ($fieldR->param('shade')) $this->row->{$fieldR->alias} = ' ' . I_PRIVATE_DATA;
 
                     // Setup view's `plain` property
-                    $this->view->plain = Indi::view()->render($script);
+                    $this->view->plain = view()->render($script);
 
                     // Pass replacements
-                    if (Indi::view()->replace) $this->view->replace = Indi::view()->replace;
+                    if (view()->replace) $this->view->replace = view()->replace;
 
                     // Return the value, according to view mode
                     return $this->view->mode == 'view' ? $this->view : $this->view->plain;

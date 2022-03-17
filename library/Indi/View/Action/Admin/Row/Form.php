@@ -19,7 +19,7 @@ class Indi_View_Action_Admin_Row_Form extends Indi_View_Action_Admin_Row {
             $element = $fieldR->foreign('elementId')->alias;
 
             // Prepare combo-data for 'combo', 'radio' and 'multicheck' elements
-            if (in($element, 'combo,radio,multicheck')) Indi::view()->formCombo($fieldR->alias);
+            if (in($element, 'combo,radio,multicheck')) view()->formCombo($fieldR->alias);
 
             // Prepare file-data for 'upload' element
             else if ($element == 'upload' && t()->row->abs($fieldR->alias))

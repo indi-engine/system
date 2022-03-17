@@ -841,7 +841,7 @@ class Indi_Controller {
                     if (t()->section->rowsetSeparate == 'no') $filter->consistence = 2;
 
                     // Setup combo data
-                    Indi::view()->filterCombo($filter);
+                    view()->filterCombo($filter);
 
                     // Pick combo data
                     $metaData['filter'][$field->alias] = array_pop(t()->filtersSharedRow->view($field->alias));

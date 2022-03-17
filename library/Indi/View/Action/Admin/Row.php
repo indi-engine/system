@@ -6,7 +6,7 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         ob_start();
 
         // Setup sibling combo
-        Indi::view()->siblingCombo();
+        view()->siblingCombo();
 
         // Create `realtime` entry having `type` = "context"
         if (!m('realtime')->row([

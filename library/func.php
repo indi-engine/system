@@ -2868,3 +2868,12 @@ function db() {
 function uri() {
     return forward_static_call_array(['Indi', 'uri'], func_get_args());
 }
+
+/**
+ * Shortcut to Indi::view()
+ *
+ * @return Indi_View|null
+ */
+function view() {
+    return Indi::view();
+}

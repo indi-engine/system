@@ -64,7 +64,7 @@ class Indi_View_Helper_Admin_FormCombo {
      * @return Indi_Db_Table_Row
      */
     public function getRow(){
-        return Indi::view()->row;
+        return view()->row;
     }
 
     /**

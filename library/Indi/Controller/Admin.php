@@ -88,7 +88,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         parent::__construct();
 
         // Remove non-module-related script paths
-        for ($i = 0; $i < 3; $i++) Indi::view()->popPaths('script');
+        for ($i = 0; $i < 3; $i++) view()->popPaths('script');
     }
 
     /**
@@ -2167,10 +2167,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                     jflush(true, APP ? $this->info() : ['ok' => '1']);
                 }
 
-                // If user was thrown out from the system, assign a throwOutMsg to Indi::view() object, for this message
+                // If user was thrown out from the system, assign a throwOutMsg to view() object, for this message
                 // to be available for picking up and usage as Ext.MessageBox message, as a reason of throw out
                 if ($_SESSION['indi']['throwOutMsg']) {
-                    Indi::view()->throwOutMsg = $_SESSION['indi']['throwOutMsg'];
+                    view()->throwOutMsg = $_SESSION['indi']['throwOutMsg'];
                     unset($_SESSION['indi']['throwOutMsg']);
                 }
 
@@ -2185,7 +2185,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'vdr' => VDR,
                         'uri' => uri()->toArray(),
                         'title' => ini('general')->title ?: 'Indi Engine',
-                        'throwOutMsg' => Indi::view()->throwOutMsg,
+                        'throwOutMsg' => view()->throwOutMsg,
                         'lang' => $this->lang(),
                         'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
                         'logo' => ini('general')->logo
@@ -2204,7 +2204,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $this->lang();
 
                     // Render login page
-                    $out = Indi::view()->render('login.php');
+                    $out = view()->render('login.php');
 
                     // Do paths replacements, if current project runs within webroot subdirectory
                     if (STD) {
@@ -2377,11 +2377,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                 iexit(readfile($client));
 
             // Setup info about current logged in cms user, and accessible menu
-            Indi::view()->admin = $info['user']['title'] . ' [' . $info['user']['role']  . ']';
-            Indi::view()->menu = $info['user']['menu'];
+            view()->admin = $info['user']['title'] . ' [' . $info['user']['role']  . ']';
+            view()->menu = $info['user']['menu'];
 
             // Render the layout
-            $out = Indi::view()->render('index.php');
+            $out = view()->render('index.php');
 
 
         // Else, if we are doing something in a certain section
@@ -3742,7 +3742,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function lang() {
 
         // If was set up previously - return as is
-        if (Indi::view()->lang) return Indi::view()->lang;
+        if (view()->lang) return view()->lang;
 
         // Get available languages
         $langA = db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
@@ -3789,7 +3789,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Setup list of possible translations and current/last chosen one
-        return Indi::view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?: []);
+        return view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?: []);
     }
 
     /**
