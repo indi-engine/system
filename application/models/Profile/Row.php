@@ -86,6 +86,6 @@ class Profile_Row extends Indi_Db_Table_Row {
         if ($fieldR->relation || !$cValueForeign) return;
 
         // If variable entity is determined, and it's `admin` - append filtering by `profileId`
-        if (m($cValueForeign)->table() == 'admin') $where []= '`' . $cField->alias . '` = "' . $cValue . '"';
+        if (m($cValueForeign)->table() == 'admin') $where []= '`profileId` = "' . $cValue . '"';
     }
 }

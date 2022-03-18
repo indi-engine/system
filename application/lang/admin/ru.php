@@ -273,3 +273,8 @@ define('I_NUM2STR_TBQ_RUB', 'рубль,рубля,рублей');
 define('I_NUM2STR_TBQ_THD', 'тысяча,тысячи,тысяч');
 define('I_NUM2STR_TBQ_MLN', 'миллион,миллиона,миллионов');
 define('I_NUM2STR_TBQ_BLN', 'миллиард,милиарда,миллиардов');
+
+define('I_ENT_AUTHOR_SPAN', 'Создание');
+define('I_ENT_AUTHOR_ROLE', 'Роль');
+define('I_ENT_AUTHOR_USER', 'Пользователь');
+define('I_ENT_AUTHOR_TIME', 'Дата и время');

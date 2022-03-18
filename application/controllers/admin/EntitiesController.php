@@ -88,64 +88,37 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         jflush(true);
     }
 
+    /**
+     * Append created(|ByRole|ByUser|At) fields to store info about by whom and when each entry was created
+     */
     public function authorAction() {
 
-        // Get model
-        $model = m($this->row->id);
+        // Get current entity's table name
+        $table = t()->row->table;
 
-        // If `author` field exists - flush error
-        if ($model->fields('author'))
-            jflush(false, 'Группа полей "Автор" уже существует в структуре сущности "' . $this->row->title . '"');
+        // Span field
+        field($table, 'created', ['title' => I_ENT_AUTHOR_SPAN, 'elementId' => 'span']);
 
-        // Get involded `element` entries
-        $elementRs = m('Element')->all('FIND_IN_SET(`alias`, "span,combo,datetime")');
+        // Shared config for two fields
+        $shared = ['columnTypeId' => 'INT(11)',  'elementId' => 'combo', 'storeRelationAbility' => 'one'];
 
-        // Prepare fields config
-        $fieldA = [
-            'author' => [
-                'title' => 'Создание',
-                'elementId' => $elementRs->gb('span', 'alias')->id
-            ],
-            'authorType' => [
-                'title' => 'Кто создал',
-                'storeRelationAbility' => 'one',
-                'elementId' => $elementRs->gb('combo', 'alias')->id,
-                'columnTypeId' => 3,
-                'defaultValue' => '<?=Indi::me(\'mid\')?>',
-                'relation' => m('Entity')->id(),
-                'filter' => '`id` IN (' . db()->query('
-                    SELECT GROUP_CONCAT(DISTINCT IF(`entityId`, `entityId`, 11)) FROM `profile` WHERE `toggle` = "y"
-                ')->fetchColumn() . ')'
-            ],
-            'authorId' => [
-                'title' => 'Кто именно',
-                'storeRelationAbility' => 'one',
-                'elementId' => $elementRs->gb('combo', 'alias')->id,
-                'columnTypeId' => 3,
-                'defaultValue' => '<?=Indi::me(\'id\')?>',
-            ],
-            'authorTs' => [
-                'title' => 'Когда',
-                'elementId' => $elementRs->gb('datetime', 'alias')->id,
-                'columnTypeId' => 9,
-                'defaultValue' => '<?=date(\'Y-m-d H:i:s\')?>'
-            ]
-        ];
+        // Author role field
+        field($table, 'createdByRole', $shared + ['defaultValue' => '<?=admin()->profileId?>', 'title' => I_ENT_AUTHOR_ROLE, 'relation' => 'profile']);
 
-        // Create fields
-        foreach ($fieldA as $alias => $fieldI) {
-            $fieldRA[$alias] = m('Field')->new();
-            $fieldRA[$alias]->entityId = $this->row->id;
-            $fieldRA[$alias]->alias = $alias;
-            $fieldRA[$alias]->set($fieldI);
-            $fieldRA[$alias]->save();
-        }
+        // Author field
+        field($table, 'createdByUser', $shared + ['defaultValue' => '<?=admin()->id?>', 'title' => I_ENT_AUTHOR_USER]);
 
-        //$fieldRA[$alias]->satellite = $fieldRA['authorType']->id;
-        consider($this->row->id, 'authorId', 'authorType', ['required' => 'y']);
+        // Author field depends on author role field
+        consider($table, 'createdByUser', 'createdByRole', ['foreign' => 'entityId', 'required' => 'y']);
+
+        // Datetime field
+        field($table, 'createdAt', [
+            'title' => I_ENT_AUTHOR_TIME, 'columnTypeId' => 'DATETIME', 'elementId' => 'datetime',
+            'defaultValue' => '<?=date(\'Y-m-d H:i:s\')?>'
+        ]);
 
         // Flush success
-        jflush(true, 'Группа полей "Создание" была добавлена в структуру сущности "' . $this->row->title . '"');
+        jflush(true, 'OK');
     }
 
     /**
