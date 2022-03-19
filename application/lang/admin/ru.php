@@ -278,3 +278,5 @@ define('I_ENT_AUTHOR_SPAN', 'Создание');
 define('I_ENT_AUTHOR_ROLE', 'Роль');
 define('I_ENT_AUTHOR_USER', 'Пользователь');
 define('I_ENT_AUTHOR_TIME', 'Дата и время');
+define('I_ENT_TOGGLE_Y', 'Включено');
+define('I_ENT_TOGGLE_N', 'Выключено');

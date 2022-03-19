@@ -126,46 +126,24 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function toggleAction() {
 
-        // Get model
-        $model = m($this->row->id);
-
-        // If `author` field exists - flush error
-        if ($model->fields('toggle'))
-            jflush(false, 'Группа полей "Статус" уже существует в структуре сущности "' . $this->row->title . '"');
-
-        // Drop `toggle` column from `action` table. We do it here because historically it was
-        // set up that column `toggle` was created not by using Indi Engine, so it does not have
-        // assotiated entries neither in `field` table, nor in `enumset` table, so the below line
-        // just remove the column, for the ability to re-create in as a part of the process of field creation
-        if ($this->row->table == 'action') db()->query('ALTER TABLE `action` DROP `toggle`');
+        // Get current entity's table name
+        $table = t()->row->table;
 
         // Create field
-        $fieldR = m('Field')->new([
-            'entityId' => $this->row->id,
+        field($table, 'toggle', [
             'title' => 'Статус',
-            'alias' => 'toggle',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'y',
+            'relation' => 'enumset',
             'storeRelationAbility' => 'one',
-            'elementId' => m('Element')->row('`alias` = "combo"')->id,
-            'columnTypeId' => m('ColumnType')->row('`type` = "ENUM"')->id,
-            'defaultValue' => 'y'
         ]);
 
-        // Save field
-        $fieldR->save();
-
-        // Get first enumset option (that was created automatically)
-        $y = $fieldR->nested('enumset')->at(0);
-        $y->title = '<span class="i-color-box" style="background: lime;"></span>Включен';
-        $y->save();
-
-        // Create one more enumset option within this field
-        m('Enumset')->new([
-            'fieldId' => $y->fieldId,
-            'title' => '<span class="i-color-box" style="background: red;"></span>Выключен',
-            'alias' => 'n'
-        ])->save();
+        // Create enum option
+        enumset($table, 'toggle', 'y', ['title' => '<span class="i-color-box" style="background: lime;"></span>' . I_ENT_TOGGLE_Y, 'move' => '']);
+        enumset($table, 'toggle', 'n', ['title' => '<span class="i-color-box" style="background: red;"></span>'  . I_ENT_TOGGLE_N, 'move' => 'y']);
 
         // Flush success
-        jflush(true, 'Поле "Статус" было добавлено в структуру сущности "' . $this->row->title . '"');
+        jflush(true, 'OK');
     }
 }

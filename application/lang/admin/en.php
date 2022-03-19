@@ -278,3 +278,5 @@ define('I_ENT_AUTHOR_SPAN', 'Created');
 define('I_ENT_AUTHOR_ROLE', 'Role');
 define('I_ENT_AUTHOR_USER', 'User');
 define('I_ENT_AUTHOR_TIME', 'Datetime');
+define('I_ENT_TOGGLE_Y', 'Turned on');
+define('I_ENT_TOGGLE_N', 'Turned off');
