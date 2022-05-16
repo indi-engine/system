@@ -1950,7 +1950,7 @@ class Indi {
     public static function lwget($url) {
 
         // If hostname is not specified within $url, prepend $url with self hostname and PRE constant
-        $url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . PRE . $url;
+        $url = $_SERVER['REQUEST_SCHEME'] . '://' . explode(':', $_SERVER['HTTP_HOST'])[0] . PRE . $url;
 
         // Get request headers, and declare $hrdS variable for collecting stringified headers list
         $hdrA = apache_request_headers(); $hdrS = '';

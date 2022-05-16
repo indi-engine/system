@@ -1919,7 +1919,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         return db()->query('
             SELECT
                 `a`.*,
-                `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), PASSWORD(:s)) AS `passwordOk`,
+                `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
                 '. $adminToggle . ' AS `adminToggle`,
                 IF(`p`.`entityId`, `p`.`entityId`, 11) as `mid`,
                 `p`.`toggle` = "y" AS `profileToggle`,

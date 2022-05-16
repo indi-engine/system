@@ -119,29 +119,33 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         // Close session
         session_write_close();
 
-        // Get lock file
-        $wsLock = DOC . STD . '/application/ws.pid';
-        
+        // Get pid and err files
+        $pid = DOC . STD . '/application/ws.pid';
+        $err = DOC . STD . '/application/ws.err';
+
         // If websocket-server lock-file exists, and contains websocket-server's process ID, and it's an integer
-        if (is_file($wsLock) && $wsPid = (int) trim(file_get_contents($wsLock))) {
+        if (is_file($pid) && $wsPid = (int) trim(file_get_contents($pid))) {
 
             // If such process is found - flush msg and exit
             if (checkpid($wsPid)) jflush(false);
         }
 
         // Check whether pid-file is writable
-        if (!is_writable($wsLock)) jflush(false, 'ws.pid file is not writable');
+        if (file_exists($pid) && !is_writable($pid)) jflush(false, 'ws.pid file is not writable');
 
         // Check whether err-file is writable
-        if (!is_writable(DOC . STD . '/application/ws.err')) jflush(false, 'ws.err file is not writable');
+        if (file_exists($err) && !is_writable($err)) jflush(false, 'ws.err file is not writable');
         
         // Path to websocket-server php script
         $wsServer = ltrim(VDR, '/') . '/system/application/ws.php';
-        
+
+        // Get host with no port
+        $host = explode(':', $_SERVER['HTTP_HOST'])[0];
+
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
             ? sprintf('start /B %sphp %s 2>&1', rif(ini('general')->phpdir, '$1/'), $wsServer)
-            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . STD . '/' . $wsServer . '" > /dev/null &';
+            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $host . STD . '/' . $wsServer . '" > /dev/null &';
 
         // Start websocket server
         wslog('------------------------------');

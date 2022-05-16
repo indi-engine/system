@@ -154,17 +154,22 @@ class Indi_Uri_Base {
      */
     public function setCookieDomain(){
         
+        // Get current host name without port number
+        $hostname = preg_replace('~:[0-9]+$~', '', $_SERVER['HTTP_HOST']);
+
         // Detect domain
         $domainA = explode(' ', ini()->general->domain);
         foreach ($domainA as $domainI) 
-            if (preg_match('/' . preg_quote($domainI) . '$/', $_SERVER['HTTP_HOST']))
+            if (preg_match('/' . preg_quote($domainI) . '$/', $hostname))
                 $domain = ini('general')->domain = $domainI;
 
         // If session is already active - prevent 'PHP Warning: ini_set(): A session is active. You cannot change the session module's ini settings at this time' error msg
         if (session_id()) return;
 
         // Set cookie domain and path
-        ini_set('session.cookie_domain', (preg_match('/^[0-9\.]+$/', $domain) ? '' : '.') . $domain);
+        ini_set('session.cookie_domain', $hostname == 'localhost'
+            ? $hostname
+            : (preg_match('/^[0-9\.]+$/', $domain) ? '' : '.') . $domain);
 
         // If project runs not from document root, but from some
         // subfolder of document root - setup an appropriate cookie path

@@ -236,11 +236,11 @@ while (true) {
             // Log channel id of accepted client
             if ($ini['log']) logd('accepted: ' . $index);
 
+            // Log headers
+            if ($ini['log']) logd('handshake: ' . var_export($info, 1));
+
             // If  session id detected, and `realtime` entry of `type` = "session" found
             if (preg_match('~PHPSESSID=([^; ]+)~', $info['Cookie'], $sessid)) {
-
-                // Log headers
-                if ($ini['log']) logd($info);
 
                 // Remember session id
                 $sessidA[$index] = $sessid[1];
@@ -286,17 +286,30 @@ while (true) {
                 // Get path, as different Indi Engine instances can run on different dirs within same domain
                 $pathA[$index] = rtrim(parse_url($info['uri'], PHP_URL_PATH), '/');
 
+                // Stip '/index.php' from path (workaround for apache mod_proxy_wstunnel)
+                $pathA[$index] = str_replace('/index.php', '', $pathA[$index]);
+
+                // Stip port from Origin
+                $info['Origin'] = preg_replace('~:[0-9]+$~', '', $info['Origin']);
+
                 // Set opts
                 curl_setopt_array($ch, [
                     CURLOPT_URL => $info['Origin'] . $pathA[$index] . '/realtime/?newtab',
+                    CURLOPT_RETURNTRANSFER => 1,
                     CURLOPT_HTTPHEADER => [
                         'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
                         'Cookie: ' . $info['Cookie'] . rif($prevcid, '; prevcid=$1'),
                     ]
                 ]);
 
-                // Exec and close curl
-                curl_exec($ch); curl_close($ch);
+                // Exec and get output and/or error, if any
+                $out = curl_exec($ch); $err = curl_error($ch);
+
+                // Log output and/or error
+                logd('curl reponse: ' . $out); logd('curl error: ' . $err);
+
+                // Close curl
+                curl_close($ch);
 
                 // Log
                 if ($ini['log']) logd('?newtab done: ' . $index . ' => ' . $info['Origin'] . $pathA[$index] . '/realtime/?newtab');
