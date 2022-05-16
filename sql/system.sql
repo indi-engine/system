@@ -1,29 +1,23 @@
--- MySQL dump 10.13  Distrib 5.7.37, for Linux (x86_64)
---
--- Host: localhost    Database: admin_boris
--- ------------------------------------------------------
--- Server version	5.7.37-0ubuntu0.18.04.1
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*
+SQLyog Ultimate v13.1.1 (64 bit)
+MySQL - 8.0.28 : Database - custom
+*********************************************************************
+*/
+use `custom`;
 /*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
+
+/*!40101 SET SQL_MODE=''*/;
+
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `action`
---
+/*Table structure for table `action` */
 
 DROP TABLE IF EXISTS `action`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `action` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
   `rowRequired` enum('y','n') NOT NULL DEFAULT 'y',
@@ -36,29 +30,43 @@ CREATE TABLE `action` (
   KEY `toggle1` (`toggle`),
   KEY `display` (`display`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=49 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `action`
---
+/*Data for the table `action` */
 
-LOCK TABLES `action` WRITE;
-/*!40000 ALTER TABLE `action` DISABLE KEYS */;
-INSERT INTO `action` VALUES (1,'{\"ru\":\"Список\",\"en\":\"List\"}','index','n','s','0','y'),(2,'{\"ru\":\"Детали\",\"en\":\"Details\"}','form','y','s','1','y'),(3,'{\"ru\":\"Сохранить\",\"en\":\"Save\"}','save','y','s','0','y'),(4,'{\"ru\":\"Удалить\",\"en\":\"Delete\"}','delete','y','s','1','y'),(5,'{\"ru\":\"Выше\",\"en\":\"Move up\"}','up','y','s','1','y'),(6,'{\"ru\":\"Ниже\",\"en\":\"Move down\"}','down','y','s','1','y'),(7,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle','y','s','1','y'),(18,'{\"ru\":\"Обновить кэш\",\"en\":\"Refresh cache\"}','cache','y','s','1','y'),(20,'{\"ru\":\"Авторизация\",\"en\":\"Authorization\"}','login','y','s','1','y'),(33,'{\"ru\":\"Автор\",\"en\":\"Author\"}','author','y','s','1','y'),(34,'{\"ru\":\"PHP\",\"en\":\"PHP\"}','php','y','s','1','y'),(35,'{\"ru\":\"JS\",\"en\":\"JS\"}','js','y','s','1','y'),(36,'{\"ru\":\"Экспорт\",\"en\":\"Export\"}','export','y','s','1','y'),(37,'{\"ru\":\"Перейти\",\"en\":\"Go to\"}','goto','y','s','1','y'),(38,'{\"ru\":\"\",\"en\":\"\"}','rwu','n','s','0','y'),(39,'{\"ru\":\"Активировать\",\"en\":\"Activate\"}','activate','y','s','1','y'),(40,'{\"ru\":\"Доступные языки\",\"en\":\"Available languages\"}','dict','n','s','1','y'),(41,'{\"ru\":\"Запустить\",\"en\":\"Run\"}','run','y','s','1','y'),(42,'{\"ru\":\"График\",\"en\":\"Schedule\"}','chart','y','s','1','y'),(43,'{\"ru\":\"Вординги\",\"en\":\"Wordings\"}','wordings','y','s','1','y'),(44,'{\"ru\":\"Перезапустить\",\"en\":\"Restart\"}','restart','n','s','1','y'),(45,'{\"ru\":\"Копировать\",\"en\":\"Copy\"}','copy','y','s','1','y'),(47,'{\"ru\":\"Импорт\",\"en\":\"Import\"}','import','y','s','1','y'),(48,'{\"ru\":\"Восстановить\",\"en\":\"Restore\"}','revert','y','s','1','y');
-/*!40000 ALTER TABLE `action` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `action`(`id`,`title`,`alias`,`rowRequired`,`type`,`display`,`toggle`) values
+(1,'{\"ru\":\"Список\",\"en\":\"List\"}','index','n','s','0','y'),
+(2,'{\"ru\":\"Детали\",\"en\":\"Details\"}','form','y','s','1','y'),
+(3,'{\"ru\":\"Сохранить\",\"en\":\"Save\"}','save','y','s','0','y'),
+(4,'{\"ru\":\"Удалить\",\"en\":\"Delete\"}','delete','y','s','1','y'),
+(5,'{\"ru\":\"Выше\",\"en\":\"Move up\"}','up','y','s','1','y'),
+(6,'{\"ru\":\"Ниже\",\"en\":\"Move down\"}','down','y','s','1','y'),
+(7,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle','y','s','1','y'),
+(18,'{\"ru\":\"Обновить кэш\",\"en\":\"Refresh cache\"}','cache','y','s','1','y'),
+(20,'{\"ru\":\"Авторизация\",\"en\":\"Authorization\"}','login','y','s','1','y'),
+(33,'{\"ru\":\"Автор\",\"en\":\"Author\"}','author','y','s','1','y'),
+(34,'{\"ru\":\"PHP\",\"en\":\"PHP\"}','php','y','s','1','y'),
+(35,'{\"ru\":\"JS\",\"en\":\"JS\"}','js','y','s','1','y'),
+(36,'{\"ru\":\"Экспорт\",\"en\":\"Export\"}','export','y','s','1','y'),
+(37,'{\"ru\":\"Перейти\",\"en\":\"Go to\"}','goto','y','s','1','y'),
+(38,'{\"ru\":\"\",\"en\":\"\"}','rwu','n','s','0','y'),
+(39,'{\"ru\":\"Активировать\",\"en\":\"Activate\"}','activate','y','s','1','y'),
+(40,'{\"ru\":\"Доступные языки\",\"en\":\"Available languages\"}','dict','n','s','1','y'),
+(41,'{\"ru\":\"Запустить\",\"en\":\"Run\"}','run','y','s','1','y'),
+(42,'{\"ru\":\"График\",\"en\":\"Schedule\"}','chart','y','s','1','y'),
+(43,'{\"ru\":\"Вординги\",\"en\":\"Wordings\"}','wordings','y','s','1','y'),
+(44,'{\"ru\":\"Перезапустить\",\"en\":\"Restart\"}','restart','n','s','1','y'),
+(45,'{\"ru\":\"Копировать\",\"en\":\"Copy\"}','copy','y','s','1','y'),
+(47,'{\"ru\":\"Импорт\",\"en\":\"Import\"}','import','y','s','1','y'),
+(48,'{\"ru\":\"Восстановить\",\"en\":\"Restore\"}','revert','y','s','1','y');
 
---
--- Table structure for table `admin`
---
+/*Table structure for table `admin` */
 
 DROP TABLE IF EXISTS `admin`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `admin` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `profileId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `profileId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `email` varchar(255) NOT NULL DEFAULT '',
   `password` varchar(255) NOT NULL DEFAULT '',
@@ -71,37 +79,29 @@ CREATE TABLE `admin` (
   KEY `demo` (`demo`),
   KEY `uiedit` (`uiedit`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `admin`
---
+/*Data for the table `admin` */
 
-LOCK TABLES `admin` WRITE;
-/*!40000 ALTER TABLE `admin` DISABLE KEYS */;
-INSERT INTO `admin` VALUES (1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','pavel.perminov.23@gmail.com','*0724CB8842E33E0B3C7DC66B23DC788469E82724','y','n','y'),(14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
-/*!40000 ALTER TABLE `admin` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `admin`(`id`,`profileId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values
+(1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','pavel.perminov.23@gmail.com','*0724CB8842E33E0B3C7DC66B23DC788469E82724','y','n','y'),
+(14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
 
---
--- Table structure for table `alteredField`
---
+/*Table structure for table `alteredField` */
 
 DROP TABLE IF EXISTS `alteredField`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `alteredField` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `fieldId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sectionId` int NOT NULL DEFAULT '0',
+  `fieldId` int NOT NULL DEFAULT '0',
   `defaultValue` varchar(255) NOT NULL DEFAULT '',
   `mode` enum('hidden','readonly','inherit','regular','required') NOT NULL DEFAULT 'inherit',
   `title` text NOT NULL,
   `impact` enum('all','only','except') NOT NULL DEFAULT 'all',
   `profileIds` varchar(255) NOT NULL DEFAULT '',
   `rename` text NOT NULL,
-  `elementId` int(11) NOT NULL DEFAULT '0',
+  `elementId` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
@@ -111,38 +111,31 @@ CREATE TABLE `alteredField` (
   KEY `elementId` (`elementId`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=225 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `alteredField`
---
+/*Data for the table `alteredField` */
 
-LOCK TABLES `alteredField` WRITE;
-/*!40000 ALTER TABLE `alteredField` DISABLE KEYS */;
-INSERT INTO `alteredField` VALUES (216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1),(219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0),(220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0);
-/*!40000 ALTER TABLE `alteredField` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`title`,`impact`,`profileIds`,`rename`,`elementId`) values
+(216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1),
+(219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0),
+(220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0);
 
---
--- Table structure for table `changeLog`
---
+/*Table structure for table `changeLog` */
 
 DROP TABLE IF EXISTS `changeLog`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `changeLog` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `entityId` int(11) NOT NULL DEFAULT '0',
-  `key` int(11) NOT NULL DEFAULT '0',
-  `fieldId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `entityId` int NOT NULL DEFAULT '0',
+  `key` int NOT NULL DEFAULT '0',
+  `fieldId` int NOT NULL DEFAULT '0',
   `was` text NOT NULL,
   `now` text NOT NULL,
   `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `monthId` int(11) NOT NULL DEFAULT '0',
-  `changerType` int(11) NOT NULL DEFAULT '0',
-  `changerId` int(11) NOT NULL DEFAULT '0',
-  `profileId` int(11) NOT NULL DEFAULT '0',
+  `monthId` int NOT NULL DEFAULT '0',
+  `changerType` int NOT NULL DEFAULT '0',
+  `changerId` int NOT NULL DEFAULT '0',
+  `profileId` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `key` (`key`),
@@ -153,62 +146,53 @@ CREATE TABLE `changeLog` (
   KEY `profileId` (`profileId`),
   FULLTEXT KEY `was` (`was`),
   FULLTEXT KEY `now` (`now`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `changeLog`
---
+/*Data for the table `changeLog` */
 
-LOCK TABLES `changeLog` WRITE;
-/*!40000 ALTER TABLE `changeLog` DISABLE KEYS */;
-/*!40000 ALTER TABLE `changeLog` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `columnType`
---
+/*Table structure for table `columnType` */
 
 DROP TABLE IF EXISTS `columnType`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `columnType` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `type` varchar(255) NOT NULL DEFAULT '',
   `canStoreRelation` enum('y','n') NOT NULL DEFAULT 'n',
   `elementId` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `canStoreRelation` (`canStoreRelation`),
   KEY `elementId` (`elementId`)
-) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `columnType`
---
+/*Data for the table `columnType` */
 
-LOCK TABLES `columnType` WRITE;
-/*!40000 ALTER TABLE `columnType` DISABLE KEYS */;
-INSERT INTO `columnType` VALUES (1,'VARCHAR(255)','y','22,23,1,7'),(3,'INT(11)','y','4,5,23,1,18'),(4,'TEXT','y','6,7,13,1'),(5,'DECIMAL(11,2)','n','24'),(6,'DATE','n','12'),(7,'YEAR','n',''),(8,'TIME','n','17'),(9,'DATETIME','n','19'),(10,'ENUM','n','5,23'),(11,'SET','n','23,1,6,7'),(12,'BOOLEAN','n','9'),(13,'VARCHAR(10)','n','11');
-/*!40000 ALTER TABLE `columnType` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `columnType`(`id`,`type`,`canStoreRelation`,`elementId`) values
+(1,'VARCHAR(255)','y','22,23,1,7'),
+(3,'INT(11)','y','4,5,23,1,18'),
+(4,'TEXT','y','6,7,13,1'),
+(5,'DECIMAL(11,2)','n','24'),
+(6,'DATE','n','12'),
+(7,'YEAR','n',''),
+(8,'TIME','n','17'),
+(9,'DATETIME','n','19'),
+(10,'ENUM','n','5,23'),
+(11,'SET','n','23,1,6,7'),
+(12,'BOOLEAN','n','9'),
+(13,'VARCHAR(10)','n','11');
 
---
--- Table structure for table `consider`
---
+/*Table structure for table `consider` */
 
 DROP TABLE IF EXISTS `consider`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `consider` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `entityId` int(11) NOT NULL DEFAULT '0',
-  `fieldId` int(11) NOT NULL DEFAULT '0',
-  `consider` int(11) NOT NULL DEFAULT '0',
-  `foreign` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `entityId` int NOT NULL DEFAULT '0',
+  `fieldId` int NOT NULL DEFAULT '0',
+  `consider` int NOT NULL DEFAULT '0',
+  `foreign` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `required` enum('n','y') NOT NULL DEFAULT 'n',
-  `connector` int(11) NOT NULL DEFAULT '0',
+  `connector` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `fieldId` (`fieldId`),
@@ -217,28 +201,57 @@ CREATE TABLE `consider` (
   KEY `required` (`required`),
   KEY `connector` (`connector`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=61 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `consider`
---
+/*Data for the table `consider` */
 
-LOCK TABLES `consider` WRITE;
-/*!40000 ALTER TABLE `consider` DISABLE KEYS */;
-INSERT INTO `consider` VALUES (1,308,2307,2246,12,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),(2,5,9,10,0,'{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','y',0),(3,5,10,470,0,'{\"ru\":\"Предназначено для хранения ключей\",\"en\":\"Store keys\"}','y',0),(4,9,34,33,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),(23,9,2313,34,12,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',6),(24,195,2314,1443,12,'{\"ru\":\"Поле прикрепленной к разделу сущности\",\"en\":\"Field\"}','y',6),(47,91,2166,2433,7,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','y',0),(7,3,503,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(8,195,1443,1442,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),(12,171,1342,1341,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),(14,3,1554,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(16,3,2211,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(17,309,2262,2255,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(18,308,2247,2246,6,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),(19,308,2248,2247,12,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','y',6),(20,313,2292,2291,0,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y',0),(21,313,2293,2291,0,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y',0),(22,313,2299,2298,0,'{\"ru\":\"Тип автора\",\"en\":\"Author type\"}','y',0),(25,3,2322,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(26,3,2323,2322,0,'{\"ru\":\"Плитка\",\"en\":\"Tile\"}','y',106),(27,9,1886,2165,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),(28,195,1658,2167,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),(29,8,2209,2164,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),(30,171,2252,2169,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),(31,9,2200,34,2199,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),(32,314,2382,2342,16,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','y',0),(33,314,2382,2343,16,'{\"ru\":\"Статус\",\"en\":\"Status\"}','y',0),(34,8,2164,27,31,'{\"ru\":\"Действие\",\"en\":\"Action\"}','y',0),(35,9,2165,34,7,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),(37,195,2167,1443,7,'{\"ru\":\"Поле прикрепленной к разделу сущности\",\"en\":\"Field\"}','y',0),(39,171,2169,1342,7,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),(40,310,2280,2275,36,'{\"ru\":\"Роль\",\"en\":\"Role\"}','y',0),(41,308,2249,2247,7,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','y',0),(42,318,2399,2398,1337,'{\"ru\":\"Роль\",\"en\":\"Role\"}','y',0),(43,318,2407,2405,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),(44,318,2408,2406,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(45,91,2433,476,10,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',2435),(46,5,2435,6,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),(48,318,2409,2397,16,'{\"ru\":\"Тип\",\"en\":\"Type\"}','y',0);
-/*!40000 ALTER TABLE `consider` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `consider`(`id`,`entityId`,`fieldId`,`consider`,`foreign`,`title`,`required`,`connector`) values
+(1,308,2307,2246,12,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
+(2,5,9,10,0,'{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','y',0),
+(3,5,10,470,0,'{\"ru\":\"Предназначено для хранения ключей\",\"en\":\"Store keys\"}','y',0),
+(4,9,34,33,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),
+(23,9,2313,34,12,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',6),
+(24,195,2314,1443,12,'{\"ru\":\"Поле прикрепленной к разделу сущности\",\"en\":\"Field\"}','y',6),
+(47,91,2166,2433,7,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','y',0),
+(7,3,503,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(8,195,1443,1442,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),
+(12,171,1342,1341,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),
+(14,3,1554,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(16,3,2211,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(17,309,2262,2255,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(18,308,2247,2246,6,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
+(19,308,2248,2247,12,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','y',6),
+(20,313,2292,2291,0,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y',0),
+(21,313,2293,2291,0,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y',0),
+(22,313,2299,2298,0,'{\"ru\":\"Тип автора\",\"en\":\"Author type\"}','y',0),
+(25,3,2322,19,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(26,3,2323,2322,0,'{\"ru\":\"Плитка\",\"en\":\"Tile\"}','y',106),
+(27,9,1886,2165,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),
+(28,195,1658,2167,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),
+(29,8,2209,2164,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),
+(30,171,2252,2169,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','y',0),
+(31,9,2200,34,2199,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
+(32,314,2382,2342,16,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','y',0),
+(33,314,2382,2343,16,'{\"ru\":\"Статус\",\"en\":\"Status\"}','y',0),
+(34,8,2164,27,31,'{\"ru\":\"Действие\",\"en\":\"Action\"}','y',0),
+(35,9,2165,34,7,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
+(37,195,2167,1443,7,'{\"ru\":\"Поле прикрепленной к разделу сущности\",\"en\":\"Field\"}','y',0),
+(39,171,2169,1342,7,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
+(40,310,2280,2275,36,'{\"ru\":\"Роль\",\"en\":\"Role\"}','y',0),
+(41,308,2249,2247,7,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','y',0),
+(42,318,2399,2398,1337,'{\"ru\":\"Роль\",\"en\":\"Role\"}','y',0),
+(43,318,2407,2405,19,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','y',0),
+(44,318,2408,2406,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(45,91,2433,476,10,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',2435),
+(46,5,2435,6,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y',0),
+(48,318,2409,2397,16,'{\"ru\":\"Тип\",\"en\":\"Type\"}','y',0);
 
---
--- Table structure for table `element`
---
+/*Table structure for table `element` */
 
 DROP TABLE IF EXISTS `element`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `element` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
   `storeRelationAbility` set('none','one','many') NOT NULL DEFAULT 'none',
@@ -247,37 +260,45 @@ CREATE TABLE `element` (
   KEY `storeRelationAbility` (`storeRelationAbility`),
   KEY `storeRelationAbility_2` (`storeRelationAbility`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `element`
---
+/*Data for the table `element` */
 
-LOCK TABLES `element` WRITE;
-/*!40000 ALTER TABLE `element` DISABLE KEYS */;
-INSERT INTO `element` VALUES (1,'{\"ru\":\"Строка\",\"en\":\"String\"}','string','none,many',0),(4,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move','none',1),(5,'{\"ru\":\"Радио-кнопки\",\"en\":\"Radio buttons\"}','radio','one',0),(6,'{\"ru\":\"Текст\",\"en\":\"Text\"}','textarea','none,many',0),(7,'{\"ru\":\"Чекбоксы\",\"en\":\"Checkboxes\"}','multicheck','many',0),(9,'{\"ru\":\"Чекбокс\",\"en\":\"Checkbox\"}','check','none',0),(11,'{\"ru\":\"Цвет\",\"en\":\"Color picker\"}','color','none',0),(12,'{\"ru\":\"Календарь\",\"en\":\"Date picker\"}','calendar','none',0),(13,'{\"ru\":\"HTML-редактор\",\"en\":\"HTML editor\"}','html','none',0),(14,'{\"ru\":\"Файл\",\"en\":\"File-upload panel\"}','upload','none',0),(16,'{\"ru\":\"Группа полей\",\"en\":\"Field group\"}','span','none',0),(17,'{\"ru\":\"Время\",\"en\":\"Time\"}','time','none',0),(18,'{\"ru\":\"Число\",\"en\":\"Number\"}','number','none,one',0),(19,'{\"ru\":\"Момент\",\"en\":\"Datetime picker\"}','datetime','none',0),(22,'{\"ru\":\"Скрытое поле\",\"en\":\"Hidden field\"}','hidden','none',0),(23,'{\"ru\":\"Список\",\"en\":\"Combo\"}','combo','one,many',0),(24,'{\"ru\":\"Цена\",\"en\":\"Price\"}','price','none',0),(26,'{\"ru\":\"Число .000\",\"en\":\"Number .000\"}','decimal143','none',0);
-/*!40000 ALTER TABLE `element` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `element`(`id`,`title`,`alias`,`storeRelationAbility`,`hidden`) values
+(1,'{\"ru\":\"Строка\",\"en\":\"String\"}','string','none,many',0),
+(4,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move','none',1),
+(5,'{\"ru\":\"Радио-кнопки\",\"en\":\"Radio buttons\"}','radio','one',0),
+(6,'{\"ru\":\"Текст\",\"en\":\"Text\"}','textarea','none,many',0),
+(7,'{\"ru\":\"Чекбоксы\",\"en\":\"Checkboxes\"}','multicheck','many',0),
+(9,'{\"ru\":\"Чекбокс\",\"en\":\"Checkbox\"}','check','none',0),
+(11,'{\"ru\":\"Цвет\",\"en\":\"Color picker\"}','color','none',0),
+(12,'{\"ru\":\"Календарь\",\"en\":\"Date picker\"}','calendar','none',0),
+(13,'{\"ru\":\"HTML-редактор\",\"en\":\"HTML editor\"}','html','none',0),
+(14,'{\"ru\":\"Файл\",\"en\":\"File-upload panel\"}','upload','none',0),
+(16,'{\"ru\":\"Группа полей\",\"en\":\"Field group\"}','span','none',0),
+(17,'{\"ru\":\"Время\",\"en\":\"Time\"}','time','none',0),
+(18,'{\"ru\":\"Число\",\"en\":\"Number\"}','number','none,one',0),
+(19,'{\"ru\":\"Момент\",\"en\":\"Datetime picker\"}','datetime','none',0),
+(22,'{\"ru\":\"Скрытое поле\",\"en\":\"Hidden field\"}','hidden','none',0),
+(23,'{\"ru\":\"Список\",\"en\":\"Combo\"}','combo','one,many',0),
+(24,'{\"ru\":\"Цена\",\"en\":\"Price\"}','price','none',0),
+(26,'{\"ru\":\"Число .000\",\"en\":\"Number .000\"}','decimal143','none',0);
 
---
--- Table structure for table `entity`
---
+/*Table structure for table `entity` */
 
 DROP TABLE IF EXISTS `entity`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `entity` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
   `table` varchar(255) NOT NULL DEFAULT '',
   `extends` varchar(255) NOT NULL DEFAULT 'Indi_Db_Table',
   `system` enum('n','y','o') NOT NULL DEFAULT 'n',
   `useCache` tinyint(1) NOT NULL DEFAULT '0',
-  `titleFieldId` int(11) NOT NULL DEFAULT '0',
+  `titleFieldId` int NOT NULL DEFAULT '0',
   `spaceScheme` enum('none','date','datetime','date-time','date-timeId','date-dayQty','datetime-minuteQty','date-time-minuteQty','date-timeId-minuteQty','date-timespan') NOT NULL DEFAULT 'none',
   `spaceFields` varchar(255) NOT NULL DEFAULT '',
-  `filesGroupBy` int(11) NOT NULL DEFAULT '0',
+  `filesGroupBy` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `system` (`system`),
   KEY `titleFieldId` (`titleFieldId`),
@@ -285,71 +306,316 @@ CREATE TABLE `entity` (
   KEY `spaceFields` (`spaceFields`),
   KEY `filesGroupBy` (`filesGroupBy`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=333 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=333 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `entity`
---
+/*Data for the table `entity` */
 
-LOCK TABLES `entity` WRITE;
-/*!40000 ALTER TABLE `entity` DISABLE KEYS */;
-INSERT INTO `entity` VALUES (1,'{\"ru\":\"Тип столбца\",\"en\":\"MySQL column type\"}','columnType','Indi_Db_Table','y',0,2,'none','',0),(2,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entity','Indi_Db_Table','y',1,4,'none','',0),(3,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','section','Indi_Db_Table','y',0,20,'none','',0),(4,'{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}','element','Indi_Db_Table','y',0,64,'none','',0),(5,'{\"ru\":\"Поле\",\"en\":\"Field\"}','field','Indi_Db_Table','y',1,7,'none','',0),(6,'{\"ru\":\"Значение из набора\",\"en\":\"Enumset\"}','enumset','Indi_Db_Table','y',0,16,'none','',0),(7,'{\"ru\":\"Действие\",\"en\":\"Action\"}','action','Indi_Db_Table','y',0,31,'none','',0),(8,'{\"ru\":\"Действие в разделе\",\"en\":\"Action in the section\"}','section2action','Indi_Db_Table','y',0,27,'none','',0),(9,'{\"ru\":\"Столбец грида\",\"en\":\"Grid column\"}','grid','Indi_Db_Table','y',0,34,'none','',0),(10,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profile','Indi_Db_Table','y',0,36,'none','',0),(11,'{\"ru\":\"Администратор\",\"en\":\"Administrator\"}','admin','Indi_Db_Table','y',0,39,'none','',0),(20,'{\"ru\":\"Копия\",\"en\":\"Resized copy\"}','resize','Indi_Db_Table','y',0,107,'none','',0),(91,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','param','Indi_Db_Table','y',0,2433,'none','',0),(195,'{\"ru\":\"Фильтр\",\"en\":\"Filter\"}','search','Indi_Db_Table','y',0,1443,'none','',0),(307,'{\"ru\":\"Язык\",\"en\":\"Language\"}','lang','Indi_Db_Table','y',0,2236,'none','',0),(171,'{\"ru\":\"Поле, измененное в рамках раздела\",\"en\":\"Field adjusted for the section\"}','alteredField','Indi_Db_Table','y',0,1342,'none','',0),(309,'{\"ru\":\"Уведомление\",\"en\":\"Notification\"}','notice','Indi_Db_Table','y',0,2254,'none','',0),(310,'{\"ru\":\"Получатель уведомлений\",\"en\":\"Notification getter\"}','noticeGetter','Indi_Db_Table','y',0,2275,'none','',0),(308,'{\"ru\":\"Зависимость\",\"en\":\"Field dependency\"}','consider','Indi_Db_Table','y',0,2247,'none','',0),(311,'{\"ru\":\"Год\",\"en\":\"Year\"}','year','Indi_Db_Table','y',0,2286,'none','',0),(312,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month','Indi_Db_Table','y',0,2289,'none','',0),(313,'{\"ru\":\"Корректировка\",\"en\":\"Changelog entry\"}','changeLog','Indi_Db_Table','y',0,2296,'none','',0),(314,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTask','Indi_Db_Table','y',0,2336,'none','',0),(315,'{\"ru\":\"Сегмент очереди\",\"en\":\"Queue chunk\"}','queueChunk','Indi_Db_Table','y',0,2359,'none','',0),(316,'{\"ru\":\"Элемент очереди\",\"en\":\"Queue item\"}','queueItem','Indi_Db_Table','y',0,0,'none','',0),(318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','Indi_Db_Table','y',0,2409,'none','',0);
-/*!40000 ALTER TABLE `entity` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `entity`(`id`,`title`,`table`,`extends`,`system`,`useCache`,`titleFieldId`,`spaceScheme`,`spaceFields`,`filesGroupBy`) values
+(1,'{\"ru\":\"Тип столбца\",\"en\":\"MySQL column type\"}','columnType','Indi_Db_Table','y',0,2,'none','',0),
+(2,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entity','Indi_Db_Table','y',1,4,'none','',0),
+(3,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','section','Indi_Db_Table','y',0,20,'none','',0),
+(4,'{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}','element','Indi_Db_Table','y',0,64,'none','',0),
+(5,'{\"ru\":\"Поле\",\"en\":\"Field\"}','field','Indi_Db_Table','y',1,7,'none','',0),
+(6,'{\"ru\":\"Значение из набора\",\"en\":\"Enumset\"}','enumset','Indi_Db_Table','y',0,16,'none','',0),
+(7,'{\"ru\":\"Действие\",\"en\":\"Action\"}','action','Indi_Db_Table','y',0,31,'none','',0),
+(8,'{\"ru\":\"Действие в разделе\",\"en\":\"Action in the section\"}','section2action','Indi_Db_Table','y',0,27,'none','',0),
+(9,'{\"ru\":\"Столбец грида\",\"en\":\"Grid column\"}','grid','Indi_Db_Table','y',0,34,'none','',0),
+(10,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profile','Indi_Db_Table','y',0,36,'none','',0),
+(11,'{\"ru\":\"Администратор\",\"en\":\"Administrator\"}','admin','Indi_Db_Table','y',0,39,'none','',0),
+(20,'{\"ru\":\"Копия\",\"en\":\"Resized copy\"}','resize','Indi_Db_Table','y',0,107,'none','',0),
+(91,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','param','Indi_Db_Table','y',0,2433,'none','',0),
+(195,'{\"ru\":\"Фильтр\",\"en\":\"Filter\"}','search','Indi_Db_Table','y',0,1443,'none','',0),
+(307,'{\"ru\":\"Язык\",\"en\":\"Language\"}','lang','Indi_Db_Table','y',0,2236,'none','',0),
+(171,'{\"ru\":\"Поле, измененное в рамках раздела\",\"en\":\"Field adjusted for the section\"}','alteredField','Indi_Db_Table','y',0,1342,'none','',0),
+(309,'{\"ru\":\"Уведомление\",\"en\":\"Notification\"}','notice','Indi_Db_Table','y',0,2254,'none','',0),
+(310,'{\"ru\":\"Получатель уведомлений\",\"en\":\"Notification getter\"}','noticeGetter','Indi_Db_Table','y',0,2275,'none','',0),
+(308,'{\"ru\":\"Зависимость\",\"en\":\"Field dependency\"}','consider','Indi_Db_Table','y',0,2247,'none','',0),
+(311,'{\"ru\":\"Год\",\"en\":\"Year\"}','year','Indi_Db_Table','y',0,2286,'none','',0),
+(312,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month','Indi_Db_Table','y',0,2289,'none','',0),
+(313,'{\"ru\":\"Корректировка\",\"en\":\"Changelog entry\"}','changeLog','Indi_Db_Table','y',0,2296,'none','',0),
+(314,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTask','Indi_Db_Table','y',0,2336,'none','',0),
+(315,'{\"ru\":\"Сегмент очереди\",\"en\":\"Queue chunk\"}','queueChunk','Indi_Db_Table','y',0,2359,'none','',0),
+(316,'{\"ru\":\"Элемент очереди\",\"en\":\"Queue item\"}','queueItem','Indi_Db_Table','y',0,0,'none','',0),
+(318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','Indi_Db_Table','y',0,2409,'none','',0);
 
---
--- Table structure for table `enumset`
---
+/*Table structure for table `enumset` */
 
 DROP TABLE IF EXISTS `enumset`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `enumset` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `fieldId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fieldId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
-  `move` int(11) NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=1249 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=1249 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `enumset`
---
+/*Data for the table `enumset` */
 
-LOCK TABLES `enumset` WRITE;
-/*!40000 ALTER TABLE `enumset` DISABLE KEYS */;
-INSERT INTO `enumset` VALUES (1,3,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',1),(2,3,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',2),(5,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',5),(6,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',6),(9,29,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',9),(10,29,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Turned off\"}','n',10),(11,37,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',11),(12,37,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',12),(13,42,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',13),(14,42,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',14),(62,66,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',62),(63,66,'{\"ru\":\"Только с одним значением ключа\",\"en\":\"With only one key value\"}','one',63),(64,66,'{\"ru\":\"С набором значений ключей\",\"en\":\"With a set of key values\"}','many',64),(87,111,'{\"ru\":\"Поменять, но с сохранением пропорций\",\"en\":\"Change, but keep proportions\"}','p',87),(88,111,'{\"ru\":\"Поменять\",\"en\":\"Change\"}','c',88),(89,111,'{\"ru\":\"Не менять\",\"en\":\"Do not change\"}','o',89),(91,114,'{\"ru\":\"Ширины\",\"en\":\"Width\"}','width',91),(92,114,'{\"ru\":\"Высоты\",\"en\":\"Height\"}','height',92),(112,345,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',112),(113,345,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',113),(122,0,'Всем друзьям, кроме указанных в разделе \"Исключения из правил доступа на просмотр блога\"','ae',122),(181,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>No\"}','none',164),(183,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Да, несколько ключей\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Yes, multiple keys\"}','many',296),(184,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Да, но только один ключ\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Yes, but only one key\"}','one',295),(1076,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 1px solid blue;\\u0022><\\/span>Скрыт, но показан в развороте\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 1px solid blue;\\u0022><\\/span>Hidden, but shown in row expander\"}','e',1076),(213,557,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_asc.png) -5px -1px;\\\"><\\/span>По возрастанию\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_asc.png) -5px -1px;\\\"><\\/span>Ascending\"}','ASC',297),(214,557,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>По убыванию\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>Descending\"}','DESC',182),(219,594,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',299),(220,594,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',300),(227,612,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','n',301),(228,612,'{\"ru\":\"<span style=\'color: red\'>Системная<\\/span>\",\"en\":\"<span style=\'color: red\'>System<\\/span>\"}','y',186),(580,1445,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',0),(581,1445,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',464),(979,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Обычное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Regular\"}','regular',979),(980,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Обязательное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Required\"}','required',980),(981,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Только чтение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Readonly\"}','readonly',981),(982,2197,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Скрытое\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Hidden\"}','hidden',982),(328,0,'Очень плохо','1',254),(574,1366,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',462),(573,1366,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',0),(575,1366,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',463),(567,1364,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',0),(568,1364,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',458),(569,1364,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',459),(566,612,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',457),(960,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',0),(961,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',489),(983,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',983),(984,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',984),(985,2203,'{\"ru\":\"Всем\",\"en\":\"Everyone\"}','all',985),(986,2203,'{\"ru\":\"Никому, кроме\",\"en\":\"Only\"}','only',986),(987,2203,'{\"ru\":\"Всем, кроме\",\"en\":\"Everyone except\"}','except',987),(988,2205,'{\"ru\":\"Всем\",\"en\":\"Everyone\"}','all',988),(989,2205,'{\"ru\":\"Никому, кроме\",\"en\":\"Only\"}','only',989),(990,2205,'{\"ru\":\"Всем, кроме\",\"en\":\"Everyone except\"}','except',990),(991,2207,'{\"ru\":\"Все\",\"en\":\"Everyone\"}','all',991),(992,2207,'{\"ru\":\"Никто, кроме\",\"en\":\"Noone except\"}','only',992),(993,2207,'{\"ru\":\"Все, кроме\",\"en\":\"Everyone except\"}','except',993),(994,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','0',994),(995,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','1',995),(996,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Авто\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Auto\"}','auto',996),(997,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Отображать\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Display\"}','yes',997),(998,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Не отображать\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Do not display\"}','no',998),(999,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\\"><\\/span>Авто\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\\"><\\/span>Auto\"}','auto',999),(1000,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\\"><\\/span>Отдельным запросом\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\\"><\\/span>Separate request\"}','yes',1000),(1001,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/required.png);\\\"><\\/span>В том же запросе\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/required.png);\\\"><\\/span>In the same request\"}','no',1001),(1002,2214,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1002),(1003,2214,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Turned off\"}','n',1003),(1036,2267,'{\"ru\":\"Увеличение\",\"en\":\"Increase\"}','inc',1036),(1037,2267,'{\"ru\":\"Уменьшение\",\"en\":\"Decrease\"}','dec',1037),(1032,2258,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1032),(1033,2258,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Turned off\"}','n',1033),(1034,2261,'{\"ru\":\"Одинаковое для всех получателей\",\"en\":\"Same for all recipients\"}','event',1034),(1035,2261,'{\"ru\":\"Неодинаковое, зависит от получателя\",\"en\":\"Not the same, depends on the recipient\"}','getter',1035),(1010,2238,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1010),(1011,2238,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',1011),(1012,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1012),(1013,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1088),(1017,2243,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',1017),(1018,2243,'{\"ru\":\"DATE\",\"en\":\"DATE\"}','date',1018),(1019,2243,'{\"ru\":\"DATETIME\",\"en\":\"DATETIME\"}','datetime',1019),(1020,2243,'{\"ru\":\"DATE, TIME\",\"en\":\"DATE, TIME\"}','date-time',1020),(1021,2243,'{\"ru\":\"DATE, timeId\",\"en\":\"DATE, timeId\"}','date-timeId',1021),(1022,2243,'{\"ru\":\"DATE, dayQty\",\"en\":\"DATE, dayQty\"}','date-dayQty',1022),(1023,2243,'{\"ru\":\"DATETIME, minuteQty\",\"en\":\"DATETIME, minuteQty\"}','datetime-minuteQty',1023),(1024,2243,'{\"ru\":\"DATE, TIME, minuteQty\",\"en\":\"DATE, TIME, minuteQty\"}','date-time-minuteQty',1024),(1025,2243,'{\"ru\":\"DATE, timeId, minuteQty\",\"en\":\"DATE, timeId, minuteQty\"}','date-timeId-minuteQty',1025),(1026,2243,'{\"ru\":\"DATE, hh:mm-hh:mm\",\"en\":\"DATE, hh:mm-hh:mm\"}','date-timespan',1026),(1027,2161,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Скрытое\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Hidden\"}','hidden',1031),(1028,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Только чтение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Readonly\"}','readonly',1030),(1029,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\u0022><\\/span>Без изменений\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\u0022><\\/span>Inherit\"}','inherit',1027),(1030,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Обычное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Regular\"}','regular',1028),(1031,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Обязательное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Required\"}','required',1029),(1038,2267,'{\"ru\":\"Изменение\",\"en\":\"Change\"}','evt',1038),(1039,2276,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','event',1039),(1040,2276,'{\"ru\":\"Раздельный\",\"en\":\"Separate\"}','getter',1040),(1041,2281,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1041),(1042,2281,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1042),(1043,2282,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1043),(1044,2282,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1044),(1045,2283,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1045),(1046,2283,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1046),(1047,2285,'<span class=\"i-color-box\" style=\"background: lightgray;\"></span>Нет','n',1047),(1048,2285,'<span class=\"i-color-box\" style=\"background: lime;\"></span>Да','y',1048),(1049,2288,'{\"ru\":\"Январь\",\"en\":\"January\"}','01',1049),(1050,2288,'{\"ru\":\"Февраль\",\"en\":\"February\"}','02',1050),(1051,2288,'{\"ru\":\"Март\",\"en\":\"March\"}','03',1051),(1052,2288,'{\"ru\":\"Апрель\",\"en\":\"April\"}','04',1052),(1053,2288,'{\"ru\":\"Май\",\"en\":\"May\"}','05',1053),(1054,2288,'{\"ru\":\"Июнь\",\"en\":\"June\"}','06',1054),(1055,2288,'{\"ru\":\"Июль\",\"en\":\"July\"}','07',1055),(1056,2288,'{\"ru\":\"Август\",\"en\":\"August\"}','08',1056),(1057,2288,'{\"ru\":\"Сентябрь\",\"en\":\"September\"}','09',1057),(1058,2288,'{\"ru\":\"Октябрь\",\"en\":\"October\"}','10',1058),(1059,2288,'{\"ru\":\"Ноябрь\",\"en\":\"November\"}','11',1059),(1060,2288,'{\"ru\":\"Декабрь\",\"en\":\"December\"}','12',1060),(1061,2301,'{\"ru\":\"Всем пользователям\",\"en\":\"All users\"}','all',1061),(1062,2301,'{\"ru\":\"Только выбранным\",\"en\":\"Only chosen\"}','only',1062),(1063,2301,'{\"ru\":\"Всем кроме выбранных\",\"en\":\"Everyone except the chosen ones\"}','except',1063),(1064,2301,'{\"ru\":\"Никому\",\"en\":\"Noone\"}','none',1064),(1065,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Скрыт\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Hidden\"}','h',1065),(1066,2304,'{\"ru\":\"Пусто\",\"en\":\"Empty\"}','none',1066),(1067,2304,'{\"ru\":\"Сумма\",\"en\":\"Summary\"}','sum',1067),(1068,2304,'{\"ru\":\"Среднее\",\"en\":\"Average\"}','average',1068),(1069,2304,'{\"ru\":\"Минимум\",\"en\":\"Minimum\"}','min',1069),(1070,2304,'{\"ru\":\"Максимум\",\"en\":\"Maximum\"}','max',1070),(1071,2304,'{\"ru\":\"Текст\",\"en\":\"Text\"}','text',1071),(1072,2306,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1072),(1073,2306,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Yes\"}','y',1073),(1074,2308,'{\"ru\":\"Обычные\",\"en\":\"Normal\"}','normal',1075),(1075,2308,'{\"ru\":\"Зафиксированные\",\"en\":\"Locked\"}','locked',1074),(1077,2316,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1077),(1078,2316,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',1078),(1079,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Скрыт\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Hidden\"}','h',1079),(1080,2318,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1080),(1081,2318,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1081),(1082,2319,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1082),(1083,2319,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1083),(1084,2321,'{\"ru\":\"Проектное\",\"en\":\"Custom\"}','p',1084),(1085,2321,'{\"ru\":\"<font color=red>Системное<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',1085),(1086,2324,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1086),(1087,2324,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1087),(1088,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1013),(1089,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1089),(1090,2325,'{\"ru\":\"Ничего\",\"en\":\"Nothing\"}','noth',1090),(1091,2325,'{\"ru\":\"Чтото\",\"en\":\"Least\"}','smth',1091),(1092,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1092),(1093,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1093),(1094,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1094),(1095,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1095),(1096,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1096),(1097,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1097),(1098,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1098),(1099,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1099),(1100,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1100),(1101,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1101),(1102,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1102),(1103,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1103),(1104,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1104),(1105,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1105),(1106,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1106),(1107,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1107),(1108,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1108),(1109,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1109),(1110,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1110),(1111,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1111),(1112,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1112),(1113,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1113),(1114,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1114),(1115,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1115),(1116,2342,'{\"ru\":\"Оценка масштабов\",\"en\":\"Scope assessment\"}','count',1116),(1117,2342,'{\"ru\":\"Создание очереди\",\"en\":\"Queue creation\"}','items',1117),(1118,2342,'{\"ru\":\"Процессинг очереди\",\"en\":\"Queue processing\"}','queue',1118),(1119,2342,'{\"ru\":\"Применение результатов\",\"en\":\"Application of results\"}','apply',1119),(1120,2343,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1120),(1121,2343,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1121),(1122,2343,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1122),(1123,2346,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1123),(1124,2346,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1124),(1125,2346,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1125),(1126,2349,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1126),(1127,2349,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1127),(1128,2349,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1128),(1129,2353,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1129),(1130,2353,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1130),(1131,2353,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1131),(1132,2353,'{\"ru\":\"Не требуется\",\"en\":\"Not required\"}','noneed',1132),(1133,2356,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1133),(1134,2356,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1134),(1135,2356,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1135),(1136,2362,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1136),(1137,2362,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1137),(1138,2362,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1138),(1139,2365,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1139),(1140,2365,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1140),(1141,2365,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1141),(1142,2368,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1142),(1143,2368,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1143),(1144,2368,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1144),(1145,2368,'{\"ru\":\"Не требуется\",\"en\":\"Not required\"}','noneed',1145),(1146,2371,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1146),(1147,2371,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1147),(1148,2371,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1148),(1149,2378,'{\"ru\":\"Добавлен\",\"en\":\"Added\"}','items',1149),(1150,2378,'{\"ru\":\"Обработан\",\"en\":\"Processed\"}','queue',1150),(1151,2378,'{\"ru\":\"Применен\",\"en\":\"Applied\"}','apply',1151),(1152,2381,'{\"ru\":\"Не указана\",\"en\":\"Not specified\"}','none',1152),(1153,2381,'{\"ru\":\"AdminSystemUi\",\"en\":\"AdminSystemUi\"}','adminSystemUi',1153),(1154,2381,'{\"ru\":\"AdminCustomUi\",\"en\":\"AdminCustomUi\"}','adminCustomUi',1154),(1155,2381,'{\"ru\":\"AdminCustomData\",\"en\":\"AdminCustomData\"}','adminCustomData',1155),(1156,2384,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',1156),(1158,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1158),(1157,2384,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',1157),(1159,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1159),(1160,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1160),(1161,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1161),(1169,2397,'{\"ru\":\"Сессия\",\"en\":\"Session\"}','session',1169),(1170,2397,'{\"ru\":\"Вкладка\",\"en\":\"Tab\"}','channel',1170),(1171,2397,'{\"ru\":\"Контекст\",\"en\":\"Context\"}','context',1171),(1172,2410,'{\"ru\":\"Не применимо\",\"en\":\"Not applicable\"}','none',1172),(1173,2410,'{\"ru\":\"Набор записей\",\"en\":\"Recordset\"}','rowset',1173),(1174,2410,'{\"ru\":\"Одна запись\",\"en\":\"One entry\"}','row',1174),(1176,1345,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>No\"}','0',1176),(1177,1345,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-create-deny.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-create-deny.png);\\\"><\\/span>Yes\"}','1',1177),(1178,2312,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-single-select.png);\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-single-select.png);\\\"><\\/span>No\"}','0',1178),(1179,2312,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multi-select.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multi-select.png);\\\"><\\/span>Yes\"}','1',1179),(1180,2310,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>No\"}','0',1180),(1181,2310,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-numberer.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-numberer.png);\\\"><\\/span>Yes\"}','1',1181),(1182,2100,'{\"ru\":\"Нет\",\"en\":\"No\"}','0',1183),(1183,2100,'{\"ru\":\"Да\",\"en\":\"Yes\"}','1',1182),(1184,2432,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1184),(1185,2432,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span> Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Yes\"}','y',1185),(1186,2451,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',1186),(1187,2451,'{\"ru\":\"День недели\",\"en\":\"Day of week\"}','week',1187),(1188,2465,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',1188),(1189,2465,'{\"ru\":\"Email\",\"en\":\"Email\"}','email',1189),(1190,2465,'{\"ru\":\"URL\",\"en\":\"Url\"}','url',1190),(1191,2478,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',1191),(1192,2478,'{\"ru\":\"День недели\",\"en\":\"Day of week\"}','week',1192);
-/*!40000 ALTER TABLE `enumset` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values
+(1,3,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',1),
+(2,3,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',2),
+(5,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',5),
+(6,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',6),
+(9,29,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',9),
+(10,29,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Turned off\"}','n',10),
+(11,37,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',11),
+(12,37,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',12),
+(13,42,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',13),
+(14,42,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',14),
+(62,66,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',62),
+(63,66,'{\"ru\":\"Только с одним значением ключа\",\"en\":\"With only one key value\"}','one',63),
+(64,66,'{\"ru\":\"С набором значений ключей\",\"en\":\"With a set of key values\"}','many',64),
+(87,111,'{\"ru\":\"Поменять, но с сохранением пропорций\",\"en\":\"Change, but keep proportions\"}','p',87),
+(88,111,'{\"ru\":\"Поменять\",\"en\":\"Change\"}','c',88),
+(89,111,'{\"ru\":\"Не менять\",\"en\":\"Do not change\"}','o',89),
+(91,114,'{\"ru\":\"Ширины\",\"en\":\"Width\"}','width',91),
+(92,114,'{\"ru\":\"Высоты\",\"en\":\"Height\"}','height',92),
+(112,345,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',112),
+(113,345,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',113),
+(122,0,'Всем друзьям, кроме указанных в разделе \"Исключения из правил доступа на просмотр блога\"','ae',122),
+(181,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>No\"}','none',164),
+(183,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Да, несколько ключей\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Yes, multiple keys\"}','many',296),
+(184,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Да, но только один ключ\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Yes, but only one key\"}','one',295),
+(1076,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 1px solid blue;\\u0022><\\/span>Скрыт, но показан в развороте\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 1px solid blue;\\u0022><\\/span>Hidden, but shown in row expander\"}','e',1076),
+(213,557,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_asc.png) -5px -1px;\\\"><\\/span>По возрастанию\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_asc.png) -5px -1px;\\\"><\\/span>Ascending\"}','ASC',297),
+(214,557,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>По убыванию\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>Descending\"}','DESC',182),
+(219,594,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',299),
+(220,594,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',300),
+(227,612,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','n',301),
+(228,612,'{\"ru\":\"<span style=\'color: red\'>Системная<\\/span>\",\"en\":\"<span style=\'color: red\'>System<\\/span>\"}','y',186),
+(580,1445,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',0),
+(581,1445,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',464),
+(979,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Обычное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Regular\"}','regular',979),
+(980,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Обязательное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Required\"}','required',980),
+(981,2197,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Только чтение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Readonly\"}','readonly',981),
+(982,2197,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Скрытое\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Hidden\"}','hidden',982),
+(328,0,'Очень плохо','1',254),
+(574,1366,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',462),
+(573,1366,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',0),
+(575,1366,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',463),
+(567,1364,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',0),
+(568,1364,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',458),
+(569,1364,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',459),
+(566,612,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','o',457),
+(960,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',0),
+(961,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',489),
+(983,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',983),
+(984,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',984),
+(985,2203,'{\"ru\":\"Всем\",\"en\":\"Everyone\"}','all',985),
+(986,2203,'{\"ru\":\"Никому, кроме\",\"en\":\"Only\"}','only',986),
+(987,2203,'{\"ru\":\"Всем, кроме\",\"en\":\"Everyone except\"}','except',987),
+(988,2205,'{\"ru\":\"Всем\",\"en\":\"Everyone\"}','all',988),
+(989,2205,'{\"ru\":\"Никому, кроме\",\"en\":\"Only\"}','only',989),
+(990,2205,'{\"ru\":\"Всем, кроме\",\"en\":\"Everyone except\"}','except',990),
+(991,2207,'{\"ru\":\"Все\",\"en\":\"Everyone\"}','all',991),
+(992,2207,'{\"ru\":\"Никто, кроме\",\"en\":\"Noone except\"}','only',992),
+(993,2207,'{\"ru\":\"Все, кроме\",\"en\":\"Everyone except\"}','except',993),
+(994,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','0',994),
+(995,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','1',995),
+(996,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Авто\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Auto\"}','auto',996),
+(997,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Отображать\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Display\"}','yes',997),
+(998,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Не отображать\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Do not display\"}','no',998),
+(999,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\\"><\\/span>Авто\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\\"><\\/span>Auto\"}','auto',999),
+(1000,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\\"><\\/span>Отдельным запросом\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\\"><\\/span>Separate request\"}','yes',1000),
+(1001,2213,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/required.png);\\\"><\\/span>В том же запросе\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/required.png);\\\"><\\/span>In the same request\"}','no',1001),
+(1002,2214,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1002),
+(1003,2214,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Turned off\"}','n',1003),
+(1036,2267,'{\"ru\":\"Увеличение\",\"en\":\"Increase\"}','inc',1036),
+(1037,2267,'{\"ru\":\"Уменьшение\",\"en\":\"Decrease\"}','dec',1037),
+(1032,2258,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1032),
+(1033,2258,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Выключено\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: red;\\\"><\\/span>Turned off\"}','n',1033),
+(1034,2261,'{\"ru\":\"Одинаковое для всех получателей\",\"en\":\"Same for all recipients\"}','event',1034),
+(1035,2261,'{\"ru\":\"Неодинаковое, зависит от получателя\",\"en\":\"Not the same, depends on the recipient\"}','getter',1035),
+(1010,2238,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1010),
+(1011,2238,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',1011),
+(1012,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1012),
+(1013,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1088),
+(1017,2243,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',1017),
+(1018,2243,'{\"ru\":\"DATE\",\"en\":\"DATE\"}','date',1018),
+(1019,2243,'{\"ru\":\"DATETIME\",\"en\":\"DATETIME\"}','datetime',1019),
+(1020,2243,'{\"ru\":\"DATE, TIME\",\"en\":\"DATE, TIME\"}','date-time',1020),
+(1021,2243,'{\"ru\":\"DATE, timeId\",\"en\":\"DATE, timeId\"}','date-timeId',1021),
+(1022,2243,'{\"ru\":\"DATE, dayQty\",\"en\":\"DATE, dayQty\"}','date-dayQty',1022),
+(1023,2243,'{\"ru\":\"DATETIME, minuteQty\",\"en\":\"DATETIME, minuteQty\"}','datetime-minuteQty',1023),
+(1024,2243,'{\"ru\":\"DATE, TIME, minuteQty\",\"en\":\"DATE, TIME, minuteQty\"}','date-time-minuteQty',1024),
+(1025,2243,'{\"ru\":\"DATE, timeId, minuteQty\",\"en\":\"DATE, timeId, minuteQty\"}','date-timeId-minuteQty',1025),
+(1026,2243,'{\"ru\":\"DATE, hh:mm-hh:mm\",\"en\":\"DATE, hh:mm-hh:mm\"}','date-timespan',1026),
+(1027,2161,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Скрытое\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Hidden\"}','hidden',1031),
+(1028,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Только чтение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/readonly.png);\\u0022><\\/span>Readonly\"}','readonly',1030),
+(1029,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\u0022><\\/span>Без изменений\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/inherit.png);\\u0022><\\/span>Inherit\"}','inherit',1027),
+(1030,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Обычное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/regular.png);\\u0022><\\/span>Regular\"}','regular',1028),
+(1031,2161,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Обязательное\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: url(resources\\/images\\/icons\\/field\\/required.png);\\u0022><\\/span>Required\"}','required',1029),
+(1038,2267,'{\"ru\":\"Изменение\",\"en\":\"Change\"}','evt',1038),
+(1039,2276,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','event',1039),
+(1040,2276,'{\"ru\":\"Раздельный\",\"en\":\"Separate\"}','getter',1040),
+(1041,2281,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1041),
+(1042,2281,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1042),
+(1043,2282,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1043),
+(1044,2282,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1044),
+(1045,2283,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1045),
+(1046,2283,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1046),
+(1047,2285,'<span class=\"i-color-box\" style=\"background: lightgray;\"></span>Нет','n',1047),
+(1048,2285,'<span class=\"i-color-box\" style=\"background: lime;\"></span>Да','y',1048),
+(1049,2288,'{\"ru\":\"Январь\",\"en\":\"January\"}','01',1049),
+(1050,2288,'{\"ru\":\"Февраль\",\"en\":\"February\"}','02',1050),
+(1051,2288,'{\"ru\":\"Март\",\"en\":\"March\"}','03',1051),
+(1052,2288,'{\"ru\":\"Апрель\",\"en\":\"April\"}','04',1052),
+(1053,2288,'{\"ru\":\"Май\",\"en\":\"May\"}','05',1053),
+(1054,2288,'{\"ru\":\"Июнь\",\"en\":\"June\"}','06',1054),
+(1055,2288,'{\"ru\":\"Июль\",\"en\":\"July\"}','07',1055),
+(1056,2288,'{\"ru\":\"Август\",\"en\":\"August\"}','08',1056),
+(1057,2288,'{\"ru\":\"Сентябрь\",\"en\":\"September\"}','09',1057),
+(1058,2288,'{\"ru\":\"Октябрь\",\"en\":\"October\"}','10',1058),
+(1059,2288,'{\"ru\":\"Ноябрь\",\"en\":\"November\"}','11',1059),
+(1060,2288,'{\"ru\":\"Декабрь\",\"en\":\"December\"}','12',1060),
+(1061,2301,'{\"ru\":\"Всем пользователям\",\"en\":\"All users\"}','all',1061),
+(1062,2301,'{\"ru\":\"Только выбранным\",\"en\":\"Only chosen\"}','only',1062),
+(1063,2301,'{\"ru\":\"Всем кроме выбранных\",\"en\":\"Everyone except the chosen ones\"}','except',1063),
+(1064,2301,'{\"ru\":\"Никому\",\"en\":\"Noone\"}','none',1064),
+(1065,2159,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Скрыт\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Hidden\"}','h',1065),
+(1066,2304,'{\"ru\":\"Пусто\",\"en\":\"Empty\"}','none',1066),
+(1067,2304,'{\"ru\":\"Сумма\",\"en\":\"Summary\"}','sum',1067),
+(1068,2304,'{\"ru\":\"Среднее\",\"en\":\"Average\"}','average',1068),
+(1069,2304,'{\"ru\":\"Минимум\",\"en\":\"Minimum\"}','min',1069),
+(1070,2304,'{\"ru\":\"Максимум\",\"en\":\"Maximum\"}','max',1070),
+(1071,2304,'{\"ru\":\"Текст\",\"en\":\"Text\"}','text',1071),
+(1072,2306,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1072),
+(1073,2306,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Yes\"}','y',1073),
+(1074,2308,'{\"ru\":\"Обычные\",\"en\":\"Normal\"}','normal',1075),
+(1075,2308,'{\"ru\":\"Зафиксированные\",\"en\":\"Locked\"}','locked',1074),
+(1077,2316,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',1077),
+(1078,2316,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',1078),
+(1079,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Скрыт\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Hidden\"}','h',1079),
+(1080,2318,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1080),
+(1081,2318,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1081),
+(1082,2319,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1082),
+(1083,2319,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lime;\\\"><\\/span>Yes\"}','y',1083),
+(1084,2321,'{\"ru\":\"Проектное\",\"en\":\"Custom\"}','p',1084),
+(1085,2321,'{\"ru\":\"<font color=red>Системное<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',1085),
+(1086,2324,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1086),
+(1087,2324,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1087),
+(1088,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1013),
+(1089,2239,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1089),
+(1090,2325,'{\"ru\":\"Ничего\",\"en\":\"Nothing\"}','noth',1090),
+(1091,2325,'{\"ru\":\"Чтото\",\"en\":\"Least\"}','smth',1091),
+(1092,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1092),
+(1093,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1093),
+(1094,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1094),
+(1095,2328,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1095),
+(1096,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1096),
+(1097,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1097),
+(1098,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1098),
+(1099,2329,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1099),
+(1100,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1100),
+(1101,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1101),
+(1102,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1102),
+(1103,2331,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1103),
+(1104,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1104),
+(1105,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1105),
+(1106,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1106),
+(1107,2332,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1107),
+(1108,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1108),
+(1109,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1109),
+(1110,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1110),
+(1111,2333,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1111),
+(1112,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1112),
+(1113,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1113),
+(1114,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1114),
+(1115,2334,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1115),
+(1116,2342,'{\"ru\":\"Оценка масштабов\",\"en\":\"Scope assessment\"}','count',1116),
+(1117,2342,'{\"ru\":\"Создание очереди\",\"en\":\"Queue creation\"}','items',1117),
+(1118,2342,'{\"ru\":\"Процессинг очереди\",\"en\":\"Queue processing\"}','queue',1118),
+(1119,2342,'{\"ru\":\"Применение результатов\",\"en\":\"Application of results\"}','apply',1119),
+(1120,2343,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1120),
+(1121,2343,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1121),
+(1122,2343,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1122),
+(1123,2346,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1123),
+(1124,2346,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1124),
+(1125,2346,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1125),
+(1126,2349,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1126),
+(1127,2349,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1127),
+(1128,2349,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1128),
+(1129,2353,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1129),
+(1130,2353,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1130),
+(1131,2353,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1131),
+(1132,2353,'{\"ru\":\"Не требуется\",\"en\":\"Not required\"}','noneed',1132),
+(1133,2356,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1133),
+(1134,2356,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1134),
+(1135,2356,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1135),
+(1136,2362,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1136),
+(1137,2362,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1137),
+(1138,2362,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1138),
+(1139,2365,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1139),
+(1140,2365,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1140),
+(1141,2365,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1141),
+(1142,2368,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1142),
+(1143,2368,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1143),
+(1144,2368,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1144),
+(1145,2368,'{\"ru\":\"Не требуется\",\"en\":\"Not required\"}','noneed',1145),
+(1146,2371,'{\"ru\":\"Ожидание\",\"en\":\"Waiting\"}','waiting',1146),
+(1147,2371,'{\"ru\":\"В работе\",\"en\":\"Progress\"}','progress',1147),
+(1148,2371,'{\"ru\":\"Завершено\",\"en\":\"Completed\"}','finished',1148),
+(1149,2378,'{\"ru\":\"Добавлен\",\"en\":\"Added\"}','items',1149),
+(1150,2378,'{\"ru\":\"Обработан\",\"en\":\"Processed\"}','queue',1150),
+(1151,2378,'{\"ru\":\"Применен\",\"en\":\"Applied\"}','apply',1151),
+(1152,2381,'{\"ru\":\"Не указана\",\"en\":\"Not specified\"}','none',1152),
+(1153,2381,'{\"ru\":\"AdminSystemUi\",\"en\":\"AdminSystemUi\"}','adminSystemUi',1153),
+(1154,2381,'{\"ru\":\"AdminCustomUi\",\"en\":\"AdminCustomUi\"}','adminCustomUi',1154),
+(1155,2381,'{\"ru\":\"AdminCustomData\",\"en\":\"AdminCustomData\"}','adminCustomData',1155),
+(1156,2384,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','p',1156),
+(1158,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','n',1158),
+(1157,2384,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','s',1157),
+(1159,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>В очереди на включение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray; border: 3px solid blue;\\u0022><\\/span>Queued for turning on\"}','qy',1159),
+(1160,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включена\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','y',1160),
+(1161,2386,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>В очереди на выключение\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue; border: 3px solid lightgray;\\u0022><\\/span>Queued for turning off\"}','qn',1161),
+(1169,2397,'{\"ru\":\"Сессия\",\"en\":\"Session\"}','session',1169),
+(1170,2397,'{\"ru\":\"Вкладка\",\"en\":\"Tab\"}','channel',1170),
+(1171,2397,'{\"ru\":\"Контекст\",\"en\":\"Context\"}','context',1171),
+(1172,2410,'{\"ru\":\"Не применимо\",\"en\":\"Not applicable\"}','none',1172),
+(1173,2410,'{\"ru\":\"Набор записей\",\"en\":\"Recordset\"}','rowset',1173),
+(1174,2410,'{\"ru\":\"Одна запись\",\"en\":\"One entry\"}','row',1174),
+(1176,1345,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>No\"}','0',1176),
+(1177,1345,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-create-deny.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-create-deny.png);\\\"><\\/span>Yes\"}','1',1177),
+(1178,2312,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-single-select.png);\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-single-select.png);\\\"><\\/span>No\"}','0',1178),
+(1179,2312,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multi-select.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multi-select.png);\\\"><\\/span>Yes\"}','1',1179),
+(1180,2310,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: transparent;\\\"><\\/span>No\"}','0',1180),
+(1181,2310,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-numberer.png);\\\"><\\/span>Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-numberer.png);\\\"><\\/span>Yes\"}','1',1181),
+(1182,2100,'{\"ru\":\"Нет\",\"en\":\"No\"}','0',1183),
+(1183,2100,'{\"ru\":\"Да\",\"en\":\"Yes\"}','1',1182),
+(1184,2432,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: lightgray;\\\"><\\/span>No\"}','n',1184),
+(1185,2432,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span> Да\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Yes\"}','y',1185),
+(1186,2451,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',1186),
+(1187,2451,'{\"ru\":\"День недели\",\"en\":\"Day of week\"}','week',1187),
+(1188,2465,'{\"ru\":\"Нет\",\"en\":\"No\"}','none',1188),
+(1189,2465,'{\"ru\":\"Email\",\"en\":\"Email\"}','email',1189),
+(1190,2465,'{\"ru\":\"URL\",\"en\":\"Url\"}','url',1190),
+(1191,2478,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',1191),
+(1192,2478,'{\"ru\":\"День недели\",\"en\":\"Day of week\"}','week',1192);
 
---
--- Table structure for table `field`
---
+/*Table structure for table `field` */
 
 DROP TABLE IF EXISTS `field`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `field` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `entityId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `entityId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
-  `columnTypeId` int(11) NOT NULL DEFAULT '0',
-  `elementId` int(11) NOT NULL DEFAULT '0',
+  `columnTypeId` int NOT NULL DEFAULT '0',
+  `elementId` int NOT NULL DEFAULT '0',
   `defaultValue` varchar(255) NOT NULL DEFAULT '',
-  `move` int(11) NOT NULL DEFAULT '0',
-  `relation` int(11) NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
+  `relation` int NOT NULL DEFAULT '0',
   `storeRelationAbility` enum('none','many','one') NOT NULL DEFAULT 'none',
   `filter` varchar(255) NOT NULL DEFAULT '',
   `mode` enum('regular','required','readonly','hidden') NOT NULL DEFAULT 'regular',
   `tooltip` text NOT NULL,
   `l10n` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `entry` int(11) NOT NULL DEFAULT '0',
+  `entry` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `columnTypeId` (`columnTypeId`),
@@ -361,35 +627,366 @@ CREATE TABLE `field` (
   KEY `entry` (`entry`),
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=2595 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=2595 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `field`
---
+/*Data for the table `field` */
 
-LOCK TABLES `field` WRITE;
-/*!40000 ALTER TABLE `field` DISABLE KEYS */;
-INSERT INTO `field` VALUES (2490,3,'{\"ru\":\"Справка\",\"en\":\"Reference\"}','help',4,6,'',2490,0,'none','','regular','','n',0),(2,1,'{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','type',1,1,'',2,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(3,1,'{\"ru\":\"Можно хранить ключи\",\"en\":\"Compatible with foreign keys\"}','canStoreRelation',10,5,'n',3,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(4,2,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',4,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(5,2,'{\"ru\":\"Таблица БД\",\"en\":\"DB table\"}','table',1,1,'',5,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(6,5,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',6,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2413,5,'{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}','fk',0,16,'',10,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(7,5,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',8,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(8,5,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',9,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2420,195,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','accesss',0,16,'',2204,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(9,5,'{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','columnTypeId',3,23,'0',2412,1,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(10,5,'{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','elementId',3,23,'0',414,4,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(11,5,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2413,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(12,5,'{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}','relation',3,23,'0',12,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(14,5,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2435,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(15,6,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',15,5,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(16,6,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',16,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(17,6,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',17,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(18,3,'{\"ru\":\"Вышестоящий раздел\",\"en\":\"Parent section\"}','sectionId',3,23,'0',22,3,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(19,3,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',514,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2304,9,'{\"ru\":\"Внизу\",\"en\":\"Bottom\"}','summaryType',10,23,'none',2308,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2198,195,'{\"ru\":\"Непустой результат\",\"en\":\"Non-empty result\"}','consistence',12,9,'1',2419,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(20,3,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',18,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(21,3,'{\"ru\":\"Контроллер\",\"en\":\"Controller\"}','alias',1,1,'',19,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(22,3,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',20,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(23,3,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',1278,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(25,3,'{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}','rowsOnPage',3,1,'25',2310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(26,8,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'',1,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(27,8,'{\"ru\":\"Действие\",\"en\":\"Action\"}','actionId',3,23,'',1,7,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(28,8,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','profileIds',1,7,'14',1,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2428,3,'{\"ru\":\"Записи\",\"en\":\"Recordings\"}','store',0,16,'',2429,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(29,8,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',1,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(30,8,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',1,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(31,7,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',26,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(32,7,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',27,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(33,9,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'',28,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(34,9,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'',29,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(35,9,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',2165,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(36,10,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',31,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(37,10,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2131,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(38,11,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'',33,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(39,11,'{\"ru\":\"Имя\",\"en\":\"Title\"}','title',4,1,'',34,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(40,11,'{\"ru\":\"Логин\",\"en\":\"Login\"}','email',1,1,'',35,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(41,11,'{\"ru\":\"Пароль\",\"en\":\"Password\"}','password',1,1,'',36,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(42,11,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',37,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(64,4,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',53,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(65,4,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',2456,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(66,4,'{\"ru\":\"Совместимость с внешними ключами\",\"en\":\"Foreign keys compatibility\"}','storeRelationAbility',11,23,'none',2457,6,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(1445,195,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2184,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(92,4,'{\"ru\":\"Не отображать в формах\",\"en\":\"Hide in forms\"}','hidden',12,9,'0',2460,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(106,20,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',86,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(107,20,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',87,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(108,20,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',88,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(109,20,'{\"ru\":\"Ширина\",\"en\":\"Width\"}','masterDimensionValue',3,18,'0',91,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(110,20,'{\"ru\":\"Высота\",\"en\":\"Height\"}','slaveDimensionValue',3,18,'0',93,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(111,20,'{\"ru\":\"Размер\",\"en\":\"Size\"}','proportions',10,5,'o',89,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(112,20,'{\"ru\":\"Ограничить пропорциональную <span id=\\\"slaveDimensionTitle\\\">высоту<\\/span>\",\"en\":\"Limit proportional <span id=\\\"slaveDimensionTitle\\\">height<\\/span>\"}','slaveDimensionLimitation',12,9,'1',92,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(114,20,'{\"ru\":\"При расчете пропорций отталкиваться от\",\"en\":\"When calculating proportions, start from\"}','masterDimensionAlias',10,5,'width',90,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(345,7,'{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}','rowRequired',10,5,'y',308,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(377,6,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',338,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(470,5,'{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}','storeRelationAbility',10,23,'none',11,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2475,4,'{\"ru\":\"Максимальная длина в символах\",\"en\":\"Maximum length in characters\"}','maxlength',3,18,'0',2473,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),(2474,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2462,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2473,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2463,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(475,1,'{\"ru\":\"Совместимые элементы управления\",\"en\":\"Compatible with form elements\"}','elementId',1,23,'',433,4,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(476,91,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',434,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2472,4,'{\"ru\":\"Формат отображения\",\"en\":\"Display format\"}','displayFormat',1,1,'H:i',2476,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',17),(2470,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2475,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),(502,3,'{\"ru\":\"PHP\",\"en\":\"PHP\"}','extendsPhp',1,1,'Indi_Controller_Admin',461,0,'none','','regular','{\"ru\":\"Родительский класс PHP\",\"en\":\"Parent PHP class\"}','n',0),(2309,3,'{\"ru\":\"JS\",\"en\":\"JS\"}','extendsJs',1,1,'Indi.lib.controller.Controller',443,0,'none','','regular','{\"ru\":\"Родительский класс JS\",\"en\":\"Parent JS class\"}','n',0),(503,3,'{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}','defaultSortField',3,23,'0',2303,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2212,8,'{\"ru\":\"Южная панель\",\"en\":\"South panel display mode\"}','south',10,23,'auto',2212,6,'one','','regular','{\"ru\":\"\",\"en\":\"South panel display mode\"}','y',0),(555,2,'{\"ru\":\"Родительский класс PHP\",\"en\":\"Parent PHP class\"}','extends',1,1,'Indi_Db_Table',512,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(557,3,'{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}','defaultSortDirection',10,23,'ASC',2309,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(594,20,'{\"ru\":\"Изменить оттенок\",\"en\":\"Change hue\"}','changeColor',10,5,'n',545,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(595,20,'{\"ru\":\"Оттенок\",\"en\":\"Hue\"}','color',13,11,'',546,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(612,2,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','system',10,23,'n',559,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(1364,7,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,5,'p',2099,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(1444,195,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',1316,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1442,195,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',1313,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(1443,195,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',1314,5,'one','`elementId` NOT IN (4,14,16,20,22)','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2419,195,'{\"ru\":\"Флаги\",\"en\":\"Flags\"}','flags',0,16,'',2317,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1441,2,'{\"ru\":\"Включить в кэш\",\"en\":\"Include in cache\"}','useCache',12,23,'0',1312,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(754,5,'{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',13,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(767,3,'{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',2213,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1366,3,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,23,'p',21,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2414,5,'{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}','el',0,16,'',95,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2196,9,'{\"ru\":\"Вышестоящий столбец\",\"en\":\"Parent column\"}','gridId',3,23,'0',1738,9,'one','`sectionId` = \"<?=$this->sectionId?>\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2310,3,'{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}','rownumberer',10,23,'0',2323,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2184,195,'{\"ru\":\"Игнорировать шаблон опций\",\"en\":\"Ignore option template\"}','ignoreTemplate',12,9,'1',2421,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2183,195,'{\"ru\":\"Фильтрация\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',1520,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2182,195,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2167,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1337,10,'{\"ru\":\"Сущность пользователей\",\"en\":\"Entity of users\"}','entityId',3,23,'11',2132,2,'one','`system`= \"n\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2422,9,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','accesss',0,16,'',2315,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1341,171,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',1275,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(1342,171,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',1276,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2251,171,'{\"ru\":\"Изменить свойства\",\"en\":\"Adjust properties\"}','alter',0,16,'',2250,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1345,3,'{\"ru\":\"Запретить создание новых записей\",\"en\":\"Prevent creation of new records\"}','disableAdd',10,23,'0',2211,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(1532,171,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2424,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1554,3,'{\"ru\":\"Связь с вышестоящим разделом по полю\",\"en\":\"Link to a parent section by field\"}','parentSectionConnector',3,23,'0',1277,5,'one','`storeRelationAbility`!=\"none\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2412,5,'{\"ru\":\"MySQL\",\"en\":\"MySQL\"}','mysql',0,16,'',523,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1658,195,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','alt',4,1,'',2198,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2132,10,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2319,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(1886,9,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','alterTitle',4,1,'',2210,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2100,7,'{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}','display',10,23,'1',2100,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2131,10,'{\"ru\":\"Дэшборд\",\"en\":\"Dashboard uri\"}','dashboard',1,1,'',2215,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2159,9,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2205,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2161,171,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'inherit',2252,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2166,91,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2166,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2163,2,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title field\"}','titleFieldId',3,23,'0',2163,5,'one','`entityId` = \"<?=$this->id?>\" AND `columnTypeId` != \"0\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2164,8,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2164,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2165,9,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2196,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2167,195,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2182,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2169,171,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',1402,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2197,5,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'regular',413,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2199,5,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',428,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2200,9,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2304,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2203,195,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2311,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2202,7,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2202,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2204,195,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2314,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2205,9,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2422,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2206,9,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2423,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2207,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impact',10,23,'all',2169,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2209,8,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','rename',4,1,'',2209,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2210,9,'{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}','editor',10,23,'0',2206,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2211,3,'{\"ru\":\"Группировка\",\"en\":\"Group by\"}','groupBy',3,23,'0',2425,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2213,3,'{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}','rowsetSeparate',10,23,'auto',2302,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2214,8,'{\"ru\":\"Автосайз окна\",\"en\":\"Autosize windows\"}','fitWindow',10,23,'y',2214,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2215,10,'{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}','maxWindows',3,18,'15',2384,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2270,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplDecSubj',4,1,'',2271,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2269,309,'{\"ru\":\"Текст\",\"en\":\"Text\"}','tplIncBody',4,6,'',2270,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2268,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplIncSubj',4,1,'',2269,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2267,309,'{\"ru\":\"Назначение\",\"en\":\"Type\"}','tplFor',10,23,'inc',2268,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2266,309,'{\"ru\":\"Сообщение\",\"en\":\"Message\"}','tpl',0,16,'',2267,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2263,309,'{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}','bg',13,11,'212#d9e5f3',2264,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2264,309,'{\"ru\":\"Цвет текста\",\"en\":\"Text color\"}','fg',13,11,'216#044099',2265,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2265,309,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2266,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2262,309,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId',1,23,'',2263,3,'many','FIND_IN_SET(`sectionId`, \"<?=m(\'section\')->all(\'`sectionId` = \"0\"\')->column(\'id\', true)?>\")','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2255,309,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',2256,2,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2256,309,'{\"ru\":\"Событие \\/ PHP\",\"en\":\"Event \\/ PHP\"}','event',1,1,'',2257,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2257,309,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','profileId',1,23,'',2258,10,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2258,309,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2259,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2259,309,'{\"ru\":\"Счетчик\",\"en\":\"Counter\"}','qty',0,16,'',2260,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2260,309,'{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}','qtySql',1,1,'',2261,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2261,309,'{\"ru\":\"Направление изменения\",\"en\":\"Direction of change\"}','qtyDiffRelyOn',10,23,'event',2262,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2254,309,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',2254,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),(2236,307,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',1,1,'',2236,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2237,307,'{\"ru\":\"Ключ\",\"en\":\"Key\"}','alias',1,1,'',2237,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2238,307,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2238,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2239,5,'{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','l10n',10,23,'n',2414,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2243,2,'{\"ru\":\"Паттерн комплекта календарных полей\",\"en\":\"Calendar fields pattern\"}','spaceScheme',10,23,'none',2243,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2244,2,'{\"ru\":\"Комплект календарных полей\",\"en\":\"Set of calendar fields\"}','spaceFields',1,23,'',2244,5,'many','`entityId` = \"<?=$this->id?>\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2245,308,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','entityId',3,23,'0',2245,2,'one','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(2246,308,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',2246,5,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2247,308,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','consider',3,23,'0',2247,5,'one','`id` != \"<?=$this->fieldId?>\" AND `columnTypeId` != \"0\"','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2248,308,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','foreign',3,23,'0',2248,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2249,308,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2249,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2250,171,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','profileIds',1,7,'',2207,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2252,171,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','rename',4,1,'',2251,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2424,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impactt',0,16,'',2134,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2271,309,'{\"ru\":\"Текст\",\"en\":\"Text\"}','tplDecBody',4,6,'',2272,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2272,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplEvtSubj',4,1,'',2273,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2273,309,'{\"ru\":\"Сообщение\",\"en\":\"Message\"}','tplEvtBody',4,6,'',2321,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2274,310,'{\"ru\":\"Уведомление\",\"en\":\"Notification\"}','noticeId',3,23,'0',2275,309,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2275,310,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2276,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2276,310,'{\"ru\":\"Критерий\",\"en\":\"Criteria\"}','criteriaRelyOn',10,5,'event',2277,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2277,310,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','criteriaEvt',1,1,'',2278,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2278,310,'{\"ru\":\"Для увеличения\",\"en\":\"Separate - for increase\"}','criteriaInc',1,1,'',2279,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2279,310,'{\"ru\":\"Для уменьшения\",\"en\":\"Separate - for decrease\"}','criteriaDec',1,1,'',2280,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2280,310,'{\"ru\":\"Ауто титле\",\"en\":\"Auto title\"}','title',4,1,'',2281,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2281,310,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','email',10,23,'n',2282,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2282,310,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','vk',10,23,'n',2283,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2283,310,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','sms',10,23,'n',2284,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2284,310,'{\"ru\":\"Критерий\",\"en\":\"Criterion\"}','criteria',1,1,'',2285,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(2285,310,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','mail',10,23,'n',2316,6,'one','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(2286,311,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','title',1,1,'',2286,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2287,312,'{\"ru\":\"Год\",\"en\":\"Year\"}','yearId',3,23,'0',2287,311,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2288,312,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',10,23,'01',2288,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2289,312,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','title',4,1,'',2289,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2290,312,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2290,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2291,313,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','entityId',3,23,'0',2291,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2292,313,'{\"ru\":\"Объект\",\"en\":\"An object\"}','key',3,23,'0',2292,0,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2293,313,'{\"ru\":\"Что изменено\",\"en\":\"What&#39;s changed\"}','fieldId',3,23,'0',2293,5,'one','`columnTypeId` != \"0\"','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2294,313,'{\"ru\":\"Было\",\"en\":\"It was\"}','was',4,13,'',2294,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2295,313,'{\"ru\":\"Стало\",\"en\":\"Has become\"}','now',4,13,'',2295,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2296,313,'{\"ru\":\"Когда\",\"en\":\"When\"}','datetime',9,19,'0000-00-00 00:00:00',2296,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2297,313,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','monthId',3,23,'0',2297,312,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2298,313,'{\"ru\":\"Тип автора\",\"en\":\"Author type\"}','changerType',3,23,'0',2298,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2299,313,'{\"ru\":\"Автор\",\"en\":\"Author\"}','changerId',3,23,'0',2299,0,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2300,313,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2300,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2301,3,'{\"ru\":\"Разворачивать пункт меню\",\"en\":\"Expand menu item\"}','expand',10,23,'all',23,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2302,3,'{\"ru\":\"Выбранные\",\"en\":\"Chosen\"}','expandRoles',1,23,'',25,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2303,3,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','roleIds',1,23,'',2428,10,'many','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(2305,9,'{\"ru\":\"Текст\",\"en\":\"Text\"}','summaryText',4,1,'',2313,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2306,308,'{\"ru\":\"Обязательное\",\"en\":\"Required\"}','required',10,23,'n',2306,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2307,308,'{\"ru\":\"Коннектор\",\"en\":\"Connector\"}','connector',3,23,'0',2307,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2308,9,'{\"ru\":\"Группа\",\"en\":\"Group\"}','group',10,23,'normal',2253,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2311,195,'{\"ru\":\"Разрешить сброс\",\"en\":\"Allow reset\"}','allowClear',12,9,'1',2420,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2312,3,'{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}','multiSelect',10,23,'0',2322,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2313,9,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','further',3,23,'0',30,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2314,195,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','further',3,23,'0',1315,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2315,9,'{\"ru\":\"Ширина\",\"en\":\"Width\"}','width',3,18,'0',2305,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2316,310,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2274,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2317,195,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2203,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2318,11,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','demo',10,23,'n',2318,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2319,10,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','demo',10,23,'n',2485,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2320,2,'{\"ru\":\"Группировать файлы\",\"en\":\"Group files by\"}','filesGroupBy',3,23,'0',2320,5,'one','`entityId` = \"<?=$this->id?>\" AND `storeRelationAbility` = \"one\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2321,309,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,23,'p',2255,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2322,3,'{\"ru\":\"Плитка\",\"en\":\"Tile\"}','tileField',3,23,'0',2426,5,'one','`elementId` = \"14\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2323,3,'{\"ru\":\"Превью\",\"en\":\"Preview\"}','tileThumb',3,23,'0',2427,20,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2324,11,'{\"ru\":\"Правки UI\",\"en\":\"UI editing\"}','uiedit',10,23,'n',2324,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2325,307,'{\"ru\":\"Состояние\",\"en\":\"Usage\"}','state',10,23,'noth',2325,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2326,307,'{\"ru\":\"Админка\",\"en\":\"Admin panel\"}','admin',0,16,'',2326,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2327,307,'{\"ru\":\"Система\",\"en\":\"System\"}','adminSystem',0,16,'',2327,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2328,307,'{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}','adminSystemUi',10,5,'n',2328,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2329,307,'{\"ru\":\"Константы\",\"en\":\"Constants\"}','adminSystemConst',10,5,'n',2329,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2330,307,'{\"ru\":\"Проект\",\"en\":\"Project\"}','adminCustom',0,16,'',2330,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2331,307,'{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}','adminCustomUi',10,5,'n',2331,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2332,307,'{\"ru\":\"Константы\",\"en\":\"Constants\"}','adminCustomConst',10,5,'n',2332,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2333,307,'{\"ru\":\"Данные\",\"en\":\"Data\"}','adminCustomData',10,5,'n',2333,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2334,307,'{\"ru\":\"Шаблоны\",\"en\":\"Templates\"}','adminCustomTmpl',10,5,'n',2334,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2335,307,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2335,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2336,314,'{\"ru\":\"Задача\",\"en\":\"Task\"}','title',1,1,'',2336,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),(2337,314,'{\"ru\":\"Создана\",\"en\":\"Created at\"}','datetime',9,19,'<?=date(\'Y-m-d H:i:s\')?>',2337,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2338,314,'{\"ru\":\"Параметры\",\"en\":\"Parameters\"}','params',4,6,'',2338,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2339,314,'{\"ru\":\"Процесс\",\"en\":\"Process\"}','proc',0,16,'',2340,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2340,314,'{\"ru\":\"Начат\",\"en\":\"Started\"}','procSince',9,19,'0000-00-00 00:00:00',2341,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2341,314,'{\"ru\":\"PID\",\"en\":\"PID\"}','procID',3,18,'0',2342,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2342,314,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','stage',10,23,'count',2343,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2343,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','state',10,23,'waiting',2344,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2344,314,'{\"ru\":\"Сегменты\",\"en\":\"Chunks\"}','chunk',3,18,'0',2339,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2345,314,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count',0,16,'',2346,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2346,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState',10,23,'waiting',2347,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2347,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize',3,18,'0',2348,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2348,314,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items',0,16,'',2349,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2349,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState',10,23,'waiting',2350,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2350,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize',3,18,'0',2351,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2351,314,'{\"ru\":\"Байт\",\"en\":\"Bytes\"}','itemsBytes',3,18,'0',2352,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2352,314,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue',0,16,'',2353,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2353,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState',10,23,'waiting',2354,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2354,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize',3,18,'0',2355,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2355,314,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply',0,16,'',2356,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2356,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState',10,23,'waiting',2357,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2357,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize',3,18,'0',2382,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2358,315,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTaskId',3,23,'0',2358,314,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2359,315,'{\"ru\":\"Расположение\",\"en\":\"Location\"}','location',1,1,'',2359,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2360,315,'{\"ru\":\"Условие выборки\",\"en\":\"Fetch condition\"}','where',4,6,'',2362,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2361,315,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count',0,16,'',2363,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2362,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState',10,23,'waiting',2364,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2363,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize',3,18,'0',2365,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2364,315,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items',0,16,'',2366,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2365,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState',10,23,'waiting',2367,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2366,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize',3,18,'0',2368,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2367,315,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue',0,16,'',2369,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2368,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState',10,23,'waiting',2370,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2369,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize',3,18,'0',2371,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2370,315,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply',0,16,'',2379,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2371,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState',10,23,'waiting',2380,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),(2372,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize',3,18,'0',2381,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2373,316,'{\"ru\":\"Очередь\",\"en\":\"Queue task\"}','queueTaskId',3,18,'0',2373,314,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2374,316,'{\"ru\":\"Сегмент\",\"en\":\"Queue chunk\"}','queueChunkId',3,23,'0',2374,315,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2375,316,'{\"ru\":\"Таргет\",\"en\":\"Target\"}','target',1,1,'',2375,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2376,316,'{\"ru\":\"Значение\",\"en\":\"Value\"}','value',4,1,'',2376,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2377,316,'{\"ru\":\"Результат\",\"en\":\"Result\"}','result',4,13,'',2377,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2378,316,'{\"ru\":\"Статус\",\"en\":\"Status\"}','stage',10,5,'items',2378,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2379,315,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2383,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2380,315,'{\"ru\":\"Родительский сегмент\",\"en\":\"Parent segment\"}','queueChunkId',3,18,'0',2360,315,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),(2381,315,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','fraction',10,23,'none',2361,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2382,314,'{\"ru\":\"Этап - Статус\",\"en\":\"Stage - Status\"}','stageState',4,1,'',2345,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2383,315,'{\"ru\":\"Байт\",\"en\":\"Bytes\"}','itemsBytes',3,18,'0',2372,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2384,10,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,5,'p',32,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2385,171,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','elementId',3,23,'0',2385,4,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2386,8,'{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','l10n',10,23,'n',2386,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2396,318,'{\"ru\":\"Родительская запись\",\"en\":\"Parent entry\"}','realtimeId',3,23,'0',2396,318,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2397,318,'{\"ru\":\"Тип\",\"en\":\"Type\"}','type',10,23,'session',2397,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2398,318,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2398,10,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2399,318,'{\"ru\":\"Пользователь\",\"en\":\"User\"}','adminId',3,23,'0',2399,0,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2400,318,'{\"ru\":\"Токен\",\"en\":\"Token\"}','token',1,1,'',2400,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2401,318,'{\"ru\":\"Начало\",\"en\":\"Since\"}','spaceSince',9,19,'<?=date(\'Y-m-d H:i:s\')?>',2401,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2402,318,'{\"ru\":\"Конец\",\"en\":\"Until\"}','spaceUntil',9,19,'0000-00-00 00:00:00',2402,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2403,318,'{\"ru\":\"Длительность\",\"en\":\"Duration\"}','spaceFrame',3,18,'0',2403,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2404,318,'{\"ru\":\"Язык\",\"en\":\"Language\"}','langId',3,23,'0',2404,307,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2405,318,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',2405,3,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2406,318,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',2406,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2407,318,'{\"ru\":\"Записи\",\"en\":\"Records\"}','entries',4,23,'',2407,0,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2408,318,'{\"ru\":\"Поля\",\"en\":\"Fields\"}','fields',4,23,'',2408,5,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2409,318,'{\"ru\":\"Запись\",\"en\":\"Entry\"}','title',4,1,'',2409,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),(2410,318,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'none',2410,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2411,318,'{\"ru\":\"Scope\",\"en\":\"Scope\"}','scope',4,6,'',2411,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2421,195,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','display',0,16,'',2183,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2423,9,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','display',0,16,'',2200,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2425,3,'{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}','extends',0,16,'',310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2426,3,'{\"ru\":\"Источник записей\",\"en\":\"Data source\"}','data',0,16,'',462,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2427,3,'{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}','display',0,16,'',2312,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2429,3,'{\"ru\":\"Подгрузка записей\",\"en\":\"Loading records\"}','load',0,16,'',2301,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2430,3,'{\"ru\":\"Параметры\",\"en\":\"Parameters\"}','params',0,16,'',2430,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),(2432,9,'{\"ru\":\"При изменении ячейки обновлять всю строку\",\"en\":\"If cell changed, update the entire row\"}','rowReqIfAffected',10,23,'n',2432,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),(2433,91,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','cfgField',3,23,'0',2433,5,'one','`entry` != \"0\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2434,91,'{\"ru\":\"Значение\",\"en\":\"Value\"}','cfgValue',4,6,'',2434,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2435,5,'{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','entry',3,23,'0',7,0,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),(2436,4,'{\"ru\":\"Шаблон содержимого опции\",\"en\":\"Option content template\"}','optionTemplate',4,6,'',2461,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2437,4,'{\"ru\":\"Высота опции\",\"en\":\"Option height\"}','optionHeight',3,18,'14',2464,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2438,4,'{\"ru\":\"Плейсхолдер\",\"en\":\"Placeholder\"}','placeholder',4,1,'',2465,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',23),(2439,4,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}','groupBy',3,23,'0',2466,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2440,4,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}','optionAttrs',1,23,'',2472,5,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2441,4,'{\"ru\":\"Отключить лукап\",\"en\":\"Disable lookup\"}','noLookup',12,9,'0',2474,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),(2442,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2453,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',7),(2443,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2454,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2444,4,'{\"ru\":\"Максимальная длина в символах\",\"en\":\"Maximum length in characters\"}','maxlength',3,18,'5',2443,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',18),(2445,4,'{\"ru\":\"Маска\",\"en\":\"Input mask\"}','inputMask',4,1,'',2459,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',1),(2446,4,'{\"ru\":\"Шейдинг\",\"en\":\"Shading\"}','shade',12,9,'0',2458,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),(2447,4,'{\"ru\":\"Обновлять локализации для других языков\",\"en\":\"Update translations for other languages\"}','refreshL10nsOnUpdate',12,9,'0',2451,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),(2448,4,'{\"ru\":\"Разрешенные теги\",\"en\":\"Allowed tags\"}','allowedTags',1,1,'',2450,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),(2449,4,'{\"ru\":\"Количество столбцов\",\"en\":\"Number of columns\"}','cols',3,18,'1',2452,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',7),(2450,4,'{\"ru\":\"Отображаемый формат\",\"en\":\"Display format\"}','displayFormat',4,1,'Y-m-d',2455,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',12),(2451,4,'{\"ru\":\"Когда\",\"en\":\"When\"}','when',11,23,'',2447,6,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),(2452,4,'{\"ru\":\"Высота в пикселях\",\"en\":\"Height in pixels\"}','height',3,18,'200',2442,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2453,4,'{\"ru\":\"Ширина в пикселях\",\"en\":\"Width in pixels\"}','width',3,18,'0',2441,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2454,4,'{\"ru\":\"Css класс для body\",\"en\":\"Css class for body\"}','bodyClass',1,1,'',2440,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2455,4,'{\"ru\":\"Путь к css-нику для подцепки редактором\",\"en\":\"Path to css-file for pickup by editor\"}','contentsCss',4,6,'',2439,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2456,4,'{\"ru\":\"Стили\",\"en\":\"Styles\"}','style',4,6,'',2438,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2457,4,'{\"ru\":\"Путь к js-нику для подцепки редактором\",\"en\":\"Path to js-file for pickup by editor\"}','contentsJs',4,6,'',2437,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2458,4,'{\"ru\":\"Скрипт\",\"en\":\"Script\"}','script',4,6,'',2436,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2459,4,'{\"ru\":\"Скрипт обработки исходного кода\",\"en\":\"Source code processing script\"}','sourceStripper',4,6,'',72,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),(2460,4,'{\"ru\":\"Включать наименование поля в имя файла при загрузке\",\"en\":\"Include field name in file name when loading\"}','appendFieldTitle',12,9,'1',54,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',14),(2461,4,'{\"ru\":\"Включать наименование сущности в имя файла при download-е\",\"en\":\"Include the entity name in the file name when downloading\"}','prependEntityTitle',12,9,'1',55,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',14),(2462,4,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}','measure',4,1,'',2444,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',18),(2463,4,'{\"ru\":\"Отображаемый формат времени\",\"en\":\"Time display format\"}','displayTimeFormat',4,1,'H:i',2445,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),(2464,4,'{\"ru\":\"Отображаемый формат даты\",\"en\":\"Date display format\"}','displayDateFormat',4,1,'Y-m-d',2448,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),(2465,4,'{\"ru\":\"Валидация\",\"en\":\"Validation type\"}','vtype',10,23,'none',2449,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',1),(2466,4,'{\"ru\":\"Допустимые типы\",\"en\":\"Allowed types\"}','allowTypes',1,1,'',2480,0,'none','','regular','{\"ru\":\"Укажите список расширений и\\/или группы расширений, через запятую: \\n- image: gif,png,jpeg,jpg\\n- office: doc,pdf,docx,xls,xlsx,txt,odt,ppt,pptx\\n- draw: psd,ai,cdr\\n- archive: zip,rar,7z,gz,tar\",\"en\":\"Specify a list of extensions and \\/ or groups of extensions, separated by commas: \\n- image: gif, png, jpeg, jpg \\n- office: doc, pdf, docx, xls, xlsx, txt, odt, ppt, pptx \\n- draw: psd, ai, cdr \\n- archive: zip, rar, 7z, gz, tar\"}','n',14),(2476,4,'{\"ru\":\"Обновлять локализации для других языков\",\"en\":\"Update translations for other languages\"}','refreshL10nsOnUpdate',12,9,'0',2470,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),(2477,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2477,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',5),(2478,4,'{\"ru\":\"Когда\",\"en\":\"When\"}','when',11,23,'',2478,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',12),(2479,4,'{\"ru\":\"Максимальный размер\",\"en\":\"Maximum size\"}','maxSize',1,1,'5M',2446,0,'none','','regular','','n',14),(2480,4,'{\"ru\":\"Минимальный размер\",\"en\":\"Minimum size\"}','minSize',1,1,'',2479,0,'none','','regular','','n',14),(2481,4,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}','measure',1,1,'',2481,0,'none','','regular','','n',24),(2482,4,'{\"ru\":\"Разрешенные теги\",\"en\":\"Allowed tags\"}','allowedTags',1,1,'',2482,0,'none','','regular','','n',1),(2483,4,'{\"ru\":\"Постфикс к имени файла при загрузке\",\"en\":\"Postfix to file name on download\"}','postfix',1,1,'',2483,0,'none','','regular','','n',14),(2484,4,'{\"ru\":\"Включать заголовок записи в наименование файла при загрузке\",\"en\":\"Include entry title in file name on download\"}','rowTitle',12,9,'0',2484,0,'none','','regular','','n',14),(2485,10,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',1271,0,'none','','required','','n',0);
-/*!40000 ALTER TABLE `field` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,`defaultValue`,`move`,`relation`,`storeRelationAbility`,`filter`,`mode`,`tooltip`,`l10n`,`entry`) values
+(2490,3,'{\"ru\":\"Справка\",\"en\":\"Reference\"}','help',4,6,'',2490,0,'none','','regular','','n',0),
+(2,1,'{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','type',1,1,'',2,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(3,1,'{\"ru\":\"Можно хранить ключи\",\"en\":\"Compatible with foreign keys\"}','canStoreRelation',10,5,'n',3,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(4,2,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',4,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(5,2,'{\"ru\":\"Таблица БД\",\"en\":\"DB table\"}','table',1,1,'',5,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(6,5,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',6,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2413,5,'{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}','fk',0,16,'',10,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(7,5,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',8,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(8,5,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',9,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2420,195,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','accesss',0,16,'',2204,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(9,5,'{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','columnTypeId',3,23,'0',2412,1,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(10,5,'{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','elementId',3,23,'0',414,4,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(11,5,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2413,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(12,5,'{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}','relation',3,23,'0',12,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(14,5,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2435,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(15,6,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',15,5,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(16,6,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',16,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(17,6,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',17,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(18,3,'{\"ru\":\"Вышестоящий раздел\",\"en\":\"Parent section\"}','sectionId',3,23,'0',22,3,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(19,3,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',514,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2304,9,'{\"ru\":\"Внизу\",\"en\":\"Bottom\"}','summaryType',10,23,'none',2308,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2198,195,'{\"ru\":\"Непустой результат\",\"en\":\"Non-empty result\"}','consistence',12,9,'1',2419,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(20,3,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',18,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(21,3,'{\"ru\":\"Контроллер\",\"en\":\"Controller\"}','alias',1,1,'',19,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(22,3,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',20,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(23,3,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',1278,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(25,3,'{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}','rowsOnPage',3,1,'25',2310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(26,8,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'',1,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(27,8,'{\"ru\":\"Действие\",\"en\":\"Action\"}','actionId',3,23,'',1,7,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(28,8,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','profileIds',1,7,'14',1,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2428,3,'{\"ru\":\"Записи\",\"en\":\"Recordings\"}','store',0,16,'',2429,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(29,8,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',1,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(30,8,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',1,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(31,7,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',26,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(32,7,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',27,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(33,9,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'',28,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(34,9,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'',29,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(35,9,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',2165,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(36,10,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',31,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(37,10,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2131,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(38,11,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'',33,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(39,11,'{\"ru\":\"Имя\",\"en\":\"Title\"}','title',4,1,'',34,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(40,11,'{\"ru\":\"Логин\",\"en\":\"Login\"}','email',1,1,'',35,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(41,11,'{\"ru\":\"Пароль\",\"en\":\"Password\"}','password',1,1,'',36,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(42,11,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',37,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(64,4,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',53,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(65,4,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',2456,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(66,4,'{\"ru\":\"Совместимость с внешними ключами\",\"en\":\"Foreign keys compatibility\"}','storeRelationAbility',11,23,'none',2457,6,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(1445,195,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2184,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(92,4,'{\"ru\":\"Не отображать в формах\",\"en\":\"Hide in forms\"}','hidden',12,9,'0',2460,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(106,20,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',86,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(107,20,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',87,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(108,20,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',88,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(109,20,'{\"ru\":\"Ширина\",\"en\":\"Width\"}','masterDimensionValue',3,18,'0',91,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(110,20,'{\"ru\":\"Высота\",\"en\":\"Height\"}','slaveDimensionValue',3,18,'0',93,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(111,20,'{\"ru\":\"Размер\",\"en\":\"Size\"}','proportions',10,5,'o',89,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(112,20,'{\"ru\":\"Ограничить пропорциональную <span id=\\\"slaveDimensionTitle\\\">высоту<\\/span>\",\"en\":\"Limit proportional <span id=\\\"slaveDimensionTitle\\\">height<\\/span>\"}','slaveDimensionLimitation',12,9,'1',92,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(114,20,'{\"ru\":\"При расчете пропорций отталкиваться от\",\"en\":\"When calculating proportions, start from\"}','masterDimensionAlias',10,5,'width',90,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(345,7,'{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}','rowRequired',10,5,'y',308,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(377,6,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',338,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(470,5,'{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}','storeRelationAbility',10,23,'none',11,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2475,4,'{\"ru\":\"Максимальная длина в символах\",\"en\":\"Maximum length in characters\"}','maxlength',3,18,'0',2473,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),
+(2474,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2462,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2473,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2463,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(475,1,'{\"ru\":\"Совместимые элементы управления\",\"en\":\"Compatible with form elements\"}','elementId',1,23,'',433,4,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(476,91,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',434,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2472,4,'{\"ru\":\"Формат отображения\",\"en\":\"Display format\"}','displayFormat',1,1,'H:i',2476,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',17),
+(2470,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2475,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),
+(502,3,'{\"ru\":\"PHP\",\"en\":\"PHP\"}','extendsPhp',1,1,'Indi_Controller_Admin',461,0,'none','','regular','{\"ru\":\"Родительский класс PHP\",\"en\":\"Parent PHP class\"}','n',0),
+(2309,3,'{\"ru\":\"JS\",\"en\":\"JS\"}','extendsJs',1,1,'Indi.lib.controller.Controller',443,0,'none','','regular','{\"ru\":\"Родительский класс JS\",\"en\":\"Parent JS class\"}','n',0),
+(503,3,'{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}','defaultSortField',3,23,'0',2303,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2212,8,'{\"ru\":\"Южная панель\",\"en\":\"South panel display mode\"}','south',10,23,'auto',2212,6,'one','','regular','{\"ru\":\"\",\"en\":\"South panel display mode\"}','y',0),
+(555,2,'{\"ru\":\"Родительский класс PHP\",\"en\":\"Parent PHP class\"}','extends',1,1,'Indi_Db_Table',512,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(557,3,'{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}','defaultSortDirection',10,23,'ASC',2309,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(594,20,'{\"ru\":\"Изменить оттенок\",\"en\":\"Change hue\"}','changeColor',10,5,'n',545,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(595,20,'{\"ru\":\"Оттенок\",\"en\":\"Hue\"}','color',13,11,'',546,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(612,2,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','system',10,23,'n',559,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(1364,7,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,5,'p',2099,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(1444,195,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',1316,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1442,195,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',1313,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1443,195,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',1314,5,'one','`elementId` NOT IN (4,14,16,20,22)','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2419,195,'{\"ru\":\"Флаги\",\"en\":\"Flags\"}','flags',0,16,'',2317,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1441,2,'{\"ru\":\"Включить в кэш\",\"en\":\"Include in cache\"}','useCache',12,23,'0',1312,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(754,5,'{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',13,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(767,3,'{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',2213,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1366,3,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,23,'p',21,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2414,5,'{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}','el',0,16,'',95,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2196,9,'{\"ru\":\"Вышестоящий столбец\",\"en\":\"Parent column\"}','gridId',3,23,'0',1738,9,'one','`sectionId` = \"<?=$this->sectionId?>\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2310,3,'{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}','rownumberer',10,23,'0',2323,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2184,195,'{\"ru\":\"Игнорировать шаблон опций\",\"en\":\"Ignore option template\"}','ignoreTemplate',12,9,'1',2421,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2183,195,'{\"ru\":\"Фильтрация\",\"en\":\"Filtering through SQL WHERE\"}','filter',1,1,'',1520,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2182,195,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2167,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1337,10,'{\"ru\":\"Сущность пользователей\",\"en\":\"Entity of users\"}','entityId',3,23,'11',2132,2,'one','`system`= \"n\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2422,9,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','accesss',0,16,'',2315,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1341,171,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',1275,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1342,171,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',1276,5,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2251,171,'{\"ru\":\"Изменить свойства\",\"en\":\"Adjust properties\"}','alter',0,16,'',2250,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1345,3,'{\"ru\":\"Запретить создание новых записей\",\"en\":\"Prevent creation of new records\"}','disableAdd',10,23,'0',2211,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(1532,171,'{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}','defaultValue',1,1,'',2424,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1554,3,'{\"ru\":\"Связь с вышестоящим разделом по полю\",\"en\":\"Link to a parent section by field\"}','parentSectionConnector',3,23,'0',1277,5,'one','`storeRelationAbility`!=\"none\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2412,5,'{\"ru\":\"MySQL\",\"en\":\"MySQL\"}','mysql',0,16,'',523,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1658,195,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','alt',4,1,'',2198,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2132,10,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2319,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(1886,9,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','alterTitle',4,1,'',2210,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2100,7,'{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}','display',10,23,'1',2100,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2131,10,'{\"ru\":\"Дэшборд\",\"en\":\"Dashboard uri\"}','dashboard',1,1,'',2215,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2159,9,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2205,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2161,171,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'inherit',2252,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2166,91,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2166,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2163,2,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title field\"}','titleFieldId',3,23,'0',2163,5,'one','`entityId` = \"<?=$this->id?>\" AND `columnTypeId` != \"0\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2164,8,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2164,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2165,9,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2196,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2167,195,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2182,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2169,171,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',1402,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2197,5,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'regular',413,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2199,5,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',428,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2200,9,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2304,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2203,195,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2311,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2202,7,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2202,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2204,195,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2314,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2205,9,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2422,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2206,9,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2423,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2207,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impact',10,23,'all',2169,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2209,8,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','rename',4,1,'',2209,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2210,9,'{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}','editor',10,23,'0',2206,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2211,3,'{\"ru\":\"Группировка\",\"en\":\"Group by\"}','groupBy',3,23,'0',2425,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2213,3,'{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}','rowsetSeparate',10,23,'auto',2302,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2214,8,'{\"ru\":\"Автосайз окна\",\"en\":\"Autosize windows\"}','fitWindow',10,23,'y',2214,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2215,10,'{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}','maxWindows',3,18,'15',2384,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2270,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplDecSubj',4,1,'',2271,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2269,309,'{\"ru\":\"Текст\",\"en\":\"Text\"}','tplIncBody',4,6,'',2270,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2268,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplIncSubj',4,1,'',2269,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2267,309,'{\"ru\":\"Назначение\",\"en\":\"Type\"}','tplFor',10,23,'inc',2268,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2266,309,'{\"ru\":\"Сообщение\",\"en\":\"Message\"}','tpl',0,16,'',2267,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2263,309,'{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}','bg',13,11,'212#d9e5f3',2264,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2264,309,'{\"ru\":\"Цвет текста\",\"en\":\"Text color\"}','fg',13,11,'216#044099',2265,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2265,309,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2266,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2262,309,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId',1,23,'',2263,3,'many','FIND_IN_SET(`sectionId`, \"<?=m(\'section\')->all(\'`sectionId` = \"0\"\')->column(\'id\', true)?>\")','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2255,309,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',2256,2,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2256,309,'{\"ru\":\"Событие \\/ PHP\",\"en\":\"Event \\/ PHP\"}','event',1,1,'',2257,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2257,309,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','profileId',1,23,'',2258,10,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2258,309,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2259,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2259,309,'{\"ru\":\"Счетчик\",\"en\":\"Counter\"}','qty',0,16,'',2260,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2260,309,'{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}','qtySql',1,1,'',2261,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2261,309,'{\"ru\":\"Направление изменения\",\"en\":\"Direction of change\"}','qtyDiffRelyOn',10,23,'event',2262,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2254,309,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',2254,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2236,307,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',1,1,'',2236,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2237,307,'{\"ru\":\"Ключ\",\"en\":\"Key\"}','alias',1,1,'',2237,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2238,307,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2238,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2239,5,'{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','l10n',10,23,'n',2414,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2243,2,'{\"ru\":\"Паттерн комплекта календарных полей\",\"en\":\"Calendar fields pattern\"}','spaceScheme',10,23,'none',2243,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2244,2,'{\"ru\":\"Комплект календарных полей\",\"en\":\"Set of calendar fields\"}','spaceFields',1,23,'',2244,5,'many','`entityId` = \"<?=$this->id?>\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2245,308,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','entityId',3,23,'0',2245,2,'one','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2246,308,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId',3,23,'0',2246,5,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2247,308,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','consider',3,23,'0',2247,5,'one','`id` != \"<?=$this->fieldId?>\" AND `columnTypeId` != \"0\"','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2248,308,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','foreign',3,23,'0',2248,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2249,308,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2249,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2250,171,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','profileIds',1,7,'',2207,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2252,171,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','rename',4,1,'',2251,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2424,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impactt',0,16,'',2134,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2271,309,'{\"ru\":\"Текст\",\"en\":\"Text\"}','tplDecBody',4,6,'',2272,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2272,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplEvtSubj',4,1,'',2273,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2273,309,'{\"ru\":\"Сообщение\",\"en\":\"Message\"}','tplEvtBody',4,6,'',2321,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2274,310,'{\"ru\":\"Уведомление\",\"en\":\"Notification\"}','noticeId',3,23,'0',2275,309,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2275,310,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2276,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2276,310,'{\"ru\":\"Критерий\",\"en\":\"Criteria\"}','criteriaRelyOn',10,5,'event',2277,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2277,310,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','criteriaEvt',1,1,'',2278,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2278,310,'{\"ru\":\"Для увеличения\",\"en\":\"Separate - for increase\"}','criteriaInc',1,1,'',2279,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2279,310,'{\"ru\":\"Для уменьшения\",\"en\":\"Separate - for decrease\"}','criteriaDec',1,1,'',2280,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2280,310,'{\"ru\":\"Ауто титле\",\"en\":\"Auto title\"}','title',4,1,'',2281,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2281,310,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','email',10,23,'n',2282,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2282,310,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','vk',10,23,'n',2283,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2283,310,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','sms',10,23,'n',2284,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2284,310,'{\"ru\":\"Критерий\",\"en\":\"Criterion\"}','criteria',1,1,'',2285,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2285,310,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','mail',10,23,'n',2316,6,'one','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2286,311,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','title',1,1,'',2286,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2287,312,'{\"ru\":\"Год\",\"en\":\"Year\"}','yearId',3,23,'0',2287,311,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2288,312,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month',10,23,'01',2288,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2289,312,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','title',4,1,'',2289,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2290,312,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2290,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2291,313,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','entityId',3,23,'0',2291,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2292,313,'{\"ru\":\"Объект\",\"en\":\"An object\"}','key',3,23,'0',2292,0,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2293,313,'{\"ru\":\"Что изменено\",\"en\":\"What&#39;s changed\"}','fieldId',3,23,'0',2293,5,'one','`columnTypeId` != \"0\"','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2294,313,'{\"ru\":\"Было\",\"en\":\"It was\"}','was',4,13,'',2294,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2295,313,'{\"ru\":\"Стало\",\"en\":\"Has become\"}','now',4,13,'',2295,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2296,313,'{\"ru\":\"Когда\",\"en\":\"When\"}','datetime',9,19,'0000-00-00 00:00:00',2296,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2297,313,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','monthId',3,23,'0',2297,312,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2298,313,'{\"ru\":\"Тип автора\",\"en\":\"Author type\"}','changerType',3,23,'0',2298,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2299,313,'{\"ru\":\"Автор\",\"en\":\"Author\"}','changerId',3,23,'0',2299,0,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2300,313,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2300,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2301,3,'{\"ru\":\"Разворачивать пункт меню\",\"en\":\"Expand menu item\"}','expand',10,23,'all',23,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2302,3,'{\"ru\":\"Выбранные\",\"en\":\"Chosen\"}','expandRoles',1,23,'',25,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2303,3,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','roleIds',1,23,'',2428,10,'many','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2305,9,'{\"ru\":\"Текст\",\"en\":\"Text\"}','summaryText',4,1,'',2313,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2306,308,'{\"ru\":\"Обязательное\",\"en\":\"Required\"}','required',10,23,'n',2306,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2307,308,'{\"ru\":\"Коннектор\",\"en\":\"Connector\"}','connector',3,23,'0',2307,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2308,9,'{\"ru\":\"Группа\",\"en\":\"Group\"}','group',10,23,'normal',2253,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2311,195,'{\"ru\":\"Разрешить сброс\",\"en\":\"Allow reset\"}','allowClear',12,9,'1',2420,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2312,3,'{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}','multiSelect',10,23,'0',2322,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2313,9,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','further',3,23,'0',30,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2314,195,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','further',3,23,'0',1315,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2315,9,'{\"ru\":\"Ширина\",\"en\":\"Width\"}','width',3,18,'0',2305,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2316,310,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2274,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2317,195,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2203,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2318,11,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','demo',10,23,'n',2318,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2319,10,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','demo',10,23,'n',2485,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2320,2,'{\"ru\":\"Группировать файлы\",\"en\":\"Group files by\"}','filesGroupBy',3,23,'0',2320,5,'one','`entityId` = \"<?=$this->id?>\" AND `storeRelationAbility` = \"one\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2321,309,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,23,'p',2255,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2322,3,'{\"ru\":\"Плитка\",\"en\":\"Tile\"}','tileField',3,23,'0',2426,5,'one','`elementId` = \"14\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2323,3,'{\"ru\":\"Превью\",\"en\":\"Preview\"}','tileThumb',3,23,'0',2427,20,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2324,11,'{\"ru\":\"Правки UI\",\"en\":\"UI editing\"}','uiedit',10,23,'n',2324,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2325,307,'{\"ru\":\"Состояние\",\"en\":\"Usage\"}','state',10,23,'noth',2325,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2326,307,'{\"ru\":\"Админка\",\"en\":\"Admin panel\"}','admin',0,16,'',2326,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2327,307,'{\"ru\":\"Система\",\"en\":\"System\"}','adminSystem',0,16,'',2327,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2328,307,'{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}','adminSystemUi',10,5,'n',2328,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2329,307,'{\"ru\":\"Константы\",\"en\":\"Constants\"}','adminSystemConst',10,5,'n',2329,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2330,307,'{\"ru\":\"Проект\",\"en\":\"Project\"}','adminCustom',0,16,'',2330,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2331,307,'{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}','adminCustomUi',10,5,'n',2331,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2332,307,'{\"ru\":\"Константы\",\"en\":\"Constants\"}','adminCustomConst',10,5,'n',2332,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2333,307,'{\"ru\":\"Данные\",\"en\":\"Data\"}','adminCustomData',10,5,'n',2333,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2334,307,'{\"ru\":\"Шаблоны\",\"en\":\"Templates\"}','adminCustomTmpl',10,5,'n',2334,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2335,307,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2335,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2336,314,'{\"ru\":\"Задача\",\"en\":\"Task\"}','title',1,1,'',2336,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2337,314,'{\"ru\":\"Создана\",\"en\":\"Created at\"}','datetime',9,19,'<?=date(\'Y-m-d H:i:s\')?>',2337,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2338,314,'{\"ru\":\"Параметры\",\"en\":\"Parameters\"}','params',4,6,'',2338,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2339,314,'{\"ru\":\"Процесс\",\"en\":\"Process\"}','proc',0,16,'',2340,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2340,314,'{\"ru\":\"Начат\",\"en\":\"Started\"}','procSince',9,19,'0000-00-00 00:00:00',2341,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2341,314,'{\"ru\":\"PID\",\"en\":\"PID\"}','procID',3,18,'0',2342,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2342,314,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','stage',10,23,'count',2343,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2343,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','state',10,23,'waiting',2344,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2344,314,'{\"ru\":\"Сегменты\",\"en\":\"Chunks\"}','chunk',3,18,'0',2339,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2345,314,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count',0,16,'',2346,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2346,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState',10,23,'waiting',2347,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2347,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize',3,18,'0',2348,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2348,314,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items',0,16,'',2349,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2349,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState',10,23,'waiting',2350,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2350,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize',3,18,'0',2351,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2351,314,'{\"ru\":\"Байт\",\"en\":\"Bytes\"}','itemsBytes',3,18,'0',2352,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2352,314,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue',0,16,'',2353,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2353,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState',10,23,'waiting',2354,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2354,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize',3,18,'0',2355,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2355,314,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply',0,16,'',2356,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2356,314,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState',10,23,'waiting',2357,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2357,314,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize',3,18,'0',2382,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2358,315,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTaskId',3,23,'0',2358,314,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2359,315,'{\"ru\":\"Расположение\",\"en\":\"Location\"}','location',1,1,'',2359,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2360,315,'{\"ru\":\"Условие выборки\",\"en\":\"Fetch condition\"}','where',4,6,'',2362,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2361,315,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count',0,16,'',2363,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2362,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState',10,23,'waiting',2364,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2363,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize',3,18,'0',2365,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2364,315,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items',0,16,'',2366,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2365,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState',10,23,'waiting',2367,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2366,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize',3,18,'0',2368,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2367,315,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue',0,16,'',2369,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2368,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState',10,23,'waiting',2370,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2369,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize',3,18,'0',2371,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2370,315,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply',0,16,'',2379,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2371,315,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState',10,23,'waiting',2380,6,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2372,315,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize',3,18,'0',2381,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2373,316,'{\"ru\":\"Очередь\",\"en\":\"Queue task\"}','queueTaskId',3,18,'0',2373,314,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2374,316,'{\"ru\":\"Сегмент\",\"en\":\"Queue chunk\"}','queueChunkId',3,23,'0',2374,315,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2375,316,'{\"ru\":\"Таргет\",\"en\":\"Target\"}','target',1,1,'',2375,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2376,316,'{\"ru\":\"Значение\",\"en\":\"Value\"}','value',4,1,'',2376,0,'none','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2377,316,'{\"ru\":\"Результат\",\"en\":\"Result\"}','result',4,13,'',2377,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2378,316,'{\"ru\":\"Статус\",\"en\":\"Status\"}','stage',10,5,'items',2378,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2379,315,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'0',2383,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2380,315,'{\"ru\":\"Родительский сегмент\",\"en\":\"Parent segment\"}','queueChunkId',3,18,'0',2360,315,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2381,315,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','fraction',10,23,'none',2361,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2382,314,'{\"ru\":\"Этап - Статус\",\"en\":\"Stage - Status\"}','stageState',4,1,'',2345,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2383,315,'{\"ru\":\"Байт\",\"en\":\"Bytes\"}','itemsBytes',3,18,'0',2372,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2384,10,'{\"ru\":\"Фракция\",\"en\":\"Fraction\"}','type',10,5,'p',32,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2385,171,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','elementId',3,23,'0',2385,4,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2386,8,'{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','l10n',10,23,'n',2386,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2396,318,'{\"ru\":\"Родительская запись\",\"en\":\"Parent entry\"}','realtimeId',3,23,'0',2396,318,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2397,318,'{\"ru\":\"Тип\",\"en\":\"Type\"}','type',10,23,'session',2397,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2398,318,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2398,10,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2399,318,'{\"ru\":\"Пользователь\",\"en\":\"User\"}','adminId',3,23,'0',2399,0,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2400,318,'{\"ru\":\"Токен\",\"en\":\"Token\"}','token',1,1,'',2400,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2401,318,'{\"ru\":\"Начало\",\"en\":\"Since\"}','spaceSince',9,19,'<?=date(\'Y-m-d H:i:s\')?>',2401,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2402,318,'{\"ru\":\"Конец\",\"en\":\"Until\"}','spaceUntil',9,19,'0000-00-00 00:00:00',2402,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2403,318,'{\"ru\":\"Длительность\",\"en\":\"Duration\"}','spaceFrame',3,18,'0',2403,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2404,318,'{\"ru\":\"Язык\",\"en\":\"Language\"}','langId',3,23,'0',2404,307,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2405,318,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'0',2405,3,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2406,318,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',2406,2,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2407,318,'{\"ru\":\"Записи\",\"en\":\"Records\"}','entries',4,23,'',2407,0,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2408,318,'{\"ru\":\"Поля\",\"en\":\"Fields\"}','fields',4,23,'',2408,5,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2409,318,'{\"ru\":\"Запись\",\"en\":\"Entry\"}','title',4,1,'',2409,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2410,318,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode',10,23,'none',2410,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2411,318,'{\"ru\":\"Scope\",\"en\":\"Scope\"}','scope',4,6,'',2411,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2421,195,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','display',0,16,'',2183,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2423,9,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','display',0,16,'',2200,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2425,3,'{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}','extends',0,16,'',310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2426,3,'{\"ru\":\"Источник записей\",\"en\":\"Data source\"}','data',0,16,'',462,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2427,3,'{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}','display',0,16,'',2312,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2429,3,'{\"ru\":\"Подгрузка записей\",\"en\":\"Loading records\"}','load',0,16,'',2301,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2430,3,'{\"ru\":\"Параметры\",\"en\":\"Parameters\"}','params',0,16,'',2430,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2432,9,'{\"ru\":\"При изменении ячейки обновлять всю строку\",\"en\":\"If cell changed, update the entire row\"}','rowReqIfAffected',10,23,'n',2432,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2433,91,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','cfgField',3,23,'0',2433,5,'one','`entry` != \"0\"','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2434,91,'{\"ru\":\"Значение\",\"en\":\"Value\"}','cfgValue',4,6,'',2434,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2435,5,'{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','entry',3,23,'0',7,0,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2436,4,'{\"ru\":\"Шаблон содержимого опции\",\"en\":\"Option content template\"}','optionTemplate',4,6,'',2461,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2437,4,'{\"ru\":\"Высота опции\",\"en\":\"Option height\"}','optionHeight',3,18,'14',2464,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2438,4,'{\"ru\":\"Плейсхолдер\",\"en\":\"Placeholder\"}','placeholder',4,1,'',2465,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',23),
+(2439,4,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}','groupBy',3,23,'0',2466,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2440,4,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}','optionAttrs',1,23,'',2472,5,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2441,4,'{\"ru\":\"Отключить лукап\",\"en\":\"Disable lookup\"}','noLookup',12,9,'0',2474,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',23),
+(2442,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2453,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',7),
+(2443,4,'{\"ru\":\"Во всю ширину\",\"en\":\"Full width\"}','wide',12,9,'0',2454,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2444,4,'{\"ru\":\"Максимальная длина в символах\",\"en\":\"Maximum length in characters\"}','maxlength',3,18,'5',2443,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',18),
+(2445,4,'{\"ru\":\"Маска\",\"en\":\"Input mask\"}','inputMask',4,1,'',2459,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',1),
+(2446,4,'{\"ru\":\"Шейдинг\",\"en\":\"Shading\"}','shade',12,9,'0',2458,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),
+(2447,4,'{\"ru\":\"Обновлять локализации для других языков\",\"en\":\"Update translations for other languages\"}','refreshL10nsOnUpdate',12,9,'0',2451,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),
+(2448,4,'{\"ru\":\"Разрешенные теги\",\"en\":\"Allowed tags\"}','allowedTags',1,1,'',2450,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',6),
+(2449,4,'{\"ru\":\"Количество столбцов\",\"en\":\"Number of columns\"}','cols',3,18,'1',2452,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',7),
+(2450,4,'{\"ru\":\"Отображаемый формат\",\"en\":\"Display format\"}','displayFormat',4,1,'Y-m-d',2455,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',12),
+(2451,4,'{\"ru\":\"Когда\",\"en\":\"When\"}','when',11,23,'',2447,6,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),
+(2452,4,'{\"ru\":\"Высота в пикселях\",\"en\":\"Height in pixels\"}','height',3,18,'200',2442,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2453,4,'{\"ru\":\"Ширина в пикселях\",\"en\":\"Width in pixels\"}','width',3,18,'0',2441,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2454,4,'{\"ru\":\"Css класс для body\",\"en\":\"Css class for body\"}','bodyClass',1,1,'',2440,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2455,4,'{\"ru\":\"Путь к css-нику для подцепки редактором\",\"en\":\"Path to css-file for pickup by editor\"}','contentsCss',4,6,'',2439,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2456,4,'{\"ru\":\"Стили\",\"en\":\"Styles\"}','style',4,6,'',2438,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2457,4,'{\"ru\":\"Путь к js-нику для подцепки редактором\",\"en\":\"Path to js-file for pickup by editor\"}','contentsJs',4,6,'',2437,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2458,4,'{\"ru\":\"Скрипт\",\"en\":\"Script\"}','script',4,6,'',2436,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2459,4,'{\"ru\":\"Скрипт обработки исходного кода\",\"en\":\"Source code processing script\"}','sourceStripper',4,6,'',72,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',13),
+(2460,4,'{\"ru\":\"Включать наименование поля в имя файла при загрузке\",\"en\":\"Include field name in file name when loading\"}','appendFieldTitle',12,9,'1',54,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',14),
+(2461,4,'{\"ru\":\"Включать наименование сущности в имя файла при download-е\",\"en\":\"Include the entity name in the file name when downloading\"}','prependEntityTitle',12,9,'1',55,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',14),
+(2462,4,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}','measure',4,1,'',2444,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',18),
+(2463,4,'{\"ru\":\"Отображаемый формат времени\",\"en\":\"Time display format\"}','displayTimeFormat',4,1,'H:i',2445,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),
+(2464,4,'{\"ru\":\"Отображаемый формат даты\",\"en\":\"Date display format\"}','displayDateFormat',4,1,'Y-m-d',2448,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',19),
+(2465,4,'{\"ru\":\"Валидация\",\"en\":\"Validation type\"}','vtype',10,23,'none',2449,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',1),
+(2466,4,'{\"ru\":\"Допустимые типы\",\"en\":\"Allowed types\"}','allowTypes',1,1,'',2480,0,'none','','regular','{\"ru\":\"Укажите список расширений и\\/или группы расширений, через запятую: \\n- image: gif,png,jpeg,jpg\\n- office: doc,pdf,docx,xls,xlsx,txt,odt,ppt,pptx\\n- draw: psd,ai,cdr\\n- archive: zip,rar,7z,gz,tar\",\"en\":\"Specify a list of extensions and \\/ or groups of extensions, separated by commas: \\n- image: gif, png, jpeg, jpg \\n- office: doc, pdf, docx, xls, xlsx, txt, odt, ppt, pptx \\n- draw: psd, ai, cdr \\n- archive: zip, rar, 7z, gz, tar\"}','n',14),
+(2476,4,'{\"ru\":\"Обновлять локализации для других языков\",\"en\":\"Update translations for other languages\"}','refreshL10nsOnUpdate',12,9,'0',2470,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',1),
+(2477,4,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title-field\"}','titleColumn',3,23,'0',2477,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',5),
+(2478,4,'{\"ru\":\"Когда\",\"en\":\"When\"}','when',11,23,'',2478,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',12),
+(2479,4,'{\"ru\":\"Максимальный размер\",\"en\":\"Maximum size\"}','maxSize',1,1,'5M',2446,0,'none','','regular','','n',14),
+(2480,4,'{\"ru\":\"Минимальный размер\",\"en\":\"Minimum size\"}','minSize',1,1,'',2479,0,'none','','regular','','n',14),
+(2481,4,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}','measure',1,1,'',2481,0,'none','','regular','','n',24),
+(2482,4,'{\"ru\":\"Разрешенные теги\",\"en\":\"Allowed tags\"}','allowedTags',1,1,'',2482,0,'none','','regular','','n',1),
+(2483,4,'{\"ru\":\"Постфикс к имени файла при загрузке\",\"en\":\"Postfix to file name on download\"}','postfix',1,1,'',2483,0,'none','','regular','','n',14),
+(2484,4,'{\"ru\":\"Включать заголовок записи в наименование файла при загрузке\",\"en\":\"Include entry title in file name on download\"}','rowTitle',12,9,'0',2484,0,'none','','regular','','n',14),
+(2485,10,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','alias',1,1,'',1271,0,'none','','required','','n',0);
 
---
--- Table structure for table `grid`
---
+/*Table structure for table `grid` */
 
 DROP TABLE IF EXISTS `grid`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `grid` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `fieldId` int(11) NOT NULL DEFAULT '0',
-  `move` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sectionId` int NOT NULL DEFAULT '0',
+  `fieldId` int NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   `alterTitle` text NOT NULL,
   `toggle` enum('y','n','h','e') NOT NULL DEFAULT 'y',
   `title` text NOT NULL,
-  `gridId` int(11) NOT NULL DEFAULT '0',
+  `gridId` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
   `access` enum('all','only','except') NOT NULL DEFAULT 'all',
   `profileIds` varchar(255) NOT NULL DEFAULT '',
@@ -397,8 +994,8 @@ CREATE TABLE `grid` (
   `summaryType` enum('none','sum','average','min','max','text') NOT NULL DEFAULT 'none',
   `summaryText` text NOT NULL,
   `group` enum('normal','locked') NOT NULL DEFAULT 'normal',
-  `further` int(11) NOT NULL DEFAULT '0',
-  `width` int(11) NOT NULL DEFAULT '0',
+  `further` int NOT NULL DEFAULT '0',
+  `width` int NOT NULL DEFAULT '0',
   `rowReqIfAffected` enum('n','y') NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
@@ -416,28 +1013,277 @@ CREATE TABLE `grid` (
   FULLTEXT KEY `summaryText` (`summaryText`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alterTitle` (`alterTitle`)
-) ENGINE=MyISAM AUTO_INCREMENT=2734 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=2734 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `grid`
---
+/*Data for the table `grid` */
 
-LOCK TABLES `grid` WRITE;
-/*!40000 ALTER TABLE `grid` DISABLE KEYS */;
-INSERT INTO `grid` VALUES (2707,393,2379,2707,'','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'','all','','0','none','','normal',0,0,'n'),(2,2,2,2,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(3,2,3,3,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пригоден для хранения внешних ключей\",\"en\":\"Compatible with foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(4,5,4,4,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(5,5,5,5,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Таблица БД\",\"en\":\"DB table\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(6,6,7,6,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(7,6,8,7,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(8,6,9,2352,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(9,6,10,2610,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(10,6,11,2609,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"DEFAULT\",\"en\":\"Default value\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(11,6,12,10,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2610,6,470,9,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(13,6,14,2613,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(14,7,19,2460,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(15,7,20,14,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(16,7,21,15,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Контроллер\",\"en\":\"Controller\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(17,7,22,16,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(18,7,23,18,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(20,7,25,2644,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(23,8,27,23,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Действие\",\"en\":\"Action\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(24,8,29,297,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(25,8,30,2564,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(26,10,31,26,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(27,10,32,27,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(29,11,2165,29,'{\"ru\":\"Столбец\",\"en\":\"Column\"}','y','{\"ru\":\"Auto title\",\"en\":\"Auto title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(30,11,35,2320,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(32,13,36,32,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(33,13,37,2464,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(34,12,16,34,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(35,12,17,35,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(36,14,39,36,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фамилия Имя\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(37,14,40,37,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Email (используется в качестве логина)\",\"en\":\"Login\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(38,14,41,38,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пароль\",\"en\":\"Password\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(39,14,42,39,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(42,16,65,43,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(43,16,66,44,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Способен работать с внешними ключами\",\"en\":\"Foreign keys compatibility\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(46,16,64,42,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(89,22,107,56,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(90,22,108,57,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(91,22,109,59,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ширина\",\"en\":\"Width\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(92,22,110,60,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Высота\",\"en\":\"Height\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(93,22,111,58,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(94,22,112,61,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ограничить пропорциональную <span id=\\\"slaveDimensionTitle\\\">высоту<\\/span>\",\"en\":\"Limit proportional <span id=\\\"slaveDimensionTitle\\\">height<\\/span>\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(341,12,377,253,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок отображения\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(383,8,28,25,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2641,7,2425,2459,'{\"ru\":\"Привязка к коду\",\"en\":\"Binding to code\"}','y','{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,100,'n'),(1335,7,1366,17,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1332,10,1364,923,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(443,5,612,347,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2657,16,92,2657,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Не отображать в формах\",\"en\":\"Hide in forms\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1382,224,1444,2312,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1384,224,1445,929,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1383,224,1443,926,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2625,224,2311,2626,'{\"ru\":\"РС\",\"en\":\"AR\"}','y','{\"ru\":\"Разрешить сброс\",\"en\":\"Allow reset\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2656,2,475,2656,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Совместимые элементы управления\",\"en\":\"Compatible with form elements\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2627,224,2198,2625,'{\"ru\":\"НР\",\"en\":\"NER\"}','y','{\"ru\":\"Содержательность\",\"en\":\"Non-empty result\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2312,224,2183,1945,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2311,224,2182,2311,'{\"ru\":\"Значение<br>по умолчанию\",\"en\":\" Default<br>value\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1231,201,1342,851,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2356,201,2252,988,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Name\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1448,201,1532,2639,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1656,11,1886,2419,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(1954,224,1658,2621,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2280,201,2161,1946,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2320,11,2159,1156,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2321,6,2197,13,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2322,11,34,30,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2323,10,2202,2659,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2324,8,2209,24,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2325,11,2210,2416,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2326,8,2212,2324,'{\"ru\":\"ЮП\",\"en\":\"SP\"}','y','{\"ru\":\"Южная панель\",\"en\":\"South panel display mode\"}',0,'{\"ru\":\"Режим отображения южной панели\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2327,7,2213,2641,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}',2654,'{\"ru\":\"Режим подгрузки данных\",\"en\":\"Data loading mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2328,8,2214,2326,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Автосайз окна\",\"en\":\"Autosize windows\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2329,13,2215,2563,'{\"ru\":\"МКО\",\"en\":\"MNW\"}','y','{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}',0,'{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2415,390,2283,2462,'{\"ru\":\"SMS\",\"en\":\"SMS\"}','y','{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}',0,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2394,389,2259,2394,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Счетчик\",\"en\":\"Counter\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2395,389,2260,2395,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2396,389,2256,2396,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Событие \\/ PHP\",\"en\":\"Event \\/ PHP\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2397,389,2262,2397,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2398,389,2263,2398,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2399,389,2264,2399,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Цвет текста\",\"en\":\"Text color\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2390,389,2254,2390,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2391,389,2255,2391,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2392,389,2257,2392,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Получатели\",\"en\":\"Recipients\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2393,389,2258,2393,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2468,387,2237,2468,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ключ\",\"en\":\"Key\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2467,387,2236,2467,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2352,6,2239,2611,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2353,388,2247,2352,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2354,388,2248,2353,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2357,201,2207,2357,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','y','{\"ru\":\"Влияние\",\"en\":\"Influence\"}',2640,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2358,201,2250,2358,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кроме\",\"en\":\"Except\"}',2640,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2414,390,2282,2415,'{\"ru\":\"VK\",\"en\":\"VK\"}','y','{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}',0,'{\"ru\":\"Дублирование во ВКонтакте\",\"en\":\"Duplication in VKontakte\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2413,390,2281,2414,'{\"ru\":\"Email\",\"en\":\"Email\"}','y','{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}',0,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2412,390,2277,2413,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Общий\",\"en\":\"Shared\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2411,390,2275,2412,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Роль\",\"en\":\"Role\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2417,388,2306,2417,'{\"ru\":\"[ ! ]\",\"en\":\"[ ! ]\"}','y','{\"ru\":\"Обязательное\",\"en\":\"Required\"}',0,'{\"ru\":\"Обязательное\",\"en\":\"Required\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2418,388,2307,2418,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Коннектор\",\"en\":\"Connector\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2419,11,2308,2461,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группа\",\"en\":\"Group\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2450,391,12,2450,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2449,391,470,2449,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2622,224,2203,2622,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кому\",\"en\":\"Access\"}',2629,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2623,224,2204,2623,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Выбранные\",\"en\":\"Roles\"}',2629,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2447,391,11,2447,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2620,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2446,391,9,2446,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2620,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2445,391,8,2440,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2618,391,2414,2448,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2624,224,2317,2624,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2443,391,2199,2443,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2441,391,2197,2441,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2442,391,10,2442,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2438,391,6,2438,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y','{\"ru\":\"Сущность, в структуру которой входит это поле\",\"en\":\"Entity\"}',0,'{\"ru\":\"Сущность, в структуру которой входит это поле\",\"en\":\"The entity that contains this field\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2439,391,7,2439,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2619,391,2413,2444,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2451,391,754,2451,'{\"ru\":\"Фильтрация\",\"en\":\"\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2621,224,2314,928,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2452,391,2239,2619,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2620,'{\"ru\":\"Мультиязычность\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2453,391,14,2620,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2459,7,502,926,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"PHP\",\"en\":\"PHP\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,50,'y'),(2460,7,2309,2327,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"JS\",\"en\":\"JS\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,50,'y'),(2461,11,2315,2632,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ширина\",\"en\":\"Width\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2462,390,2316,2411,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2463,14,2318,2463,'{\"ru\":\"Демо\",\"en\":\"Demo\"}','y','{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}',0,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2464,13,2319,2615,'{\"ru\":\"Демо\",\"en\":\"Demo\"}','y','{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}',0,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2465,5,2320,2465,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировать файлы\",\"en\":\"Group files by\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2466,14,2324,2466,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Правки UI\",\"en\":\"UI editing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2469,387,2326,2469,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Админка\",\"en\":\"Admin panel\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2470,387,2238,2470,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2471,387,2327,2471,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Система\",\"en\":\"System\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2472,387,2328,2472,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}',2471,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2473,387,2329,2473,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Константы\",\"en\":\"Constants\"}',2471,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2474,387,2330,2474,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Проект\",\"en\":\"Project\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2475,387,2331,2475,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2476,387,2332,2476,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Константы\",\"en\":\"Constants\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2477,387,2333,2477,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Данные\",\"en\":\"Data\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2478,387,2334,2478,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Шаблоны\",\"en\":\"Templates\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2479,387,2335,2479,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2519,392,2353,2519,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2518,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2518,392,2352,2518,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процессинг\",\"en\":\"Processing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2514,392,2348,2514,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создание\",\"en\":\"Creating\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2515,392,2349,2515,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2517,392,2351,2517,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Байт\",\"en\":\"Bytes\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2516,392,2350,2516,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2511,392,2345,2511,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Оценка\",\"en\":\"Estimation\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2512,392,2346,2512,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2511,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2513,392,2347,2513,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2511,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2508,392,2339,2508,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процесс\",\"en\":\"Process\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2509,392,2341,2509,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"PID\",\"en\":\"PID\"}',2508,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2510,392,2340,2510,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Начат\",\"en\":\"Started\"}',2508,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2505,392,2342,2505,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Этап\",\"en\":\"Stage\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2506,392,2343,2506,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Статус\",\"en\":\"Status\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2507,392,2344,2507,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сегменты\",\"en\":\"Chunks\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2502,392,2337,2502,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создана\",\"en\":\"Created at\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2503,392,2336,2503,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Задача\",\"en\":\"Task\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2504,392,2338,2504,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметры\",\"en\":\"Parameters\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2520,392,2354,2520,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2518,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2521,392,2355,2521,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Применение\",\"en\":\"Applying\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2522,392,2356,2522,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2521,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2523,392,2357,2523,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2521,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2548,393,2367,2548,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процессинг\",\"en\":\"Processing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2546,393,2365,2546,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2547,393,2366,2547,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2543,393,2362,2543,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2542,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2544,393,2363,2544,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2542,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2545,393,2364,2545,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создание\",\"en\":\"Creating\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2541,393,2360,2541,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Условие выборки\",\"en\":\"Fetch condition\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2542,393,2361,2542,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Оценка\",\"en\":\"Estimation\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2706,13,2485,33,'','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'','all','','0','none','','normal',0,0,'n'),(2540,393,2359,2540,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Расположение\",\"en\":\"Location\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2549,393,2368,2549,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2548,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2550,393,2369,2550,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2548,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2551,393,2370,2551,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Применение\",\"en\":\"Applying\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2552,393,2371,2552,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2551,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2553,393,2372,2553,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2551,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2561,394,2378,2561,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2560,394,2377,2560,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Результат\",\"en\":\"Result\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2559,394,2376,2559,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2558,394,2375,2558,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Таргет\",\"en\":\"Target\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2562,393,2383,2562,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Байт\",\"en\":\"Bytes\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2563,13,2384,2329,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2564,8,2386,2328,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2626,224,2184,2627,'{\"ru\":\"ИШ\",\"en\":\"IOT\"}','y','{\"ru\":\"Игнорировать шаблон, заданный в параметрах настроек поля\",\"en\":\"Ignore option template\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2620,391,2412,2452,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2613,6,2414,2321,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2611,6,2413,8,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2612,6,754,11,'{\"ru\":\"Фильтрация\",\"en\":\"Filtration\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2609,6,2412,2612,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2606,396,2406,2606,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2605,396,2404,2605,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Язык\",\"en\":\"Language\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2604,396,2403,2604,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Длительность\",\"en\":\"Duration\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2603,396,2402,2603,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Конец\",\"en\":\"Until\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2602,396,2401,2602,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Начало\",\"en\":\"Since\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2601,396,2399,2601,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пользователь\",\"en\":\"User\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2600,396,2398,2600,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Роль\",\"en\":\"Role\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2599,396,2397,2599,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Тип\",\"en\":\"Type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2598,396,2405,2598,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Раздел\",\"en\":\"Section\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2597,396,2400,2597,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Токен\",\"en\":\"Token\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2596,396,2409,2596,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Запись\",\"en\":\"Entry\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2607,396,2407,2607,'{\"ru\":\"\",\"en\":\"\"}','n','{\"ru\":\"Записи\",\"en\":\"Records\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2608,396,2408,2608,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Поля\",\"en\":\"Fields\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2614,6,2199,2614,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2615,13,1337,2616,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность пользователей\",\"en\":\"Entity of users\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2616,13,2131,2617,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Дэшборд\",\"en\":\"Dashboard uri\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2617,13,2132,2706,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2628,224,2419,2630,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Флаги\",\"en\":\"Flags\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2629,224,2420,2629,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2630,224,2421,2628,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение\",\"en\":\"Display\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2631,11,2313,2325,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2632,11,2200,2631,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2633,11,2304,2633,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внизу\",\"en\":\"Bottom\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2634,11,2205,2635,'{\"ru\":\"Кому\",\"en\":\"Mode\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',2636,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2635,11,2206,2636,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кроме\",\"en\":\"Roles\"}',2636,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2636,11,2422,2637,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2637,11,2423,2634,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение\",\"en\":\"Display\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2638,201,2251,2638,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Изменить свойства\",\"en\":\"Adjust properties\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2639,201,2385,2356,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Элемент\",\"en\":\"Element\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2640,201,2424,2640,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Влияние\",\"en\":\"Influence\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2642,7,2426,31,'{\"ru\":\"Источник\",\"en\":\"\"}','y','{\"ru\":\"Источник записей\",\"en\":\"Data source\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2643,7,1345,2704,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Запретить создание новых записей\",\"en\":\"Prevent creation of new records\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2644,7,767,2647,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2645,7,503,2642,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),(2646,7,557,2645,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),(2647,7,2427,2654,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','y','{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2648,7,2312,2648,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2649,7,2310,2649,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2650,7,2211,2650,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировка\",\"en\":\"Group by\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2651,7,2322,2651,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Плитка\",\"en\":\"Tile\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2652,7,2323,2652,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Превью\",\"en\":\"Preview\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2653,7,2428,2655,'{\"ru\":\"\",\"en\":\"Records\"}','y','{\"ru\":\"Записи\",\"en\":\"Recordings\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2654,7,2429,2646,'{\"ru\":\"Подгрузка\",\"en\":\"Loading\"}','y','{\"ru\":\"Подгрузка записей\",\"en\":\"Loading records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2655,7,2430,2653,'{\"ru\":\"Свойства\",\"en\":\"Properties\"}','y','{\"ru\":\"Параметры\",\"en\":\"Parameters\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,100,'n'),(2659,10,2100,2658,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2658,10,345,2323,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2676,11,2432,2676,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"При изменении ячейки обновлять всю строку\",\"en\":\"If cell changed, update the entire row\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2677,101,2433,2677,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметр\",\"en\":\"Param\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2678,101,2434,2678,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2679,405,7,2679,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2680,405,8,2680,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2681,405,2413,2681,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2682,405,470,2682,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2683,405,12,2683,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2684,405,754,2684,'{\"ru\":\"Фильтрация\",\"en\":\"SQL WHERE\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2685,405,2414,2685,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2686,405,2197,2686,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2687,405,10,2687,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2688,405,2199,2688,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2689,405,2412,2689,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2690,405,9,2690,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2691,405,11,2691,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2692,405,2239,2692,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2693,405,14,2693,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2694,406,16,2694,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2695,406,17,2695,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2696,406,377,2696,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2697,407,476,2701,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2700,407,2166,2705,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Auto title\",\"en\":\"Auto title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2701,407,2433,2702,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметр\",\"en\":\"Param\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2702,407,2434,2703,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),(2705,407,476,2700,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',6,0,'n');
-/*!40000 ALTER TABLE `grid` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`alterTitle`,`toggle`,`title`,`gridId`,`tooltip`,`access`,`profileIds`,`editor`,`summaryType`,`summaryText`,`group`,`further`,`width`,`rowReqIfAffected`) values
+(2707,393,2379,2707,'','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'','all','','0','none','','normal',0,0,'n'),
+(2,2,2,2,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(3,2,3,3,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пригоден для хранения внешних ключей\",\"en\":\"Compatible with foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(4,5,4,4,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(5,5,5,5,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Таблица БД\",\"en\":\"DB table\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(6,6,7,6,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(7,6,8,7,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(8,6,9,2352,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(9,6,10,2610,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(10,6,11,2609,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"DEFAULT\",\"en\":\"Default value\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(11,6,12,10,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2610,6,470,9,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(13,6,14,2613,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(14,7,19,2460,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(15,7,20,14,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(16,7,21,15,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Контроллер\",\"en\":\"Controller\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(17,7,22,16,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(18,7,23,18,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(20,7,25,2644,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(23,8,27,23,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Действие\",\"en\":\"Action\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(24,8,29,297,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(25,8,30,2564,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(26,10,31,26,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(27,10,32,27,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(29,11,2165,29,'{\"ru\":\"Столбец\",\"en\":\"Column\"}','y','{\"ru\":\"Auto title\",\"en\":\"Auto title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(30,11,35,2320,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(32,13,36,32,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(33,13,37,2464,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(34,12,16,34,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(35,12,17,35,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(36,14,39,36,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фамилия Имя\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(37,14,40,37,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Email (используется в качестве логина)\",\"en\":\"Login\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(38,14,41,38,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пароль\",\"en\":\"Password\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(39,14,42,39,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(42,16,65,43,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(43,16,66,44,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Способен работать с внешними ключами\",\"en\":\"Foreign keys compatibility\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(46,16,64,42,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(89,22,107,56,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(90,22,108,57,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(91,22,109,59,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ширина\",\"en\":\"Width\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(92,22,110,60,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Высота\",\"en\":\"Height\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(93,22,111,58,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(94,22,112,61,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ограничить пропорциональную <span id=\\\"slaveDimensionTitle\\\">высоту<\\/span>\",\"en\":\"Limit proportional <span id=\\\"slaveDimensionTitle\\\">height<\\/span>\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(341,12,377,253,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок отображения\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(383,8,28,25,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2641,7,2425,2459,'{\"ru\":\"Привязка к коду\",\"en\":\"Binding to code\"}','y','{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,100,'n'),
+(1335,7,1366,17,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1332,10,1364,923,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(443,5,612,347,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2657,16,92,2657,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Не отображать в формах\",\"en\":\"Hide in forms\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1382,224,1444,2312,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1384,224,1445,929,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1383,224,1443,926,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2625,224,2311,2626,'{\"ru\":\"РС\",\"en\":\"AR\"}','y','{\"ru\":\"Разрешить сброс\",\"en\":\"Allow reset\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2656,2,475,2656,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Совместимые элементы управления\",\"en\":\"Compatible with form elements\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2627,224,2198,2625,'{\"ru\":\"НР\",\"en\":\"NER\"}','y','{\"ru\":\"Содержательность\",\"en\":\"Non-empty result\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2312,224,2183,1945,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2311,224,2182,2311,'{\"ru\":\"Значение<br>по умолчанию\",\"en\":\" Default<br>value\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1231,201,1342,851,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2356,201,2252,988,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Name\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1448,201,1532,2639,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1656,11,1886,2419,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(1954,224,1658,2621,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2280,201,2161,1946,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2320,11,2159,1156,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2321,6,2197,13,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2322,11,34,30,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2323,10,2202,2659,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2324,8,2209,24,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Переименовать\",\"en\":\"Rename\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2325,11,2210,2416,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2326,8,2212,2324,'{\"ru\":\"ЮП\",\"en\":\"SP\"}','y','{\"ru\":\"Южная панель\",\"en\":\"South panel display mode\"}',0,'{\"ru\":\"Режим отображения южной панели\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2327,7,2213,2641,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}',2654,'{\"ru\":\"Режим подгрузки данных\",\"en\":\"Data loading mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2328,8,2214,2326,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Автосайз окна\",\"en\":\"Autosize windows\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2329,13,2215,2563,'{\"ru\":\"МКО\",\"en\":\"MNW\"}','y','{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}',0,'{\"ru\":\"Максимальное количество окон\",\"en\":\"Maximum number of windows\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2415,390,2283,2462,'{\"ru\":\"SMS\",\"en\":\"SMS\"}','y','{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}',0,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2394,389,2259,2394,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Счетчик\",\"en\":\"Counter\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2395,389,2260,2395,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2396,389,2256,2396,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Событие \\/ PHP\",\"en\":\"Event \\/ PHP\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2397,389,2262,2397,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2398,389,2263,2398,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2399,389,2264,2399,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Цвет текста\",\"en\":\"Text color\"}',2394,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2390,389,2254,2390,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2391,389,2255,2391,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2392,389,2257,2392,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Получатели\",\"en\":\"Recipients\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2393,389,2258,2393,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2468,387,2237,2468,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ключ\",\"en\":\"Key\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2467,387,2236,2467,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2352,6,2239,2611,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2609,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2353,388,2247,2352,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2354,388,2248,2353,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2357,201,2207,2357,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','y','{\"ru\":\"Влияние\",\"en\":\"Influence\"}',2640,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2358,201,2250,2358,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кроме\",\"en\":\"Except\"}',2640,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2414,390,2282,2415,'{\"ru\":\"VK\",\"en\":\"VK\"}','y','{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}',0,'{\"ru\":\"Дублирование во ВКонтакте\",\"en\":\"Duplication in VKontakte\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2413,390,2281,2414,'{\"ru\":\"Email\",\"en\":\"Email\"}','y','{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}',0,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2412,390,2277,2413,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Общий\",\"en\":\"Shared\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2411,390,2275,2412,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Роль\",\"en\":\"Role\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2417,388,2306,2417,'{\"ru\":\"[ ! ]\",\"en\":\"[ ! ]\"}','y','{\"ru\":\"Обязательное\",\"en\":\"Required\"}',0,'{\"ru\":\"Обязательное\",\"en\":\"Required\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2418,388,2307,2418,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Коннектор\",\"en\":\"Connector\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2419,11,2308,2461,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группа\",\"en\":\"Group\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2450,391,12,2450,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2449,391,470,2449,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2622,224,2203,2622,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кому\",\"en\":\"Access\"}',2629,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2623,224,2204,2623,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Выбранные\",\"en\":\"Roles\"}',2629,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2447,391,11,2447,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2620,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2446,391,9,2446,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2620,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2445,391,8,2440,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2618,391,2414,2448,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2624,224,2317,2624,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2630,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2443,391,2199,2443,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2441,391,2197,2441,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2442,391,10,2442,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2618,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2438,391,6,2438,'{\"ru\":\"Сущность\",\"en\":\"The essence\"}','y','{\"ru\":\"Сущность, в структуру которой входит это поле\",\"en\":\"Entity\"}',0,'{\"ru\":\"Сущность, в структуру которой входит это поле\",\"en\":\"The entity that contains this field\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2439,391,7,2439,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2619,391,2413,2444,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2451,391,754,2451,'{\"ru\":\"Фильтрация\",\"en\":\"\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2619,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2621,224,2314,928,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2452,391,2239,2619,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2620,'{\"ru\":\"Мультиязычность\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2453,391,14,2620,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2459,7,502,926,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"PHP\",\"en\":\"PHP\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,50,'y'),
+(2460,7,2309,2327,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"JS\",\"en\":\"JS\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,50,'y'),
+(2461,11,2315,2632,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Ширина\",\"en\":\"Width\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2462,390,2316,2411,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2463,14,2318,2463,'{\"ru\":\"Демо\",\"en\":\"Demo\"}','y','{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}',0,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2464,13,2319,2615,'{\"ru\":\"Демо\",\"en\":\"Demo\"}','y','{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}',0,'{\"ru\":\"Демо-режим\",\"en\":\"Demo mode\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2465,5,2320,2465,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировать файлы\",\"en\":\"Group files by\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2466,14,2324,2466,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Правки UI\",\"en\":\"UI editing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2469,387,2326,2469,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Админка\",\"en\":\"Admin panel\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2470,387,2238,2470,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2471,387,2327,2471,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Система\",\"en\":\"System\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2472,387,2328,2472,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}',2471,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2473,387,2329,2473,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Константы\",\"en\":\"Constants\"}',2471,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2474,387,2330,2474,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Проект\",\"en\":\"Project\"}',2469,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2475,387,2331,2475,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Интерфейс\",\"en\":\"Interface\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2476,387,2332,2476,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Константы\",\"en\":\"Constants\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2477,387,2333,2477,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Данные\",\"en\":\"Data\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2478,387,2334,2478,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Шаблоны\",\"en\":\"Templates\"}',2474,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2479,387,2335,2479,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2519,392,2353,2519,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2518,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2518,392,2352,2518,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процессинг\",\"en\":\"Processing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2514,392,2348,2514,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создание\",\"en\":\"Creating\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2515,392,2349,2515,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2517,392,2351,2517,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Байт\",\"en\":\"Bytes\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2516,392,2350,2516,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2514,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2511,392,2345,2511,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Оценка\",\"en\":\"Estimation\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2512,392,2346,2512,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2511,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2513,392,2347,2513,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2511,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2508,392,2339,2508,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процесс\",\"en\":\"Process\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2509,392,2341,2509,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"PID\",\"en\":\"PID\"}',2508,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2510,392,2340,2510,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Начат\",\"en\":\"Started\"}',2508,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2505,392,2342,2505,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Этап\",\"en\":\"Stage\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2506,392,2343,2506,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Статус\",\"en\":\"Status\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2507,392,2344,2507,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сегменты\",\"en\":\"Chunks\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2502,392,2337,2502,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создана\",\"en\":\"Created at\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2503,392,2336,2503,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Задача\",\"en\":\"Task\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2504,392,2338,2504,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметры\",\"en\":\"Parameters\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2520,392,2354,2520,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2518,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2521,392,2355,2521,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Применение\",\"en\":\"Applying\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2522,392,2356,2522,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2521,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2523,392,2357,2523,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2521,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2548,393,2367,2548,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Процессинг\",\"en\":\"Processing\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2546,393,2365,2546,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2547,393,2366,2547,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2543,393,2362,2543,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2542,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2544,393,2363,2544,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2542,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2545,393,2364,2545,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Создание\",\"en\":\"Creating\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2541,393,2360,2541,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Условие выборки\",\"en\":\"Fetch condition\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2542,393,2361,2542,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Оценка\",\"en\":\"Estimation\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2706,13,2485,33,'','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'','all','','0','none','','normal',0,0,'n'),
+(2540,393,2359,2540,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Расположение\",\"en\":\"Location\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2549,393,2368,2549,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2548,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2550,393,2369,2550,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2548,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2551,393,2370,2551,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Применение\",\"en\":\"Applying\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2552,393,2371,2552,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',2551,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2553,393,2372,2553,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Размер\",\"en\":\"Size\"}',2551,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2561,394,2378,2561,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Status\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2560,394,2377,2560,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Результат\",\"en\":\"Result\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2559,394,2376,2559,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2558,394,2375,2558,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Таргет\",\"en\":\"Target\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2562,393,2383,2562,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Байт\",\"en\":\"Bytes\"}',2545,'{\"ru\":\"\",\"en\":\"\"}','all','','0','sum','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2563,13,2384,2329,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фракция\",\"en\":\"Fraction\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2564,8,2386,2328,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2626,224,2184,2627,'{\"ru\":\"ИШ\",\"en\":\"IOT\"}','y','{\"ru\":\"Игнорировать шаблон, заданный в параметрах настроек поля\",\"en\":\"Ignore option template\"}',2628,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2620,391,2412,2452,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2613,6,2414,2321,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2611,6,2413,8,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2612,6,754,11,'{\"ru\":\"Фильтрация\",\"en\":\"Filtration\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2609,6,2412,2612,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2606,396,2406,2606,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Сущность\",\"en\":\"Entity\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2605,396,2404,2605,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Язык\",\"en\":\"Language\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2604,396,2403,2604,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Длительность\",\"en\":\"Duration\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2603,396,2402,2603,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Конец\",\"en\":\"Until\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2602,396,2401,2602,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Начало\",\"en\":\"Since\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2601,396,2399,2601,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пользователь\",\"en\":\"User\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2600,396,2398,2600,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Роль\",\"en\":\"Role\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2599,396,2397,2599,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Тип\",\"en\":\"Type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2598,396,2405,2598,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Раздел\",\"en\":\"Section\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2597,396,2400,2597,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Токен\",\"en\":\"Token\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2596,396,2409,2596,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Запись\",\"en\":\"Entry\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2607,396,2407,2607,'{\"ru\":\"\",\"en\":\"\"}','n','{\"ru\":\"Записи\",\"en\":\"Records\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2608,396,2408,2608,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Поля\",\"en\":\"Fields\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2614,6,2199,2614,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2615,13,1337,2616,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность пользователей\",\"en\":\"Entity of users\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2616,13,2131,2617,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Дэшборд\",\"en\":\"Dashboard uri\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2617,13,2132,2706,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2628,224,2419,2630,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Флаги\",\"en\":\"Flags\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2629,224,2420,2629,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2630,224,2421,2628,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение\",\"en\":\"Display\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2631,11,2313,2325,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2632,11,2200,2631,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2633,11,2304,2633,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внизу\",\"en\":\"Bottom\"}',2637,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2634,11,2205,2635,'{\"ru\":\"Кому\",\"en\":\"Mode\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',2636,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2635,11,2206,2636,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Кроме\",\"en\":\"Roles\"}',2636,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2636,11,2422,2637,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Доступ\",\"en\":\"Access\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2637,11,2423,2634,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображение\",\"en\":\"Display\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2638,201,2251,2638,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Изменить свойства\",\"en\":\"Adjust properties\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2639,201,2385,2356,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Элемент\",\"en\":\"Element\"}',2638,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2640,201,2424,2640,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Влияние\",\"en\":\"Influence\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2642,7,2426,31,'{\"ru\":\"Источник\",\"en\":\"\"}','y','{\"ru\":\"Источник записей\",\"en\":\"Data source\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2643,7,1345,2704,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Запретить создание новых записей\",\"en\":\"Prevent creation of new records\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2644,7,767,2647,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2645,7,503,2642,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
+(2646,7,557,2645,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
+(2647,7,2427,2654,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','y','{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2648,7,2312,2648,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2649,7,2310,2649,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2650,7,2211,2650,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировка\",\"en\":\"Group by\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2651,7,2322,2651,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Плитка\",\"en\":\"Tile\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2652,7,2323,2652,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Превью\",\"en\":\"Preview\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2653,7,2428,2655,'{\"ru\":\"\",\"en\":\"Records\"}','y','{\"ru\":\"Записи\",\"en\":\"Recordings\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2654,7,2429,2646,'{\"ru\":\"Подгрузка\",\"en\":\"Loading\"}','y','{\"ru\":\"Подгрузка записей\",\"en\":\"Loading records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2655,7,2430,2653,'{\"ru\":\"Свойства\",\"en\":\"Properties\"}','y','{\"ru\":\"Параметры\",\"en\":\"Parameters\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,100,'n'),
+(2659,10,2100,2658,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2658,10,345,2323,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2676,11,2432,2676,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"При изменении ячейки обновлять всю строку\",\"en\":\"If cell changed, update the entire row\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2677,101,2433,2677,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметр\",\"en\":\"Param\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2678,101,2434,2678,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2679,405,7,2679,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2680,405,8,2680,'{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2681,405,2413,2681,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2682,405,470,2682,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2683,405,12,2683,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2684,405,754,2684,'{\"ru\":\"Фильтрация\",\"en\":\"SQL WHERE\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2685,405,2414,2685,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2686,405,2197,2686,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2687,405,10,2687,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2688,405,2199,2688,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2689,405,2412,2689,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2690,405,9,2690,'{\"ru\":\"Тип столбца\",\"en\":\"Column type\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2691,405,11,2691,'{\"ru\":\"По умолчанию\",\"en\":\"Default\"}','y','{\"ru\":\"Значение по умолчанию\",\"en\":\"Default value\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2692,405,2239,2692,'{\"ru\":\"l10n\",\"en\":\"\"}','y','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}',2689,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2693,405,14,2693,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2694,406,16,2694,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2695,406,17,2695,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Псевдоним\",\"en\":\"Alias\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2696,406,377,2696,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2697,407,476,2701,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2700,407,2166,2705,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Auto title\",\"en\":\"Auto title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2701,407,2433,2702,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Параметр\",\"en\":\"Param\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2702,407,2434,2703,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Значение\",\"en\":\"Value\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2705,407,476,2700,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Поле\",\"en\":\"Field\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',6,0,'n');
 
---
--- Table structure for table `lang`
---
+/*Table structure for table `lang` */
 
 DROP TABLE IF EXISTS `lang`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `lang` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL DEFAULT '',
   `alias` varchar(255) NOT NULL DEFAULT '',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
@@ -448,7 +1294,7 @@ CREATE TABLE `lang` (
   `adminCustomConst` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
   `adminCustomData` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
   `adminCustomTmpl` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `move` int(11) NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `toggle` (`toggle`),
   KEY `state` (`state`),
@@ -458,59 +1304,149 @@ CREATE TABLE `lang` (
   KEY `adminCustomConst` (`adminCustomConst`),
   KEY `adminCustomData` (`adminCustomData`),
   KEY `adminCustomTmpl` (`adminCustomTmpl`)
-) ENGINE=MyISAM AUTO_INCREMENT=112 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `lang`
---
+/*Data for the table `lang` */
 
-LOCK TABLES `lang` WRITE;
-/*!40000 ALTER TABLE `lang` DISABLE KEYS */;
-INSERT INTO `lang` VALUES (1,'Русский','ru','y','smth','y','y','n','n','n','n',1),(2,'Engish','en','y','smth','y','y','y','y','y','y',2),(3,'Afrikaans','af','n','noth','n','n','n','n','n','n',3),(4,'Albanian','sq','n','noth','n','n','n','n','n','n',4),(5,'Amharic','am','n','noth','n','n','n','n','n','n',5),(6,'Arabic','ar','n','noth','n','n','n','n','n','n',6),(7,'Armenian','hy','n','noth','n','n','n','n','n','n',7),(8,'Azerbaijani','az','n','noth','n','n','n','n','n','n',8),(9,'Basque','eu','n','noth','n','n','n','n','n','n',9),(10,'Belarusian','be','n','noth','n','n','n','n','n','n',10),(11,'Bengali','bn','n','noth','n','n','n','n','n','n',11),(12,'Bosnian','bs','n','noth','n','n','n','n','n','n',12),(13,'Bulgarian','bg','n','noth','n','n','n','n','n','n',13),(14,'Catalan','ca','n','noth','n','n','n','n','n','n',14),(15,'Cebuano','ceb','n','noth','n','n','n','n','n','n',15),(16,'Chichewa','ny','n','noth','n','n','n','n','n','n',16),(17,'Chinese (Simplified)','zh-CN','n','smth','n','y','n','n','n','n',17),(18,'Chinese (Traditional)','zh-TW','n','noth','n','n','n','n','n','n',18),(19,'Corsican','co','n','noth','n','n','n','n','n','n',19),(20,'Croatian','hr','n','noth','n','n','n','n','n','n',20),(21,'Czech','cs','n','noth','n','n','n','n','n','n',21),(22,'Danish','da','n','noth','n','n','n','n','n','n',22),(23,'Dutch','nl','n','noth','n','n','n','n','n','n',23),(24,'Esperanto','eo','n','noth','n','n','n','n','n','n',24),(25,'Estonian','et','n','noth','n','n','n','n','n','n',25),(26,'Filipino','tl','n','noth','n','n','n','n','n','n',26),(27,'Finnish','fi','n','noth','n','n','n','n','n','n',27),(28,'French','fr','n','noth','n','n','n','n','n','n',28),(29,'Frisian','fy','n','noth','n','n','n','n','n','n',29),(30,'Galician','gl','n','noth','n','n','n','n','n','n',30),(31,'Georgian','ka','n','noth','n','n','n','n','n','n',31),(32,'German','de','n','smth','n','y','n','n','n','n',32),(33,'Greek','el','n','noth','n','n','n','n','n','n',33),(34,'Gujarati','gu','n','noth','n','n','n','n','n','n',34),(35,'Haitian Creole','ht','n','noth','n','n','n','n','n','n',35),(36,'Hausa','ha','n','noth','n','n','n','n','n','n',36),(37,'Hawaiian','haw','n','noth','n','n','n','n','n','n',37),(38,'Hebrew','iw','n','noth','n','n','n','n','n','n',38),(39,'Hindi','hi','n','noth','n','n','n','n','n','n',39),(40,'Hmong','hmn','n','noth','n','n','n','n','n','n',40),(41,'Hungarian','hu','n','noth','n','n','n','n','n','n',41),(42,'Icelandic','is','n','noth','n','n','n','n','n','n',42),(43,'Igbo','ig','n','noth','n','n','n','n','n','n',43),(44,'Indonesian','id','n','noth','n','n','n','n','n','n',44),(45,'Irish','ga','n','noth','n','n','n','n','n','n',45),(46,'Italian','it','n','noth','n','n','n','n','n','n',46),(47,'Japanese','ja','n','smth','n','y','n','n','n','n',47),(48,'Javanese','jw','n','noth','n','n','n','n','n','n',48),(49,'Kannada','kn','n','noth','n','n','n','n','n','n',49),(50,'Kazakh','kk','n','noth','n','n','n','n','n','n',50),(51,'Khmer','km','n','noth','n','n','n','n','n','n',51),(52,'Kinyarwanda','rw','n','noth','n','n','n','n','n','n',52),(53,'Korean','ko','n','noth','n','n','n','n','n','n',53),(54,'Kurdish (Kurmanji)','ku','n','noth','n','n','n','n','n','n',54),(55,'Kyrgyz','ky','n','noth','n','n','n','n','n','n',55),(56,'Lao','lo','n','noth','n','n','n','n','n','n',56),(57,'Latin','la','n','noth','n','n','n','n','n','n',57),(58,'Latvian','lv','n','noth','n','n','n','n','n','n',58),(59,'Lithuanian','lt','n','noth','n','n','n','n','n','n',59),(60,'Luxembourgish','lb','n','noth','n','n','n','n','n','n',60),(61,'Macedonian','mk','n','noth','n','n','n','n','n','n',61),(62,'Malagasy','mg','n','noth','n','n','n','n','n','n',62),(63,'Malay','ms','n','noth','n','n','n','n','n','n',63),(64,'Malayalam','ml','n','noth','n','n','n','n','n','n',64),(65,'Maltese','mt','n','noth','n','n','n','n','n','n',65),(66,'Maori','mi','n','noth','n','n','n','n','n','n',66),(67,'Marathi','mr','n','noth','n','n','n','n','n','n',67),(68,'Mongolian','mn','n','noth','n','n','n','n','n','n',68),(69,'Myanmar (Burmese)','my','n','noth','n','n','n','n','n','n',69),(70,'Nepali','ne','n','noth','n','n','n','n','n','n',70),(71,'Norwegian','no','n','noth','n','n','n','n','n','n',71),(72,'Odia (Oriya)','or','n','noth','n','n','n','n','n','n',72),(73,'Pashto','ps','n','noth','n','n','n','n','n','n',73),(74,'Persian','fa','n','noth','n','n','n','n','n','n',74),(75,'Polish','pl','n','noth','n','n','n','n','n','n',75),(76,'Portuguese','pt','n','noth','n','n','n','n','n','n',76),(77,'Punjabi','pa','n','noth','n','n','n','n','n','n',77),(78,'Romanian','ro','n','noth','n','n','n','n','n','n',78),(79,'Samoan','sm','n','noth','n','n','n','n','n','n',79),(80,'Scots Gaelic','gd','n','noth','n','n','n','n','n','n',80),(81,'Serbian','sr','n','noth','n','n','n','n','n','n',81),(82,'Sesotho','st','n','noth','n','n','n','n','n','n',82),(83,'Shona','sn','n','noth','n','n','n','n','n','n',83),(84,'Sindhi','sd','n','noth','n','n','n','n','n','n',84),(85,'Sinhala','si','n','noth','n','n','n','n','n','n',85),(86,'Slovak','sk','n','noth','n','n','n','n','n','n',86),(87,'Slovenian','sl','n','noth','n','n','n','n','n','n',87),(88,'Somali','so','n','noth','n','n','n','n','n','n',88),(89,'Spanish','es','n','smth','n','y','n','n','n','n',89),(90,'Sundanese','su','n','noth','n','n','n','n','n','n',90),(91,'Swahili','sw','n','noth','n','n','n','n','n','n',91),(92,'Swedish','sv','n','noth','n','n','n','n','n','n',92),(93,'Tajik','tg','n','noth','n','n','n','n','n','n',93),(94,'Tamil','ta','n','noth','n','n','n','n','n','n',94),(95,'Tatar','tt','n','noth','n','n','n','n','n','n',95),(96,'Telugu','te','n','noth','n','n','n','n','n','n',96),(97,'Thai','th','n','smth','n','y','n','n','n','n',97),(98,'Turkish','tr','n','noth','n','n','n','n','n','n',98),(99,'Turkmen','tk','n','noth','n','n','n','n','n','n',99),(100,'Ukrainian','uk','n','noth','n','n','n','n','n','n',100),(101,'Urdu','ur','n','noth','n','n','n','n','n','n',101),(102,'Uyghur','ug','n','noth','n','n','n','n','n','n',102),(103,'Uzbek','uz','n','noth','n','n','n','n','n','n',103),(104,'Vietnamese','vi','n','noth','n','n','n','n','n','n',104),(105,'Welsh','cy','n','noth','n','n','n','n','n','n',105),(106,'Xhosa','xh','n','noth','n','n','n','n','n','n',106),(107,'Yiddish','yi','n','noth','n','n','n','n','n','n',107),(108,'Yoruba','yo','n','noth','n','n','n','n','n','n',108),(109,'Zulu','zu','n','noth','n','n','n','n','n','n',109),(110,'Hebrew','he','n','noth','n','n','n','n','n','n',110),(111,'Chinese (Simplified)','zh','n','noth','n','n','n','n','n','n',111);
-/*!40000 ALTER TABLE `lang` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `lang`(`id`,`title`,`alias`,`toggle`,`state`,`adminSystemUi`,`adminSystemConst`,`adminCustomUi`,`adminCustomConst`,`adminCustomData`,`adminCustomTmpl`,`move`) values
+(1,'Русский','ru','y','smth','y','y','n','n','n','n',1),
+(2,'Engish','en','y','smth','y','y','y','y','y','y',2),
+(3,'Afrikaans','af','n','noth','n','n','n','n','n','n',3),
+(4,'Albanian','sq','n','noth','n','n','n','n','n','n',4),
+(5,'Amharic','am','n','noth','n','n','n','n','n','n',5),
+(6,'Arabic','ar','n','noth','n','n','n','n','n','n',6),
+(7,'Armenian','hy','n','noth','n','n','n','n','n','n',7),
+(8,'Azerbaijani','az','n','noth','n','n','n','n','n','n',8),
+(9,'Basque','eu','n','noth','n','n','n','n','n','n',9),
+(10,'Belarusian','be','n','noth','n','n','n','n','n','n',10),
+(11,'Bengali','bn','n','noth','n','n','n','n','n','n',11),
+(12,'Bosnian','bs','n','noth','n','n','n','n','n','n',12),
+(13,'Bulgarian','bg','n','noth','n','n','n','n','n','n',13),
+(14,'Catalan','ca','n','noth','n','n','n','n','n','n',14),
+(15,'Cebuano','ceb','n','noth','n','n','n','n','n','n',15),
+(16,'Chichewa','ny','n','noth','n','n','n','n','n','n',16),
+(17,'Chinese (Simplified)','zh-CN','n','smth','n','y','n','n','n','n',17),
+(18,'Chinese (Traditional)','zh-TW','n','noth','n','n','n','n','n','n',18),
+(19,'Corsican','co','n','noth','n','n','n','n','n','n',19),
+(20,'Croatian','hr','n','noth','n','n','n','n','n','n',20),
+(21,'Czech','cs','n','noth','n','n','n','n','n','n',21),
+(22,'Danish','da','n','noth','n','n','n','n','n','n',22),
+(23,'Dutch','nl','n','noth','n','n','n','n','n','n',23),
+(24,'Esperanto','eo','n','noth','n','n','n','n','n','n',24),
+(25,'Estonian','et','n','noth','n','n','n','n','n','n',25),
+(26,'Filipino','tl','n','noth','n','n','n','n','n','n',26),
+(27,'Finnish','fi','n','noth','n','n','n','n','n','n',27),
+(28,'French','fr','n','noth','n','n','n','n','n','n',28),
+(29,'Frisian','fy','n','noth','n','n','n','n','n','n',29),
+(30,'Galician','gl','n','noth','n','n','n','n','n','n',30),
+(31,'Georgian','ka','n','noth','n','n','n','n','n','n',31),
+(32,'German','de','n','smth','n','y','n','n','n','n',32),
+(33,'Greek','el','n','noth','n','n','n','n','n','n',33),
+(34,'Gujarati','gu','n','noth','n','n','n','n','n','n',34),
+(35,'Haitian Creole','ht','n','noth','n','n','n','n','n','n',35),
+(36,'Hausa','ha','n','noth','n','n','n','n','n','n',36),
+(37,'Hawaiian','haw','n','noth','n','n','n','n','n','n',37),
+(38,'Hebrew','iw','n','noth','n','n','n','n','n','n',38),
+(39,'Hindi','hi','n','noth','n','n','n','n','n','n',39),
+(40,'Hmong','hmn','n','noth','n','n','n','n','n','n',40),
+(41,'Hungarian','hu','n','noth','n','n','n','n','n','n',41),
+(42,'Icelandic','is','n','noth','n','n','n','n','n','n',42),
+(43,'Igbo','ig','n','noth','n','n','n','n','n','n',43),
+(44,'Indonesian','id','n','noth','n','n','n','n','n','n',44),
+(45,'Irish','ga','n','noth','n','n','n','n','n','n',45),
+(46,'Italian','it','n','noth','n','n','n','n','n','n',46),
+(47,'Japanese','ja','n','smth','n','y','n','n','n','n',47),
+(48,'Javanese','jw','n','noth','n','n','n','n','n','n',48),
+(49,'Kannada','kn','n','noth','n','n','n','n','n','n',49),
+(50,'Kazakh','kk','n','noth','n','n','n','n','n','n',50),
+(51,'Khmer','km','n','noth','n','n','n','n','n','n',51),
+(52,'Kinyarwanda','rw','n','noth','n','n','n','n','n','n',52),
+(53,'Korean','ko','n','noth','n','n','n','n','n','n',53),
+(54,'Kurdish (Kurmanji)','ku','n','noth','n','n','n','n','n','n',54),
+(55,'Kyrgyz','ky','n','noth','n','n','n','n','n','n',55),
+(56,'Lao','lo','n','noth','n','n','n','n','n','n',56),
+(57,'Latin','la','n','noth','n','n','n','n','n','n',57),
+(58,'Latvian','lv','n','noth','n','n','n','n','n','n',58),
+(59,'Lithuanian','lt','n','noth','n','n','n','n','n','n',59),
+(60,'Luxembourgish','lb','n','noth','n','n','n','n','n','n',60),
+(61,'Macedonian','mk','n','noth','n','n','n','n','n','n',61),
+(62,'Malagasy','mg','n','noth','n','n','n','n','n','n',62),
+(63,'Malay','ms','n','noth','n','n','n','n','n','n',63),
+(64,'Malayalam','ml','n','noth','n','n','n','n','n','n',64),
+(65,'Maltese','mt','n','noth','n','n','n','n','n','n',65),
+(66,'Maori','mi','n','noth','n','n','n','n','n','n',66),
+(67,'Marathi','mr','n','noth','n','n','n','n','n','n',67),
+(68,'Mongolian','mn','n','noth','n','n','n','n','n','n',68),
+(69,'Myanmar (Burmese)','my','n','noth','n','n','n','n','n','n',69),
+(70,'Nepali','ne','n','noth','n','n','n','n','n','n',70),
+(71,'Norwegian','no','n','noth','n','n','n','n','n','n',71),
+(72,'Odia (Oriya)','or','n','noth','n','n','n','n','n','n',72),
+(73,'Pashto','ps','n','noth','n','n','n','n','n','n',73),
+(74,'Persian','fa','n','noth','n','n','n','n','n','n',74),
+(75,'Polish','pl','n','noth','n','n','n','n','n','n',75),
+(76,'Portuguese','pt','n','noth','n','n','n','n','n','n',76),
+(77,'Punjabi','pa','n','noth','n','n','n','n','n','n',77),
+(78,'Romanian','ro','n','noth','n','n','n','n','n','n',78),
+(79,'Samoan','sm','n','noth','n','n','n','n','n','n',79),
+(80,'Scots Gaelic','gd','n','noth','n','n','n','n','n','n',80),
+(81,'Serbian','sr','n','noth','n','n','n','n','n','n',81),
+(82,'Sesotho','st','n','noth','n','n','n','n','n','n',82),
+(83,'Shona','sn','n','noth','n','n','n','n','n','n',83),
+(84,'Sindhi','sd','n','noth','n','n','n','n','n','n',84),
+(85,'Sinhala','si','n','noth','n','n','n','n','n','n',85),
+(86,'Slovak','sk','n','noth','n','n','n','n','n','n',86),
+(87,'Slovenian','sl','n','noth','n','n','n','n','n','n',87),
+(88,'Somali','so','n','noth','n','n','n','n','n','n',88),
+(89,'Spanish','es','n','smth','n','y','n','n','n','n',89),
+(90,'Sundanese','su','n','noth','n','n','n','n','n','n',90),
+(91,'Swahili','sw','n','noth','n','n','n','n','n','n',91),
+(92,'Swedish','sv','n','noth','n','n','n','n','n','n',92),
+(93,'Tajik','tg','n','noth','n','n','n','n','n','n',93),
+(94,'Tamil','ta','n','noth','n','n','n','n','n','n',94),
+(95,'Tatar','tt','n','noth','n','n','n','n','n','n',95),
+(96,'Telugu','te','n','noth','n','n','n','n','n','n',96),
+(97,'Thai','th','n','smth','n','y','n','n','n','n',97),
+(98,'Turkish','tr','n','noth','n','n','n','n','n','n',98),
+(99,'Turkmen','tk','n','noth','n','n','n','n','n','n',99),
+(100,'Ukrainian','uk','n','noth','n','n','n','n','n','n',100),
+(101,'Urdu','ur','n','noth','n','n','n','n','n','n',101),
+(102,'Uyghur','ug','n','noth','n','n','n','n','n','n',102),
+(103,'Uzbek','uz','n','noth','n','n','n','n','n','n',103),
+(104,'Vietnamese','vi','n','noth','n','n','n','n','n','n',104),
+(105,'Welsh','cy','n','noth','n','n','n','n','n','n',105),
+(106,'Xhosa','xh','n','noth','n','n','n','n','n','n',106),
+(107,'Yiddish','yi','n','noth','n','n','n','n','n','n',107),
+(108,'Yoruba','yo','n','noth','n','n','n','n','n','n',108),
+(109,'Zulu','zu','n','noth','n','n','n','n','n','n',109),
+(110,'Hebrew','he','n','noth','n','n','n','n','n','n',110),
+(111,'Chinese (Simplified)','zh','n','noth','n','n','n','n','n','n',111);
 
---
--- Table structure for table `month`
---
+/*Table structure for table `month` */
 
 DROP TABLE IF EXISTS `month`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `month` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `yearId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `yearId` int NOT NULL DEFAULT '0',
   `month` enum('01','02','03','04','05','06','07','08','09','10','11','12') NOT NULL DEFAULT '01',
   `title` text NOT NULL,
-  `move` int(11) NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `yearId` (`yearId`),
   KEY `month` (`month`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `month`
---
+/*Data for the table `month` */
 
-LOCK TABLES `month` WRITE;
-/*!40000 ALTER TABLE `month` DISABLE KEYS */;
-/*!40000 ALTER TABLE `month` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `notice`
---
+/*Table structure for table `notice` */
 
 DROP TABLE IF EXISTS `notice`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `notice` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
-  `entityId` int(11) NOT NULL DEFAULT '0',
+  `entityId` int NOT NULL DEFAULT '0',
   `event` varchar(255) NOT NULL DEFAULT '',
   `profileId` varchar(255) NOT NULL DEFAULT '',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
@@ -544,29 +1480,18 @@ CREATE TABLE `notice` (
   FULLTEXT KEY `tplEvtSubj` (`tplEvtSubj`),
   FULLTEXT KEY `tplEvtBody` (`tplEvtBody`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `notice`
---
+/*Data for the table `notice` */
 
-LOCK TABLES `notice` WRITE;
-/*!40000 ALTER TABLE `notice` DISABLE KEYS */;
-/*!40000 ALTER TABLE `notice` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `noticeGetter`
---
+/*Table structure for table `noticeGetter` */
 
 DROP TABLE IF EXISTS `noticeGetter`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `noticeGetter` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `noticeId` int(11) NOT NULL DEFAULT '0',
-  `profileId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `noticeId` int NOT NULL DEFAULT '0',
+  `profileId` int NOT NULL DEFAULT '0',
   `criteriaRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
   `criteriaEvt` varchar(255) NOT NULL DEFAULT '',
   `criteriaInc` varchar(255) NOT NULL DEFAULT '',
@@ -588,64 +1513,56 @@ CREATE TABLE `noticeGetter` (
   KEY `mail` (`mail`),
   KEY `toggle` (`toggle`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `noticeGetter`
---
+/*Data for the table `noticeGetter` */
 
-LOCK TABLES `noticeGetter` WRITE;
-/*!40000 ALTER TABLE `noticeGetter` DISABLE KEYS */;
-/*!40000 ALTER TABLE `noticeGetter` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `param`
---
+/*Table structure for table `param` */
 
 DROP TABLE IF EXISTS `param`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `param` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `fieldId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fieldId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
-  `cfgField` int(11) NOT NULL DEFAULT '0',
+  `cfgField` int NOT NULL DEFAULT '0',
   `cfgValue` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   KEY `cfgField` (`cfgField`),
   FULLTEXT KEY `cfgValue` (`cfgValue`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=174 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=174 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `param`
---
+/*Data for the table `param` */
 
-LOCK TABLES `param` WRITE;
-/*!40000 ALTER TABLE `param` DISABLE KEYS */;
-INSERT INTO `param` VALUES (127,109,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),(128,110,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),(160,19,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'612'),(156,18,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'1366'),(162,2315,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),(159,12,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'612'),(161,2196,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'2308'),(163,2385,'{\"ru\":\"Плейсхолдер\",\"en\":\"Placeholder\"}',2438,'{\"ru\":\"Без изменений\",\"en\":\"Without changes\"}'),(164,2401,'{\"ru\":\"Отображаемый формат времени\",\"en\":\"Time display format\"}',2463,'{\"ru\":\"H:i:s\",\"en\":\"H:i:s\"}'),(172,2401,'{\"ru\":\"Отображаемый формат даты\",\"en\":\"Date display format\"}',2464,'{\"ru\":\"Y-m-d\",\"en\":\"Y-m-d\"}'),(166,1443,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),(167,34,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),(173,6,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\",\"zh-CN\":\"Группировка опций по столбцу\"}',2439,'612');
-/*!40000 ALTER TABLE `param` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `param`(`id`,`fieldId`,`title`,`cfgField`,`cfgValue`) values
+(127,109,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),
+(128,110,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),
+(160,19,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'612'),
+(156,18,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'1366'),
+(162,2315,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),
+(159,12,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'612'),
+(161,2196,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'2308'),
+(163,2385,'{\"ru\":\"Плейсхолдер\",\"en\":\"Placeholder\"}',2438,'{\"ru\":\"Без изменений\",\"en\":\"Without changes\"}'),
+(164,2401,'{\"ru\":\"Отображаемый формат времени\",\"en\":\"Time display format\"}',2463,'{\"ru\":\"H:i:s\",\"en\":\"H:i:s\"}'),
+(172,2401,'{\"ru\":\"Отображаемый формат даты\",\"en\":\"Date display format\"}',2464,'{\"ru\":\"Y-m-d\",\"en\":\"Y-m-d\"}'),
+(166,1443,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),
+(167,34,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),
+(173,6,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\",\"zh-CN\":\"Группировка опций по столбцу\"}',2439,'612');
 
---
--- Table structure for table `profile`
---
+/*Table structure for table `profile` */
 
 DROP TABLE IF EXISTS `profile`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `profile` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `entityId` int(11) NOT NULL DEFAULT '11',
+  `entityId` int NOT NULL DEFAULT '11',
   `dashboard` varchar(255) NOT NULL DEFAULT '',
-  `move` int(11) NOT NULL DEFAULT '0',
-  `maxWindows` int(11) NOT NULL DEFAULT '15',
+  `move` int NOT NULL DEFAULT '0',
+  `maxWindows` int NOT NULL DEFAULT '15',
   `demo` enum('n','y') NOT NULL DEFAULT 'n',
   `type` enum('p','s') NOT NULL DEFAULT 'p',
   `alias` varchar(255) NOT NULL DEFAULT '',
@@ -655,43 +1572,35 @@ CREATE TABLE `profile` (
   KEY `demo` (`demo`),
   KEY `type` (`type`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `profile`
---
+/*Data for the table `profile` */
 
-LOCK TABLES `profile` WRITE;
-/*!40000 ALTER TABLE `profile` DISABLE KEYS */;
-INSERT INTO `profile` VALUES (1,'{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','y',11,'',1,15,'n','s','dev'),(12,'{\"ru\":\"Администратор\",\"en\":\"Admin\"}','y',11,'',12,15,'n','p','admin');
-/*!40000 ALTER TABLE `profile` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `profile`(`id`,`title`,`toggle`,`entityId`,`dashboard`,`move`,`maxWindows`,`demo`,`type`,`alias`) values
+(1,'{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','y',11,'',1,15,'n','s','dev'),
+(12,'{\"ru\":\"Администратор\",\"en\":\"Admin\"}','y',11,'',12,15,'n','p','admin');
 
---
--- Table structure for table `queueChunk`
---
+/*Table structure for table `queueChunk` */
 
 DROP TABLE IF EXISTS `queueChunk`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `queueChunk` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `queueTaskId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `queueTaskId` int NOT NULL DEFAULT '0',
   `location` varchar(255) NOT NULL DEFAULT '',
   `where` text NOT NULL,
   `countState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `countSize` int(11) NOT NULL DEFAULT '0',
+  `countSize` int NOT NULL DEFAULT '0',
   `itemsState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `itemsSize` int(11) NOT NULL DEFAULT '0',
+  `itemsSize` int NOT NULL DEFAULT '0',
   `queueState` enum('waiting','progress','finished','noneed') NOT NULL DEFAULT 'waiting',
-  `queueSize` int(11) NOT NULL DEFAULT '0',
+  `queueSize` int NOT NULL DEFAULT '0',
   `applyState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `applySize` int(11) NOT NULL DEFAULT '0',
-  `move` int(11) NOT NULL DEFAULT '0',
-  `queueChunkId` int(11) NOT NULL DEFAULT '0',
+  `applySize` int NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
+  `queueChunkId` int NOT NULL DEFAULT '0',
   `fraction` enum('none','adminSystemUi','adminCustomUi','adminCustomData') NOT NULL DEFAULT 'none',
-  `itemsBytes` int(11) NOT NULL DEFAULT '0',
+  `itemsBytes` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `queueTaskId` (`queueTaskId`),
   KEY `countState` (`countState`),
@@ -701,29 +1610,18 @@ CREATE TABLE `queueChunk` (
   KEY `queueChunkId` (`queueChunkId`),
   KEY `fraction` (`fraction`),
   FULLTEXT KEY `where` (`where`)
-) ENGINE=MyISAM AUTO_INCREMENT=10889 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=10889 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `queueChunk`
---
+/*Data for the table `queueChunk` */
 
-LOCK TABLES `queueChunk` WRITE;
-/*!40000 ALTER TABLE `queueChunk` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queueChunk` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `queueItem`
---
+/*Table structure for table `queueItem` */
 
 DROP TABLE IF EXISTS `queueItem`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `queueItem` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `queueTaskId` int(11) NOT NULL DEFAULT '0',
-  `queueChunkId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `queueTaskId` int NOT NULL DEFAULT '0',
+  `queueChunkId` int NOT NULL DEFAULT '0',
   `target` varchar(255) NOT NULL DEFAULT '',
   `value` text NOT NULL,
   `result` text NOT NULL,
@@ -734,44 +1632,33 @@ CREATE TABLE `queueItem` (
   KEY `stage` (`stage`),
   FULLTEXT KEY `value` (`value`),
   FULLTEXT KEY `result` (`result`)
-) ENGINE=MyISAM AUTO_INCREMENT=104827 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=104827 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `queueItem`
---
+/*Data for the table `queueItem` */
 
-LOCK TABLES `queueItem` WRITE;
-/*!40000 ALTER TABLE `queueItem` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queueItem` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `queueTask`
---
+/*Table structure for table `queueTask` */
 
 DROP TABLE IF EXISTS `queueTask`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `queueTask` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL DEFAULT '',
   `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `params` text NOT NULL,
   `procSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `procID` int(11) NOT NULL DEFAULT '0',
+  `procID` int NOT NULL DEFAULT '0',
   `stage` enum('count','items','queue','apply') NOT NULL DEFAULT 'count',
   `state` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `chunk` int(11) NOT NULL DEFAULT '0',
+  `chunk` int NOT NULL DEFAULT '0',
   `countState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `countSize` int(11) NOT NULL DEFAULT '0',
+  `countSize` int NOT NULL DEFAULT '0',
   `itemsState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `itemsSize` int(11) NOT NULL DEFAULT '0',
-  `itemsBytes` int(11) NOT NULL DEFAULT '0',
+  `itemsSize` int NOT NULL DEFAULT '0',
+  `itemsBytes` int NOT NULL DEFAULT '0',
   `queueState` enum('waiting','progress','finished','noneed') NOT NULL DEFAULT 'waiting',
-  `queueSize` int(11) NOT NULL DEFAULT '0',
+  `queueSize` int NOT NULL DEFAULT '0',
   `applyState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
-  `applySize` int(11) NOT NULL DEFAULT '0',
+  `applySize` int NOT NULL DEFAULT '0',
   `stageState` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `stage` (`stage`),
@@ -782,38 +1669,27 @@ CREATE TABLE `queueTask` (
   KEY `applyState` (`applyState`),
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `stageState` (`stageState`)
-) ENGINE=MyISAM AUTO_INCREMENT=563 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=563 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `queueTask`
---
+/*Data for the table `queueTask` */
 
-LOCK TABLES `queueTask` WRITE;
-/*!40000 ALTER TABLE `queueTask` DISABLE KEYS */;
-/*!40000 ALTER TABLE `queueTask` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `realtime`
---
+/*Table structure for table `realtime` */
 
 DROP TABLE IF EXISTS `realtime`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `realtime` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `realtimeId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `realtimeId` int NOT NULL DEFAULT '0',
   `type` enum('session','channel','context') NOT NULL DEFAULT 'session',
-  `profileId` int(11) NOT NULL DEFAULT '0',
-  `adminId` int(11) NOT NULL DEFAULT '0',
+  `profileId` int NOT NULL DEFAULT '0',
+  `adminId` int NOT NULL DEFAULT '0',
   `token` varchar(255) NOT NULL DEFAULT '',
   `spaceSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `spaceUntil` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `spaceFrame` int(11) NOT NULL DEFAULT '0',
-  `langId` int(11) NOT NULL DEFAULT '0',
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `entityId` int(11) NOT NULL DEFAULT '0',
+  `spaceFrame` int NOT NULL DEFAULT '0',
+  `langId` int NOT NULL DEFAULT '0',
+  `sectionId` int NOT NULL DEFAULT '0',
+  `entityId` int NOT NULL DEFAULT '0',
   `entries` text NOT NULL,
   `fields` text NOT NULL,
   `title` text NOT NULL,
@@ -832,32 +1708,21 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=2857 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=2857 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `realtime`
---
+/*Data for the table `realtime` */
 
-LOCK TABLES `realtime` WRITE;
-/*!40000 ALTER TABLE `realtime` DISABLE KEYS */;
-/*!40000 ALTER TABLE `realtime` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `resize`
---
+/*Table structure for table `resize` */
 
 DROP TABLE IF EXISTS `resize`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `resize` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `fieldId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `fieldId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
-  `masterDimensionValue` int(11) NOT NULL DEFAULT '0',
-  `slaveDimensionValue` int(11) NOT NULL DEFAULT '0',
+  `masterDimensionValue` int NOT NULL DEFAULT '0',
+  `slaveDimensionValue` int NOT NULL DEFAULT '0',
   `proportions` enum('p','c','o') NOT NULL DEFAULT 'o',
   `slaveDimensionLimitation` tinyint(1) NOT NULL DEFAULT '1',
   `masterDimensionAlias` enum('width','height') NOT NULL DEFAULT 'width',
@@ -869,30 +1734,19 @@ CREATE TABLE `resize` (
   KEY `masterDimensionAlias` (`masterDimensionAlias`),
   KEY `changeColor` (`changeColor`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=158 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=158 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `resize`
---
+/*Data for the table `resize` */
 
-LOCK TABLES `resize` WRITE;
-/*!40000 ALTER TABLE `resize` DISABLE KEYS */;
-/*!40000 ALTER TABLE `resize` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `search`
---
+/*Table structure for table `search` */
 
 DROP TABLE IF EXISTS `search`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `search` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `fieldId` int(11) NOT NULL DEFAULT '0',
-  `move` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sectionId` int NOT NULL DEFAULT '0',
+  `fieldId` int NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   `alt` text NOT NULL,
   `title` text NOT NULL,
@@ -903,7 +1757,7 @@ CREATE TABLE `search` (
   `access` enum('all','only','except') NOT NULL DEFAULT 'all',
   `profileIds` varchar(255) NOT NULL DEFAULT '',
   `allowClear` tinyint(1) NOT NULL DEFAULT '1',
-  `further` int(11) NOT NULL DEFAULT '0',
+  `further` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
@@ -915,43 +1769,61 @@ CREATE TABLE `search` (
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alt` (`alt`)
-) ENGINE=MyISAM AUTO_INCREMENT=144 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `search`
---
+/*Data for the table `search` */
 
-LOCK TABLES `search` WRITE;
-/*!40000 ALTER TABLE `search` DISABLE KEYS */;
-INSERT INTO `search` VALUES (13,5,612,13,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(114,5,1441,114,'n','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Включить в кэш\",\"en\":\"Include in cache\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(116,7,1366,116,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(117,7,19,117,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(119,7,2303,119,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Доступ\",\"en\":\"Access\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(118,7,22,118,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(120,391,6,121,'y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(133,391,470,132,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(121,391,2197,134,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Режим\",\"en\":\"Mode\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(122,391,12,133,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(134,391,9,122,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(123,391,10,135,'y','{\"ru\":\"Элемент\",\"en\":\"Element\"}','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(125,387,2325,125,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Состояние\",\"en\":\"Usage\"}','smth','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(126,387,2238,126,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(127,394,2378,127,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Status\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(128,396,2397,128,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Type\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(129,396,2398,129,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Роль\",\"en\":\"Role\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(130,396,2404,130,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Язык\",\"en\":\"Language\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(131,396,2399,131,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Пользователь\",\"en\":\"User\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(132,391,6,120,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,612,'{\"ru\":\"\",\"en\":\"\"}'),(135,391,2239,123,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(136,7,2213,136,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(137,5,2243,137,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Паттерн комплекта календарных полей\",\"en\":\"Calendar fields pattern\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(140,10,2202,140,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(139,10,1364,139,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(141,10,345,141,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(142,10,2100,142,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),(143,407,476,143,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Поле\",\"en\":\"Field\"}','','',1,1,'all','',1,6,'{\"ru\":\"\",\"en\":\"\"}');
-/*!40000 ALTER TABLE `search` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `search`(`id`,`sectionId`,`fieldId`,`move`,`toggle`,`alt`,`title`,`defaultValue`,`filter`,`ignoreTemplate`,`consistence`,`access`,`profileIds`,`allowClear`,`further`,`tooltip`) values
+(13,5,612,13,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(114,5,1441,114,'n','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Включить в кэш\",\"en\":\"Include in cache\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(116,7,1366,116,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(117,7,19,117,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(119,7,2303,119,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Доступ\",\"en\":\"Access\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(118,7,22,118,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(120,391,6,121,'y','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(133,391,470,132,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(121,391,2197,134,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Режим\",\"en\":\"Mode\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(122,391,12,133,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(134,391,9,122,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(123,391,10,135,'y','{\"ru\":\"Элемент\",\"en\":\"Element\"}','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(125,387,2325,125,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Состояние\",\"en\":\"Usage\"}','smth','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(126,387,2238,126,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(127,394,2378,127,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Status\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(128,396,2397,128,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Type\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(129,396,2398,129,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Роль\",\"en\":\"Role\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(130,396,2404,130,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Язык\",\"en\":\"Language\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(131,396,2399,131,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Пользователь\",\"en\":\"User\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(132,391,6,120,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,612,'{\"ru\":\"\",\"en\":\"\"}'),
+(135,391,2239,123,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(136,7,2213,136,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(137,5,2243,137,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Паттерн комплекта календарных полей\",\"en\":\"Calendar fields pattern\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(140,10,2202,140,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(139,10,1364,139,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(141,10,345,141,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Нужно выбрать запись\",\"en\":\"Selection required\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(142,10,2100,142,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Отображать в панели действий\",\"en\":\"Show in action bar\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
+(143,407,476,143,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Поле\",\"en\":\"Field\"}','','',1,1,'all','',1,6,'{\"ru\":\"\",\"en\":\"\"}');
 
---
--- Table structure for table `section`
---
+/*Table structure for table `section` */
 
 DROP TABLE IF EXISTS `section`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `section` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `entityId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sectionId` int NOT NULL DEFAULT '0',
+  `entityId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
   `toggle` enum('y','n','h') NOT NULL DEFAULT 'y',
-  `move` int(11) NOT NULL DEFAULT '0',
-  `rowsOnPage` int(11) NOT NULL DEFAULT '25',
+  `move` int NOT NULL DEFAULT '0',
+  `rowsOnPage` int NOT NULL DEFAULT '25',
   `extendsPhp` varchar(255) NOT NULL DEFAULT 'Indi_Controller_Admin',
-  `defaultSortField` int(11) NOT NULL DEFAULT '0',
+  `defaultSortField` int NOT NULL DEFAULT '0',
   `defaultSortDirection` enum('ASC','DESC') NOT NULL DEFAULT 'ASC',
   `filter` varchar(255) NOT NULL DEFAULT '',
   `disableAdd` enum('0','1') NOT NULL DEFAULT '0',
   `type` enum('s','p','o') NOT NULL DEFAULT 'p',
-  `parentSectionConnector` int(11) NOT NULL DEFAULT '0',
-  `groupBy` int(11) NOT NULL DEFAULT '0',
+  `parentSectionConnector` int NOT NULL DEFAULT '0',
+  `groupBy` int NOT NULL DEFAULT '0',
   `rowsetSeparate` enum('auto','yes','no') NOT NULL DEFAULT 'auto',
   `expand` enum('all','only','except','none') NOT NULL DEFAULT 'all',
   `expandRoles` varchar(255) NOT NULL DEFAULT '',
@@ -959,8 +1831,8 @@ CREATE TABLE `section` (
   `extendsJs` varchar(255) NOT NULL DEFAULT 'Indi.lib.controller.Controller',
   `rownumberer` enum('0','1') NOT NULL DEFAULT '0',
   `multiSelect` enum('0','1') NOT NULL DEFAULT '0',
-  `tileField` int(11) NOT NULL DEFAULT '0',
-  `tileThumb` int(11) NOT NULL DEFAULT '0',
+  `tileField` int NOT NULL DEFAULT '0',
+  `tileThumb` int NOT NULL DEFAULT '0',
   `help` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
@@ -982,32 +1854,51 @@ CREATE TABLE `section` (
   KEY `rownumberer` (`rownumberer`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `help` (`help`)
-) ENGINE=MyISAM AUTO_INCREMENT=414 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=414 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `section`
---
+/*Data for the table `section` */
 
-LOCK TABLES `section` WRITE;
-/*!40000 ALTER TABLE `section` DISABLE KEYS */;
-INSERT INTO `section` VALUES (1,0,0,'{\"ru\":\"Конфигурация\",\"en\":\"Configuration\"}','configuration','y',403,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'auto','all','','','Indi.lib.controller.Controller','0','0',0,0,''),(2,1,1,'{\"ru\":\"Столбцы\",\"en\":\"Columns\"}','columnTypes','y',6,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(5,1,2,'{\"ru\":\"Сущности\",\"en\":\"Entities\"}','entities','y',4,50,'Indi_Controller_Admin_Exportable',4,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(6,5,5,'{\"ru\":\"Поля в структуре\",\"en\":\"Fields in structure\"}','fields','y',7,100,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','0','s',0,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),(7,1,3,'{\"ru\":\"Разделы\",\"en\":\"Sections\"}','sections','y',2,50,'Indi_Controller_Admin_Exportable',23,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(8,7,8,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','sectionActions','y',8,25,'Indi_Controller_Admin_Multinew',30,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(10,1,7,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','actions','y',9,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(11,7,9,'{\"ru\":\"Столбцы грида\",\"en\":\"Grid columns\"}','grid','y',10,25,'Indi_Controller_Admin_Multinew',35,'ASC','','0','s',0,2308,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(12,6,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','enumset','y',11,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(13,1,10,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','profiles','y',5,25,'Indi_Controller_Admin_Exportable',2132,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(14,13,11,'{\"ru\":\"Пользователи\",\"en\":\"Users\"}','admins','y',13,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(16,1,4,'{\"ru\":\"Элементы\",\"en\":\"Form elements\"}','controlElements','y',14,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(22,6,20,'{\"ru\":\"Копии изображения\",\"en\":\"Resized copies\"}','resize','y',19,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(101,6,91,'{\"ru\":\"Параметры\",\"en\":\"Settings\"}','params','y',91,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(403,0,0,'{\"ru\":\"Database\",\"en\":\"Database\"}','db','y',408,25,'Indi_Controller_Admin',0,'ASC','','0','p',0,0,'auto','all','','12,1','Indi.lib.controller.Controller','0','0',0,0,''),(201,7,171,'{\"ru\":\"Измененные поля\",\"en\":\"Adjusted fields\"}','alteredFields','y',188,25,'Indi_Controller_Admin_Multinew',1342,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(224,7,195,'{\"ru\":\"Фильтры\",\"en\":\"Filters\"}','search','y',192,25,'Indi_Controller_Admin_Multinew',1444,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(389,1,309,'{\"ru\":\"Уведомления\",\"en\":\"Notifications\"}','notices','y',389,25,'Indi_Controller_Admin',2254,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(390,389,310,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','noticeGetters','y',390,25,'Indi_Controller_Admin',2275,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(387,1,307,'{\"ru\":\"Языки\",\"en\":\"Languages\"}','lang','y',387,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,2325,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(388,6,308,'{\"ru\":\"Зависимости\",\"en\":\"Dependencies\"}','consider','y',388,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(391,1,5,'{\"ru\":\"Все поля\",\"en\":\"All fields\"}','fieldsAll','y',391,25,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','1','s',0,6,'auto','all','','1','Indi.lib.controller.Field','0','0',0,0,''),(392,1,314,'{\"ru\":\"Очереди задач\",\"en\":\"Queue tasks\"}','queueTask','y',392,25,'Indi_Controller_Admin',2337,'DESC','','1','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(393,392,315,'{\"ru\":\"Сегменты очереди\",\"en\":\"Queue chunks\"}','queueChunk','y',393,25,'Indi_Controller_Admin',2379,'ASC','','1','s',0,2381,'no','all','','1','Indi.lib.controller.Controller','1','0',0,0,''),(394,393,316,'{\"ru\":\"Элементы очереди\",\"en\":\"Queue items\"}','queueItem','y',394,25,'Indi_Controller_Admin',0,'ASC','','1','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(396,1,318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','y',396,25,'Indi_Controller_Admin',2401,'ASC','','0','s',0,2399,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),(405,16,5,'{\"ru\":\"Возможные настройки\",\"en\":\"Possible params\"}','elementCfgField','y',405,100,'Indi_Controller_Admin_CfgField',14,'ASC','','0','s',2435,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),(406,405,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','elementCfgFieldEnumset','y',406,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),(407,1,91,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y',407,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'');
-/*!40000 ALTER TABLE `section` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `section`(`id`,`sectionId`,`entityId`,`title`,`alias`,`toggle`,`move`,`rowsOnPage`,`extendsPhp`,`defaultSortField`,`defaultSortDirection`,`filter`,`disableAdd`,`type`,`parentSectionConnector`,`groupBy`,`rowsetSeparate`,`expand`,`expandRoles`,`roleIds`,`extendsJs`,`rownumberer`,`multiSelect`,`tileField`,`tileThumb`,`help`) values
+(1,0,0,'{\"ru\":\"Конфигурация\",\"en\":\"Configuration\"}','configuration','y',403,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'auto','all','','','Indi.lib.controller.Controller','0','0',0,0,''),
+(2,1,1,'{\"ru\":\"Столбцы\",\"en\":\"Columns\"}','columnTypes','y',6,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(5,1,2,'{\"ru\":\"Сущности\",\"en\":\"Entities\"}','entities','y',4,50,'Indi_Controller_Admin_Exportable',4,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(6,5,5,'{\"ru\":\"Поля в структуре\",\"en\":\"Fields in structure\"}','fields','y',7,100,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','0','s',0,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),
+(7,1,3,'{\"ru\":\"Разделы\",\"en\":\"Sections\"}','sections','y',2,50,'Indi_Controller_Admin_Exportable',23,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(8,7,8,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','sectionActions','y',8,25,'Indi_Controller_Admin_Multinew',30,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(10,1,7,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','actions','y',9,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(11,7,9,'{\"ru\":\"Столбцы грида\",\"en\":\"Grid columns\"}','grid','y',10,25,'Indi_Controller_Admin_Multinew',35,'ASC','','0','s',0,2308,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(12,6,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','enumset','y',11,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(13,1,10,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','profiles','y',5,25,'Indi_Controller_Admin_Exportable',2132,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(14,13,11,'{\"ru\":\"Пользователи\",\"en\":\"Users\"}','admins','y',13,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(16,1,4,'{\"ru\":\"Элементы\",\"en\":\"Form elements\"}','controlElements','y',14,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(22,6,20,'{\"ru\":\"Копии изображения\",\"en\":\"Resized copies\"}','resize','y',19,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(101,6,91,'{\"ru\":\"Параметры\",\"en\":\"Settings\"}','params','y',91,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(403,0,0,'{\"ru\":\"Database\",\"en\":\"Database\"}','db','y',408,25,'Indi_Controller_Admin',0,'ASC','','0','p',0,0,'auto','all','','12,1','Indi.lib.controller.Controller','0','0',0,0,''),
+(201,7,171,'{\"ru\":\"Измененные поля\",\"en\":\"Adjusted fields\"}','alteredFields','y',188,25,'Indi_Controller_Admin_Multinew',1342,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(224,7,195,'{\"ru\":\"Фильтры\",\"en\":\"Filters\"}','search','y',192,25,'Indi_Controller_Admin_Multinew',1444,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(389,1,309,'{\"ru\":\"Уведомления\",\"en\":\"Notifications\"}','notices','y',389,25,'Indi_Controller_Admin',2254,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(390,389,310,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','noticeGetters','y',390,25,'Indi_Controller_Admin',2275,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(387,1,307,'{\"ru\":\"Языки\",\"en\":\"Languages\"}','lang','y',387,25,'Indi_Controller_Admin',0,'ASC','','0','s',0,2325,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(388,6,308,'{\"ru\":\"Зависимости\",\"en\":\"Dependencies\"}','consider','y',388,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(391,1,5,'{\"ru\":\"Все поля\",\"en\":\"All fields\"}','fieldsAll','y',391,25,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','1','s',0,6,'auto','all','','1','Indi.lib.controller.Field','0','0',0,0,''),
+(392,1,314,'{\"ru\":\"Очереди задач\",\"en\":\"Queue tasks\"}','queueTask','y',392,25,'Indi_Controller_Admin',2337,'DESC','','1','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(393,392,315,'{\"ru\":\"Сегменты очереди\",\"en\":\"Queue chunks\"}','queueChunk','y',393,25,'Indi_Controller_Admin',2379,'ASC','','1','s',0,2381,'no','all','','1','Indi.lib.controller.Controller','1','0',0,0,''),
+(394,393,316,'{\"ru\":\"Элементы очереди\",\"en\":\"Queue items\"}','queueItem','y',394,25,'Indi_Controller_Admin',0,'ASC','','1','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(396,1,318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','y',396,25,'Indi_Controller_Admin',2401,'ASC','','0','s',0,2399,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
+(405,16,5,'{\"ru\":\"Возможные настройки\",\"en\":\"Possible params\"}','elementCfgField','y',405,100,'Indi_Controller_Admin_CfgField',14,'ASC','','0','s',2435,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),
+(406,405,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','elementCfgFieldEnumset','y',406,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','s',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
+(407,1,91,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y',407,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','s',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'');
 
---
--- Table structure for table `section2action`
---
+/*Table structure for table `section2action` */
 
 DROP TABLE IF EXISTS `section2action`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `section2action` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sectionId` int(11) NOT NULL DEFAULT '0',
-  `actionId` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sectionId` int NOT NULL DEFAULT '0',
+  `actionId` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `move` int(11) NOT NULL DEFAULT '0',
+  `move` int NOT NULL DEFAULT '0',
   `profileIds` varchar(255) NOT NULL DEFAULT '14',
   `title` text NOT NULL,
   `rename` text NOT NULL,
@@ -1025,49 +1916,190 @@ CREATE TABLE `section2action` (
   KEY `l10n` (`l10n`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=1679 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=1679 DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `section2action`
---
+/*Data for the table `section2action` */
 
-LOCK TABLES `section2action` WRITE;
-/*!40000 ALTER TABLE `section2action` DISABLE KEYS */;
-INSERT INTO `section2action` VALUES (1,2,1,'y',1,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(2,2,2,'y',2,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(3,2,3,'y',3,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(5,2,4,'n',5,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(6,5,1,'y',6,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(7,5,2,'y',7,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(8,5,3,'y',8,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(9,5,4,'y',9,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(10,6,1,'y',10,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(11,6,2,'y',11,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(12,6,3,'y',12,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(13,6,4,'y',13,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(14,7,1,'y',14,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(15,7,2,'y',15,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(16,7,3,'y',16,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(17,7,4,'y',17,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(18,6,5,'y',18,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(19,6,6,'y',19,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(20,8,1,'y',20,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(21,8,2,'y',21,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(22,8,3,'y',22,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(23,8,4,'y',23,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(24,8,5,'y',24,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(25,8,6,'y',25,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(26,7,5,'y',26,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(27,7,6,'y',27,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(28,10,1,'y',28,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(29,10,2,'y',29,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(30,10,3,'y',30,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(32,11,1,'y',31,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(33,11,2,'y',32,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(34,11,3,'y',33,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(35,11,4,'y',34,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(36,11,5,'y',35,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(37,11,6,'y',36,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(38,13,1,'y',37,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(39,13,2,'y',38,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(40,13,3,'y',39,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(41,12,1,'y',40,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(42,12,2,'y',41,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(43,12,3,'y',42,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(44,12,4,'y',43,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(45,14,1,'y',44,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(46,14,2,'y',45,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(47,14,3,'y',46,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(48,14,4,'y',47,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(52,16,1,'y',51,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(53,16,2,'y',52,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(54,16,3,'y',598,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(67,7,7,'y',58,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(68,10,7,'y',59,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(69,11,7,'y',60,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(74,22,1,'y',65,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(75,22,2,'y',66,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(76,22,3,'y',67,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(77,22,4,'y',68,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(329,12,5,'y',299,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(330,12,6,'y',300,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(377,101,1,'y',347,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(378,101,2,'y',348,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(379,101,3,'y',349,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(380,101,4,'y',350,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(808,13,4,'y',589,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(806,10,4,'y',587,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1593,387,6,'y',1593,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1621,403,4,'y',1621,'12,1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1620,403,3,'y',1620,'12,1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1619,403,2,'y',1619,'12,1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(833,16,4,'n',1650,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(875,224,1,'y',608,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(876,224,2,'y',609,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(877,224,4,'y',611,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(878,224,3,'y',610,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(879,224,5,'y',612,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(880,224,6,'y',613,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(881,224,7,'y',614,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1618,403,1,'y',1618,'12,1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1615,7,45,'y',1615,'1','{\"ru\":\"Копировать\",\"en\":\"Copy\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1614,10,36,'y',1614,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1548,7,34,'y',1548,'1','{\"ru\":\"PHP\",\"en\":\"PHP\"}','{\"ru\":\"\",\"en\":\"Create PHP-controller file\"}','auto','y','n'),(1547,5,34,'y',1559,'1','{\"ru\":\"PHP\",\"en\":\"PHP\"}','{\"ru\":\"\",\"en\":\"Create PHP-model files\"}','auto','y','n'),(1592,387,5,'y',1592,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(789,201,1,'y',583,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(790,201,2,'y',584,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(791,201,3,'y',585,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(792,201,4,'y',586,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1617,14,20,'y',1651,'1','{\"ru\":\"Авторизация\",\"en\":\"Authorization\"}','{\"ru\":\"\",\"en\":\"Sign in on behalf of this user\"}','auto','y','n'),(1268,8,7,'y',1268,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1295,13,5,'y',1291,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1296,13,6,'y',1292,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1522,14,7,'y',1293,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1545,13,7,'y',1545,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1549,7,35,'y',1549,'1','{\"ru\":\"JS\",\"en\":\"JS\"}','{\"ru\":\"\",\"en\":\"Create JS-controller file\"}','auto','y','n'),(1577,390,3,'y',1577,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1576,390,2,'y',1576,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1575,390,1,'y',1575,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1574,389,7,'y',1574,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1570,389,1,'y',1570,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1571,389,2,'y',1571,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1572,389,3,'y',1572,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1573,389,4,'y',1573,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1559,5,7,'y',607,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"Create Toggle-field\"}','auto','y','n'),(1560,387,1,'y',1560,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1561,387,2,'n',1561,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1562,387,3,'y',1562,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1563,387,4,'n',1563,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1564,388,1,'y',1564,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1565,388,2,'y',1565,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1566,388,3,'y',1566,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1567,388,4,'y',1567,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1568,7,36,'y',1568,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1569,5,36,'y',1569,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1578,390,4,'y',1578,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1579,391,1,'y',1579,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1580,391,2,'y',1580,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1581,391,3,'y',1582,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1582,6,39,'y',1581,'1','{\"ru\":\"Активировать\",\"en\":\"Activate\"}','{\"ru\":\"Выбрать режим\",\"en\":\"Select mode\"}','auto','y','n'),(1583,8,36,'y',1583,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1584,11,36,'y',1584,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1585,201,36,'y',1585,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1586,224,36,'y',1586,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1587,6,36,'y',1587,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1588,12,36,'y',1588,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1589,22,36,'y',1589,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1590,101,36,'y',1590,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1591,388,36,'y',1591,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1594,387,40,'y',1647,'1','{\"ru\":\"Доступные языки\",\"en\":\"Available languages\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1595,392,1,'y',1595,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1596,392,2,'y',1596,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1597,392,4,'y',1597,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1598,392,41,'y',1598,'1','{\"ru\":\"Запустить\",\"en\":\"Run\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1599,393,1,'y',1599,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1600,393,2,'y',1600,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1601,394,1,'y',1601,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1602,394,3,'y',1602,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1603,387,43,'y',1648,'1','{\"ru\":\"Вординги\",\"en\":\"Wordings\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1609,396,2,'n',1609,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1610,396,1,'y',1610,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1611,396,3,'y',1611,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1612,396,4,'y',1612,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1613,396,44,'y',1613,'1','{\"ru\":\"Перезапустить\",\"en\":\"Restart\"}','{\"ru\":\"Перезагрузить websocket-сервер\",\"en\":\"Reload websocket server\"}','auto','y','n'),(1627,405,1,'y',1627,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1628,405,2,'y',1628,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1629,405,3,'y',1629,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1630,405,4,'y',1630,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1631,405,5,'y',1631,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1632,405,6,'y',1632,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1633,405,39,'y',1633,'1','{\"ru\":\"Активировать\",\"en\":\"Activate\"}','{\"ru\":\"Выбрать режим\",\"en\":\"Select mode\"}','auto','y','n'),(1634,405,36,'y',1634,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1635,406,1,'y',1635,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1636,406,2,'y',1636,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1637,406,3,'y',1637,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1638,406,4,'y',1638,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1639,406,5,'y',1639,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1640,406,6,'y',1640,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1641,406,36,'y',1641,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),(1642,407,1,'y',1642,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1643,407,2,'y',1643,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1644,407,3,'y',1644,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1645,407,4,'y',1645,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),(1646,387,36,'y',1594,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":null,\"en\":\"\"}','auto','y','n'),(1648,387,47,'y',1646,'1','{\"ru\":\"Импорт\",\"en\":\"Import\"}','','auto','y','n'),(1649,13,36,'y',1649,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n'),(1650,16,36,'y',53,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n'),(1651,14,36,'y',1617,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n');
-/*!40000 ALTER TABLE `section2action` ENABLE KEYS */;
-UNLOCK TABLES;
+insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`profileIds`,`title`,`rename`,`south`,`fitWindow`,`l10n`) values
+(1,2,1,'y',1,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(2,2,2,'y',2,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(3,2,3,'y',3,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(5,2,4,'n',5,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(6,5,1,'y',6,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(7,5,2,'y',7,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(8,5,3,'y',8,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(9,5,4,'y',9,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(10,6,1,'y',10,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(11,6,2,'y',11,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(12,6,3,'y',12,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(13,6,4,'y',13,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(14,7,1,'y',14,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(15,7,2,'y',15,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(16,7,3,'y',16,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(17,7,4,'y',17,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(18,6,5,'y',18,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(19,6,6,'y',19,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(20,8,1,'y',20,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(21,8,2,'y',21,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(22,8,3,'y',22,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(23,8,4,'y',23,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(24,8,5,'y',24,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(25,8,6,'y',25,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(26,7,5,'y',26,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(27,7,6,'y',27,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(28,10,1,'y',28,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(29,10,2,'y',29,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(30,10,3,'y',30,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(32,11,1,'y',31,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(33,11,2,'y',32,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(34,11,3,'y',33,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(35,11,4,'y',34,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(36,11,5,'y',35,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(37,11,6,'y',36,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(38,13,1,'y',37,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(39,13,2,'y',38,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(40,13,3,'y',39,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(41,12,1,'y',40,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(42,12,2,'y',41,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(43,12,3,'y',42,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(44,12,4,'y',43,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(45,14,1,'y',44,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(46,14,2,'y',45,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(47,14,3,'y',46,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(48,14,4,'y',47,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(52,16,1,'y',51,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(53,16,2,'y',52,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(54,16,3,'y',598,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(67,7,7,'y',58,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(68,10,7,'y',59,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(69,11,7,'y',60,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(74,22,1,'y',65,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(75,22,2,'y',66,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(76,22,3,'y',67,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(77,22,4,'y',68,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(329,12,5,'y',299,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(330,12,6,'y',300,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(377,101,1,'y',347,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(378,101,2,'y',348,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(379,101,3,'y',349,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(380,101,4,'y',350,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(808,13,4,'y',589,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(806,10,4,'y',587,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1593,387,6,'y',1593,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1621,403,4,'y',1621,'12,1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1620,403,3,'y',1620,'12,1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1619,403,2,'y',1619,'12,1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(833,16,4,'n',1650,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(875,224,1,'y',608,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(876,224,2,'y',609,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(877,224,4,'y',611,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(878,224,3,'y',610,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(879,224,5,'y',612,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(880,224,6,'y',613,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(881,224,7,'y',614,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1618,403,1,'y',1618,'12,1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1615,7,45,'y',1615,'1','{\"ru\":\"Копировать\",\"en\":\"Copy\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1614,10,36,'y',1614,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1548,7,34,'y',1548,'1','{\"ru\":\"PHP\",\"en\":\"PHP\"}','{\"ru\":\"\",\"en\":\"Create PHP-controller file\"}','auto','y','n'),
+(1547,5,34,'y',1559,'1','{\"ru\":\"PHP\",\"en\":\"PHP\"}','{\"ru\":\"\",\"en\":\"Create PHP-model files\"}','auto','y','n'),
+(1592,387,5,'y',1592,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(789,201,1,'y',583,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(790,201,2,'y',584,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(791,201,3,'y',585,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(792,201,4,'y',586,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1617,14,20,'y',1651,'1','{\"ru\":\"Авторизация\",\"en\":\"Authorization\"}','{\"ru\":\"\",\"en\":\"Sign in on behalf of this user\"}','auto','y','n'),
+(1268,8,7,'y',1268,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1295,13,5,'y',1291,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1296,13,6,'y',1292,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1522,14,7,'y',1293,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1545,13,7,'y',1545,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1549,7,35,'y',1549,'1','{\"ru\":\"JS\",\"en\":\"JS\"}','{\"ru\":\"\",\"en\":\"Create JS-controller file\"}','auto','y','n'),
+(1577,390,3,'y',1577,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1576,390,2,'y',1576,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1575,390,1,'y',1575,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1574,389,7,'y',1574,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1570,389,1,'y',1570,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1571,389,2,'y',1571,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1572,389,3,'y',1572,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1573,389,4,'y',1573,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1559,5,7,'y',607,'1','{\"ru\":\"Статус\",\"en\":\"Toggle\"}','{\"ru\":\"\",\"en\":\"Create Toggle-field\"}','auto','y','n'),
+(1560,387,1,'y',1560,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1561,387,2,'n',1561,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1562,387,3,'y',1562,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1563,387,4,'n',1563,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1564,388,1,'y',1564,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1565,388,2,'y',1565,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1566,388,3,'y',1566,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1567,388,4,'y',1567,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1568,7,36,'y',1568,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1569,5,36,'y',1569,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1578,390,4,'y',1578,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1579,391,1,'y',1579,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1580,391,2,'y',1580,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1581,391,3,'y',1582,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1582,6,39,'y',1581,'1','{\"ru\":\"Активировать\",\"en\":\"Activate\"}','{\"ru\":\"Выбрать режим\",\"en\":\"Select mode\"}','auto','y','n'),
+(1583,8,36,'y',1583,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1584,11,36,'y',1584,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1585,201,36,'y',1585,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1586,224,36,'y',1586,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1587,6,36,'y',1587,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1588,12,36,'y',1588,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1589,22,36,'y',1589,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1590,101,36,'y',1590,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1591,388,36,'y',1591,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1594,387,40,'y',1647,'1','{\"ru\":\"Доступные языки\",\"en\":\"Available languages\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1595,392,1,'y',1595,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1596,392,2,'y',1596,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1597,392,4,'y',1597,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1598,392,41,'y',1598,'1','{\"ru\":\"Запустить\",\"en\":\"Run\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1599,393,1,'y',1599,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1600,393,2,'y',1600,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1601,394,1,'y',1601,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1602,394,3,'y',1602,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1603,387,43,'y',1648,'1','{\"ru\":\"Вординги\",\"en\":\"Wordings\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1609,396,2,'n',1609,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1610,396,1,'y',1610,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1611,396,3,'y',1611,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1612,396,4,'y',1612,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1613,396,44,'y',1613,'1','{\"ru\":\"Перезапустить\",\"en\":\"Restart\"}','{\"ru\":\"Перезагрузить websocket-сервер\",\"en\":\"Reload websocket server\"}','auto','y','n'),
+(1627,405,1,'y',1627,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1628,405,2,'y',1628,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1629,405,3,'y',1629,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1630,405,4,'y',1630,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1631,405,5,'y',1631,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1632,405,6,'y',1632,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1633,405,39,'y',1633,'1','{\"ru\":\"Активировать\",\"en\":\"Activate\"}','{\"ru\":\"Выбрать режим\",\"en\":\"Select mode\"}','auto','y','n'),
+(1634,405,36,'y',1634,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1635,406,1,'y',1635,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1636,406,2,'y',1636,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1637,406,3,'y',1637,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1638,406,4,'y',1638,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1639,406,5,'y',1639,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1640,406,6,'y',1640,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1641,406,36,'y',1641,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":\"\",\"en\":\"Export as PHP-code\"}','auto','y','n'),
+(1642,407,1,'y',1642,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1643,407,2,'y',1643,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1644,407,3,'y',1644,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1645,407,4,'y',1645,'1','{\"ru\":\"Удалить\",\"en\":\"Delete\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(1646,387,36,'y',1594,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','{\"ru\":null,\"en\":\"\"}','auto','y','n'),
+(1648,387,47,'y',1646,'1','{\"ru\":\"Импорт\",\"en\":\"Import\"}','','auto','y','n'),
+(1649,13,36,'y',1649,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n'),
+(1650,16,36,'y',53,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n'),
+(1651,14,36,'y',1617,'1','{\"ru\":\"Экспорт\",\"en\":\"Export\"}','','auto','y','n');
 
---
--- Table structure for table `year`
---
+/*Table structure for table `year` */
 
 DROP TABLE IF EXISTS `year`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `year` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `year`
---
-
-LOCK TABLES `year` WRITE;
-/*!40000 ALTER TABLE `year` DISABLE KEYS */;
-/*!40000 ALTER TABLE `year` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+/*Data for the table `year` */
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2022-03-01 23:54:33
