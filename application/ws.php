@@ -197,6 +197,9 @@ $clientA = [];
 // Array, containing URL path mentioned within handshake-headers
 $pathA = [];
 
+// Array, containing hostname mentioned within handshake-headers
+$hostA = [];
+
 // Meta array, containing info about what users the active streams belongs to, and what roles those users are
 $channelA = [];
 
@@ -290,11 +293,11 @@ while (true) {
                 $pathA[$index] = str_replace('/index.php', '', $pathA[$index]);
 
                 // Stip port from Origin
-                $info['Origin'] = preg_replace('~:[0-9]+$~', '', $info['Origin']);
+                $hostA[$index] = preg_replace('~:[0-9]+$~', '', $info['Origin']);
 
                 // Set opts
                 curl_setopt_array($ch, [
-                    CURLOPT_URL => $info['Origin'] . $pathA[$index] . '/realtime/?newtab',
+                    CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/?newtab',
                     CURLOPT_RETURNTRANSFER => 1,
                     CURLOPT_HTTPHEADER => [
                         'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
@@ -312,7 +315,7 @@ while (true) {
                 curl_close($ch);
 
                 // Log
-                if ($ini['log']) logd('?newtab done: ' . $index . ' => ' . $info['Origin'] . $pathA[$index] . '/realtime/?newtab');
+                if ($ini['log']) logd('?newtab done: ' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/?newtab');
             }
         }
 
@@ -333,7 +336,7 @@ while (true) {
             if ($ini['log']) logd('nobinary: ' . $index);
 
             // Close client's stream
-            close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA);
+            close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
 
             // Goto next stream
             continue;
@@ -360,7 +363,7 @@ while (true) {
                 if ($ini['log']) logd('type=close: ' . $index);
 
                 // Close client's stream
-                close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA);
+                close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
 
                 // Goto next stream
                 continue 2;
@@ -706,8 +709,10 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
  * @param $rabbit
  * @param $queueA
  * @param $clientA
+ * @param $pathA
+ * @param $hostA
  */
-function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rabbit, &$queueA, &$clientA, &$pathA) {
+function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rabbit, &$queueA, &$clientA, &$pathA, &$hostA) {
 
     // Close client's current stream
     fclose($clientI);
@@ -734,21 +739,27 @@ function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rab
 
                     // Set opts
                     curl_setopt_array($ch, [
-                        CURLOPT_URL => ($ini['pem'] ? 'https' : 'http') . '://' . $ini['socket'] . $pathA[$index] . '/realtime/?closetab',
+                        CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/?closetab',
                         CURLOPT_HTTPHEADER => [
                             'Indi-Auth: ' . implode(':', [$sessidA[$index], $langidA[$index], $index]),
                             'Cookie: ' . 'PHPSESSID=' . $sessidA[$index] . '; i-language=' . $langidA[$index]
                         ]
                     ]);
 
-                    // Exec and close curl
-                    curl_exec($ch); curl_close($ch);
+                    // Exec and get output and/or error, if any
+                    $out = curl_exec($ch); $err = curl_error($ch);
 
-                    // Log that Indi Engine is notified about closed channel
-                    if ($ini['log']) logd('?closetab done: ' . $rid . '-' . $uid . '-' . $index);
+                    // Log output and/or error
+                    logd('curl reponse: ' . $out); logd('curl error: ' . $err);
+
+                    // Close curl
+                    curl_close($ch);
+
+                    // Log
+                    if ($ini['log']) logd('?closetab done: '  . $rid . '-' . $uid . '-' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/?closetab');
 
                     // Drop session id and language id
-                    unset($sessidA[$index], $langidA[$index], $pathA[$index]);
+                    unset($sessidA[$index], $langidA[$index], $pathA[$index], $hostA[$index]);
 
                     // If queue exists
                     if (isset($queueA[$index])) {

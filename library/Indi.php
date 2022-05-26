@@ -2247,7 +2247,7 @@ class Indi {
             try {
 
                 // Create client
-                self::$_ws = new WsClient($prot . '://' . ini('ws')->socket . ':' . ini('ws')->port . '/' . $path);
+                self::$_ws = new WsClient($prot . '://' . ini('ws')->host . ':' . ini('ws')->port . '/' . $path);
 
             // If exception caught
             } catch (Exception $e) {
