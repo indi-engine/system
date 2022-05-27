@@ -167,7 +167,7 @@ class Indi_Uri_Base {
         if (session_id()) return;
 
         // Set cookie domain and path
-        ini_set('session.cookie_domain', $hostname == 'localhost'
+        ini_set('session.cookie_domain', $hostname == 'localhost' || Indi::rexm('ipv4', $hostname)
             ? $hostname
             : (preg_match('/^[0-9\.]+$/', $domain) ? '' : '.') . $domain);
 
