@@ -3,7 +3,7 @@ SQLyog Ultimate v13.1.1 (64 bit)
 MySQL - 8.0.28 : Database - custom
 *********************************************************************
 */
-use `custom`;
+
 /*!40101 SET NAMES utf8 */;
 
 /*!40101 SET SQL_MODE=''*/;
@@ -84,7 +84,7 @@ CREATE TABLE `admin` (
 /*Data for the table `admin` */
 
 insert  into `admin`(`id`,`profileId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values
-(1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','pavel.perminov.23@gmail.com','*0724CB8842E33E0B3C7DC66B23DC788469E82724','y','n','y'),
+(1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','dev','*27AEDA0D3A56422C3F1D20DAFF0C8109058134F3','y','n','y'),
 (14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
 
 /*Table structure for table `alteredField` */
@@ -1708,7 +1708,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=2857 DEFAULT CHARSET=utf8mb4;
+) ENGINE=MyISAM AUTO_INCREMENT=2999 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `realtime` */
 
