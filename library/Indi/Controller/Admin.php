@@ -2451,10 +2451,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'uri' => uri()->toArray(),
             'time' => time(),
             'ini' => [
-                'ws' => array_merge((array) ini('ws'), [
-                    'pem' => is_file(DOC . STD . '/application/ws.pem'),
-                    'wsp' => !!getenv('WSP')
-                ]),
+                'ws' => ini('ws'),
                 'demo' => Indi::demo(false)
             ],
             'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',

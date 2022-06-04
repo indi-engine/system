@@ -162,19 +162,8 @@ set_time_limit(0);
 // Ignore user about
 ignore_user_abort(1);
 
-// Create context
-$context = stream_context_create();
-
-// If certificate file exists - make context to be secure
-if (!is_file($pem = DOC . '/application/ws.pem')) $prot = 'tcp'; else {
-    stream_context_set_option($context, 'ssl', 'local_cert', $pem);
-    stream_context_set_option($context, 'ssl', 'verify_peer', false);
-    $prot = 'ssl';
-    if (!$ini['pem']) $ini['pem'] = true;
-}
-
 // Create socket server
-$server = stream_socket_server($prot . '://0.0.0.0:' . $port . '/', $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $context);
+$server = stream_socket_server('tcp://0.0.0.0:' . $port . '/', $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN);
 
 // If socket server creation failed - exit
 if (!$server) err('Can\'t start socket server: ' . $errstr . '(' . $errno . '), mypid => process will be shut down', true);
