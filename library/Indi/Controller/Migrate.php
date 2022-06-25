@@ -62,6 +62,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'bg' => '353#e3495a',
             'tooltip' => 'Queue tasks having processing error',
             'tplIncBody' => 'Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>',
+            'type' => 's',
         ]);
         noticeGetter('queueTask', 'failed', 'dev', true);
         notice('queueTask', 'started', [
@@ -70,6 +71,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'profileId' => '1',
             'qtySql' => '`procID` != "0"',
             'tplIncBody' => 'Queue task started with PID: <?=$this->row->procID?>',
+            'type' => 's',
         ]);
         noticeGetter('queueTask', 'started', 'dev', true);
         // ------entities-----
