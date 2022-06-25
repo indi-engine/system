@@ -88,6 +88,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'applySize',
         ]);
         grid('queueTask', 'error', ['move' => 'apply', 'toggle' => 'h', 'rowReqIfAffected' => 'y']);
+        // ------- langs--------
+        section('lang', ['defaultSortField' => 'move']);
         die('ok');
     }
     public function dropGridAliasAction() {
