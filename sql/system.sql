@@ -554,7 +554,7 @@ CREATE TABLE `notice` (
 
 LOCK TABLES `notice` WRITE;
 /*!40000 ALTER TABLE `notice` DISABLE KEYS */;
-INSERT INTO `notice` VALUES (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','','','p','failed'),(2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','','','p','started');
+INSERT INTO `notice` VALUES (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','','','s','failed'),(2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','','','s','started');
 /*!40000 ALTER TABLE `notice` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -704,7 +704,7 @@ CREATE TABLE `queueChunk` (
   KEY `queueChunkId` (`queueChunkId`),
   KEY `fraction` (`fraction`),
   FULLTEXT KEY `where` (`where`)
-) ENGINE=MyISAM AUTO_INCREMENT=11549 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=11876 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -737,7 +737,7 @@ CREATE TABLE `queueItem` (
   KEY `stage` (`stage`),
   FULLTEXT KEY `value` (`value`),
   FULLTEXT KEY `result` (`result`)
-) ENGINE=MyISAM AUTO_INCREMENT=120100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=127781 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -787,7 +787,7 @@ CREATE TABLE `queueTask` (
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `stageState` (`stageState`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=MyISAM AUTO_INCREMENT=570 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=573 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -837,7 +837,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=3067 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3085 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1075,4 +1075,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-06-25 19:16:09
+-- Dump completed on 2022-06-25 19:44:38
