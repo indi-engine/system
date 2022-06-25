@@ -128,7 +128,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         if (!$fieldR->entry) {
 
             // Build the ALTER query template
-            $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "%s"';
+            $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s NOT NULL DEFAULT "%s"';
 
             // Run that query
             db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,

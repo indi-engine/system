@@ -280,3 +280,6 @@ define('I_ENT_AUTHOR_USER', 'User');
 define('I_ENT_AUTHOR_TIME', 'Datetime');
 define('I_ENT_TOGGLE_Y', 'Turned on');
 define('I_ENT_TOGGLE_N', 'Turned off');
+define('I_ENT_EXTENDS_OTHER', 'File with php-model exists, but %s is specified as parent class there');
+
+define('I_GAPI_KEY_REQUIRED', 'You should obtain Google Cloud Translate API key and specify it as <br>a value of \'gapi.key\' param in [lang] section in application/config.ini file');

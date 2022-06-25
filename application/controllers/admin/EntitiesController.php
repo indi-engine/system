@@ -146,4 +146,51 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Flush success
         jflush(true, 'OK');
     }
+
+    /**
+     * 1.Hide default values for `extends` prop, to prevent it from creating a mess in eyes
+     * 2.Check php-model file exist, and if yes, check whether it's actual parent class is
+     *   as per specified in `extends` prop
+     *
+     * @param array $data
+     */
+    public function adjustGridData(&$data) {
+
+        // Get default values
+        foreach (ar('extends') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
+
+        // Dirs dict by entity fraction
+        $dir = [
+            'y' => VDR . '/system',
+            'o' => VDR . '/public',
+            'n' => ''
+        ];
+
+        // Foreach data item
+        foreach ($data as &$item) {
+
+            // Get php-mode class name
+            $php = ucfirst($item['table']);
+
+            // If php-controller file exists for this section
+            if (class_exists($php)) {
+
+                // Setup flag
+                $item['_system']['php-class'] = true;
+
+                // Get parent class
+                $parent = get_parent_class($php);
+
+                // If actual parent class is not as per section `extendsPhp` prop - setup error
+                if ($parent != $item['extends']) $item['_system']['php-error'] = sprintf(I_ENT_EXTENDS_OTHER, $parent);
+            }
+
+            // Add icon for `extends` prop
+            if (($_ = $item['extends']) != 'Indi_Db_Table') $item['_render']['extends']
+                = '<img src="resources/images/icons/btn-icon-php-parent.png" class="i-cell-img">' . $_;
+
+            // Hide default values
+            foreach ($default as $prop => $defaultValue) if ($item[$prop] == $defaultValue) $item[$prop] = '';
+        }
+    }
 }

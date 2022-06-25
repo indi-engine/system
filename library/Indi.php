@@ -2240,14 +2240,11 @@ class Indi {
             // Build path
             $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
 
-            // Protocol
-            $prot = is_file(DOC . STD . '/application/ws.pem') ? 'wss' : 'ws';
-
             // Try create client
             try {
 
                 // Create client
-                self::$_ws = new WsClient($prot . '://' . ini('ws')->host . ':' . ini('ws')->port . '/' . $path);
+                self::$_ws = new WsClient('ws://' . ini('ws')->host . ':' . ini('ws')->port . '/' . $path);
 
             // If exception caught
             } catch (Exception $e) {

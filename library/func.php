@@ -1669,6 +1669,105 @@ function field($table, $alias, array $ctor = []) {
 }
 
 /**
+ * Short-hand function that allows to manipulate `notice` entry, identified by $table and $alias args.
+ * If only two args given - function will fetch and return appropriate `notice` entry (or null, if not found)
+ * If $ctor arg is given and it's a non-empty array - function will create new `notice` entry, or update existing if found
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string|int $alias Field's alias
+ * @param array $ctor Props to be involved in insert/update
+ * @return Notice_Row|null
+ */
+function notice($table, $alias, array $ctor = []) {
+
+    // Get `entityId` according to $table arg
+    $entityId = entity($table)->id;
+
+    // If $alias arg is an integer - assume it's a `field` entry's `id`, otherwise it's a `alias`
+    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+    // Try to find `field` entry
+    $noticeR = m('notice')->row([
+        '`entityId` = "' . $entityId . '"',
+        '`' . $byprop . '` = "' . $alias . '"'
+    ]);
+
+    // If $ctor arg is an empty array - return `notice` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $table and $alias args - is not enough for `notice` entry to be created
+    if (!$ctor) return $noticeR;
+
+    // If `entityId` and/or `alias` prop are not defined within $ctor arg
+    // - use values given by $table and $alias args
+    foreach (ar('entityId,alias') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `notice` entry was not found - create it
+    if (!$noticeR) $noticeR = m('notice')->new();
+
+    // Assign `entityId` prop first
+    if ($ctor['entityId'] && $noticeR->entityId = $ctor['entityId']) unset($ctor['entityId']);
+
+    // Assign other props and save
+    $noticeR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `notice` entry (newly created, or existing but updated)
+    return $noticeR;
+}
+
+/**
+ * Short-hand function that allows to manipulate `noticeGetter` entry, identified by $table, $field and $alias args.
+ * If only those three args given - function will fetch and return appropriate `noticeGetter` entry (or null, if not found)
+ * If 4th arg - $ctor - is given and it's `true` or an (even empty) array - function will create new `enumset`
+ * entry, or update existing if found
+ *
+ * If 4th arg is an array containing value under 'color' key - color box will be injected into `enumset` entry's `title`
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string $notice Notice alias
+ * @param string $role Role alias
+ * @param bool|array $ctor
+ * @return NoticeGetter_Row|null
+ */
+function noticeGetter($table, $notice, $role, $ctor = false) {
+
+    // Get `noticeId` according to $table and $notice args
+    $noticeId = notice($table, $notice)->id;
+
+    // Get `roleId` according to $role arg
+    $profileId = role($role)->id;
+
+    // Try to find `noticeGetter` entry
+    $noticeGetterR = m('noticeGetter')->row([
+        '`noticeId` = "' . $noticeId . '"',
+        '`profileId` = "' . $profileId . '"'
+    ]);
+
+    // If $ctor arg is non-false and is not and empty array - return `noticeGetter` entry, else
+    if (!$ctor && !is_array($ctor)) return $noticeGetterR;
+
+    // If `noticeId` and/or `profileId` prop are not defined within
+    // $ctor arg - use values given by $table+$notice and $role args
+    if (!is_array($ctor)) $ctor = [];
+    foreach (ar('noticeId,profileId') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `noticeGetter` entry already exists - do not allow re-linking it from one notice to another
+    if ($noticeGetterR) unset($ctor['noticeId']);
+
+    // Else - create it
+    else $noticeGetterR = m('noticeGetter')->new();
+
+    // Assign other props and save
+    $noticeGetterR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `noticeGetter` entry (newly created, or existing but updated)
+    return $noticeGetterR;
+}
+
+/**
  * Short-hand function that allows to manipulate on config-field, stored as `field` entry,
  * and identified by $table, $entry and $alias args.
  * If only three args given - function will fetch and return appropriate `field` entry (or null, if not found)
@@ -1835,8 +1934,8 @@ function grid($section, $field, $ctor = false) {
 }
 
 /**
- * Short-hand function that allows to manipulate `entry` entry, identified by $table, $field and $alias args.
- * If only those two args given - function will fetch and return appropriate `entry` entry (or null, if not found)
+ * Short-hand function that allows to manipulate `enumset` entry, identified by $table, $field and $alias args.
+ * If only those three args given - function will fetch and return appropriate `enumset` entry (or null, if not found)
  * If 4th arg - $ctor - is given and it's `true` or an (even empty) array - function will create new `enumset`
  * entry, or update existing if found
  *

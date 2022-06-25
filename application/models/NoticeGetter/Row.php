@@ -10,6 +10,25 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     public $row = null;
 
     /**
+     * This method was redefined to provide ability for some field
+     * props to be set using aliases rather than ids
+     *
+     * @param  string $columnName The column key.
+     * @param  mixed  $value      The value for the property.
+     * @return void
+     */
+    public function __set($columnName, $value) {
+
+        // Provide ability for some field props to be set using aliases rather than ids
+        if (is_string($value) && !Indi::rexm('int11', $value)) {
+            if ($columnName == 'profileId') $value = role($value)->id;
+        }
+
+        // Standard __set()
+        parent::__set($columnName, $value);
+    }
+
+    /**
      * Notify recipients
      *
      * @param Indi_Db_Table_Row $row
@@ -88,7 +107,9 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         // Prepare msg
         $msg = [
             'header' => $this->wsmsg != 'n' ? $subj : '',
-            'body' => $this->wsmsg != 'n' ? preg_replace('~jump=".*?,([^,"]+)"~', 'jump="$1"', $body) : ''
+            'body' => $this->wsmsg != 'n' ? preg_replace('~jump=".*?,([^,"]+)"~', 'jump="$1"', $body) : '',
+            'bg' => $this->foreign('noticeId')->rgb('bg'),
+            'fg' => $this->foreign('noticeId')->rgb('fg'),
         ];
     
         // Append audio if need
@@ -270,5 +291,66 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function setTitle() {
         $this->_setTitle();
+    }
+
+
+    /**
+     * Build an expression for creating the current `noticeGetter` entry in another project, running on Indi Engine
+     *
+     * @param string $certain
+     * @return string
+     */
+    public function export($certain = '') {
+
+        // Build `notice` entry creation expression
+        $lineA[] = "noticeGetter('"
+            . $this->foreign('noticeId')->foreign('entityId')->table . "', '"
+            . $this->foreign('noticeId')->alias . "', '"
+            . $this->foreign('profileId')->alias . "', " . $this->_ctor($certain) . ");";
+
+        // If $certain arg is given - export it only
+        if ($certain) return $lineA[0];
+
+        // Return newline-separated list of creation expressions
+        return im($lineA, "\n");
+    }
+
+    /**
+     * Build a string, that will be used in NoticeGetter_Row->export()
+     *
+     * @param string $certain
+     * @return string
+     */
+    protected function _ctor($certain = null) {
+
+        // Use original data as initial ctor
+        $ctor = $this->_original;
+
+        // Exclude `id` as it will be set automatically by MySQL
+        unset($ctor['id']);
+
+        // Exclude props that will be already represented by shorthand-fn args
+        foreach (ar('noticeId,profileId') as $arg) unset($ctor[$arg]);
+
+        // If certain field should be exported - keep it only
+        if ($certain) $ctor = [$certain => $ctor[$certain]];
+
+        // Foreach $ctor prop
+        foreach ($ctor as $prop => &$value) {
+
+            // Get field
+            $field = $this->model()->fields($prop);
+
+            // Exclude prop, if it has value equal to default value
+            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+
+            // Exclude 'title'-prop due to that it is set automatically to the same value
+            // as $this->foreign('profileId')->title, as self 'title' prop has such a dependency
+            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
+                unset($ctor[$prop]);
+        }
+
+        // Stringify and return $ctor
+        return _var_export($ctor);
     }
 }

@@ -1135,7 +1135,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$lfA) return;
 
         // If there are localized fields, but none of them were modified - return
-        if (!$mlfA = array_intersect($lfA, array_keys($this->_modified))) return;
+        // Here we assume that $data arg contains modified values only, see '->_localize(' usages
+        if (!$mlfA = array_intersect($lfA, array_keys($data))) return;
 
         // Get fraction
         $fraction = $this->fraction();
@@ -7233,5 +7234,15 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Save adjusted target-props on foreign entries
         foreach (array_unique(array_column($inQtySum, 'foreign')) as $foreign)
             $this->foreign($foreign)->save();
+    }
+
+    /**
+     * Trim hue from the beginning of color-field value, which itinially is in format 'hue#rrggbb',
+     * where hue is a number below 360
+     *
+     * @param $field
+     */
+    public function rgb($field) {
+        return preg_replace('~^[0-9]{3}~', '', $this->$field);
     }
 }

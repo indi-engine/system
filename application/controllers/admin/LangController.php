@@ -9,6 +9,9 @@ class Admin_LangController extends Indi_Controller_Admin {
         // Get languages, already existing as `lang` entries
         $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
+        // Check if [lang]->gapi.key is given in application/config.ini
+        if (!ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
+
         // Create Google Cloud Translation PHP API
         $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
