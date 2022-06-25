@@ -90,6 +90,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('queueTask', 'error', ['move' => 'apply', 'toggle' => 'h', 'rowReqIfAffected' => 'y']);
         // ------- langs--------
         section('lang', ['defaultSortField' => 'move']);
+        entity('field', ['extends' => 'Field_Base']);
+        grid('entities', 'extends', ['move' => 'table', 'editor' => '1', 'rowReqIfAffected' => 'y']);
         die('ok');
     }
     public function dropGridAliasAction() {
