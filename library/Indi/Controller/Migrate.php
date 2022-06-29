@@ -58,6 +58,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         if (field('resize', 'proportions')) field('resize', 'proportions')->delete();
         if (field('resize', 'masterDimensionAlias')) field('resize', 'masterDimensionAlias')->delete();
         if (field('resize', 'slaveDimensionLimitation')) field('resize', 'slaveDimensionLimitation')->delete();
+        section('resize', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
         die('ok');
     }
     public function noticeColorAction() {

@@ -1711,6 +1711,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         foreach ($this->nested('enumset', ['order' => 'move']) as $enumsetR)
             $lineA[] = $enumsetR->export();
 
+        // Foreach `resize` entry, nested within current `field` entry - do same
+        foreach ($this->nested('resize') as $resizeR) $lineA[] = $resizeR->export();
+
         // Foreach `param` entry, nested within current `field` entry - do same
         foreach ($this->nested('param') as $paramR) $lineA[] = $paramR->export();
 

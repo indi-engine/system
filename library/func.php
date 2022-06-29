@@ -1952,7 +1952,7 @@ function enumset($table, $field, $alias, $ctor = false) {
     // Get `fieldId` according to $table and $field args
     $fieldId = field($table, $field)->id;
 
-    // Try to find `grid` entry
+    // Try to find `enumset` entry
     $enumsetR = m('Enumset')->row([
         '`fieldId` = "' . $fieldId . '"',
         '`alias` = "' . $alias . '"'
@@ -1983,6 +1983,53 @@ function enumset($table, $field, $alias, $ctor = false) {
 
     // Return `enumset` entry (newly created, or existing but updated)
     return $enumsetR;
+}
+
+/**
+ * Short-hand function that allows to manipulate `resize` entry, identified by $table, $field and $alias args.
+ * If only those three args given - function will fetch and return appropriate `resize` entry (or null, if not found)
+ * If $ctor arg is given and it's a non-empty array - function will create new `resize` entry, or update existing if found
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string $field Field alias
+ * @param string $alias Resize alias
+ * @param bool|array $ctor
+ * @return Resize_Row|null
+ */
+function resize($table, $field, $alias, array $ctor = []) {
+
+    // Get `fieldId` according to $table and $field args
+    $fieldId = field($table, $field)->id;
+
+    // Try to find `resize` entry
+    $resizeR = m('resize')->row([
+        '`fieldId` = "' . $fieldId . '"',
+        '`alias` = "' . $alias . '"'
+    ]);
+
+    // If $ctor arg is an empty array - return `resize` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $alias arg - is not enough for `resize` entry to be created
+    if (!$ctor) return $resizeR;
+
+    // If `fieldId` and/or `alias` prop are not defined within $ctor arg
+    // - use values given by $table+$field and $alias args
+    if (!is_array($ctor)) $ctor = [];
+    foreach (ar('fieldId,alias') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `resize` entry already exists - do not allow re-linking it from one field to another
+    if ($resizeR) unset($ctor['fieldId']);
+
+    // Else - create it
+    else $resizeR = m('resize')->new();
+
+    // Assign other props and save
+    $resizeR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `resize` entry (newly created, or existing but updated)
+    return $resizeR;
 }
 
 /**
