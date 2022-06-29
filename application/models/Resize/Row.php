@@ -31,33 +31,70 @@ class Resize_Row extends Indi_Db_Table_Row {
 	}
 
     /**
-     * Do all required operations of creation/altering copies of images, accordingly to related settings, stored in
-     * current row
-     *
-     * @return int
+     * Create resized copies according to this newly created `resize` entry
      */
-    public function save() {
+    public function onInsert() {
 
+        // Todo: make it to run in a queue
         set_time_limit(0); ignore_user_abort(1);
 
         // Get db table name, and field alias
         $table = $this->foreign('fieldId')->foreign('entityId')->table;
         $field = $this->foreign('fieldId')->alias;
 
-        // If this is a new row
-        if (!$this->id) {
+        // Get all rows within entity, that current row's field is in structure of
+        $rs = m($table)->all();
 
-            // Get all rows within entity, that current row's field is in structure of
-            $rs = m($table)->all();
+        // Create a new resized copy of an image, uploaded using $field, for all rows
+        foreach ($rs as $r) $r->resize($field, $this);
+    }
 
-            // Create a new resized copy of an image, uploaded using $field, for all rows
-            foreach ($rs as $r) $r->resize($field, $this);
+    /**
+     * Do all required operations of creation/altering copies of images,
+     * accordingly to related settings, stored in current `resize` entry
+     */
+    public function onUpdate() {
 
-        // Else
-        } else if (count($this->_modified)) {
+        // Todo: make it to run in a queue
+        set_time_limit(0); ignore_user_abort(1);
 
-            // If `alias` property is the only modified - we just rename copies
-            if (count($this->_modified) == 1 && isset($this->_modified['alias'])) {
+        // Get db table name, and field alias
+        $table = $this->foreign('fieldId')->foreign('entityId')->table;
+        $field = $this->foreign('fieldId')->alias;
+
+        // If no props were affected - return
+        if (!$this->_affected) return;
+
+        // If `alias` property is the only modified - we just rename copies
+        if (count($this->_affected) == 1 && isset($this->_affected['alias'])) {
+
+            // Get the directory name
+            $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
+
+            // If directory does not exist - return
+            if (!is_dir($dir)) return;
+
+            // Get the array of images certain copies
+            $copyA = glob($dir . '*_' . $field . ',' . $this->_affected['alias'] . '.{gif,jpeg,jpg,png}', GLOB_BRACE);
+
+            // Foreach copy
+            foreach ($copyA as $copyI) {
+
+                // Get the new filename, by replacing original copy alias with modified copy alias
+                $renameTo = preg_replace(
+                    '~(/[0-9]+_' . $field . ',)' . $this->_affected['alias'] . '\.(gif|jpe?g|png)$~',
+                    '$1' . $this->alias . '.$2', $copyI
+                );
+
+                // Rename
+                rename($copyI, $renameTo);
+            }
+
+        // Else there were more changes
+        } else {
+
+            // If these changes include change of 'alias'
+            if (isset($this->_affected['alias'])) {
 
                 // Get the directory name
                 $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
@@ -66,49 +103,17 @@ class Resize_Row extends Indi_Db_Table_Row {
                 if (!is_dir($dir)) return;
 
                 // Get the array of images certain copies
-                $copyA = glob($dir . '*_' . $field . ',' . $this->_original['alias'] . '.{gif,jpeg,jpg,png}', GLOB_BRACE);
+                $copyA = glob($dir . '*_' . $field . ',' . $this->_affected['alias'] . '.{gif,jpeg,jpg,png}', GLOB_BRACE);
 
-                // Foreach copy
-                foreach ($copyA as $copyI) {
-
-                    // Get the new filename, by replacing original copy alias with modified copy alias
-                    $renameTo = preg_replace(
-                        '~(/[0-9]+_' . $field . ',)' . $this->_original['alias'] . '\.(gif|jpe?g|png)$~',
-                        '$1' . $this->_modified['alias'] . '.$2', $copyI
-                    );
-
-                    // Rename
-                    rename($copyI, $renameTo);
-                }
-
-            // Else there were more changes
-            } else {
-
-                // If these changes include change of 'alias'
-                if (isset($this->_modified['alias'])) {
-
-                    // Get the directory name
-                    $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
-
-                    // If directory does not exist - return
-                    if (!is_dir($dir)) return;
-
-                    // Get the array of images certain copies
-                    $copyA = glob($dir . '*_' . $field . ',' . $this->_original['alias'] . '.{gif,jpeg,jpg,png}', GLOB_BRACE);
-
-                    // Unlink original-named copies
-                    foreach ($copyA as $copyI) @unlink($copyI);
-                }
-
-                // Get all rows within entity, that current row's field is in structure of
-                $rs = m($table)->all();
-
-                // Create a new resized copies
-                foreach ($rs as $r) $r->resize($field, $this);
+                // Unlink original-named copies
+                foreach ($copyA as $copyI) @unlink($copyI);
             }
-        }
 
-        // Standard save
-        return parent::save();
+            // Get all rows within entity, that current row's field is in structure of
+            $rs = m($table)->all();
+
+            // Create a new resized copies
+            foreach ($rs as $r) $r->resize($field, $this);
+        }
     }
 }

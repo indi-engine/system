@@ -448,7 +448,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Add the collation definition, if column type supports it
-        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT', 'ENUM', 'SET'];
+        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT'];
         foreach ($collatedColumnTypeA as $collatedColumnTypeI)
             if (preg_match('/^' . $collatedColumnTypeI . '/', $columnTypeR->type))
                 $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci';

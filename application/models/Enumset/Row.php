@@ -243,8 +243,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             // Build the ALTER query
             $sql[] = 'ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $fieldR->alias . '` `' . $fieldR->alias . '`';
             $sql[] = $fieldR->foreign('columnTypeId')->type . '("' . implode('","', $enumsetA) . '")';
-            $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
-            $sql[] = 'DEFAULT "' . $defaultValue . '"';
+            $sql[] = 'NOT NULL DEFAULT "' . $defaultValue . '"';
 
             // Run that query
             db()->query(implode(' ', $sql));

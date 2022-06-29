@@ -278,6 +278,7 @@ define('I_ENT_AUTHOR_SPAN', 'Created');
 define('I_ENT_AUTHOR_ROLE', 'Role');
 define('I_ENT_AUTHOR_USER', 'User');
 define('I_ENT_AUTHOR_TIME', 'Datetime');
+define('I_ENT_TOGGLE', 'Toggle');
 define('I_ENT_TOGGLE_Y', 'Turned on');
 define('I_ENT_TOGGLE_N', 'Turned off');
 define('I_ENT_EXTENDS_OTHER', 'File with php-model exists, but %s is specified as parent class there');

@@ -1,6 +1,67 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function updateResizeAction(){
+        entity('resize', ['titleFieldId' => 'alias']);
+        if (field('resize', 'color')) field('resize', 'color')->delete();
+        if (field('resize', 'changeColor')) field('resize', 'changeColor')->delete();
+        if (field('resize', 'masterDimensionValue')) field('resize', 'masterDimensionValue', ['alias' => 'width']);
+        if (field('resize', 'slaveDimensionValue')) field('resize', 'slaveDimensionValue', ['alias' => 'height']);
+        field('resize', 'mode', [
+            'title' => 'Set exactly',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'radio',
+            'defaultValue' => 'both',
+            'move' => 'height',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('resize', 'mode', 'both', ['title' => 'Both dimensions, crop if need', 'move' => '']);
+        enumset('resize', 'mode', 'width', ['title' => 'Width, auto fit height', 'move' => 'both']);
+        enumset('resize', 'mode', 'height', ['title' => 'Height, auto fit width', 'move' => 'width']);
+        enumset('resize', 'mode', 'auto', ['title' => 'Only one dimension, auto fit other', 'move' => 'height']);
+        if (field('resize', 'title')) field('resize', 'title', [
+            'title' => 'Note',
+            'alias' => 'note',
+            'mode' => 'regular',
+            'move' => 'mode',
+        ]);
+        section('resize')->nested('grid')->delete();
+        grid('resize', 'alias', ['move' => '']);
+        grid('resize', 'width', ['move' => 'alias']);
+        grid('resize', 'height', ['move' => 'width']);
+        grid('resize', 'mode', ['move' => 'height']);
+        grid('resize', 'note', ['move' => 'mode']);
+
+        if (m('resize')->fields('proportions')) foreach (m('resize')->all() as $resizeR) {
+            if ($resizeR->proportions == 'o') {
+                //$resizeR->delete();
+                d('Proportions - just a copy with no resize: '
+                    . $resizeR->foreign('fieldId')->foreign('entityId')->table . '->'
+                    . $resizeR->foreign('fieldId')->alias . '->'
+                    . $resizeR->alias
+                );
+            } else if ($resizeR->proportions == 'c') {
+                $resizeR->set(['mode' => 'both'])->basicUpdate();
+            } else if ($resizeR->proportions == 'p') {
+                if ($resizeR->slaveDimensionLimitation) {
+                    $resizeR->set(['mode' => 'auto'])->basicUpdate();
+                } else {
+                    if ($resizeR->masterDimensionAlias == 'width') {
+                        $resizeR->set(['mode' => 'width'])->basicUpdate();
+                    } else {
+                        $resizeR->set(['mode' => 'height'])->basicUpdate();
+                    }
+                }
+            }
+        }
+
+        if (field('resize', 'proportions')) field('resize', 'proportions')->delete();
+        if (field('resize', 'masterDimensionAlias')) field('resize', 'masterDimensionAlias')->delete();
+        if (field('resize', 'slaveDimensionLimitation')) field('resize', 'slaveDimensionLimitation')->delete();
+        die('ok');
+    }
     public function noticeColorAction() {
+
         // ------notices-----
         field('notice', 'alias', [
             'title' => 'Alias',

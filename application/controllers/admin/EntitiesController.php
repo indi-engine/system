@@ -131,7 +131,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Create field
         field($table, 'toggle', [
-            'title' => 'Статус',
+            'title' => I_ENT_TOGGLE,
             'columnTypeId' => 'ENUM',
             'elementId' => 'combo',
             'defaultValue' => 'y',
