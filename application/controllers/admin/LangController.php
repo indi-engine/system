@@ -9,6 +9,9 @@ class Admin_LangController extends Indi_Controller_Admin {
         // Get languages, already existing as `lang` entries
         $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
 
+        // Check if [lang]->gapi.key is given in application/config.ini
+        if (!ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
+
         // Create Google Cloud Translation PHP API
         $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);
 
@@ -72,21 +75,27 @@ class Admin_LangController extends Indi_Controller_Admin {
         // If we're going to add new translation
         if ($value == 'qy') {
 
+            // Prepare WHERE clause for source languages list
+            $langId_where = '`id` != "' . t()->row->id . '" AND `' . $cell . '` = "y"';
+
             // Create phantom `langId` field
             $langId_combo = m('Field')->new([
-                'title' => 'asdasd',
                 'alias' => 'langId',
                 'columnTypeId' => 'INT(11)',
                 'elementId' => 'combo',
                 'storeRelationAbility' => 'one',
                 'relation' => 'lang',
-                'filter' => '`id` != "' . t()->row->id . '" AND `' . $cell . '` = "y"',
+                'filter' => $langId_where,
                 'mode' => 'hidden',
                 'defaultValue' => 0
             ]);
 
             // Append to fields list
             m()->fields()->append($langId_combo);
+
+            // Setup a value for phantom `langId` field for the current row, as for now
+            // it's the only way to make sure it to be a selected value in prompt's combobox
+            t()->row->langId = m('lang')->row($langId_where, 'move')->id;
 
             // Build config for langId-combo
             $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');

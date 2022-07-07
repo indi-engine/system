@@ -278,5 +278,9 @@ define('I_ENT_AUTHOR_SPAN', 'Создание');
 define('I_ENT_AUTHOR_ROLE', 'Роль');
 define('I_ENT_AUTHOR_USER', 'Пользователь');
 define('I_ENT_AUTHOR_TIME', 'Дата и время');
+define('I_ENT_TOGGLE', 'Статус');
 define('I_ENT_TOGGLE_Y', 'Включено');
 define('I_ENT_TOGGLE_N', 'Выключено');
+define('I_ENT_EXTENDS_OTHER', 'Файл php-модели существует, но в нем родительский класс указан как %s');
+
+define('I_GAPI_KEY_REQUIRED', 'Вам необходимо получить ключ доступа для Google Cloud Translate API и указать его как значение параметра \'gapi.key\' в разделе [lang] в файле application/config.ini');

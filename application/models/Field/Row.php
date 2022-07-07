@@ -448,7 +448,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Add the collation definition, if column type supports it
-        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT', 'ENUM', 'SET'];
+        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT'];
         foreach ($collatedColumnTypeA as $collatedColumnTypeI)
             if (preg_match('/^' . $collatedColumnTypeI . '/', $columnTypeR->type))
                 $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci';
@@ -1710,6 +1710,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // - build `enumset` entry's creation expression
         foreach ($this->nested('enumset', ['order' => 'move']) as $enumsetR)
             $lineA[] = $enumsetR->export();
+
+        // Foreach `resize` entry, nested within current `field` entry - do same
+        foreach ($this->nested('resize') as $resizeR) $lineA[] = $resizeR->export();
 
         // Foreach `param` entry, nested within current `field` entry - do same
         foreach ($this->nested('param') as $paramR) $lineA[] = $paramR->export();

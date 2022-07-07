@@ -1,5 +1,163 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function updateResizeAction(){
+        entity('resize', ['titleFieldId' => 'alias']);
+        if (field('resize', 'color')) field('resize', 'color')->delete();
+        if (field('resize', 'changeColor')) field('resize', 'changeColor')->delete();
+        if (field('resize', 'masterDimensionValue')) field('resize', 'masterDimensionValue', ['alias' => 'width']);
+        if (field('resize', 'slaveDimensionValue')) field('resize', 'slaveDimensionValue', ['alias' => 'height']);
+        field('resize', 'mode', [
+            'title' => 'Set exactly',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'radio',
+            'defaultValue' => 'both',
+            'move' => 'height',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('resize', 'mode', 'both', ['title' => 'Both dimensions, crop if need', 'move' => '']);
+        enumset('resize', 'mode', 'width', ['title' => 'Width, auto fit height', 'move' => 'both']);
+        enumset('resize', 'mode', 'height', ['title' => 'Height, auto fit width', 'move' => 'width']);
+        enumset('resize', 'mode', 'auto', ['title' => 'Only one dimension, auto fit other', 'move' => 'height']);
+        if (field('resize', 'title')) field('resize', 'title', [
+            'title' => 'Note',
+            'alias' => 'note',
+            'mode' => 'regular',
+            'move' => 'mode',
+        ]);
+        section('resize')->nested('grid')->delete();
+        grid('resize', 'alias', ['move' => '']);
+        grid('resize', 'width', ['move' => 'alias']);
+        grid('resize', 'height', ['move' => 'width']);
+        grid('resize', 'mode', ['move' => 'height']);
+        grid('resize', 'note', ['move' => 'mode']);
+
+        if (m('resize')->fields('proportions')) foreach (m('resize')->all() as $resizeR) {
+            if ($resizeR->proportions == 'o') {
+                //$resizeR->delete();
+                d('Proportions - just a copy with no resize: '
+                    . $resizeR->foreign('fieldId')->foreign('entityId')->table . '->'
+                    . $resizeR->foreign('fieldId')->alias . '->'
+                    . $resizeR->alias
+                );
+            } else if ($resizeR->proportions == 'c') {
+                $resizeR->set(['mode' => 'both'])->basicUpdate();
+            } else if ($resizeR->proportions == 'p') {
+                if ($resizeR->slaveDimensionLimitation) {
+                    $resizeR->set(['mode' => 'auto'])->basicUpdate();
+                } else {
+                    if ($resizeR->masterDimensionAlias == 'width') {
+                        $resizeR->set(['mode' => 'width'])->basicUpdate();
+                    } else {
+                        $resizeR->set(['mode' => 'height'])->basicUpdate();
+                    }
+                }
+            }
+        }
+
+        if (field('resize', 'proportions')) field('resize', 'proportions')->delete();
+        if (field('resize', 'masterDimensionAlias')) field('resize', 'masterDimensionAlias')->delete();
+        if (field('resize', 'slaveDimensionLimitation')) field('resize', 'slaveDimensionLimitation')->delete();
+        section('resize', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
+        die('ok');
+    }
+    public function noticeColorAction() {
+
+        // ------notices-----
+        field('notice', 'alias', [
+            'title' => 'Alias',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'title',
+            'mode' => 'required',
+        ]);
+        field('notice', 'type', ['move' => 'alias']);
+        field('notice', 'bg', ['defaultValue' => '195#008dbc']);
+        field('notice', 'fg', [
+            'title' => 'Foreground color',
+            'defaultValue' => '000#ffffff',
+        ]);
+        field('notice', 'props', [
+            'title' => 'Properties',
+            'elementId' => 'span',
+            'move' => 'tplEvtBody',
+            'mode' => 'hidden',
+        ]);
+        field('notice', 'color', [
+            'title' => 'Color',
+            'elementId' => 'span',
+            'move' => 'props',
+            'mode' => 'hidden',
+        ]);
+        field('notice', 'trigger', [
+            'title' => 'Trigger',
+            'elementId' => 'span',
+            'move' => 'color',
+            'mode' => 'hidden',
+        ]);
+        section('notices', [
+            'extendsPhp' => 'Indi_Controller_Admin_Exportable',
+            'multiSelect' => '1',
+        ])->nested('grid')->delete();
+        section2action('notices','export', ['move' => 'toggle', 'profileIds' => '1']);
+        grid('notices', 'title', ['move' => '']);
+        grid('notices', 'props', ['move' => 'title']);
+        grid('notices', 'toggle', ['move' => '', 'gridId' => 'props']);
+        grid('notices', 'type', ['move' => 'toggle', 'gridId' => 'props']);
+        grid('notices', 'alias', ['move' => 'type', 'gridId' => 'props', 'editor' => 1]);
+        grid('notices', 'color', ['move' => 'alias', 'gridId' => 'props']);
+        grid('notices', 'bg', ['move' => '', 'alterTitle' => 'Background', 'gridId' => 'color']);
+        grid('notices', 'fg', ['move' => 'bg', 'alterTitle' => 'Foreground', 'gridId' => 'color']);
+        grid('notices', 'profileId', ['move' => 'color', 'gridId' => 'props']);
+        grid('notices', 'trigger', ['move' => 'props']);
+        grid('notices', 'entityId', ['move' => '', 'gridId' => 'trigger']);
+        grid('notices', 'qty', ['move' => 'entityId', 'gridId' => 'trigger']);
+        grid('notices', 'qtySql', ['move' => '', 'gridId' => 'qty']);
+        grid('notices', 'sectionId', ['move' => 'qtySql', 'gridId' => 'qty']);
+        grid('notices', 'qtyDiffRelyOn', ['move' => 'sectionId', 'gridId' => 'qty']);
+        grid('notices', 'event', ['move' => 'qty', 'gridId' => 'trigger']);
+        notice('queueTask', 'failed', [
+            'title' => 'Queue failed',
+            'event' => '$this->queueState == \'error\'',
+            'profileId' => '1',
+            'qtySql' => '`queueState` = "error"',
+            'bg' => '353#e3495a',
+            'tooltip' => 'Queue tasks having processing error',
+            'tplIncBody' => 'Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>',
+            'type' => 's',
+        ]);
+        noticeGetter('queueTask', 'failed', 'dev', true);
+        notice('queueTask', 'started', [
+            'title' => 'Queue started',
+            'event' => '$this->procID != 0',
+            'profileId' => '1',
+            'qtySql' => '`procID` != "0"',
+            'tplIncBody' => 'Queue task started with PID: <?=$this->row->procID?>',
+            'type' => 's',
+        ]);
+        noticeGetter('queueTask', 'started', 'dev', true);
+        // ------entities-----
+        section('entities')->nested('grid')->delete();
+        grid('entities', 'title', ['move' => '', 'editor' => 1]);
+        grid('entities', 'system', ['move' => 'title']);
+        grid('entities', 'table', ['move' => 'system', 'editor' => 1]);
+        grid('entities', 'extends', ['move' => 'table', 'editor' => 1]);
+        grid('entities', 'filesGroupBy', ['move' => 'extends', 'editor' => 1]);
+        // ------queueTask-----
+        enumset('queueTask', 'queueState', 'error', ['title' => '<font color=red>Error</font>', 'move' => 'noneed']);
+        field('queueTask', 'error', [
+            'title' => 'Error',
+            'columnTypeId' => 'TEXT',
+            'elementId' => 'textarea',
+            'move' => 'applySize',
+        ]);
+        grid('queueTask', 'error', ['move' => 'apply', 'toggle' => 'h', 'rowReqIfAffected' => 'y']);
+        // ------- langs--------
+        section('lang', ['defaultSortField' => 'move']);
+        entity('field', ['extends' => 'Field_Base']);
+        grid('entities', 'extends', ['move' => 'table', 'editor' => '1', 'rowReqIfAffected' => 'y']);
+        die('ok');
+    }
     public function dropGridAliasAction() {
         if ($_ = field('grid', 'alias')) {
             $hasConflict = false;

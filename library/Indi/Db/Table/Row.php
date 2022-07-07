@@ -1135,7 +1135,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$lfA) return;
 
         // If there are localized fields, but none of them were modified - return
-        if (!$mlfA = array_intersect($lfA, array_keys($this->_modified))) return;
+        // Here we assume that $data arg contains modified values only, see '->_localize(' usages
+        if (!$mlfA = array_intersect($lfA, array_keys($data))) return;
 
         // Get fraction
         $fraction = $this->fraction();
@@ -4685,7 +4686,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!is_dir($dir)) return;
 
             // Get the original uploaded file full filename
-            list($src) = glob($dir . $this->id . '_' . $field . '.*');
+            list ($src) = glob($dir . $this->id . '_' . $field . '.*');
 
             // If filename was not found - return
             if (!$src) return;
@@ -4698,67 +4699,52 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!preg_match('/^gif|jpe?g|png$/i', $ext)) return;
 
         // Get the absolute filename of image's copy
-        $dst = preg_replace('~(\.' . $ext . ')$~', ',' .$resizeR->alias . '$1', $src);
+        $dst = preg_replace('~(\.' . $ext . ')$~', ',' . $resizeR->alias . '$1', $src);
 
-        // If copy's proportions setting is 'o' - e.g. 'original'
-        if ($resizeR->proportions == 'o') {
+        // Try to create a new Imagick object, and stop function execution, if imagick object creation failed
+        try { $imagick = new Imagick($src); } catch (Exception $e) { return; }
 
-            // We just make a copy of the image and do no size adjustments
-            copy($src, $dst);
+        // If mode is 'both'
+        if ($resizeR->mode == 'both') {
 
-        // Else
-        } else if (class_exists('Imagick')) {
+            // This is a specialization of the cropImage method. At a high level, this method will
+            // create a thumbnail of a given image, with the thumbnail sized at ($width, $height).
+            // If the thumbnail does not match the aspect ratio of the source image, this is the
+            // method to use. The thumbnail will capture the entire image on the shorter edge of
+            // the source image (ie, vertical size on a landscape image). Then the thumbnail will
+            // be scaled down to meet your target height, while preserving the aspect ratio.
+            // Extra horizontal space that does not fit within the target $width will be cropped
+            // off evenly left and right. As a result, the thumbnail is usually a good representation
+            // of the source image.
+            $imagick->cropThumbnailImage($resizeR->width, $resizeR->height);
 
-            // Try to create a new Imagick object, and stop function execution, if imagick object creation failed
-            try { $imagick = new Imagick($src); } catch (Exception $e) {return;}
+        // Else if mode is 'auto'
+        } else if ($resizeR->mode == 'auto') {
 
-            // Get width and height
-            $width = $resizeR->masterDimensionValue;
-            $height = $resizeR->slaveDimensionValue;
+            // Create a thumbnail with $bestfit = true as 3rd arg (see https://www.php.net/manual/en/imagick.thumbnailimage.php)
+            $imagick->thumbnailImage($resizeR->width, $resizeR->height, $bestfit = true);
 
-            // If copy's proportions setting is 'c' - e.g. 'crop'
-            if ($resizeR->proportions == 'c') {
+        // Else if mode is 'width'
+        } else if ($resizeR->mode == 'width') {
 
-                // This is a specialization of the cropImage method. At a high level, this method will
-                // create a thumbnail of a given image, with the thumbnail sized at ($width, $height).
-                // If the thumbnail does not match the aspect ratio of the source image, this is the
-                // method to use. The thumbnail will capture the entire image on the shorter edge of
-                // the source image (ie, vertical size on a landscape image). Then the thumbnail will
-                // be scaled down to meet your target height, while preserving the aspect ratio.
-                // Extra horizontal space that does not fit within the target $width will be cropped
-                // off evenly left and right. As a result, the thumbnail is usually a good representation
-                // of the source image.
-                $imagick->cropThumbnailImage($width, $height);
+            // Create a thumbnail with exact width and auto-height
+            $imagick->thumbnailImage($resizeR->width, 0, false);
 
-            // Else create a non-cropped thumbnail
-            } else {
+        // Else if mode is 'height'
+        } else if ($resizeR->mode == 'height') {
 
-                // If slave dimension should be limited
-                if ($resizeR->slaveDimensionLimitation) {
-
-                    // Create a thumbnail
-                    $imagick->thumbnailImage($width, $height, true);
-
-                // Else if slave dimension should not be limited
-                } else {
-
-                    // Set it as 0
-                    if ($resizeR->masterDimensionAlias == 'width') $height = 0; else $width = 0;
-
-                    // Create a thumbnail
-                    $imagick->thumbnailImage($width, $height, false);
-                }
-            }
-
-            // Remove the canvas
-            if ($ext == 'gif') $imagick->setImagePage(0, 0, 0, 0);
-
-            // Save the copy
-            $imagick->writeImage($dst);
-
-            // Free memory
-            $imagick->destroy();
+            // Create a thumbnail with exact height and auto-width
+            $imagick->thumbnailImage(0, $resizeR->height, false);
         }
+
+        // Remove the canvas
+        if ($ext == 'gif') $imagick->setImagePage(0, 0, 0, 0);
+
+        // Save the copy
+        $imagick->writeImage($dst);
+
+        // Free memory
+        $imagick->destroy();
     }
 
     /**
@@ -7233,5 +7219,15 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Save adjusted target-props on foreign entries
         foreach (array_unique(array_column($inQtySum, 'foreign')) as $foreign)
             $this->foreign($foreign)->save();
+    }
+
+    /**
+     * Trim hue from the beginning of color-field value, which itinially is in format 'hue#rrggbb',
+     * where hue is a number below 360
+     *
+     * @param $field
+     */
+    public function rgb($field) {
+        return preg_replace('~^[0-9]{3}~', '', $this->$field);
     }
 }

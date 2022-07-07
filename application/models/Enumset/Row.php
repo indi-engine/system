@@ -128,7 +128,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         if (!$fieldR->entry) {
 
             // Build the ALTER query template
-            $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "%s"';
+            $tpl = 'ALTER TABLE `%s` MODIFY COLUMN `%s` %s %s NOT NULL DEFAULT "%s"';
 
             // Run that query
             db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
@@ -243,8 +243,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             // Build the ALTER query
             $sql[] = 'ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $fieldR->alias . '` `' . $fieldR->alias . '`';
             $sql[] = $fieldR->foreign('columnTypeId')->type . '("' . implode('","', $enumsetA) . '")';
-            $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
-            $sql[] = 'DEFAULT "' . $defaultValue . '"';
+            $sql[] = 'NOT NULL DEFAULT "' . $defaultValue . '"';
 
             // Run that query
             db()->query(implode(' ', $sql));

@@ -643,7 +643,7 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
     } else if ($data['type'] == 'notice' || $data['type'] == 'reload') {
 
         // If logging is On - do log
-        if ($ini['log'] && $data['row']) file_put_contents('ws.' . $data['row'] . '.rcv.msg', date('Y-m-d H:i:s') . ' => ' . print_r($data, true) . "\n", FILE_APPEND);
+        if ($ini['log'] && $data['row']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.rcv.msg', date('Y-m-d H:i:s') . ' => ' . print_r($data, true) . "\n", FILE_APPEND);
 
         // Walk through roles, that recipients should have
         // If there are channels already exist for recipients, having such role
@@ -655,7 +655,7 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
                 foreach ($channelA[$rid][$uid] as $cid) {
 
                     // If logging is On - do log
-                    if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
+                    if ($ini['log']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
 
                     // Write message into channel
                     fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
@@ -668,7 +668,7 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
                     foreach ($channelA[$rid][$uid] as $cid) {
 
                         // If logging is On - do log
-                        if ($ini['log']) file_put_contents('ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
+                        if ($ini['log']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
 
                         // Write message into channel
                         fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));

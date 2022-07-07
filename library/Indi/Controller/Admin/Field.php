@@ -54,6 +54,9 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         // If current field depends on other fields - deny
         if (t()->row->nested('consider')->count()) jflush(false, 'Нельзя вручную менять мультиязычность для зависимых полей');
 
+        // Check if [lang]->gapi.key is given in application/config.ini
+        if ($value == 'qy' && !ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
+
         // If we're going to create queue task for turning selected language either On or Off
         if (in($value, 'qy,qn')) {
 

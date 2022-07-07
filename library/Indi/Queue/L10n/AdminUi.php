@@ -289,8 +289,14 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                         // Catch exception
                     } catch (Exception $e) {
 
+                        // Save error to queueTask props
+                        $queueTaskR->set([
+                            'queueState' => 'error',
+                            'error' => json_decode($e->getMessage())->error->message
+                        ])->save();
+
                         // Log error
-                        ehandler(1, json_decode($e->getMessage())->error->message, __FILE__, __LINE__);
+                        ehandler(1, $queueTaskR->error, __FILE__, __LINE__);
 
                         // Exit
                         exit;
