@@ -821,7 +821,8 @@ class Indi_Controller_Admin extends Indi_Controller {
             $byLevel[$level][$gridR->id] = $column + [
                 'colspan' => 1,
                 'gridId' => $gridR->gridId,
-                'title' => $gridR->alterTitle ?: $gridR->title
+                'title' => $gridR->alterTitle ?: $gridR->title,
+                'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title
             ];
 
             // Walk through all parents, and for each
@@ -1224,7 +1225,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 );
 
                                 // Setup additional x-offset for color-box, for it to be centered within the cell
-                                $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.5;
+                                $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.4;
 
                                 //  Add the image to a worksheet
                                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
@@ -1240,17 +1241,24 @@ class Indi_Controller_Admin extends Indi_Controller {
                             // Else if cell value contains a .i-color-box item, that uses an image by background:url(...)
                             } else if (preg_match('/^ ?url\(([^)]+)\)/', $c[1], $src)) {
 
+                                // If detected image
+                                if (!$abs = Indi::abs($src[1], '.'))
+                                    if (preg_match('~^resources~', $src[1]))
+                                        if (file_exists($img = DOC . STD . VDR . '/client/' . $src[1]))
+                                            $abs = $img;
+
                                 // If detected image exists
-                                if ($abs = Indi::abs(trim($src[1], '.'))) {
+                                if ($abs) {
 
                                     // Setup additional x-offset for color-box, for it to be centered within the cell
                                     //$additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
+                                    $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.4;
 
                                     //  Add the image to a worksheet
                                     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                                     $objDrawing->setPath($abs);
                                     $objDrawing->setCoordinates('A' . $currentRowIndex);
-                                    //$objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
+                                    $objDrawing->setOffsetY(2)->setOffsetX($additionalOffsetX);
                                     $objDrawing->setWorksheet($sheet);
                                 }
                             }
@@ -1396,7 +1404,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $columnL = $cellSinceLetter;
 
                 // Setup column width
-                if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width']/$m));
+                if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $m));
 
                 // Replace &nbsp;
                 $columnI['title'] = str_replace('&nbsp;', ' ', $columnI['title']);
@@ -1424,9 +1432,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $objDrawing->setWorksheet($sheet);
                     }
 
-                    // Replace .i-color-box item from value, and prepend it with 6 spaces to provide an indent,
-                    // because gd image will override cell value otherwise
-                    $columnI['title'] = str_pad('', 6, ' ');
+                    // As long as we picked icon from title, now spoof title with tooltip
+                    $columnI['title'] = $columnI['tooltip'];
+
+                    // Set column header cell value to contain header text as well, but transparent, so sortable despite invisible
+                    $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ffefefef');
+
+                    // Set fixed width for icon-columns
+                    $sheet->getColumnDimension($columnL)->setWidth(4);
 
                 // Else if current column is a row-numberer column
                 } else if (preg_match('/^&#160;?$/', $columnI['title'])) {
@@ -1440,27 +1453,36 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // If current column is an order-column
                 if ($columnI['dataIndex'] == $order->property) {
 
-                    // Create the GD canvas image for hue background and thumbs to be placed there
-                    $canvasIm = imagecreatetruecolor(13, 5);
-                    imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
-
-                    // Pick hue bg and place it on canvas
+                    // Pick icon
                     $iconFn = DOC . STD . VDR . '/client/resources/images/icons/sort_' . strtolower($order->direction) . '.gif';
                     $iconIm = imagecreatefromgif($iconFn);
-                    imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, 13, 5);
+                    $iconWh = getimagesize($iconFn);
+
+                    // Create the GD canvas
+                    $canvasIm = imagecreatetruecolor($iconWh[0], $iconWh[1]);
+                    imagecolortransparent($canvasIm, imagecolorallocate($canvasIm, 0, 0, 0));
+                    imagecopy($canvasIm, $iconIm, 0, 0, 0, 0, $iconWh[0], $iconWh[1]);
+
+                    // Calculate cell's row index to mind column rowspan
+                    $realRowHeight = $rowHeight + 5;
+                    if ($columnI['rowspan'] % 2) {
+                        $rowIndexDown = ceil($columnI['rowspan'] / 2);
+                        $offsetY = ($realRowHeight - $iconWh[1]) / 2;
+                    } else {
+                        $rowIndexDown = $columnI['rowspan'] / 2;
+                        $offsetY = $realRowHeight;
+                    }
+                    $rowIndex = $currentRowIndex + $rowIndexDown - 1;
 
                     //  Add the GD image to a spreadsheet
                     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
-                    if ($columnI['rowspan'] > 1) {
-                        //if () {}
-                    } else {
-                        $offsetY = 10;
-                        $rowIndex = $currentRowIndex;
-                    }
-                    $objDrawing->setCoordinates($columnL . $rowIndex);
-                    $objDrawing->setImageResource($canvasIm);
-                    $objDrawing->setWidth(13)->setHeight(5)->setOffsetY($offsetY)->setOffsetX($columnI['titleWidth'] + 6);
-                    $objDrawing->setWorksheet($sheet);
+                    $objDrawing->setCoordinates($columnL . $rowIndex)
+                        ->setImageResource($canvasIm)
+                        ->setWidth($iconWh[0])
+                        ->setHeight($iconWh[1])
+                        ->setOffsetY($offsetY)
+                        ->setOffsetX($columnI['titleWidth'] + 6)
+                        ->setWorksheet($sheet);
                 }
 
                 // Apply header row style
@@ -1616,12 +1638,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']];
+                if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?: ' ';
                 else if ($columnI['type'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
-                // If cell value contains a .i-color-box item, we replaced it with same-looking GD image box
-                if (preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);" title="[^"]+">/', $value, $c)) {
+                // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
+                if (preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);" title="([^"]+)">/', $value, $c)
+                 || preg_match('~<img src="(.+?)" class="i-cell-img">(.+?)$~', $value, $c)) {
 
                     // If color was detected
                     if ($h = trim(Indi::hexColor($c[1]), '#')) {
@@ -1633,7 +1656,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         );
 
                         // Setup additional x-offset for color-box, for it to be centered within the cell
-                        $additionalOffsetX = ceil(($columnI['width']-14)/2) - 2;
+                        $additionalOffsetX = ceil(($columnI['width']-14)/2) + 0.5;
 
                         //  Add the image to a worksheet
                         $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
@@ -1647,14 +1670,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $objDrawing->setWorksheet($sheet);
 
 
-                    // Else if cell value contains a .i-color-box item, that uses an image by background:url(...)
-                    } else if (preg_match('/^ ?url\(([^)]+)\)/', $c[1], $src)) {
+                    // Else if cell value contain icon image url
+                    } else if (preg_match('~^ ?url\(([^)]+)\)~', $c[1], $src)
+                            || preg_match('~^(resources.+?)$~' , $c[1], $src)) {
 
-                        // If detected image exists
-                        if ($abs = Indi::abs(trim($src[1], '.'))) {
+                        // Try to find image absolute path
+                        if (!$abs = Indi::abs(trim($src[1], '.')))
+                            if (file_exists($img = DOC . STD . VDR . '/client/' . $src[1]))
+                                $abs = $img;
+
+                        // If image exists
+                        if ($abs) {
 
                             // Setup additional x-offset for color-box, for it to be centered within the cell
-                            $additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
+                            $additionalOffsetX = ceil(($columnI['width'] - 16) / 2);
 
                             //  Add the image to a worksheet
                             $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
@@ -1665,9 +1694,12 @@ class Indi_Controller_Admin extends Indi_Controller {
                         }
                     }
 
-                    // Replace .i-color-box item from value, and prepend it with 6 spaces to provide an indent,
-                    // because gd image will override cell value otherwise
-                    $value = str_pad('', 6, ' ') . strip_tags($value);
+                    // Use second capture group value
+                    $value = $c[2];
+
+                    // Set text color same as row background to achieve 'transparency'-effect
+                    $rgb = $i % 2 && $columnA[$n]['type'] != 'rownumberer' ? 'fafafa' : 'ffffff';
+                    $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ff' . $rgb);
 
                 // Else if cell value contain a color definition within 'color' attribute,
                 // or as a 'color: xxxxxxxx' expression within 'style' attribute, we extract that color definition
