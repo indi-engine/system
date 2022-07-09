@@ -808,43 +808,61 @@ class Indi_Controller_Admin extends Indi_Controller {
         $group = json_decode(Indi::get()->group, true);
         if (!array_key_exists($group['property'], $data[0] ?: [])) $group = false;
 
+        // Setup $hasRowNumberer and $hasID flags
+        $widthA = array_column($columnA, 'width', 'id'); $hasRowNumberer = (int) !!$widthA['rownumberer']; $hasID = (int) !!$widthA['id'];
+
         // Foreach data-column
         foreach ($columnA as $column) {
 
-            // Get corresponding `grid` entry
-            $gridR = t()->grid->gb($column['id']);
+            // If $column['id'] is an integer
+            if (Indi::rexm('int11', $column['id'])) {
 
-            // Get level, 1-indexed
-            $level = $gridR->level() + 1;
-
-            // Put column info into $byLevel array
-            $byLevel[$level][$gridR->id] = $column + [
-                'colspan' => 1,
-                'gridId' => $gridR->gridId,
-                'title' => $gridR->alterTitle ?: $gridR->title,
-                'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title
-            ];
-
-            // Walk through all parents, and for each
-            while ($gridR = $gridR->parent()) {
+                // Get corresponding `grid` entry
+                $gridR = t()->grid->gb($column['id']);
 
                 // Get level, 1-indexed
                 $level = $gridR->level() + 1;
 
-                // Get array containing certain props
-                $column = $gridR->props('id,title,alterTitle,fieldId.alias,gridId');
+                // Put column info into $byLevel array
+                $byLevel[$level][$gridR->id] = $column + [
+                    'colspan' => 1,
+                    'gridId' => $gridR->gridId,
+                    'title' => $gridR->alterTitle ?: $gridR->title,
+                    'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
+                    'leaf' => true
+                ];
 
-                // Spoof title-prop, if need
-                $column['title'] = $column['alterTitle'] ?: $column['title']; unset($column['alterTitle']);
+                // Walk through all parents, and for each
+                while ($gridR = $gridR->parent()) {
 
-                // Setup dataIndex-prop
-                $column['dataIndex'] = $column['fieldId.alias']; unset($column['fieldId.alias']);
+                    // Get level, 1-indexed
+                    $level = $gridR->level() + 1;
 
-                // Create/update column's props within $byLevel array
-                if (!isset($byLevel[$level][$gridR->id])) $byLevel[$level][$gridR->id] = $column;
+                    // Get array containing certain props
+                    $column = $gridR->props('id,title,alterTitle,fieldId.alias,gridId');
 
-                // Increase column's colspan-prop
-                $byLevel[$level][$gridR->id]['colspan'] ++;
+                    // Spoof title-prop, if need
+                    $column['title'] = $column['alterTitle'] ?: $column['title']; unset($column['alterTitle']);
+
+                    // Setup dataIndex-prop
+                    $column['dataIndex'] = $column['fieldId.alias']; unset($column['fieldId.alias']);
+
+                    // Create/update column's props within $byLevel array
+                    if (!isset($byLevel[$level][$gridR->id])) $byLevel[$level][$gridR->id] = $column;
+
+                    // Increase column's colspan-prop
+                    $byLevel[$level][$gridR->id]['colspan'] ++;
+                }
+
+            // Else
+            } else {
+
+                // Just put column info into $byLevel array
+                $byLevel[1][$column['id']] = $column + [
+                    'colspan' => 1,
+                    'gridId' => 0,
+                    'leaf' => true
+                ];
             }
         }
 
@@ -1148,6 +1166,9 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Fetch rows by keys
                     $rs = m($excelI['table'])->all('`id` IN (' . implode(',', $excelI['value']) . ')')->toArray();
 
+                    // Get title column
+                    $tc = m($excelI['table'])->titleColumn();
+
                     // Foreach row
                     for ($i = 0; $i < count($rs); $i++) {
 
@@ -1155,13 +1176,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $color = '7EAAE2';
 
                         // Check if row title contains color definition
-                        if (preg_match('/color[:=][ ]*[\'"]{0,1}([#a-zA-Z0-9]+)/i', $rs[$i]['title'], $c)) {
+                        if (preg_match('/color[:=][ ]*[\'"]{0,1}([#a-zA-Z0-9]+)/i', $rs[$i][$tc], $c)) {
 
                             // If we find a hex equivalent for found color definition (if it's not already in hex format)
                             if ($hex = Indi::hexColor($c[1])) {
 
                                 // Strip html from row title
-                                $rs[$i]['title'] = strip_tags($rs[$i]['title']);
+                                $rs[$i][$tc] = strip_tags($rs[$i][$tc]);
 
                                 // Capture color, for being available to setup as a font color
                                 $color = ltrim($hex, '#');
@@ -1169,7 +1190,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         }
 
                         // Write row title
-                        $objSelfStyled = $objRichText->createTextRun($rs[$i]['title']);
+                        $objSelfStyled = $objRichText->createTextRun($rs[$i][$tc]);
                         $objSelfStyled->getFont()->setName($font)->setSize('8');
                         $objSelfStyled->getFont()->getColor()->setRGB($color);
 
@@ -1183,6 +1204,12 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // If filter type if also combo, but keys are from 'enumset' table
                 } else if ($excelI['fieldId']) {
+
+                    // Setup cell letter to specify for embedded images, as Excel embedded images XY max offsets are limited to cell bounds
+                    // so if we need to move image to a, for example, more far X-position than A-column right bound allows, we need to shift
+                    // A to B and deduct A's width from X-position. We need to do that in cases if we have rownumberer-column and/or id-column
+                    // which are technically separate Excel-colunms but are not so wide as we need to put the icons images at X-positions we want
+                    $imgCellLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $hasRowNumberer + $hasID);
 
                     // Prepare the array of keys
                     if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
@@ -1224,18 +1251,26 @@ class Indi_Controller_Admin extends Indi_Controller {
                                     $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
                                 );
 
+                                // Get filter title text width
+                                $im = new Imagick(); $draw = new ImagickDraw();
+                                $draw->setFont('Tahoma');
+                                $metrics  = $im->queryFontMetrics($draw, $objSelfStyled->getText());
+
                                 // Setup additional x-offset for color-box, for it to be centered within the cell
-                                $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.4;
+                                $additionalOffsetX = $metrics['textWidth'] - 10;
+                                $decreaseOffsetX
+                                    = ($hasRowNumberer ? $widthA['rownumberer'] + 0: 0)
+                                    + ($hasID          ? $widthA['id']          + 2 : 0);
 
                                 //  Add the image to a worksheet
                                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
-                                $objDrawing->setCoordinates('A' . $currentRowIndex);
+                                $objDrawing->setCoordinates($imgCellLetter . $currentRowIndex);
                                 $objDrawing->setImageResource($gdImage);
                                 $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
                                 $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
                                 $objDrawing->setHeight(11);
                                 $objDrawing->setWidth(14);
-                                $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
+                                $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX - $decreaseOffsetX);
                                 $objDrawing->setWorksheet($sheet);
 
                             // Else if cell value contains a .i-color-box item, that uses an image by background:url(...)
@@ -1250,15 +1285,22 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 // If detected image exists
                                 if ($abs) {
 
+                                    // Get filter title text width
+                                    $im = new Imagick(); $draw = new ImagickDraw();
+                                    $draw->setFont('Tahoma');
+                                    $metrics  = $im->queryFontMetrics($draw, $objSelfStyled->getText());
+
                                     // Setup additional x-offset for color-box, for it to be centered within the cell
-                                    //$additionalOffsetX = ceil(($columnI['width']-16)/2) - 3;
-                                    $additionalOffsetX = mb_strlen($objSelfStyled->getText(), 'utf-8') * 5.4;
+                                    $additionalOffsetX = $metrics['textWidth'] - 7;
+                                    $decreaseOffsetX
+                                        = ($hasRowNumberer ? $widthA['rownumberer'] + 0 : 0)
+                                        + ($hasID          ? $widthA['id']          + 2 : 0);
 
                                     //  Add the image to a worksheet
                                     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                                     $objDrawing->setPath($abs);
-                                    $objDrawing->setCoordinates('A' . $currentRowIndex);
-                                    $objDrawing->setOffsetY(2)->setOffsetX($additionalOffsetX);
+                                    $objDrawing->setCoordinates($imgCellLetter . $currentRowIndex);
+                                    $objDrawing->setOffsetY(2)->setOffsetX($additionalOffsetX - $decreaseOffsetX);
                                     $objDrawing->setWorksheet($sheet);
                                 }
                             }
@@ -1444,7 +1486,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Else if current column is a row-numberer column
                 } else if (preg_match('/^&#160;?$/', $columnI['title'])) {
                     $columnI['title'] = ' ';
-                    $columnA[$n]['type'] = 'rownumberer';
+                    $columnI['type'] = 'rownumberer';
                 }
 
                 // Write header title of a certain column to a header cell
@@ -1550,7 +1592,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Apply background color for all cells within current column,
                 // in case if current column is a rownumberer-column
-                if ($columnA[$n]['type'] == 'rownumberer') $sheet
+                if ($id == 'rownumberer') $sheet
                     ->getStyle($columnL . ($currentRowIndex + 1) . ':' . $columnL . $lastRowIndex)
                     ->applyFromArray([
                         'borders' => [
@@ -1559,16 +1601,6 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 'color' => [
                                     'rgb' => 'd0d0d0'
                                 ]
-                            ],
-                        ],
-                        'fill' => [
-                            'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-                            'rotation' => 0,
-                            'startcolor' => [
-                                'rgb' => 'F9F9F9',
-                            ],
-                            'endcolor' => [
-                                'rgb' => 'E3E4E6',
                             ],
                         ]
                     ]);
@@ -1597,8 +1629,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Merge cells
                 $sheet->mergeCells('A' . $currentRowIndex . ':' . $lastColumnLetter . $currentRowIndex);
 
+                // Setup indent
+                $indent = str_pad('', 6, ' ');
+
                 // Set cell value
-                $sheet->SetCellValue($columnL . $currentRowIndex, $data[$i][$group['property']]);
+                $sheet->SetCellValue($columnL . $currentRowIndex, $indent . $data[$i][$group['property']]);
 
                 // Set style
                 $sheet
@@ -1610,15 +1645,18 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 'color' => ['rgb' => '7EAAE2']
                             ],
                         ],
-                        'alignment' => ['vertical' => 'bottom', 'horizontal' => 'left', 'indent' => 2],
+                        'alignment' => [
+                            'vertical' => 'center',
+                            'horizontal' => 'left',
+                        ],
                         'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE]
                     ]);
 
                 //  Add the image to a worksheet
                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                $objDrawing->setPath(DOC . STD . VDR . '/client/resources/images/icons/group-collapse.gif');
+                $objDrawing->setPath(DOC . STD . VDR . '/client/classic/resources/images/grid/group-collapse.png');
                 $objDrawing->setCoordinates($columnL . $currentRowIndex);
-                $objDrawing->setOffsetY(10)->setOffsetX(6);
+                $objDrawing->setOffsetY(5)->setOffsetX(5);
                 $objDrawing->setWorksheet($sheet);
 
                 // Increment current row index;
@@ -1639,7 +1677,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Get the index/value
                 if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?: ' ';
-                else if ($columnI['type'] == 'rownumberer') $value = $i + 1;
+                else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
                 // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
@@ -1687,6 +1725,8 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                             //  Add the image to a worksheet
                             $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                            $objDrawing->setDescription($c[2]);
+                            $objDrawing->setName($c[2]);
                             $objDrawing->setPath($abs);
                             $objDrawing->setCoordinates($columnL . $currentRowIndex);
                             $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
@@ -1698,7 +1738,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $value = $c[2];
 
                     // Set text color same as row background to achieve 'transparency'-effect
-                    $rgb = $i % 2 && $columnA[$n]['type'] != 'rownumberer' ? 'fafafa' : 'ffffff';
+                    $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
                     $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ff' . $rgb);
 
                 // Else if cell value contain a color definition within 'color' attribute,
@@ -1798,7 +1838,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     ]);
 
                 // Get the control element
-                $el = $columnI['dataIndex'] == 'id'
+                $el = in($columnI['id'], 'id,rownumberer')
                     ? 'number'
                     : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
@@ -1819,14 +1859,12 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Set cell value
                 $sheet->setCellValue($columnL . $currentRowIndex, $value);
 
-                // Set odd-even rows background difference
-                if ($i%2 && $columnA[$n]['type'] != 'rownumberer') {
-                    $sheet
-                        ->getStyle($columnL . $currentRowIndex)
-                        ->getFill()
-                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                        ->getStartColor()->setRGB('FAFAFA');
-                }
+                // Set odd-even rows background difference for all rows except cell in rownumberer-column
+                if ($columnI['id'] == 'rownumberer' || $i%2) $sheet
+                    ->getStyle($columnL . $currentRowIndex)
+                    ->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB($columnI['id'] == 'rownumberer' ? 'efefef' : 'fafafa');
 
                 // Cell style custom adjustments
                 $this->adjustExcelExportCellStyle($sheet->getStyle($columnL . $currentRowIndex), $columnI, $value, $i);

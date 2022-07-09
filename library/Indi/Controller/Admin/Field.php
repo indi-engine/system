@@ -111,4 +111,18 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         // Call toggleL10n method on Field_Row instance
         t()->row->toggleL10n($value, $_['langId']->alias, true);
     }
+
+    /**
+     * 1.Hide default values for `extendsPhp` and `extendsJs` props, to prevent it from creating a mess in eyes
+     * 2.Check php/js-controller files exist, and if yes, check whether it's actual parent class is
+     *   as per specified in `extendsPhp`/`extendsJs` prop
+     *
+     * @param array $data
+     */
+    public function adjustGridDataItem(&$item, $r) {
+
+        // Add icon for `filter` prop
+        if ($_ = $item['filter']) $item['_render']['filter']
+            = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
+    }
 }
