@@ -37,11 +37,12 @@ class Indi_Db_Table
     protected $_hasRole = false;
 
     /**
-     * Type of entity ('y' means 'system', 'n' means 'custom', 'o' means 'public')
+     * Entity fraction. Possible values: 'system', 'custom' and 'public'
+     * or array containing info for l10n-fraction detection
      *
-     * @var string
+     * @var string|array
      */
-    protected $_type = null;
+    protected $_fraction = null;
 
     /**
      * Flag, indicating that this model instances was preloaded and stored within Indi_Db::$_preloaded[$entity]
@@ -153,24 +154,20 @@ class Indi_Db_Table
     protected $_inQtySum = [];
 
     /**
-     * Info for l10n-fraction detection
-     *
-     * @var array
-     */
-    protected $_fraction = null;
-
-    /**
-     * Detect L10n-fraction
+     * Detect L10n-fraction for a given *_Row instance, if given
      *
      * @param Indi_Db_Table_Row $r
      */
-    public function fraction($r) {
+    public function fraction($r = null) {
+
+        // If no $r arg given - return just current value of
+        if (!$r) return $this->_fraction;
 
         // If it's a custom entity
-        if ($this->_type == 'n') return 'adminCustomData';
+        if ($this->_fraction == 'custom') return 'adminCustomData';
 
         // Else if fraction is not defined - assume it's 'adminSystemUi'
-        if ($this->_fraction === null) return 'adminSystemUi';
+        if ($this->_fraction === null || $this->_fraction == 'system') return 'adminSystemUi';
 
         // Else if values defined for both 'field' and 'value' keys within $this->_fraction
         if ($this->_fraction['value']) return $this->_fraction['value'][$r->{$this->_fraction['field']}];
@@ -216,8 +213,10 @@ class Indi_Db_Table
         // Setup 'hasRole' flag
         $this->_hasRole = $config['hasRole'];
 
-        // Setup 'system' prop
-        $this->_type = $config['type'];
+        // Setup 'fraction' prop
+        $this->_fraction = is_array($this->_fraction)
+            ? ['basic' => $config['fraction']] + $this->_fraction
+            : $config['fraction'];
 
         // Setup 'preload' flag to be false by default
         $this->_preload = false;
@@ -1889,13 +1888,6 @@ class Indi_Db_Table
      */
     public function nid() {
         return db()->query('SHOW TABLE STATUS LIKE "' . $this->_table . '"')->fetch(PDO::FETCH_OBJ)->Auto_increment;
-    }
-
-    /**
-     * Get type
-     */
-    public function type() {
-        return $this->_type;
     }
 
     /**

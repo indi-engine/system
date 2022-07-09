@@ -89,7 +89,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                     // Mind that `section2action` entries have second field, that is fraction-dependent
                     // todo: implement more beautiful solution
                     if ($queueChunkR->location == 'section2action:title' && $m->fields($consider)->alias == 'actionId')
-                        $queueChunkR->where .= ' AND FIND_IN_SET(`sectionId`, "' . m('Section')->all('`type` != "o"')->column('id', true) . '")';
+                        $queueChunkR->where .= ' AND FIND_IN_SET(`sectionId`, "' . m('Section')->all('`fraction` != "public"')->column('id', true) . '")';
 
                     // Save `queueChunk` entry
                     $queueChunkR->save();

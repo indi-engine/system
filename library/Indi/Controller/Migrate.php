@@ -1,5 +1,32 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function fixFractionAliasesAction() {;
+
+        enumset('action', 'type', 'p', ['alias' => 'custom']);
+        enumset('action', 'type', 's', ['alias' => 'system']);
+        enumset('action', 'type', 'o', ['alias' => 'public']);
+        field('action', 'type', ['alias' => 'fraction']);
+
+        enumset('entity', 'system', 'n', ['alias' => 'custom']);
+        enumset('entity', 'system', 'y', ['alias' => 'system']);
+        enumset('entity', 'system', 'o', ['alias' => 'public']);
+        field('entity', 'system', ['alias' => 'fraction']);
+
+        enumset('notice', 'type', 'p', ['alias' => 'custom']);
+        enumset('notice', 'type', 's', ['alias' => 'system']);
+        field('notice', 'type', ['alias' => 'fraction']);
+
+        enumset('profile', 'type', 'p', ['alias' => 'custom']);
+        enumset('profile', 'type', 's', ['alias' => 'system']);
+        field('profile', 'type', ['alias' => 'fraction']);
+
+        enumset('section', 'type', 's', ['alias' => 'system']);
+        enumset('section', 'type', 'p', ['alias' => 'custom']);
+        enumset('section', 'type', 'o', ['alias' => 'public']);
+        field('section', 'type', ['alias' => 'fraction']);
+
+        die('ok');
+    }
     public function updateResizeAction(){
         entity('resize', ['titleFieldId' => 'alias']);
         if (field('resize', 'color')) field('resize', 'color')->delete();

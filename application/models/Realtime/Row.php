@@ -42,7 +42,7 @@ class Realtime_Row extends Indi_Db_Table_Row {
      */
     public function setTitle() {
 
-        // If `type` is 'section'
+        // If `type` is 'session'
         if ($this->type == 'session') $this->title = $this->foreign('type')->title
             . ' - ' . $this->token . ', ' . $this->foreign('langId')->title;
 

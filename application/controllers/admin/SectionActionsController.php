@@ -33,7 +33,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
                     $value == 'qy' ? 'включить' : 'выключить', t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
                 return;
 
-            // Else if we're going to setup fraction-status directly
+        // Else if we're going to setup fraction-status directly
         } else if ('ok' == $this->confirm(sprintf(
                 'Для поля "%s" мультиязычность будет вручную указана как "%s". Продолжить?',
                 t()->row->title, t()->row->enumset($cell, $value)

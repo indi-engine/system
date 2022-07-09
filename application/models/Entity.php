@@ -14,11 +14,11 @@ class Entity extends Indi_Db_Table {
      * @var array
      */
     protected $_fraction = [
-        'field' => 'system',
+        'field' => 'fraction',
         'value' => [
-            'y' => 'adminSystemUi',
-            'n' => 'adminCustomUi',
-            'o' => 'adminPublicUi'
+            'system' => 'adminSystemUi',
+            'custom' => 'adminCustomUi',
+            'public' => 'adminPublicUi'
         ]
     ];
 }

@@ -22,19 +22,19 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // into VDR . '/client-dev/app/controller folder, and then should be compiled
         // by 'sencha app build --production' command to VDR . '/client/classic/app.js' bundle to be refreshed
         $repoDirA = [
-            's' => VDR . '/system',
-            'o' => VDR . '/public',
-            'p' => ''
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
         ];
 
-        // If current section has a type, that is (for some reason) not in the list of known types
-        if (!in($this->row->type, array_keys($repoDirA)))
+        // If current section has a fraction, that is (for some reason) not in the list of known types
+        if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
             jflush(false, 'Can\'t detect fraction of selected section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/js/admin/app/controller/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/js/admin/app/controller/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -76,24 +76,24 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function phpAction() {
 
-        // JS-controller files for sections of fraction:
+        // PHP-controller files for sections of fraction:
         // - 'system' - will be created in VDR . '/system',
-        // - 'often'                    in VDR . '/public',
-        // - 'project'                  in ''
+        // - 'public'                   in VDR . '/public',
+        // - 'custom'                   in ''
         $repoDirA = [
-            's' => VDR . '/system',
-            'o' => VDR . '/public',
-            'p' => ''
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
         ];
 
-        // If current section has a type, that is (for some reason) not in the list of known types
-        if (!in($this->row->type, array_keys($repoDirA)))
+        // If current section has a fraction, that is (for some reason) not in the list of known types
+        if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen section');
+            jflush(false, 'Can\'t detect the alias of repository, associated with a fraction of the chosen section');
 
         // Build the dir name, that controller's js-file should be created in
-        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->type] . '/application/controllers/admin/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/application/controllers/admin/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -178,9 +178,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // Dirs dict by section fraction
         $dir = [
-            's' => VDR . '/system',
-            'o' => VDR . '/public',
-            'p' => ''
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
         ];
 
         // Foreach data item
@@ -215,10 +215,10 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             if ($_ = $item['filter']) $item['_render']['filter']
                 = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
 
-            if ($item['$keys']['type'] != 's') {
+            if ($item['$keys']['fraction'] != 'system') {
 
                 // Get js-controller file name
-                $js = DOC . STD . $dir[$item['$keys']['type']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+                $js = DOC . STD . $dir[$item['$keys']['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
                 // If js-controller file exists
                 if (file_exists($js)) {
@@ -273,7 +273,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         $affected = $this->callParent();
 
         // Append props
-        foreach (ar('alias,extendsJs,extendsPhp,type') as $prop) $affected []= $prop;
+        foreach (ar('alias,extendsJs,extendsPhp,fraction') as $prop) $affected []= $prop;
 
         // Return
         return $affected;

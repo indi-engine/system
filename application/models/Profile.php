@@ -14,10 +14,10 @@ class Profile extends Indi_Db_Table {
      * @var array
      */
     protected $_fraction = [
-        'field' => 'type',
+        'field' => 'fraction',
         'value' => [
-            's' => 'adminSystemUi',
-            'p' => 'adminCustomUi',
+            'system' => 'adminSystemUi',
+            'custom' => 'adminCustomUi',
         ]
     ];
 }

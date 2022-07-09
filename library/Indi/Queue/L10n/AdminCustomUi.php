@@ -5,10 +5,10 @@ class Indi_Queue_L10n_AdminCustomUi extends Indi_Queue_L10n_AdminUi {
      * @var array
      */
     public $master = [
-        'entity' => ['field' => 'system', 'value' => 'n'],
-        'section' => ['field' => 'type', 'value' => 'p'],
-        'action' => ['field' => 'type', 'value' => 'p,s'],
-        'profile' => ['field' => 'type', 'value' => 'p'],
-        'notice' => ['field' => 'type', 'value' => 'p'],
+        'entity'  => ['field' => 'fraction', 'value' => 'custom'],
+        'section' => ['field' => 'fraction', 'value' => 'custom'],
+        'action'  => ['field' => 'fraction', 'value' => 'custom,system'],
+        'profile' => ['field' => 'fraction', 'value' => 'custom'],
+        'notice'  => ['field' => 'fraction', 'value' => 'custom'],
     ];
 }

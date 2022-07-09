@@ -433,7 +433,7 @@ class Indi_Db {
                     'titleFieldId' => $entityI['titleFieldId'],
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
-                    'type' => $entityI['system'],
+                    'fraction' => $entityI['fraction'],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],

@@ -11,19 +11,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // - 'public' -                 in VDR . '/public',
         // - 'custom' -                 in ''
         $repoDirA = [
-            'y' => VDR . '/system',
-            'o' => VDR . '/public',
-            'n' => ''
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
         ];
 
-        // If current section has a type, that is (for some reason) not in the list of known types
-        if (!in($this->row->system, array_keys($repoDirA)))
+        // If current section has a fraction, that is (for some reason) not in the list of known fractions
+        if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect the alias of repository, associated with a type of the chosen entity');
+            jflush(false, 'Can\'t detect the alias of repository, associated with a fraction of the chosen entity');
 
         // Build the dir name, that model's php-file will be created in
-        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->system] . '/application/models/');
+        $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/application/models/');
 
         // If that dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
@@ -158,13 +158,6 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Get default values
         foreach (ar('extends') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
-
-        // Dirs dict by entity fraction
-        $dir = [
-            'y' => VDR . '/system',
-            'o' => VDR . '/public',
-            'n' => ''
-        ];
 
         // Foreach data item
         foreach ($data as &$item) {

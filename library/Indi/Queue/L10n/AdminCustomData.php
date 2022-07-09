@@ -32,12 +32,12 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
             if ($fieldR_certain = m('Field')->row($this->fieldId))
                 return $this->appendChunk($queueTaskR, $fieldR_certain->foreign('entityId'), $fieldR_certain);
 
-        // Foreach `entity` entry, having `system` = "n" (e.g. project's custom entities)
+        // Foreach `entity` entry, having `fraction` = "custom" (e.g. project's custom entities)
         // Foreach `field` entry, having `l10n` = "y" - append chunk
         } else {
 
             // Create chunks
-            foreach (m('Entity')->all('`system` = "n"', '`table` ASC') as $entityR)
+            foreach (m('Entity')->all('`fraction` = "custom"', '`table` ASC') as $entityR)
                 foreach ($entityR->nested('field', ['where' => '`l10n` = "y" AND `relation` != "6"']) as $fieldR)
                     $this->appendChunk($queueTaskR, $entityR, $fieldR);
 

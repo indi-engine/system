@@ -48,8 +48,8 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         // Collect id of enties
         $masterIds = array_column($master, 'entityId');
 
-        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
-        if ($master['entity']['value'] == 'n') foreach (m('Entity')->all('`system` = "n"') as $entityR) {
+        // Foreach `entity` entry, having `fraction` = "custom" (e.g. project's custom entities)
+        if ($master['entity']['value'] == 'custom') foreach (m('Entity')->all('`fraction` = "custom"') as $entityR) {
 
             // If $this->fieldId prop is set, it means that we're here
             // because of Indi_Queue_L10n_FieldToggleL10n->getFractionChunkWHERE() call
@@ -65,8 +65,8 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                     $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
         }
 
-        // Foreach `entity` entry, having `system` = "y" (e.g. project's system entities)
-        foreach (m('Entity')->all('`system` = "y"', '`table`') as $entityR) {
+        // Foreach `entity` entry, having `fraction` = "system" (e.g. project's system entities)
+        foreach (m('Entity')->all('`fraction` = "system"', '`table`') as $entityR) {
 
             // If current entity is a multi-fraction entity
             if ($master[$entityR->table])
@@ -164,7 +164,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
 
                 // If certain field is a regular field
                 if ($fieldR_certain = m($entityR->id)->fields($this->fieldId)) {
-                    if ($master['entity']['value'] == 'y' || ($where && $fieldR_certain->relation != 6))
+                    if ($master['entity']['value'] == 'system' || ($where && $fieldR_certain->relation != 6))
                         return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
 
                 // Else if it's a config field
@@ -176,7 +176,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
 
             // Foreach `field` entry, having `l10n` = "y"
             } else foreach (m($entityR->id)->fields()->select('y', 'l10n') as $fieldR_having_l10nY)
-                if ($master['entity']['value'] == 'y' || ($where && $fieldR_having_l10nY->relation != 6))
+                if ($master['entity']['value'] == 'system' || ($where && $fieldR_having_l10nY->relation != 6))
                     $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
         }
 
