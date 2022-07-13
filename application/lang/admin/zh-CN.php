@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', '舌');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', '没有这样的帐户');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', '您输入了错误的密码');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', '此帐户已被禁用。');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', '此帐户类型已被禁用。');
+define('I_LOGIN_ERROR_role_IS_OFF', '此帐户类型已被禁用。');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', '系统中尚无此帐户可用的分区。');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', '您的帐户刚刚被删除。');
 define('I_THROW_OUT_PASSWORD_CHANGED', '您的密码刚刚被更改。');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', '您的帐户刚刚被禁用。');
-define('I_THROW_OUT_PROFILE_IS_OFF', '您的帐户类型刚刚被禁用');
+define('I_THROW_OUT_role_IS_OFF', '您的帐户类型刚刚被禁用');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', '系统中没有可用的分区');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', '没有这样的部分');

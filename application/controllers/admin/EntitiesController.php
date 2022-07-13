@@ -103,7 +103,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $shared = ['columnTypeId' => 'INT(11)',  'elementId' => 'combo', 'storeRelationAbility' => 'one'];
 
         // Author role field
-        field($table, 'createdByRole', $shared + ['defaultValue' => '<?=admin()->profileId?>', 'title' => I_ENT_AUTHOR_ROLE, 'relation' => 'profile']);
+        field($table, 'createdByRole', $shared + ['defaultValue' => '<?=admin()->roleId?>', 'title' => I_ENT_AUTHOR_ROLE, 'relation' => 'role']);
 
         // Author field
         field($table, 'createdByUser', $shared + ['defaultValue' => '<?=admin()->id?>', 'title' => I_ENT_AUTHOR_USER]);

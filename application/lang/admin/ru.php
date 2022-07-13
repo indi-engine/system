@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', 'Язык');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'Нет такого аккаунта');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'Вы ввели неправильный пароль');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'Данный аккаунт отключен');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'Тип данного аккаунта отключен');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'Тип данного аккаунта отключен');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'В системе пока нет ни одного раздела, доступного этой для учетной записи');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'Ваш аккаунт только что был удален');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'Ваш пароль только что был изменен');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Ваш аккаунт только что был отключен');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'Тип вашего аккаунта только что был отключен');
+define('I_THROW_OUT_ROLE_IS_OFF', 'Тип вашего аккаунта только что был отключен');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'В системе не осталось ни одного доступного для вас раздела');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Нет такого раздела');

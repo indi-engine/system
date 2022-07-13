@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', 'Language');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'Such account does not exist');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'Wrong password');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'This account is switched off');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'This account is of type, that is switched off');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'This account is of type, that is switched off');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'There is yet no sections, accessible by this account');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'Your account had just been deleted');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'Your password had just been changed');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Your account had just beed switched off');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'Your account is of type, that had just been switched off');
+define('I_THROW_OUT_ROLE_IS_OFF', 'Your account is of type, that had just been switched off');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Now there is no sections remaining accessible for you');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Such section does not exist');

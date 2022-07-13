@@ -58,7 +58,7 @@ class Section extends Indi_Db_Table {
             FROM `section` `s`, `section2action` `sa`
             WHERE 1
                 AND `s`.`sectionId` IN (' . implode(',', array_keys($rootA)) . ')
-                AND FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `sa`.`profileIds`)
+                AND FIND_IN_SET("' . $_SESSION['admin']['roleId'] . '", `sa`.`roleIds`)
                 AND `s`.`id` = `sa`.`sectionId`
                 AND `sa`.`actionId` = "1"
                 AND `s`.`toggle` = "y"

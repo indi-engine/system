@@ -105,8 +105,8 @@ class Admin_Row extends Indi_Db_Table_Row {
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
-            // If field is 'profileId' - spoof value with role alias
-            else if ($field->alias == 'profileId') $value = role($value)->alias;
+            // If field is 'roleId' - spoof value with role alias
+            else if ($field->alias == 'roleId') $value = role($value)->alias;
         }
 
         // Stringify and return $ctor
@@ -125,7 +125,7 @@ class Admin_Row extends Indi_Db_Table_Row {
 
         // Provide ability for some field props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'profileId') $value = role($value)->id;
+            if ($columnName == 'roleId') $value = role($value)->id;
         }
 
         // Standard __set()

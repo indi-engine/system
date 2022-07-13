@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', 'Sprache');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'Ein solches Konto existiert nicht');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'Falsches Passwort');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'Dieses Konto ist ausgeschaltet');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'Dieses Konto ist vom Typ, der ausgeschaltet ist');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'Dieses Konto ist vom Typ, der ausgeschaltet ist');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'Es gibt noch keine Abschnitte, auf die über dieses Konto zugegriffen werden kann');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'Ihr Konto wurde gerade gelöscht');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'Ihr Passwort wurde gerade geändert');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Ihr Konto wurde gerade ausgeschaltet');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'Ihr Konto ist vom Typ, der gerade ausgeschaltet wurde');
+define('I_THROW_OUT_ROLE_IS_OFF', 'Ihr Konto ist vom Typ, der gerade ausgeschaltet wurde');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Jetzt sind keine Abschnitte mehr für Sie zugänglich');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Ein solcher Abschnitt existiert nicht');

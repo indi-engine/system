@@ -1736,21 +1736,21 @@ function noticeGetter($table, $notice, $role, $ctor = false) {
     $noticeId = notice($table, $notice)->id;
 
     // Get `roleId` according to $role arg
-    $profileId = role($role)->id;
+    $roleId = role($role)->id;
 
     // Try to find `noticeGetter` entry
     $noticeGetterR = m('noticeGetter')->row([
         '`noticeId` = "' . $noticeId . '"',
-        '`profileId` = "' . $profileId . '"'
+        '`roleId` = "' . $roleId . '"'
     ]);
 
     // If $ctor arg is non-false and is not and empty array - return `noticeGetter` entry, else
     if (!$ctor && !is_array($ctor)) return $noticeGetterR;
 
-    // If `noticeId` and/or `profileId` prop are not defined within
+    // If `noticeId` and/or `roleId` prop are not defined within
     // $ctor arg - use values given by $table+$notice and $role args
     if (!is_array($ctor)) $ctor = [];
-    foreach (ar('noticeId,profileId') as $prop)
+    foreach (ar('noticeId,roleId') as $prop)
         if (!array_key_exists($prop, $ctor))
             $ctor[$prop] = $$prop;
 
@@ -2302,7 +2302,7 @@ function role($alias, array $ctor = []) {
     $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
 
     // Get `role` entry
-    $roleR = m('Profile')->row('`' . $byprop . '` = "' . $alias . '"');
+    $roleR = m('Role')->row('`' . $byprop . '` = "' . $alias . '"');
 
     // If $ctor arg is an empty array - return `role` entry, if found, or null otherwise.
     // This part of this function differs from such part if other similar functions, for example grid() function,
@@ -2313,7 +2313,7 @@ function role($alias, array $ctor = []) {
     if (!array_key_exists('alias', $ctor)) $ctor['alias'] = $alias;
 
     // If `role` entry was not found - create it
-    if (!$roleR) $roleR = m('Profile')->new();
+    if (!$roleR) $roleR = m('Role')->new();
 
     // Assign other props and save
     $roleR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();

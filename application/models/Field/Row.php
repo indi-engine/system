@@ -1765,7 +1765,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 'noticeGetter' => 'criteriaEvt,criteriaInc,criteriaDec',
                 'admin' => 'email,password',
                 'section' => 'alias,extendsPhp,extendsJs,filter',
-                'profile' => 'dashboard',
+                'role' => 'dashboard',
                 'grid' => 'alias',
                 'entity' => 'table,extends',
                 'columnType' => 'type',

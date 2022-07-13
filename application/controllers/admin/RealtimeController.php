@@ -115,7 +115,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function renderGridDataItem(&$item, $r) {
 
         // Append role title to admin title
-        $item['adminId'] .= ' [' .  $item['profileId'] . ']';
+        $item['adminId'] .= ' [' .  $item['roleId'] . ']';
 
         // Highlight session token
         if ($item['token'] == $_COOKIE['PHPSESSID'])

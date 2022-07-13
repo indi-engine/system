@@ -1,5 +1,5 @@
 <?php
-class Profile_Row extends Indi_Db_Table_Row {
+class Role_Row extends Indi_Db_Table_Row {
 
     /**
      * This method was redefined to provide ability for some field
@@ -76,7 +76,7 @@ class Profile_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Append WHERE clause for filtering users within combo-data by their profileId
+     * Append WHERE clause for filtering users within combo-data by their roleId
      *
      * @return bool|string|void
      */
@@ -85,7 +85,7 @@ class Profile_Row extends Indi_Db_Table_Row {
         // If dependent-field is not a variable-entity field, or is, but variable entity is not determined - return
         if ($fieldR->relation || !$cValueForeign) return;
 
-        // If variable entity is determined, and it's `admin` - append filtering by `profileId`
-        if (m($cValueForeign)->table() == 'admin') $where []= '`profileId` = "' . $cValue . '"';
+        // If variable entity is determined, and it's `admin` - append filtering by `roleId`
+        if (m($cValueForeign)->table() == 'admin') $where []= '`roleId` = "' . $cValue . '"';
     }
 }

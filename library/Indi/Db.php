@@ -156,12 +156,16 @@ class Indi_Db {
                 'SELECT * FROM `entity`' . ($entityId ? ' WHERE `id` = "' . $entityId . '"' : '')
             )->fetchAll();
 
+            // Get db table containing roles. This is temporary solution to handle
+            // Indi Engine instances where `profile`-table is not yet renamed to `role`
+            $roleTable = array_column($entityA, 'table','table')['role'] ?? 'profile';
+
             // Get ids of entities, linked to access roles
             self::$_roleA = self::$_instance->query('
                 SELECT
-                  GROUP_CONCAT(`id`) AS `profileIds`,
+                  GROUP_CONCAT(`id`) AS `roleIds`,
                   IF(`entityId`,`entityId`,11) AS `entityId`
-                FROM `profile`
+                FROM `' . $roleTable . '`
                 GROUP BY `entityId`
             ')->fetchAll(PDO::FETCH_KEY_PAIR);
 

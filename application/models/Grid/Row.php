@@ -163,8 +163,8 @@ class Grid_Row extends Indi_Db_Table_Row {
         // If summaryType is not 'text' - set `summaryText` to be empty
         if ($this->summaryType != 'text') $this->zero('summaryText', true);
 
-        // Make sure `profileIds` will be empty if `access` is 'all'
-        if ($this->access == 'all') $this->zero('profileIds', true);
+        // Make sure `roleIds` will be empty if `access` is 'all'
+        if ($this->access == 'all') $this->zero('roleIds', true);
     }
 
     /**
@@ -174,8 +174,8 @@ class Grid_Row extends Indi_Db_Table_Row {
      */
     public function accessible() {
         if (!$this->access || $this->access == 'all') return true;
-        if ($this->access == 'only' && in(admin()->profileId, $this->profileIds)) return true;
-        if ($this->access == 'except' && !in(admin()->profileId, $this->profileIds)) return true;
+        if ($this->access == 'only' && in(admin()->roleId, $this->roleIds)) return true;
+        if ($this->access == 'except' && !in(admin()->roleId, $this->roleIds)) return true;
     }
 
     /**

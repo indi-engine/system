@@ -103,7 +103,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
              *
              */
             } else if ($entityR->table == 'noticeGetter') {
-                $where .= ' AND `profileId` IN (' . $master['profile']['instances'] . ')';
+                $where .= ' AND `roleId` IN (' . $master['role']['instances'] . ')';
 
             /**
              *

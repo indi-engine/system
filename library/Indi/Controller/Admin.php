@@ -2080,11 +2080,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @param $username
      * @param $password
      * @param string $place
-     * @param null $profileId
+     * @param null $roleId
      * @param array $level1ToggledSectionIdA
      * @return array|mixed
      */
-    protected function _findSigninUserData($username, $password, $place = 'admin', $profileId = null,
+    protected function _findSigninUserData($username, $password, $place = 'admin', $roleId = null,
                                            $level1ToggledSectionIdA = []) {
 
         // If $username arg is an instance of Indi_Db_Table_Row class, this means that
@@ -2097,7 +2097,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $password = $switchTo->password;
         }
 
-        $profileId = m($place)->fields('profileId') ? '`a`.`profileId`' : '"' . $profileId . '"';
+        $roleId = m($place)->fields('roleId') ? '`a`.`roleId`' : '"' . $roleId . '"';
         $adminToggle = m($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
         return db()->query('
             SELECT
@@ -2105,13 +2105,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
                 '. $adminToggle . ' AS `adminToggle`,
                 IF(`p`.`entityId`, `p`.`entityId`, 11) as `mid`,
-                `p`.`toggle` = "y" AS `profileToggle`,
-                `p`.`title` AS `profileTitle`,
+                `p`.`toggle` = "y" AS `roleToggle`,
+                `p`.`title` AS `roleTitle`,
                 COUNT(`sa`.`sectionId`) > 0 AS `atLeastOneSectionAccessible`
             FROM `' . $place . '` `a`
-                LEFT JOIN `profile` `p` ON (`p`.`id` = ' . $profileId . ')
+                LEFT JOIN `role` `p` ON (`p`.`id` = ' . $roleId . ')
                 LEFT JOIN `section2action` `sa` ON (
-                    FIND_IN_SET(' . $profileId . ', `sa`.`profileIds`)
+                    FIND_IN_SET(' . $roleId . ', `sa`.`roleIds`)
                     AND `sa`.`actionId` = "1"
                     AND `sa`.`toggle` = "y"
                     AND FIND_IN_SET(`sa`.`sectionId`, "' . implode(',', $level1ToggledSectionIdA) . '")
@@ -2157,25 +2157,25 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$data['id']) {
 
             // Get the list of other possible places, there user with given credentials can be found
-            $profile2tableA = db()->query('
-                SELECT `e`.`table`, `p`.`id` AS `profileId`
-                FROM `entity` `e`, `profile` `p`
+            $role2tableA = db()->query('
+                SELECT `e`.`table`, `p`.`id` AS `roleId`
+                FROM `entity` `e`, `role` `p`
                 WHERE `p`.`entityId` != "0"
                     AND `p`.`entityId` = `e`.`id`
                     AND `e`.`table` != "admin"
             ')->fetchAll();
 
             // Foreach possible place - try to find
-            foreach ($profile2tableA as $profile2tableI) {
-                $data = $this->_findSigninUserData($username, $password, $profile2tableI['table'],
-                    $profile2tableI['profileId'], $level1ToggledOnSectionIdA);
+            foreach ($role2tableA as $role2tableI) {
+                $data = $this->_findSigninUserData($username, $password, $role2tableI['table'],
+                    $role2tableI['roleId'], $level1ToggledOnSectionIdA);
                 if ($data['id']) break;
             }
 
             // If found - assign some additional info to found data
-            if ($data && $data['id'] && $profile2tableI) {
-                $data['alternate'] = $profile2tableI['table'];
-                $data['profileId'] = $profile2tableI['profileId'];
+            if ($data && $data['id'] && $role2tableI) {
+                $data['alternate'] = $role2tableI['table'];
+                $data['roleId'] = $role2tableI['roleId'];
             }
         }
 
@@ -2189,8 +2189,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         // 3. User's signin ability is turned off
         else if (!$data['adminToggle']) $error = I_LOGIN_ERROR_ACCOUNT_IS_OFF;
 
-        // 4. User's profile is turned off (So all users with such profile are unable to signin)
-        else if (!$data['profileToggle']) $error = I_LOGIN_ERROR_PROFILE_IS_OFF;
+        // 4. User's role is turned off (So all users with such role are unable to signin)
+        else if (!$data['roleToggle']) $error = I_LOGIN_ERROR_ROLE_IS_OFF;
 
         // 5. User have no accessbile sections
         else if (!$data['atLeastOneSectionAccessible']) $error = I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS;
@@ -2228,7 +2228,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 `a`.`toggle` = "y" AS `actionToggle`,
                 `sa`.`id` > 0 AS `section2actionExists`,
                 `sa`.`toggle` = "y" AS `section2actionToggle`,
-                FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `sa`.`profileIds`) > 0 AS `granted`,
+                FIND_IN_SET("' . $_SESSION['admin']['roleId'] . '", `sa`.`roleIds`) > 0 AS `granted`,
                 `s`.`sectionId` as `sectionId`
             FROM `section` `s`
                LEFT JOIN `action` `a` ON (`a`.`alias` = "' . $action . '")
@@ -2334,13 +2334,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if (!is_array($data)) jflush(false, $data);
 
                     // Else start a session for user and report that sing-in was ok
-                    $allowedA = ['id', 'title', 'email', 'password', 'profileId', 'profileTitle', 'alternate', 'mid'];
+                    $allowedA = ['id', 'title', 'email', 'password', 'roleId', 'roleTitle', 'alternate', 'mid'];
                     foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
                     // Create `realtime` entry having `type` = 'session'
                     m('Realtime')->new([
                         'type' => 'session',
-                        'profileId' => $_SESSION['admin']['profileId'],
+                        'roleId' => $_SESSION['admin']['roleId'],
                         'adminId' => $_SESSION['admin']['id'],
                         'token' => session_id(),
                         'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
@@ -2414,7 +2414,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($data == I_LOGIN_ERROR_NO_SUCH_ACCOUNT) $data = I_THROW_OUT_ACCOUNT_DELETED;
                 else if ($data == I_LOGIN_ERROR_WRONG_PASSWORD) $data = I_THROW_OUT_PASSWORD_CHANGED;
                 else if ($data == I_LOGIN_ERROR_ACCOUNT_IS_OFF) $data = I_THROW_OUT_ACCOUNT_IS_OFF;
-                else if ($data == I_LOGIN_ERROR_PROFILE_IS_OFF) $data = I_THROW_OUT_PROFILE_IS_OFF;
+                else if ($data == I_LOGIN_ERROR_ROLE_IS_OFF) $data = I_THROW_OUT_ROLE_IS_OFF;
                 else if ($data == I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS) $data = I_THROW_OUT_NO_ACCESSIBLE_SECTIONS;
 
                 // Save error message in session, for ability to display it in message box
@@ -2444,7 +2444,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Create `realtime` entry having `type` = 'session'
                 m('Realtime')->new([
                     'type' => 'session',
-                    'profileId' => $_SESSION['admin']['profileId'],
+                    'roleId' => $_SESSION['admin']['roleId'],
                     'adminId' => $_SESSION['admin']['id'],
                     'token' => session_id(),
                     'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
@@ -2643,14 +2643,14 @@ class Indi_Controller_Admin extends Indi_Controller {
             'title' => ini('general')->title ?: 'Indi Engine',
             'user' => [
                 'title' => admin()->title(),
-                'uid' => admin()->profileId . '-' . admin()->id,
-                'role' => admin()->foreign('profileId')->title,
+                'uid' => admin()->roleId . '-' . admin()->id,
+                'role' => admin()->foreign('roleId')->title,
                 'menu' => $this->menu(),
                 'auth' => session_id() . ':' . ini('lang')->admin,
-                'dashboard' => admin()->foreign('profileId')->dashboard ?: false,
-                'maxWindows' => admin()->foreign('profileId')->maxWindows ?: 15,
+                'dashboard' => admin()->foreign('roleId')->dashboard ?: false,
+                'maxWindows' => admin()->foreign('roleId')->maxWindows ?: 15,
                 'uiedit' => admin()->uiedit == 'y',
-                'isDev' => admin()->profileId == '1'
+                'isDev' => admin()->roleId == '1'
             ]
         ];
     }
@@ -3128,18 +3128,18 @@ class Indi_Controller_Admin extends Indi_Controller {
         m('Realtime')->row([
             '`token` = "' . session_id() . '"',
             '`type` = "session"',
-            'profileId' => $_SESSION['admin']['profileId'],
+            'roleId' => $_SESSION['admin']['roleId'],
             'adminId' => $_SESSION['admin']['id'],
         ])->delete();
 
         // Start a session for user and report that sing-in was ok
-        foreach (ar('id,title,email,password,profileId,profileTitle,alternate,mid') as $allowedI)
+        foreach (ar('id,title,email,password,roleId,roleTitle,alternate,mid') as $allowedI)
             $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
         // Create `realtime` entry having `type` = 'session'
         m('Realtime')->new([
             'type' => 'session',
-            'profileId' => $_SESSION['admin']['profileId'],
+            'roleId' => $_SESSION['admin']['roleId'],
             'adminId' => $_SESSION['admin']['id'],
             'token' => session_id(),
             'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
@@ -3530,7 +3530,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             FROM `noticeGetter`
             WHERE 1
               AND `criteriaRelyOn` = "getter"
-              AND `profileId` = "' . admin()->profileId . '"
+              AND `roleId` = "' . admin()->roleId . '"
               AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_COLUMN);
 
@@ -3540,7 +3540,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             FROM `noticeGetter`
             WHERE 1
               AND `criteriaRelyOn` = "event"
-              AND `profileId` = "' . admin()->profileId . '"
+              AND `roleId` = "' . admin()->roleId . '"
               AND `toggle` = "y"
         ')->fetchAll(PDO::FETCH_KEY_PAIR);
 
@@ -3552,7 +3552,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Get notices
         $_noticeRs = m('Notice')->all([
-            'FIND_IN_SET("' . admin()->profileId . '", `profileId`)',
+            'FIND_IN_SET("' . admin()->roleId . '", `roleId`)',
             'CONCAT(",", `sectionId`, ",") REGEXP ",(' . im($sectionIdA, '|') . '),"',
             'FIND_IN_SET(`id`, IF(`qtyDiffRelyOn` = "event", "' . im($noticeIdA_relyOnEvent) . '", "' . im($noticeIdA_relyOnGetter) . '"))',
             '`toggle` = "y"'

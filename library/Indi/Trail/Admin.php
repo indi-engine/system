@@ -55,7 +55,7 @@ class Indi_Trail_Admin {
             'where' => [
                 '`sectionId` != "' . $top . '"',
                 '`toggle` = "y"',
-                'FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `profileIds`)',
+                'FIND_IN_SET("' . $_SESSION['admin']['roleId'] . '", `roleIds`)',
                 'FIND_IN_SET(`actionId`, "' . implode(',', self::$toggledActionIdA) . '")'
             ],
             'order' => 'move',
@@ -80,11 +80,11 @@ class Indi_Trail_Admin {
 
         // Get filters
         $searchWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` = "y"'];
-        if (m('Search')->fields('access') && m('Search')->fields('profileIds')) {
+        if (m('Search')->fields('access') && m('Search')->fields('roleIds')) {
             $searchWHERE[] = '(' . im([
                 '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+                '(`access` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
+                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
                 ], ' OR ') . ')';
         }
 
@@ -96,11 +96,11 @@ class Indi_Trail_Admin {
 
         // Grid columns WHERE clause
         $gridWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"'];
-        if (m('Grid')->fields('access') && m('Grid')->fields('profileIds')) {
+        if (m('Grid')->fields('access') && m('Grid')->fields('roleIds')) {
             $gridWHERE[] = '(' . im([
                 '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+                '(`access` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
+                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
                 ], ' OR ') . ')';
         }
 
@@ -114,8 +114,8 @@ class Indi_Trail_Admin {
         $alteredFieldsWHERE = ['`sectionId` = "' . $routeA[0] . '"'];
         $alteredFieldsWHERE[] = '(' . im([
             '`impact` = "all"',
-            '(`impact` = "only" AND FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
-            '(`impact` = "except" AND NOT FIND_IN_SET("' . admin()->profileId . '", `profileIds`))',
+            '(`impact` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
+            '(`impact` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
             ], ' OR ') . ')';
 
         // Setup disabled fields

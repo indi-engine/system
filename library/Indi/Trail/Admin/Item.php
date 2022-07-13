@@ -50,7 +50,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $sectionR->nested('section')->nested('section2action', [
             'where' => [
                 '`toggle` = "y"',
-                'FIND_IN_SET("' . $_SESSION['admin']['profileId'] . '", `profileIds`)',
+                'FIND_IN_SET("' . $_SESSION['admin']['roleId'] . '", `roleIds`)',
                 'FIND_IN_SET(`actionId`, "' . implode(',', Indi_Trail_Admin::$toggledActionIdA) . '")',
                 '`actionId` IN (1, 2, 3)'
             ],

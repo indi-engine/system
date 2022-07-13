@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', 'Lengua');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'No hay tal cuenta');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'Ingresaste la contraseña incorrecta');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'Esta cuenta se ha inhabilitado.');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'Este tipo de cuenta ha sido deshabilitado.');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'Este tipo de cuenta ha sido deshabilitado.');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'Todavía no hay particiones disponibles para esta cuenta en el sistema.');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'Su cuenta acaba de ser eliminada.');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'Su contraseña acaba de ser cambiada.');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Su cuenta acaba de ser deshabilitada.');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'Su tipo de cuenta acaba de deshabilitarse');
+define('I_THROW_OUT_ROLE_IS_OFF', 'Su tipo de cuenta acaba de deshabilitarse');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'No hay particiones disponibles para usted en el sistema');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'No hay tal sección');

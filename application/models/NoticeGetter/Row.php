@@ -21,7 +21,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
 
         // Provide ability for some field props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'profileId') $value = role($value)->id;
+            if ($columnName == 'roleId') $value = role($value)->id;
         }
 
         // Standard __set()
@@ -126,7 +126,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
             'noticeId' => $this->noticeId,
             'diff' => $diff,
             'row' => $this->row->id,
-            'to' => [$this->profileId => array_column($rs, $field)],
+            'to' => [$this->roleId => array_column($rs, $field)],
             'msg' => $msg
         ]);
     }
@@ -241,13 +241,13 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         $where = ['`toggle` = "y"'];
 
         // Find the name of database table, where recipients should be found within
-        foreach (Indi_Db::role() as $profileIds => $entityId)
-            if (in($this->profileId, $profileIds))
+        foreach (Indi_Db::role() as $roleIds => $entityId)
+            if (in($this->roleId, $roleIds))
                 if ($model = m($entityId))
                     break;
 
         // Prevent recipients duplication
-        if ($model->table() == 'admin') $where[] = '`profileId` = "' . $this->profileId . '"';
+        if ($model->table() == 'admin') $where[] = '`roleId` = "' . $this->roleId . '"';
 
         // If criteria specified
         if (strlen($this->$criteriaProp)) {
@@ -306,7 +306,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         $lineA[] = "noticeGetter('"
             . $this->foreign('noticeId')->foreign('entityId')->table . "', '"
             . $this->foreign('noticeId')->alias . "', '"
-            . $this->foreign('profileId')->alias . "', " . $this->_ctor($certain) . ");";
+            . $this->foreign('roleId')->alias . "', " . $this->_ctor($certain) . ");";
 
         // If $certain arg is given - export it only
         if ($certain) return $lineA[0];
@@ -330,7 +330,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         unset($ctor['id']);
 
         // Exclude props that will be already represented by shorthand-fn args
-        foreach (ar('noticeId,profileId') as $arg) unset($ctor[$arg]);
+        foreach (ar('noticeId,roleId') as $arg) unset($ctor[$arg]);
 
         // If certain field should be exported - keep it only
         if ($certain) $ctor = [$certain => $ctor[$certain]];
@@ -345,7 +345,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Exclude 'title'-prop due to that it is set automatically to the same value
-            // as $this->foreign('profileId')->title, as self 'title' prop has such a dependency
+            // as $this->foreign('roleId')->title, as self 'title' prop has such a dependency
             else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
                 unset($ctor[$prop]);
         }

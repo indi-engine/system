@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', 'ภาษา');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'บัญชีดังกล่าวไม่มีอยู่');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'รหัสผ่านผิด');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'บัญชีนี้ถูกปิด');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'บัญชีนี้เป็นประเภทที่ถูกปิด');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'บัญชีนี้เป็นประเภทที่ถูกปิด');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'ยังไม่มีส่วนที่สามารถเข้าถึงได้โดยบัญชีนี้');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'บัญชีของคุณเพิ่งถูกลบ');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'รหัสผ่านของคุณเพิ่งถูกเปลี่ยน');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'บัญชีของคุณเพิ่งถูกปิดแล้ว');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'บัญชีของคุณเป็นประเภทที่เพิ่งถูกปิด');
+define('I_THROW_OUT_ROLE_IS_OFF', 'บัญชีของคุณเป็นประเภทที่เพิ่งถูกปิด');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'ขณะนี้ไม่มีส่วนที่เหลือสำหรับคุณ');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'ไม่มีส่วนดังกล่าว');

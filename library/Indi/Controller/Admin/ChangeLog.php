@@ -104,14 +104,14 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
             // Build group title
             $data[$i]['_render']['datetime'] = $data[$i]['datetime']
                 . rif($key, ' - ' . $data[$i]['entityId'] . ' » ' . $data[$i]['key'])
-                . rif($data[$i]['changerId'], ' - ' . $data[$i]['changerId'] . ' [' . $data[$i]['profileId'] . ']');
+                . rif($data[$i]['changerId'], ' - ' . $data[$i]['changerId'] . ' [' . $data[$i]['roleId'] . ']');
 
             // Encode <iframe> tag descriptors into html entities
             $data[$i]['was'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['was']);
             $data[$i]['now'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['now']);
 
             // Unset props, that are not needed separately anymore
-            unset($data[$i]['key'], $data[$i]['entityId'], $data[$i]['changerId'], $data[$i]['profileId']);
+            unset($data[$i]['key'], $data[$i]['entityId'], $data[$i]['changerId'], $data[$i]['roleId']);
 
             // Shade private data
             if ($shade[$data[$i]['$keys']['fieldId']]) {

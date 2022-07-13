@@ -48,8 +48,8 @@ class Section2action_Row extends Indi_Db_Table_Row {
             // Get field
             $fieldR = m('Section2action')->fields($prop);
 
-            // Exclude prop, if it has value equal to default value (unless it's `profileIds`)
-            if ($fieldR->defaultValue == $value && $prop != 'profileIds' && !in($prop, $certain)) unset($ctor[$prop]);
+            // Exclude prop, if it has value equal to default value (unless it's `roleIds`)
+            if ($fieldR->defaultValue == $value && $prop != 'roleIds' && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Else if $prop is 'move' - get alias of the field, that current field is after,
             // among fields with same value of `entityId` prop
@@ -124,7 +124,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
     public function onInsert() {
 
         // Foreach added role
-        foreach ($this->adelta('profileIds', 'ins') as $ins)
+        foreach ($this->adelta('roleIds', 'ins') as $ins)
 
             // Mention that role in section's `roleIds` prop
             $this->foreign('sectionId')->push('roleIds', $ins);
@@ -139,20 +139,20 @@ class Section2action_Row extends Indi_Db_Table_Row {
     public function onUpdate() {
 
         // Foreach added role
-        foreach ($this->adelta('profileIds', 'ins') as $ins)
+        foreach ($this->adelta('roleIds', 'ins') as $ins)
 
             // Mention that role in section's `roleIds` prop
             $this->foreign('sectionId')->push('roleIds', $ins);
 
         // Foreach removed role
-        foreach ($this->adelta('profileIds', 'del') as $del)
+        foreach ($this->adelta('roleIds', 'del') as $del)
 
             // If section have no more actions accessible for removed role
             if (!db()->query('
                 SELECT COUNT(*) FROM `section2action`
                 WHERE 1
                   AND `sectionId` = "'. $this->sectionId . '"
-                  AND FIND_IN_SET("'. $del.'", `profileIds`)
+                  AND FIND_IN_SET("'. $del.'", `roleIds`)
             ')->fetchColumn())
 
                 // Remove that role from section entry's `roleIds` prop

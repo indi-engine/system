@@ -1799,7 +1799,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // If current field itself is not linked to any entity, it mean that this entity would be identified by
                 // the value of consider-entry's foreign field's value, and in this case there may be a need to anyway
                 // involve consider-field's name and value in combo data WHERE clause. First faced case is to to this
-                // for consider-fields linked to `profile`-entity, as different `profile` entries may have same `entityId`
+                // for consider-fields linked to `role`-entity, as different `role` entries may have same `entityId`
                 if (!$fieldR->relation && $cValueForeign)
                     $cEntryR->_comboDataConsiderWHERE($where, $fieldR, $cField, $cValue, $considerR->required, $cValueForeign);
 
@@ -5194,7 +5194,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $storageR->datetime = date('Y-m-d H:i:s');
             if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
             $storageR->changerType = m(admin()->alternate ? admin()->alternate : 'Admin')->id();
-            $storageR->profileId = admin()->profileId ?: 0;
+            $storageR->roleId = admin()->roleId ?: 0;
             $storageR->changerId = admin()->id ?: 0;
             $storageR->save();
         }

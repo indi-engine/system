@@ -993,12 +993,12 @@ class Indi {
             $adminR->alternate = $_SESSION['admin']['alternate'];
 
             // If current cms user was found not in 'admin' database table,  we explicilty setup foreign
-            // data for 'profileId' foreign key, despite on in that other table may be not such a foreign key
+            // data for 'roleId' foreign key, despite on in that other table may be not such a foreign key
             if ($table != 'admin') {
-                $adminR->foreign('profileId', m('Profile')->row(
+                $adminR->foreign('roleId', m('Role')->row(
                     '`entityId` = "' . m($table)->id() . '"'
                 ));
-                $adminR->profileId = $adminR->foreign('profileId')->id;
+                $adminR->roleId = $adminR->foreign('roleId')->id;
             }
 
             // Push $obj object in registry under 'uri' key
@@ -2295,8 +2295,8 @@ class Indi {
      * Prevent user from doing something when demo-mode is turned On
      */
     public static function demo($flush = true) {
-        if ((ini('general')->demo && admin()->profileId != 1)
-            || (admin() && (admin()->demo == 'y' || admin()->foreign('profileId')->demo == 'y')))
+        if ((ini('general')->demo && admin()->roleId != 1)
+            || (admin() && (admin()->demo == 'y' || admin()->foreign('roleId')->demo == 'y')))
             return $flush ? jflush(false, I_DEMO_ACTION_OFF) : true;
     }
 

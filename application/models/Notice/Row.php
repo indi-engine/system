@@ -44,14 +44,14 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Sync nested `noticeGetter` entries with keys, mentioned in `profileId` field
+     * Sync nested `noticeGetter` entries with keys, mentioned in `roleId` field
      *
      * @return int
      */
     public function onSave() {
         
-        // Sync keys, mentioned as comma-separated values in `profileId` prop, with entries, nested in `noticeGetter` table
-        $this->keys2nested('profileId', 'noticeGetter');
+        // Sync keys, mentioned as comma-separated values in `roleId` prop, with entries, nested in `noticeGetter` table
+        $this->keys2nested('roleId', 'noticeGetter');
     }
 
     /**

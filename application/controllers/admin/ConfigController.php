@@ -19,12 +19,12 @@ class Admin_ConfigController extends Indi_Controller_Admin {
     }
 
     /**
-     * Ensure that full access will be provided only for admin users having Configurator profile
+     * Ensure that full access will be provided only for admin users having Configurator role
      */
     public function adjustAccess() {
 
         // If current admin is not a Configurator
-        if (admin()->profileId != 1) {
+        if (admin()->roleId != 1) {
 
             // Deny config entries creation
             $this->deny('create');

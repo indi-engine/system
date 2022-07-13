@@ -104,9 +104,9 @@ class Search_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Make sure `profileIds` will be empty if `access` is 'all'
+     * Make sure `roleIds` will be empty if `access` is 'all'
      */
     public function onBeforeSave() {
-        if ($this->access == 'all') $this->zero('profileIds', true);
+        if ($this->access == 'all') $this->zero('roleIds', true);
     }
 }

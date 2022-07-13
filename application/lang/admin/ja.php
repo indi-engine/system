@@ -17,13 +17,13 @@ define('I_LOGIN_BOX_LANGUAGE', '舌');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'そのようなアカウントはありません');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', '間違ったパスワードを入力した');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'このアカウントは無効になっています。');
-define('I_LOGIN_ERROR_PROFILE_IS_OFF', 'このアカウントタイプは無効になっています。');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'このアカウントタイプは無効になっています。');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'システムには、このアカウントで使用できるパーティションがまだありません。');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'アカウントが削除されました。');
 define('I_THROW_OUT_PASSWORD_CHANGED', 'パスワードが変更されました。');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'アカウントが無効になりました。');
-define('I_THROW_OUT_PROFILE_IS_OFF', 'アカウントの種類が無効になりました');
+define('I_THROW_OUT_ROLE_IS_OFF', 'アカウントの種類が無効になりました');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'システムに利用可能なパーティションがありません');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'そのようなセクションはありません');

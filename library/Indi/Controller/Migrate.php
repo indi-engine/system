@@ -1,5 +1,20 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function renameProfileAction() {
+        field('notice', 'profileId', ['alias' => 'roleId']);
+        field('admin', 'profileId', ['alias' => 'roleId']);
+        field('changeLog', 'profileId', ['alias' => 'roleId']);
+        field('noticeGetter', 'profileId', ['alias' => 'roleId']);
+        field('realtime', 'profileId', ['alias' => 'roleId']);
+
+        field('grid', 'profileIds', ['alias' => 'roleIds']);
+        field('search', 'profileIds', ['alias' => 'roleIds']);
+        field('section2action', 'profileIds', ['alias' => 'roleIds']);
+        field('alteredField', 'profileIds', ['alias' => 'roleIds']);
+
+        entity('profile', ['table' => 'role']);
+        die('ok');
+    }
     public function fixFractionAliasesAction() {;
 
         enumset('action', 'type', 'p', ['alias' => 'custom']);
