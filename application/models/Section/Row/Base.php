@@ -46,6 +46,11 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             else if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'tileThumb') $value = thumb($this->entityId, $this->tileField, $value)->id;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
+            else if ($columnName == 'roleIds' || $columnName == 'expandRoles') {
+                if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
+                    ->all('FIND_IN_SET(`alias`, "' . $value .'")')
+                    ->col('id', true);
+            }
         }
 
         // Standard __set()
@@ -124,6 +129,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
                 else if ($prop == 'entityId') $value = entity($value)->table;
                 else if (in($prop, 'parentSectionConnector,groupBy,defaultSortField,tileField')) $value = field($this->entityId, $value)->alias;
                 else if ($prop == 'tileThumb') $value = m('Resize')->row($value)->alias;
+                else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
             }
         }
 

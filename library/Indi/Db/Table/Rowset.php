@@ -1396,6 +1396,19 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
     /**
      * Get value of a single column within curent rowset, as array
+     * Alias of $this->column()
+     *
+     * @param string $column
+     * @param bool|string $imploded
+     * @param bool $unique
+     * @return array
+     */
+    public function col($column, $imploded = false, $unique = false) {
+        return $this->column($column, $imploded, $unique);
+    }
+
+    /**
+     * Get value of a single column within curent rowset, as array
      *
      * @param string $column
      * @param bool|string $imploded

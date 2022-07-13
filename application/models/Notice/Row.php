@@ -37,6 +37,11 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'entityId') $value = entity($value)->id;
             else if ($columnName == 'sectionId') $value = section($value)->id;
+            else if ($columnName == 'roleId') {
+                if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
+                    ->all('FIND_IN_SET(`alias`, "' . $value .'")')
+                    ->col('id', true);
+            }
         }
 
         // Standard __set()
@@ -133,6 +138,7 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
             else if ($field->storeRelationAbility != 'none') {
                 if ($prop == 'entityId') $value = entity($value)->table;
                 else if ($prop == 'sectionId') $value = section($value)->alias;
+                else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
             }
         }
 

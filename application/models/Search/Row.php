@@ -16,6 +16,11 @@ class Search_Row extends Indi_Db_Table_Row {
             if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
+            else if ($columnName == 'roleIds') {
+                if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
+                    ->all('FIND_IN_SET(`alias`, "' . $value .'")')
+                    ->col('id', true);
+            }
         }
 
         // Call parent
@@ -66,7 +71,9 @@ class Search_Row extends Indi_Db_Table_Row {
 
             // Else if prop contains keys - use aliases instead
             else if ($fieldR->storeRelationAbility != 'none') {
-                // Empty for now
+
+                // Export roles
+                if ($fieldR->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
             }
         }
 

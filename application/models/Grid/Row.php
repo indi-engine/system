@@ -18,6 +18,11 @@ class Grid_Row extends Indi_Db_Table_Row {
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'gridId') $value = grid($this->sectionId, $value)->id;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
+            else if ($columnName == 'roleIds') {
+                if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
+                    ->all('FIND_IN_SET(`alias`, "' . $value .'")')
+                    ->col('id', true);
+            }
         }
 
         // Call parent
@@ -84,9 +89,14 @@ class Grid_Row extends Indi_Db_Table_Row {
 
             // Else if prop contains keys - use aliases instead
             else if ($field->storeRelationAbility != 'none') {
+
+                // If prop store parent `grid` entry ID - get it's alias
                 if ($prop == 'gridId') {
                     $value = ($_ = $this->foreign('gridId')) && $_->fieldId ? $_->foreign('fieldId')->alias : $_->alias;
                 }
+
+                // Export roles
+                if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
             }
         }
 
