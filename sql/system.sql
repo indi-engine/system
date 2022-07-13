@@ -66,7 +66,7 @@ DROP TABLE IF EXISTS `admin`;
 
 CREATE TABLE `admin` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `profileId` int NOT NULL DEFAULT '0',
+  `roleId` int NOT NULL DEFAULT '0',
   `title` text NOT NULL,
   `email` varchar(255) NOT NULL DEFAULT '',
   `password` varchar(255) NOT NULL DEFAULT '',
@@ -74,7 +74,7 @@ CREATE TABLE `admin` (
   `demo` enum('n','y') NOT NULL DEFAULT 'n',
   `uiedit` enum('n','y') NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
-  KEY `profileId` (`profileId`),
+  KEY `profileId` (`roleId`),
   KEY `toggle` (`toggle`),
   KEY `demo` (`demo`),
   KEY `uiedit` (`uiedit`),
@@ -83,7 +83,7 @@ CREATE TABLE `admin` (
 
 /*Data for the table `admin` */
 
-insert  into `admin`(`id`,`profileId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values 
+insert  into `admin`(`id`,`roleId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values 
 (1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','dev','*27AEDA0D3A56422C3F1D20DAFF0C8109058134F3','y','n','y'),
 (14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
 
@@ -99,14 +99,14 @@ CREATE TABLE `alteredField` (
   `mode` enum('hidden','readonly','inherit','regular','required') NOT NULL DEFAULT 'inherit',
   `title` text NOT NULL,
   `impact` enum('all','only','except') NOT NULL DEFAULT 'all',
-  `profileIds` varchar(255) NOT NULL DEFAULT '',
+  `roleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `rename` text NOT NULL,
   `elementId` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
   KEY `impact` (`impact`),
-  KEY `profileIds` (`profileIds`(250)),
+  KEY `profileIds` (`roleIds`(250)),
   KEY `mode` (`mode`),
   KEY `elementId` (`elementId`),
   FULLTEXT KEY `title` (`title`),
@@ -115,7 +115,7 @@ CREATE TABLE `alteredField` (
 
 /*Data for the table `alteredField` */
 
-insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`title`,`impact`,`profileIds`,`rename`,`elementId`) values 
+insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`title`,`impact`,`roleIds`,`rename`,`elementId`) values 
 (216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1),
 (219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0),
 (220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0);
@@ -135,7 +135,7 @@ CREATE TABLE `changeLog` (
   `monthId` int NOT NULL DEFAULT '0',
   `changerType` int NOT NULL DEFAULT '0',
   `changerId` int NOT NULL DEFAULT '0',
-  `profileId` int NOT NULL DEFAULT '0',
+  `roleId` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `key` (`key`),
@@ -143,7 +143,7 @@ CREATE TABLE `changeLog` (
   KEY `monthId` (`monthId`),
   KEY `changerType` (`changerType`),
   KEY `changerId` (`changerId`),
-  KEY `profileId` (`profileId`),
+  KEY `profileId` (`roleId`),
   FULLTEXT KEY `was` (`was`),
   FULLTEXT KEY `now` (`now`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -320,7 +320,7 @@ insert  into `entity`(`id`,`title`,`table`,`extends`,`fraction`,`useCache`,`titl
 (7,'{\"ru\":\"Действие\",\"en\":\"Action\"}','action','Indi_Db_Table','system',0,31,'none','',0),
 (8,'{\"ru\":\"Действие в разделе\",\"en\":\"Action in the section\"}','section2action','Indi_Db_Table','system',0,27,'none','',0),
 (9,'{\"ru\":\"Столбец грида\",\"en\":\"Grid column\"}','grid','Indi_Db_Table','system',0,34,'none','',0),
-(10,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profile','Indi_Db_Table','system',0,36,'none','',0),
+(10,'{\"ru\":\"Роль\",\"en\":\"Role\"}','role','Indi_Db_Table','system',0,36,'none','',0),
 (11,'{\"ru\":\"Администратор\",\"en\":\"Administrator\"}','admin','Indi_Db_Table','system',0,39,'none','',0),
 (20,'{\"ru\":\"Копия\",\"en\":\"Resized copy\"}','resize','Indi_Db_Table','system',0,108,'none','',0),
 (91,'{\"ru\":\"Параметр\",\"en\":\"Param\"}','param','Indi_Db_Table','system',0,2433,'none','',0),
@@ -659,7 +659,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (25,3,'{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}','rowsOnPage',3,1,'25',2310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (26,8,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','sectionId',3,23,'',1,3,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (27,8,'{\"ru\":\"Действие\",\"en\":\"Action\"}','actionId',3,23,'',1,7,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(28,8,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','profileIds',1,7,'14',1,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(28,8,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','roleIds',1,7,'14',1,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2428,3,'{\"ru\":\"Записи\",\"en\":\"Recordings\"}','store',0,16,'',2429,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (29,8,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',1,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (30,8,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',1,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -670,7 +670,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (35,9,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move',3,4,'',2165,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (36,10,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',31,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (37,10,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2131,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
-(38,11,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'',33,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(38,11,'{\"ru\":\"Роль\",\"en\":\"Role\"}','roleId',3,23,'0',33,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (39,11,'{\"ru\":\"Имя\",\"en\":\"Title\"}','title',4,1,'',34,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (40,11,'{\"ru\":\"Логин\",\"en\":\"Login\"}','email',1,1,'',35,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (41,11,'{\"ru\":\"Пароль\",\"en\":\"Password\"}','password',1,1,'',36,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -745,9 +745,9 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2200,9,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip',4,6,'',2304,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2203,195,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2311,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2202,7,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2202,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
-(2204,195,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2314,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2204,195,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','roleIds',1,7,'',2314,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2205,9,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','access',10,23,'all',2422,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
-(2206,9,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','profileIds',1,7,'',2423,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2206,9,'{\"ru\":\"Кроме\",\"en\":\"Roles\"}','roleIds',1,7,'',2423,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2207,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impact',10,23,'all',2169,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2209,8,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','rename',4,1,'',2209,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2210,9,'{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}','editor',10,23,'0',2206,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
@@ -766,7 +766,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2262,309,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId',1,23,'',2264,3,'many','FIND_IN_SET(`sectionId`, \"<?=m(\'section\')->all(\'`sectionId` = \"0\"\')->column(\'id\', true)?>\")','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2255,309,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId',3,23,'0',2257,2,'one','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2256,309,'{\"ru\":\"Событие \\/ PHP\",\"en\":\"Event \\/ PHP\"}','event',1,1,'',2258,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(2257,309,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','profileId',1,23,'',2259,10,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2257,309,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','roleId',1,23,'',2259,10,'many','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2258,309,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle',10,23,'y',2260,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2259,309,'{\"ru\":\"Счетчик\",\"en\":\"Counter\"}','qty',0,16,'',2261,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2260,309,'{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}','qtySql',1,1,'',2262,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -783,14 +783,14 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2247,308,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','consider',3,23,'0',2247,5,'one','`id` != \"<?=$this->fieldId?>\" AND `columnTypeId` != \"0\"','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2248,308,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','foreign',3,23,'0',2248,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2249,308,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title',4,1,'',2249,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','y',0),
-(2250,171,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','profileIds',1,7,'',2207,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2250,171,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','roleIds',1,7,'',2207,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2252,171,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','rename',4,1,'',2251,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2424,171,'{\"ru\":\"Влияние\",\"en\":\"Influence\"}','impactt',0,16,'',2134,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2271,309,'{\"ru\":\"Текст\",\"en\":\"Text\"}','tplDecBody',4,6,'',2273,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2272,309,'{\"ru\":\"Заголовок\",\"en\":\"Heading\"}','tplEvtSubj',4,1,'',2321,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2273,309,'{\"ru\":\"Сообщение\",\"en\":\"Message\"}','tplEvtBody',4,6,'',2595,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2274,310,'{\"ru\":\"Уведомление\",\"en\":\"Notification\"}','noticeId',3,23,'0',2275,309,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(2275,310,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2276,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2275,310,'{\"ru\":\"Роль\",\"en\":\"Role\"}','roleId',3,23,'0',2276,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2276,310,'{\"ru\":\"Критерий\",\"en\":\"Criteria\"}','criteriaRelyOn',10,5,'event',2277,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2277,310,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','criteriaEvt',1,1,'',2278,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2278,310,'{\"ru\":\"Для увеличения\",\"en\":\"Separate - for increase\"}','criteriaInc',1,1,'',2279,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -815,7 +815,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2297,313,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','monthId',3,23,'0',2297,312,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2298,313,'{\"ru\":\"Тип автора\",\"en\":\"Author type\"}','changerType',3,23,'0',2298,2,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2299,313,'{\"ru\":\"Автор\",\"en\":\"Author\"}','changerId',3,23,'0',2299,0,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(2300,313,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2300,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2300,313,'{\"ru\":\"Роль\",\"en\":\"Role\"}','roleId',3,23,'0',2300,10,'one','','readonly','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2301,3,'{\"ru\":\"Разворачивать пункт меню\",\"en\":\"Expand menu item\"}','expand',10,23,'all',23,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2302,3,'{\"ru\":\"Выбранные\",\"en\":\"Chosen\"}','expandRoles',1,23,'',25,10,'many','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2303,3,'{\"ru\":\"Доступ\",\"en\":\"Access\"}','roleIds',1,23,'',2428,10,'many','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -901,7 +901,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2386,8,'{\"ru\":\"Мультиязычность\",\"en\":\"Localization\"}','l10n',10,23,'n',2386,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2396,318,'{\"ru\":\"Родительская запись\",\"en\":\"Parent entry\"}','realtimeId',3,23,'0',2396,318,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2397,318,'{\"ru\":\"Тип\",\"en\":\"Type\"}','type',10,23,'session',2397,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
-(2398,318,'{\"ru\":\"Роль\",\"en\":\"Role\"}','profileId',3,23,'0',2398,10,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2398,318,'{\"ru\":\"Роль\",\"en\":\"Role\"}','roleId',3,23,'0',2398,10,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2399,318,'{\"ru\":\"Пользователь\",\"en\":\"User\"}','adminId',3,23,'0',2399,0,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2400,318,'{\"ru\":\"Токен\",\"en\":\"Token\"}','token',1,1,'',2400,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2401,318,'{\"ru\":\"Начало\",\"en\":\"Since\"}','spaceSince',9,19,'<?=date(\'Y-m-d H:i:s\')?>',2401,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -988,7 +988,7 @@ CREATE TABLE `grid` (
   `gridId` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
   `access` enum('all','only','except') NOT NULL DEFAULT 'all',
-  `profileIds` varchar(255) NOT NULL DEFAULT '',
+  `roleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `editor` enum('0','1') NOT NULL DEFAULT '0',
   `summaryType` enum('none','sum','average','min','max','text') NOT NULL DEFAULT 'none',
   `summaryText` text NOT NULL,
@@ -1002,7 +1002,7 @@ CREATE TABLE `grid` (
   KEY `toggle` (`toggle`),
   KEY `gridId` (`gridId`),
   KEY `access` (`access`),
-  KEY `profileIds` (`profileIds`(250)),
+  KEY `profileIds` (`roleIds`(250)),
   KEY `editor` (`editor`),
   KEY `summaryType` (`summaryType`),
   KEY `group` (`group`),
@@ -1016,7 +1016,7 @@ CREATE TABLE `grid` (
 
 /*Data for the table `grid` */
 
-insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`alterTitle`,`toggle`,`title`,`gridId`,`tooltip`,`access`,`profileIds`,`editor`,`summaryType`,`summaryText`,`group`,`further`,`width`,`rowReqIfAffected`) values 
+insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`alterTitle`,`toggle`,`title`,`gridId`,`tooltip`,`access`,`roleIds`,`editor`,`summaryType`,`summaryText`,`group`,`further`,`width`,`rowReqIfAffected`) values 
 (2707,393,2379,2707,'','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'','all','','0','none','','normal',0,0,'n'),
 (2,2,2,2,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (3,2,3,3,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пригоден для хранения внешних ключей\",\"en\":\"Compatible with foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
@@ -1454,7 +1454,7 @@ CREATE TABLE `notice` (
   `title` text NOT NULL,
   `entityId` int NOT NULL DEFAULT '0',
   `event` varchar(255) NOT NULL DEFAULT '',
-  `profileId` varchar(255) NOT NULL DEFAULT '',
+  `roleId` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   `qtySql` varchar(255) NOT NULL DEFAULT '',
   `qtyDiffRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
@@ -1473,7 +1473,7 @@ CREATE TABLE `notice` (
   `alias` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
-  KEY `profileId` (`profileId`(250)),
+  KEY `profileId` (`roleId`(250)),
   KEY `toggle` (`toggle`),
   KEY `qtyDiffRelyOn` (`qtyDiffRelyOn`),
   KEY `sectionId` (`sectionId`(250)),
@@ -1491,7 +1491,7 @@ CREATE TABLE `notice` (
 
 /*Data for the table `notice` */
 
-insert  into `notice`(`id`,`title`,`entityId`,`event`,`profileId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`,`fraction`,`alias`) values 
+insert  into `notice`(`id`,`title`,`entityId`,`event`,`roleId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`,`fraction`,`alias`) values 
 (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','','','system','failed'),
 (2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','','','system','started');
 
@@ -1502,7 +1502,7 @@ DROP TABLE IF EXISTS `noticeGetter`;
 CREATE TABLE `noticeGetter` (
   `id` int NOT NULL AUTO_INCREMENT,
   `noticeId` int NOT NULL DEFAULT '0',
-  `profileId` int NOT NULL DEFAULT '0',
+  `roleId` int NOT NULL DEFAULT '0',
   `criteriaRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
   `criteriaEvt` varchar(255) NOT NULL DEFAULT '',
   `criteriaInc` varchar(255) NOT NULL DEFAULT '',
@@ -1516,7 +1516,7 @@ CREATE TABLE `noticeGetter` (
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   PRIMARY KEY (`id`),
   KEY `noticeId` (`noticeId`),
-  KEY `profileId` (`profileId`),
+  KEY `profileId` (`roleId`),
   KEY `criteriaRelyOn` (`criteriaRelyOn`),
   KEY `email` (`email`),
   KEY `vk` (`vk`),
@@ -1528,7 +1528,7 @@ CREATE TABLE `noticeGetter` (
 
 /*Data for the table `noticeGetter` */
 
-insert  into `noticeGetter`(`id`,`noticeId`,`profileId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`,`toggle`) values 
+insert  into `noticeGetter`(`id`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`,`toggle`) values 
 (1,1,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n','y'),
 (2,2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n','y');
 
@@ -1565,35 +1565,6 @@ insert  into `param`(`id`,`fieldId`,`title`,`cfgField`,`cfgValue`) values
 (166,1443,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),
 (167,34,'{\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\",\"en\":\"Additionally pass fields (as html attributes)\"}',2440,'470'),
 (173,6,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\",\"zh-CN\":\"Группировка опций по столбцу\"}',2439,'612');
-
-/*Table structure for table `profile` */
-
-DROP TABLE IF EXISTS `profile`;
-
-CREATE TABLE `profile` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `entityId` int NOT NULL DEFAULT '11',
-  `dashboard` varchar(255) NOT NULL DEFAULT '',
-  `move` int NOT NULL DEFAULT '0',
-  `maxWindows` int NOT NULL DEFAULT '15',
-  `demo` enum('n','y') NOT NULL DEFAULT 'n',
-  `fraction` enum('custom','system') NOT NULL DEFAULT 'custom',
-  `alias` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `toggle` (`toggle`),
-  KEY `entityId` (`entityId`),
-  KEY `demo` (`demo`),
-  KEY `type` (`fraction`),
-  FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-/*Data for the table `profile` */
-
-insert  into `profile`(`id`,`title`,`toggle`,`entityId`,`dashboard`,`move`,`maxWindows`,`demo`,`fraction`,`alias`) values 
-(1,'{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','y',11,'',1,15,'n','system','dev'),
-(12,'{\"ru\":\"Администратор\",\"en\":\"Admin\"}','y',11,'',12,15,'n','custom','admin');
 
 /*Table structure for table `queueChunk` */
 
@@ -1698,7 +1669,7 @@ CREATE TABLE `realtime` (
   `id` int NOT NULL AUTO_INCREMENT,
   `realtimeId` int NOT NULL DEFAULT '0',
   `type` enum('session','channel','context') NOT NULL DEFAULT 'session',
-  `profileId` int NOT NULL DEFAULT '0',
+  `roleId` int NOT NULL DEFAULT '0',
   `adminId` int NOT NULL DEFAULT '0',
   `token` varchar(255) NOT NULL DEFAULT '',
   `spaceSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -1715,7 +1686,7 @@ CREATE TABLE `realtime` (
   PRIMARY KEY (`id`),
   KEY `realtimeId` (`realtimeId`),
   KEY `type` (`type`),
-  KEY `profileId` (`profileId`),
+  KEY `profileId` (`roleId`),
   KEY `adminId` (`adminId`),
   KEY `langId` (`langId`),
   KEY `sectionId` (`sectionId`),
@@ -1725,7 +1696,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=3127 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3133 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `realtime` */
 
@@ -1749,6 +1720,35 @@ CREATE TABLE `resize` (
 
 /*Data for the table `resize` */
 
+/*Table structure for table `role` */
+
+DROP TABLE IF EXISTS `role`;
+
+CREATE TABLE `role` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` text NOT NULL,
+  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
+  `entityId` int NOT NULL DEFAULT '11',
+  `dashboard` varchar(255) NOT NULL DEFAULT '',
+  `move` int NOT NULL DEFAULT '0',
+  `maxWindows` int NOT NULL DEFAULT '15',
+  `demo` enum('n','y') NOT NULL DEFAULT 'n',
+  `fraction` enum('custom','system') NOT NULL DEFAULT 'custom',
+  `alias` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `toggle` (`toggle`),
+  KEY `entityId` (`entityId`),
+  KEY `demo` (`demo`),
+  KEY `type` (`fraction`),
+  FULLTEXT KEY `title` (`title`)
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+/*Data for the table `role` */
+
+insert  into `role`(`id`,`title`,`toggle`,`entityId`,`dashboard`,`move`,`maxWindows`,`demo`,`fraction`,`alias`) values 
+(1,'{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','y',11,'',1,15,'n','system','dev'),
+(12,'{\"ru\":\"Администратор\",\"en\":\"Admin\"}','y',11,'',12,15,'n','custom','admin');
+
 /*Table structure for table `search` */
 
 DROP TABLE IF EXISTS `search`;
@@ -1766,7 +1766,7 @@ CREATE TABLE `search` (
   `ignoreTemplate` tinyint(1) NOT NULL DEFAULT '1',
   `consistence` tinyint(1) NOT NULL DEFAULT '1',
   `access` enum('all','only','except') NOT NULL DEFAULT 'all',
-  `profileIds` varchar(255) NOT NULL DEFAULT '',
+  `roleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `allowClear` tinyint(1) NOT NULL DEFAULT '1',
   `further` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
@@ -1775,7 +1775,7 @@ CREATE TABLE `search` (
   KEY `fieldId` (`fieldId`),
   KEY `toggle` (`toggle`),
   KEY `access` (`access`),
-  KEY `profileIds` (`profileIds`(250)),
+  KEY `profileIds` (`roleIds`(250)),
   KEY `further` (`further`),
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`),
@@ -1784,7 +1784,7 @@ CREATE TABLE `search` (
 
 /*Data for the table `search` */
 
-insert  into `search`(`id`,`sectionId`,`fieldId`,`move`,`toggle`,`alt`,`title`,`defaultValue`,`filter`,`ignoreTemplate`,`consistence`,`access`,`profileIds`,`allowClear`,`further`,`tooltip`) values 
+insert  into `search`(`id`,`sectionId`,`fieldId`,`move`,`toggle`,`alt`,`title`,`defaultValue`,`filter`,`ignoreTemplate`,`consistence`,`access`,`roleIds`,`allowClear`,`further`,`tooltip`) values 
 (13,5,612,13,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
 (114,5,1441,114,'n','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Включить в кэш\",\"en\":\"Include in cache\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
 (116,7,1366,116,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
@@ -1910,7 +1910,7 @@ CREATE TABLE `section2action` (
   `actionId` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   `move` int NOT NULL DEFAULT '0',
-  `profileIds` varchar(255) NOT NULL DEFAULT '14',
+  `roleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '14',
   `title` text NOT NULL,
   `rename` text NOT NULL,
   `south` enum('auto','yes','no') NOT NULL DEFAULT 'auto',
@@ -1920,7 +1920,7 @@ CREATE TABLE `section2action` (
   KEY `sectionId` (`sectionId`),
   KEY `sectionId_2` (`sectionId`),
   KEY `actionId` (`actionId`),
-  KEY `profileIds` (`profileIds`(250)),
+  KEY `profileIds` (`roleIds`(250)),
   KEY `toggle` (`toggle`),
   KEY `south` (`south`),
   KEY `fitWindow` (`fitWindow`),
@@ -1931,7 +1931,7 @@ CREATE TABLE `section2action` (
 
 /*Data for the table `section2action` */
 
-insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`profileIds`,`title`,`rename`,`south`,`fitWindow`,`l10n`) values 
+insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`roleIds`,`title`,`rename`,`south`,`fitWindow`,`l10n`) values 
 (1,2,1,'y',1,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (2,2,2,'y',2,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (3,2,3,'y',3,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
