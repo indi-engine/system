@@ -343,7 +343,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 $new->nested('grid')->delete();
 
                 // Foreach nested entity
-                foreach (ar('section2action,grid,alteredField,search') as $nested) {
+                foreach (ar('section2action,grid,alteredField,filter') as $nested) {
 
                     // Get tree-column, if set
                     if ($tc = m($nested)->treeColumn()) $parent[$nested] = [0 => 0];

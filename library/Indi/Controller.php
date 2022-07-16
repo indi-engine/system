@@ -362,12 +362,12 @@ class Indi_Controller {
                 // Pick the current filter field title to $excelA
                 if (array_key_exists($found->alias, $excelA) == false) {
 
-                    // Get filter `alt` property
+                    // Get filter `rename` property
                     if (t()->filters instanceof Indi_Db_Table_Rowset)
-                        $alt = t()->filters->select($found->id, $lookupBy)->current()->alt;
+                        $rename = t()->filters->select($found->id, $lookupBy)->current()->rename;
 
                     // Set excel filter mention title
-                    $excelA[$found->alias] = ['title' => $alt ? $alt : $found->title];
+                    $excelA[$found->alias] = ['title' => $rename ?: $found->title];
                 }
 
                 // If field is not storing foreign keys

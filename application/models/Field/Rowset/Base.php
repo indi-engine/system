@@ -187,7 +187,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
     /**
      * Builds an SQL string from an array of clauses, imploded with OR. String will be enclosed by round brackets, e.g.
      * '(`column1` LIKE "%keyword%" OR `column2` LIKE "%keyword%" OR `columnN` LIKE "%keyword%")'. Result string will
-     * not contain search clauses for columns, that are involved in building of set of another kind of WHERE clauses -
+     * not contain WHERE clauses for columns, that are involved in building of set of another kind of WHERE clauses -
      * related to grid filters
      *
      * @param $keyword
@@ -229,7 +229,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
                 if ($keywordFieldWHERE = $fieldR->keywordWHERE($keyword))
                     $where[] = $keywordFieldWHERE;
 
-        // Append clauses, for deeper/nested keyword-search, if $nested argument is given
+        // Append clauses, for deeper/nested keyword-filter, if $nested argument is given
         if ($this[0]) {
             $connector = m($this[0]->entityId)->table() . 'Id';
             foreach ($nested as $table => $columns) {

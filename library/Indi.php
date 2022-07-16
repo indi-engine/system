@@ -1505,15 +1505,6 @@ class Indi {
     }
 
     /**
-     * Load cache files if need
-     *
-     * @static
-     */
-    public static function cache(){
-        Indi_Cache::load();
-    }
-
-    /**
      * Build and return an image (represented by 'img' tag), related to certain row of certain entity,
      * or the certain copy of that image, if $copy argument is given.
      *
@@ -1745,7 +1736,7 @@ class Indi {
 
     /**
      * This function is useful for short-hand access to values, passed within json_encoded value of
-     * $_GET's 'search' param
+     * $_GET's 'filter' param
      *
      * @static
      * @param null $arg1
@@ -1757,11 +1748,11 @@ class Indi {
         // Define $obar array, that will contain key->value pairs for all involved filters
         $obar = [];
 
-        // If there is no 'search' param within query string - set up it as json-encoded empty array
-        if (!Indi::get('search')) Indi::get('search', json_encode($obar));
+        // If there is no 'filter' param within query string - set up it as json-encoded empty array
+        if (!Indi::get('filter')) Indi::get('filter', json_encode($obar));
 
-        // Json-decode $_GET's 'search' param
-        $rawA = json_decode(Indi::get('search'), true);
+        // Json-decode $_GET's 'filter' param
+        $rawA = json_decode(Indi::get('filter'), true);
 
         // If Json-encoded string was invalid - return empty array
         if (!is_array($rawA)) return [];
@@ -1769,7 +1760,7 @@ class Indi {
         // Build the $obar array
         foreach ($rawA as $rawI) $obar[key($rawI)] = current($rawI);
 
-        // If no arguments given - return $_GET's search param as a usage-friendly array
+        // If no arguments given - return $_GET's filter param as a usage-friendly array
         if (func_num_args() == 0) return $obar;
 
         // Else if single argument given - assume it's a key within $obar, and return it's value
@@ -1781,12 +1772,12 @@ class Indi {
             // Assign the value
             $obar[$arg1] = $arg2;
 
-            // Prepare a new array, that will be used a replacement for $_GET's 'search' param
+            // Prepare a new array, that will be used a replacement for $_GET's 'filter' param
             $rawA = []; foreach ($obar as $k => $v) $rawA[] = [$k => $v];
 
-            // Replace, so Indi::get()->search will reflect new value ($arg2 argument)
+            // Replace, so Indi::get()->filter will reflect new value ($arg2 argument)
             // assignment for a given key ($arg1 argument)
-            Indi::get()->search = json_encode($rawA);
+            Indi::get()->filter = json_encode($rawA);
 
             // Return assigned value
             return $obar[$arg1];

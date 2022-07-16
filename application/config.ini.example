@@ -6,7 +6,6 @@ demo = false
 
 [db]
 adapter = mysql
-cache = false
 host = localhost
 username = empty
 password = empty

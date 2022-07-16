@@ -1,5 +1,46 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function refactorAllExceptAction() {
+        field('action', 'rowRequired', ['alias' => 'selectionRequired']);
+        entity('search', ['table' => 'filter']);
+        section('search', ['alias' => 'filter']);
+        foreach (ar('grid,filter') as $entity) {
+            db()->query('UPDATE `' . $entity . '` SET `access` = "all" WHERE `access` = "except"');
+            enumset($entity, 'access', 'except')->delete();
+            enumset($entity, 'access', 'all', ['title' => 'Any role']);
+            enumset($entity, 'access', 'only', ['title' => 'No roles', 'alias' => 'none', 'move' => 'all']);
+            field($entity, 'access',  ['alias' => 'accessRoles', 'title' => 'Roles']);
+            field($entity, 'roleIds', ['alias' => 'accessExcept', 'title' => 'Except']);
+            field($entity, 'accesss', ['alias' => 'access']);
+        }
+
+        db()->query('UPDATE `alteredField` SET `impact` = "all" WHERE `impact` = "except"');
+        enumset('alteredField', 'impact', 'except')->delete();
+        enumset('alteredField', 'impact', 'all', ['title' => 'Any role']);
+        enumset('alteredField', 'impact', 'only', ['title' => 'No roles', 'alias' => 'none', 'move' => 'all']);
+        field('alteredField', 'impact',  ['alias' => 'accessRoles', 'title' => 'Roles']);
+        field('alteredField', 'roleIds', ['alias' => 'accessExcept', 'title' => 'Except']);
+        field('alteredField', 'impactt', ['alias' => 'access', 'title' => 'Access']);
+
+        field('alteredField', 'toggle', [
+            'title' => 'Toggle',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'y',
+            'move' => 'title',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('alteredField', 'toggle', 'y', ['title' => '<span class="i-color-box" style="background: lime;"></span>Turned on', 'move' => '']);
+        enumset('alteredField', 'toggle', 'n', ['title' => '<span class="i-color-box" style="background: red;"></span>Turned off', 'move' => 'y']);
+        grid('alteredFields', 'toggle', ['move' => 'fieldId']);
+        grid('filter', 'filter', ['gridId' => 'display', 'rowReqIfAffected' => 'y']);
+        field('filter', 'alt', ['alias' => 'rename']);
+        field('grid', 'alterTitle', ['alias' => 'rename']);
+        field('entity', 'useCache')->delete();
+        action('cache')->delete();
+        die('ok');
+    }
     public function renameProfileAction() {
         field('notice', 'profileId', ['alias' => 'roleId']);
         field('admin', 'profileId', ['alias' => 'roleId']);

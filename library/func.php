@@ -2379,7 +2379,7 @@ function alteredField($section, $field, array $ctor = []) {
  * @param string $section Alias of section, that `filter` entry is/should exist within
  * @param string $field Alias of field, underlying behind `filter` entry
  * @param bool|array $ctor Props to be involved in insert/update
- * @return Search_Row|null
+ * @return Filter_Row|null
  */
 function filter($section, $field, $ctor = false) {
 
@@ -2403,7 +2403,7 @@ function filter($section, $field, $ctor = false) {
     $w []= '`further` = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `filter` entry
-    $filterR = m('Search')->row($w);
+    $filterR = m('Filter')->row($w);
 
     // If $ctor arg is non-false and is not and empty array - return found `filter` entry, or null otherwise
     // This part of this function differs from such part if other similar functions, for example field() function,
@@ -2418,7 +2418,7 @@ function filter($section, $field, $ctor = false) {
             $ctor[$prop] = $$prop;
 
     // If `filter` entry was not found - create it
-    if (!$filterR) $filterR = m('Search')->new();
+    if (!$filterR) $filterR = m('Filter')->new();
 
     // Assign `sectionId` prop first
     if ($ctor['sectionId'] && $filterR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);

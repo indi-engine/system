@@ -1,6 +1,6 @@
 <?php
 field('action', 'title')->toggleL10n('qy', $lang, false);
-field('action', 'rowRequired')->toggleL10n('qy', $lang, false);
+field('action', 'selectionRequired')->toggleL10n('qy', $lang, false);
 field('action', 'fraction')->toggleL10n('qy', $lang, false);
 field('action', 'display')->toggleL10n('qy', $lang, false);
 field('action', 'toggle')->toggleL10n('qy', $lang, false);
@@ -76,9 +76,9 @@ field('realtime', 'type')->toggleL10n('qy', $lang, false);
 field('realtime', 'mode')->toggleL10n('qy', $lang, false);
 field('resize', 'mode')->toggleL10n('qy', $lang, false);
 field('resize', 'note')->toggleL10n('qy', $lang, false);
-field('search', 'toggle')->toggleL10n('qy', $lang, false);
-field('search', 'tooltip')->toggleL10n('qy', $lang, false);
-field('search', 'access')->toggleL10n('qy', $lang, false);
+field('filter', 'toggle')->toggleL10n('qy', $lang, false);
+field('filter', 'tooltip')->toggleL10n('qy', $lang, false);
+field('filter', 'access')->toggleL10n('qy', $lang, false);
 field('section', 'title')->toggleL10n('qy', $lang, false);
 field('section', 'toggle')->toggleL10n('qy', $lang, false);
 field('section', 'fraction')->toggleL10n('qy', $lang, false);

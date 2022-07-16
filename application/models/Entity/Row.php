@@ -104,7 +104,7 @@ class Entity_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Create/rename database table, refresh/remove cache file, rename upload folder if need
+     * Create/rename database table, rename upload folder if need
      *
      * @return int
      */
@@ -210,23 +210,6 @@ class Entity_Row extends Indi_Db_Table_Row {
 
                 } else $model->all()->titleUsagesUpdate();
             } else $model->all()->titleUsagesUpdate();
-        }
-
-        // If useCache property was changed
-        if (isset($modified['useCache']) && false) {
-
-            // If it was switched on
-            if ($modified['useCache']) {
-
-                // Refresh the cache file
-                Indi_Cache::update($this->table);
-
-            // Else if it was switched off
-            } else {
-
-                // Remove the cache file
-                Indi_Cache::remove($this->table);
-            }
         }
 
         return $return;

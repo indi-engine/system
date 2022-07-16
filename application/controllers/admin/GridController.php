@@ -9,5 +9,5 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
     /**
      * @var string
      */
-    public $unset = 'alterTitle,tooltip';
+    public $unset = 'rename,tooltip';
 }

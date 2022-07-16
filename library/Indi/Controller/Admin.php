@@ -127,7 +127,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             t()->view();
 
             // If action is 'index'
-            if (t()->action->rowRequired == 'n') {
+            if (t()->action->selectionRequired == 'n') {
 
                 // Set rowset mode
                 $this->_isRowsetSeparate();
@@ -323,7 +323,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Setup mapping that will help to prevent cross-section ui-editing
         $scope = ['grid' => 'grid', 'field' => 'fields', 'entity' => m()->id(),
-            'section' => 'sections', 'section2action' => 'actions', 'search' => 'filters'];
+            'section' => 'sections', 'section2action' => 'actions', 'filter' => 'filters'];
 
         // List of ui allowed for editing
         if (!in($ui, array_keys($scope))) jflush(false);
@@ -349,7 +349,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (isset(Indi::post()->rename)) {
 
             // Map
-            $rename = ['grid' => 'alterTitle', 'field' => 'title', 'entity' => 'title', 'search' => 'alt'];
+            $rename = ['grid' => 'rename', 'field' => 'title', 'entity' => 'title', 'filter' => 'rename'];
 
             // If ctrl-key was hold and we were editing grid column title
             if ($ui == 'grid' && Indi::post()->ctrlKey) {
@@ -376,7 +376,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         } else if (isset(Indi::post()->tooltip)) {
 
             // Map
-            $rename = ['grid' => 'tooltip', 'section' => 'help', 'section2action' => 'rename', 'search' => 'tooltip'];
+            $rename = ['grid' => 'tooltip', 'section' => 'help', 'section2action' => 'rename', 'filter' => 'tooltip'];
 
             // If ctrl-key was hold and we were editing grid column tooltip
             if ($ui == 'grid' && Indi::post()->ctrlKey) {
@@ -827,7 +827,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $byLevel[$level][$gridR->id] = $column + [
                     'colspan' => 1,
                     'gridId' => $gridR->gridId,
-                    'title' => $gridR->alterTitle ?: $gridR->title,
+                    'title' => $gridR->rename ?: $gridR->title,
                     'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
                     'leaf' => true
                 ];
@@ -839,10 +839,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $level = $gridR->level() + 1;
 
                     // Get array containing certain props
-                    $column = $gridR->props('id,title,alterTitle,fieldId.alias,gridId');
+                    $column = $gridR->props('id,title,rename,fieldId.alias,gridId');
 
                     // Spoof title-prop, if need
-                    $column['title'] = $column['alterTitle'] ?: $column['title']; unset($column['alterTitle']);
+                    $column['title'] = $column['rename'] ?: $column['title']; unset($column['rename']);
 
                     // Setup dataIndex-prop
                     $column['dataIndex'] = $column['fieldId.alias']; unset($column['fieldId.alias']);

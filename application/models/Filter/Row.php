@@ -1,5 +1,5 @@
 <?php
-class Search_Row extends Indi_Db_Table_Row {
+class Filter_Row extends Indi_Db_Table_Row {
 
     /**
      * This method was redefined to provide ability for some filter
@@ -16,7 +16,7 @@ class Search_Row extends Indi_Db_Table_Row {
             if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
-            else if ($columnName == 'roleIds') {
+            else if ($columnName == 'accessExcept') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
                     ->all('FIND_IN_SET(`alias`, "' . $value .'")')
                     ->col('id', true);
@@ -37,7 +37,7 @@ class Search_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Build a string, that will be used in Search_Row->export()
+     * Build a string, that will be used in Filter_Row->export()
      *
      * @param string $certain
      * @return string
@@ -108,12 +108,5 @@ class Search_Row extends Indi_Db_Table_Row {
      */
     public function setTitle() {
         $this->_setTitle();
-    }
-
-    /**
-     * Make sure `roleIds` will be empty if `access` is 'all'
-     */
-    public function onBeforeSave() {
-        if ($this->access == 'all') $this->zero('roleIds', true);
     }
 }

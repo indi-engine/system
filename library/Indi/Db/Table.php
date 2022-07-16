@@ -23,13 +23,6 @@ class Indi_Db_Table
     protected $_title = '';
 
     /**
-     * Flag, that figures out whether or not cache is used for that model
-     *
-     * @var boolean
-     */
-    protected $_useCache = false;
-
-    /**
      * Flag, indicating that this model instances may be used as an access accounts
      *
      * @var boolean
@@ -206,9 +199,6 @@ class Indi_Db_Table
 
         // Setup filesGroupBy field id
         $this->_filesGroupBy = $config['filesGroupBy'] ?: 0;
-
-        // Setup 'useCache' flag
-        $this->_useCache = isset($config['useCache']) ? true : false;
 
         // Setup 'hasRole' flag
         $this->_hasRole = $config['hasRole'];
@@ -1394,15 +1384,6 @@ class Indi_Db_Table
 
         // Execute query and return number of affected rows
         return db()->query($sql);
-    }
-
-    /**
-     * Return the 'useCache' flag value
-     *
-     * @return bool
-     */
-    public function useCache() {
-        return $this->_useCache;
     }
 
     /**

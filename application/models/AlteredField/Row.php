@@ -16,7 +16,7 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
             if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'elementId') $value = element($value)->id;
-            else if ($columnName == 'roleIds') {
+            else if ($columnName == 'accessExcept') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
                     ->all('FIND_IN_SET(`alias`, "' . $value .'")')
                     ->col('id', true);

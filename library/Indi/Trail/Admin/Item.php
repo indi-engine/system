@@ -71,7 +71,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if (count(Indi_Trail_Admin::$items) == 0) {
 
             // Setup filters
-            foreach ($this->filters = $sectionR->nested('search') as $filterR) {
+            foreach ($this->filters = $sectionR->nested('filter') as $filterR) {
 
                 // Get field
                 if (!$fieldR = $this->fields($filterR->fieldId)) continue;
@@ -95,7 +95,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     $this->action = $actionR;
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
-            if ($this->action->rowRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
+            if ($this->action->selectionRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
 
             // Alter fields
             $originalDefaults = [];
@@ -201,7 +201,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if (uri('id')) {
 
                 // If action is not 'index', so it mean that we are dealing with not rowset, but certain row
-                if ($this->action->rowRequired == 'y') {
+                if ($this->action->selectionRequired == 'y') {
 
                     // Get primary WHERE clause
                     $where = Indi_Trail_Admin::$controller->primaryWHERE();
@@ -301,12 +301,12 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 : t($index)->model->table() . 'Id';
 
             // Create empty row to be used as parent row, if need
-            if (uri('id') === '0' && t($index-1)->action->rowRequired == 'n' && $index == 1)
+            if (uri('id') === '0' && t($index-1)->action->selectionRequired == 'n' && $index == 1)
                 if ($this->row = $this->model->new())
                     return;
 
             // Get the id
-            $id = t($index-1)->action->rowRequired == 'n' && $index == 1
+            $id = t($index-1)->action->selectionRequired == 'n' && $index == 1
                 ? uri('id')
                 : (preg_match('/,/', t($index-1)->row->$connector) // ambiguous check
                     ? $_SESSION['indi']['admin']['trail']['parentId'][$this->section->id]
@@ -659,7 +659,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 'entityId' => t()->section->entityId,
                 'fields' => $fields,
                 'title' => t(true)->toString(),
-                'mode' => $this->action->rowRequired == 'y' ? 'row' : 'rowset'
+                'mode' => $this->action->selectionRequired == 'y' ? 'row' : 'rowset'
             ] + $data);
 
             // Save it

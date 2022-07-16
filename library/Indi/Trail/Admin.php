@@ -78,50 +78,19 @@ class Indi_Trail_Admin {
             'order' => 'move'
         ]);
 
-        // Get filters
-        $searchWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` = "y"'];
-        if (m('Search')->fields('access') && m('Search')->fields('roleIds')) {
-            $searchWHERE[] = '(' . im([
-                '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-                ], ' OR ') . ')';
-        }
+        // Build WHERE clause, responsible for respecting access rules, and same for `grid`, `filter` and `alteredField` entries
+        $_accessWHERE = m('Filter')->fields('accessRoles') || true ? '(' . im([
+            '(`accessRoles` = "all"  AND NOT FIND_IN_SET("' . admin()->roleId . '", `accessExcept`))',
+            '(`accessRoles` = "none" AND     FIND_IN_SET("' . admin()->roleId . '", `accessExcept`))',
+        ], ' OR ') . ')' : 'TRUE';
 
-        // Setup filters
-        $sectionRs->nested('search', [
-            'where' => $searchWHERE,
-            'order' => 'move'
-        ]);
+        // Build final WHERE clause, responsible for fetching grid columns, grid filters and altered fields
+        $_nestedWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"', $_accessWHERE];
 
-        // Grid columns WHERE clause
-        $gridWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"'];
-        if (m('Grid')->fields('access') && m('Grid')->fields('roleIds')) {
-            $gridWHERE[] = '(' . im([
-                '`access` = "all"',
-                '(`access` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-                '(`access` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-                ], ' OR ') . ')';
-        }
-
-        // Setup grid columns
-        $sectionRs->nested('grid', [
-            'where' => $gridWHERE,
-            'order' => '`group` = "locked" DESC, `move`'
-        ]);
-
-        // Altered field WHERE clause
-        $alteredFieldsWHERE = ['`sectionId` = "' . $routeA[0] . '"'];
-        $alteredFieldsWHERE[] = '(' . im([
-            '`impact` = "all"',
-            '(`impact` = "only" AND FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-            '(`impact` = "except" AND NOT FIND_IN_SET("' . admin()->roleId . '", `roleIds`))',
-            ], ' OR ') . ')';
-
-        // Setup disabled fields
-        $sectionRs->nested(entity('alteredField') ? 'alteredField' : 'disabledField', [
-            'where' => $alteredFieldsWHERE
-        ]);
+        // Fetch grid columns, grid filters and altered fields
+        $sectionRs->nested('grid',         ['where' => $_nestedWHERE, 'order' => '`group` = "locked" DESC, `move`']);
+        $sectionRs->nested('filter',       ['where' => $_nestedWHERE, 'order' => 'move']);
+        $sectionRs->nested('alteredField', ['where' => $_nestedWHERE]);
 
         // Setup initial set of properties
         foreach ($sectionRs as $sectionR)

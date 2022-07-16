@@ -1770,7 +1770,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 'entity' => 'table,extends',
                 'columnType' => 'type',
                 'notice' => 'event,qtySql',
-                'search' => 'filter,defautValue',
+                'filter' => 'filter,defautValue',
                 'element' => 'alias',
                 'role' => 'dashboard',
                 'lang' => 'title,alias',

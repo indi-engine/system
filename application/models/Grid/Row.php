@@ -18,7 +18,7 @@ class Grid_Row extends Indi_Db_Table_Row {
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'gridId') $value = grid($this->sectionId, $value)->id;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
-            else if ($columnName == 'roleIds') {
+            else if ($columnName == 'accessExcept') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
                     ->all('FIND_IN_SET(`alias`, "' . $value .'")')
                     ->col('id', true);
@@ -172,9 +172,6 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // If summaryType is not 'text' - set `summaryText` to be empty
         if ($this->summaryType != 'text') $this->zero('summaryText', true);
-
-        // Make sure `roleIds` will be empty if `access` is 'all'
-        if ($this->access == 'all') $this->zero('roleIds', true);
     }
 
     /**
@@ -183,9 +180,20 @@ class Grid_Row extends Indi_Db_Table_Row {
      * @return bool
      */
     public function accessible() {
-        if (!$this->access || $this->access == 'all') return true;
-        if ($this->access == 'only' && in(admin()->roleId, $this->roleIds)) return true;
-        if ($this->access == 'except' && !in(admin()->roleId, $this->roleIds)) return true;
+
+        // If accessRoles-prop is empty, it means that there is no such prop, and this,
+        // in it's turn, means that current Indi Engine instance is not updated
+        if (!$this->accessRoles) return true;
+
+        // If current grid column should be accessible for all roles
+        if ($this->accessRoles == 'all') return $this->accessExcept
+            ? !in(admin()->roleId, $this->accessExcept)
+            : true;
+
+        // Else if should be accessible for no role (but maybe with some exceptions)
+        else return $this->accessExcept
+            ? in(admin()->roleId, $this->accessExcept)
+            : false;
     }
 
     /**

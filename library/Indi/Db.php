@@ -30,13 +30,6 @@ class Indi_Db {
     protected static $_entityA = [];
 
     /**
-     * Array of table names of existing entities, which have `useCache` flag turned on
-     *
-     * @var array
-     */
-    protected static $_cacheA = [];
-
-    /**
      * Array of table names of existing entities, which have `alternate` flag turned on
      *
      * @var array
@@ -158,7 +151,7 @@ class Indi_Db {
 
             // Get db table containing roles. This is temporary solution to handle
             // Indi Engine instances where `profile`-table is not yet renamed to `role`
-            $roleTable = array_column($entityA, 'table','table')['role'] ?? 'profile';
+            $roleTable = array_column($entityA, 'table','table')['profile'] ?? 'role';
 
             // Get ids of entities, linked to access roles
             self::$_roleA = self::$_instance->query('
@@ -433,7 +426,6 @@ class Indi_Db {
                     'id' => $entityI['id'],
                     'title' => $entityI['title'],
                     'extends' => $entityI['extends'],
-                    'useCache' => $entityI['useCache'],
                     'titleFieldId' => $entityI['titleFieldId'],
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
@@ -466,9 +458,6 @@ class Indi_Db {
 
                 // Free memory, used by fields array for current entity
                 unset($eFieldA[$entityI['id']]);
-
-                // If cache usage is setup for current entity, we append it's table name as a key in self::$_cacheA array
-                if ($entityI['useCache']) self::$_cacheA[$entityI['table']] = true;
             }
 
             // Setup notices
@@ -600,7 +589,7 @@ class Indi_Db {
      *
      * @uses Indi_Db::sql()
      * @param $sql
-     * @return Indi_Cache_Fetcher|int|PDOStatement
+     * @return int|PDOStatement
      */
     public function query($sql) {
 
@@ -634,13 +623,7 @@ class Indi_Db {
             // Return affected rows count as a result of query execution
             return $affected;
 
-        // If cache usage is turned on, and current query match cache usage requirements
-        } else if (ini()->db->cache && $params = self::shouldUseCache($sql)) {
-
-            // Pass query to Indi_Cache::fetcher() method
-            return Indi_Cache::fetcher($params);
-
-        // Else if query was not UPDATE|DELETE|INSERT, and query did not match Indi_Cache::fetcher() requirements
+        // Else if query was not UPDATE|DELETE|INSERT
         } else {
 
             // Exectute query by PDO->query() method
@@ -714,32 +697,6 @@ class Indi_Db {
      */
     public function getPDO() {
         return self::$_pdo;
-    }
-
-    /**
-     * Check if current sql query execution can be handled with Indi_Cache::fetcher() method,
-     * and if so, return an array, containing table name, columns list and WHERE clause
-     *
-     * @param $sql
-     * @return array|bool|null
-     */
-    public function shouldUseCache($sql) {
-
-        // Check if query is enough simple for Indi_Cache::fetcher() to deal with it
-        if ($params = Indi_Cache_Fetcher::support($sql))
-
-            // If table name, got from query FROM clause is within keys of self::$_cacheA array
-            if (self::$_cacheA[$params['table']] || $params['table'] == 'entity')
-
-                // And if file with cached data for that table exists
-                if (file_exists(Indi_Cache::file($params['table'])))
-
-                    // Return info about catched table name, WHERE, ORDER and LIMIT clauses
-                    // and columns, that should be retrieved
-                    return $params;
-
-        // Return false
-        return false;
     }
 
     /**

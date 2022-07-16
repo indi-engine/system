@@ -21,7 +21,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
     /**
      * Builds the combo for grid filter
      *
-     * @param Search_Row $filter
+     * @param Filter_Row $filter
      * @param bool $combined
      */
     public function filterCombo($filter, $combined = false) {

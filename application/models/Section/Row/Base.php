@@ -168,7 +168,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
         // Foreach `filter` entry, nested within current `section` entry
         // - build `filter` entry's creation expression
-        foreach ($this->nested('search', ['order' => 'move']) as $filterR)
+        foreach ($this->nested('filter', ['order' => 'move']) as $filterR)
             $lineA[] = $filterR->export();
 
         // Return newline-separated list of creation expressions

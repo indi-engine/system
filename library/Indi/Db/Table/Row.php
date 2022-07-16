@@ -667,9 +667,6 @@ class Indi_Db_Table_Row implements ArrayAccess
             $this->_modified = [];
         }
 
-        // Update cache if need
-        if (ini('db')->cache && $this->model()->useCache()) Indi_Cache::update($this->model()->table());
-
         // Adjust file-upload fields contents according to meta info, existing in $this->_files for such fields
         $this->files(true);
 

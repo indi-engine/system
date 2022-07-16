@@ -83,7 +83,6 @@ if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
     define('CID', $_[2] ?: false);
 }
 
-Indi::cache();
 Indi::db(ini()->db);
 
 // Save config and global request data to registry
