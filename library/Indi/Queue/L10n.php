@@ -22,43 +22,33 @@ class Indi_Queue_L10n extends Indi_Queue {
         // Fetch `queueTask` entry
         $queueTaskR = m('QueueTask')->row($queueTaskId);
 
-        try {
+        // Foreach `queueChunk` entries, nested under `queueTask` entry
+        foreach ($queueTaskR->nested('queueChunk', [
+            'where' => '`countState` != "finished"',
+            'order' => '`countState` = "progress" DESC, `move`'
+        ]) as $queueChunkR) {
 
-            // Foreach `queueChunk` entries, nested under `queueTask` entry
-            foreach ($queueTaskR->nested('queueChunk', [
-                'where' => '`countState` != "finished"',
-                'order' => '`countState` = "progress" DESC, `move`'
-            ]) as $queueChunkR) {
+            // Remember that we're going to count
+            $queueChunkR->set(['countState' => 'progress'])->basicUpdate();
 
-                // Remember that we're going to count
-                $queueChunkR->set(['countState' => 'progress'])->basicUpdate();
+            // Get table
+            list ($table, $field) = explode(':', $queueChunkR->location);
 
-                // Get table
-                list ($table, $field) = explode(':', $queueChunkR->location);
-
-                // Count items
-                $queueChunkR->countSize = db()->query('
+            // Count items
+            $queueChunkR->countSize = db()->query('
                 SELECT COUNT(`id`) FROM `' . $table . '`' . rif($queueChunkR->where, ' WHERE $1')
-                )->fetchColumn();
+            )->fetchColumn();
 
-                // Remember that our try to count was successful
-                $queueChunkR->set(['countState' => 'finished'])->basicUpdate();
+            // Remember that our try to count was successful
+            $queueChunkR->set(['countState' => 'finished'])->basicUpdate();
 
-                // Update `queueTask` entry's `countSize` prop
-                $queueTaskR->countSize += $queueChunkR->countSize;
-                $queueTaskR->basicUpdate(false, false);
-            }
-
-            // Mark first stage as 'Finished' and save `queueTask` entry
-            $queueTaskR->set(['state' => 'finished', 'countState' => 'finished'])->save();
-
-        // Catch exception
-        } catch (Exception $e) {
-            i($e, 'a');
-
-            // Log error
-            $queueTaskR->set(['countState' => 'error', 'error' => $e->getMessage()])->save();
+            // Update `queueTask` entry's `countSize` prop
+            $queueTaskR->countSize += $queueChunkR->countSize;
+            $queueTaskR->basicUpdate(false, false);
         }
+
+        // Mark first stage as 'Finished' and save `queueTask` entry
+        $queueTaskR->set(['state' => 'finished', 'countState' => 'finished'])->save();
     }
 
     /**
