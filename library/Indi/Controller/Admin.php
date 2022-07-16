@@ -141,7 +141,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (uri()->ph) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
-                if (Indi::get()->filter) $applyA['filters'] = $this->_filter2search();
+                if (preg_match('~^{~', Indi::get()->filter)) $applyA['filters'] = $this->_filter2search();
                 t()->scope->apply($applyA);
 
                 // If there was no 'format' param passed within the uri
@@ -149,7 +149,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (!uri()->format && !$this->_isRowsetSeparate) {
 
                     // Prepare search data for $this->filtersWHERE()
-                    Indi::get()->search = t()->scope->filters == '[]'
+                    Indi::get()->filter = t()->scope->filters == '[]'
                         ? t()->jsonDefaultFilters()
                         : t()->scope->filters;
 
@@ -230,7 +230,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                         // Scope params
                         $scope = [
-                            'primary' => $primaryWHERE, 'filters' => Indi::get()->search, 'keyword' => Indi::get()->keyword,
+                            'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword,
                             'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
                             'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
                             'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
@@ -3886,22 +3886,22 @@ class Indi_Controller_Admin extends Indi_Controller {
 
     /**
      * Convert $_GET['filter'], which is in {param1: value1, param2: value2} format,
-     * into $_GET['search'] format (e.g. [{param1: value1}, {param2: value2}])
+     * into $_GET['filter'] format (e.g. [{param1: value1}, {param2: value2}])
      *
      * @return mixed
      */
     protected function _filter2search() {
 
         // If $_GET['filter'] is not an array - return
-        if (!is_array($filter = Indi::get()->filter)) return;
+        if (!is_array($assoc = Indi::get()->filter)) return;
 
         // Convert filter values format
         // from {param1: value1, param2: value2}
         // to [{param1: value1}, {param2: value2}]
-        $search = []; foreach ($filter as $param => $value) $search []= [$param => $value];
+        $filter = []; foreach ($assoc as $param => $value) $filter []= [$param => $value];
 
         // Json-encode and return
-        return json_encode($search);
+        return json_encode($filter);
     }
 
     /**

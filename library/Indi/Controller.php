@@ -305,12 +305,12 @@ class Indi_Controller {
      * Builds and returns a stack of WHERE clauses, that are representing grid's filters usage
      *
      * @param $FROM string table/model/entity name. Current model will be used by default
-     * @param $search string Special formatted string containing filters values like
-     *                       [{"field1":"val1"}, {"field2":"val2"}] . If not given - Indi::get()->search will be
+     * @param $filter string Special formatted string containing filters values like
+     *                       [{"field1":"val1"}, {"field2":"val2"}] . If not given - Indi::get()->filter will be
      *                       used by default
      * @return array
      */
-    public function filtersWHERE($FROM = '', $search = '') {
+    public function filtersWHERE($FROM = '', $filter = '') {
 
         // Setup model, that should have fields, mentioned as filtering params names
         $model = $FROM ? m($FROM) : t()->model;
@@ -318,24 +318,24 @@ class Indi_Controller {
         // Defined an array for collecting data, that may be used in the process of building an excel spreadsheet
         $excelA = [];
 
-        // Use Indi::get()->search if $search arg is not given
-        $search = $search ?: Indi::get()->search;
+        // Use Indi::get()->filter if $filter arg is not given
+        $filter = $filter ?: Indi::get()->filter;
 
         // Clauses stack
         $where = [];
 
-        // If we have no 'search' param in query string, there is nothing to do here
-        if ($search) {
+        // If we have no 'filter' param in query string, there is nothing to do here
+        if ($filter) {
 
-            // Decode 'search' param from json to an associative array
-            $search = json_decode($search, true);
+            // Decode 'filter' param from json to an associative array
+            $filter = json_decode($filter, true);
 
             // Foreach passed filter pair (alias => value)
-            foreach ($search as $searchOnField) {
+            foreach ($filter as $filterOnField) {
 
                 // Get the filter's alias (same as entity field's and db table column's name) and value
-                $filterSearchFieldAlias = key($searchOnField);
-                $filterSearchFieldValue = current($searchOnField);
+                $filterSearchFieldAlias = key($filterOnField);
+                $filterSearchFieldValue = current($filterOnField);
 
                 // Check $filterSearchFieldAlias
                 if (!preg_match('/^[a-zA-Z\-0-9_]+$/', $filterSearchFieldAlias)) continue;
@@ -396,7 +396,7 @@ class Indi_Controller {
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['type'] = 'color';
                         $excelA[$found->alias]['value'] = [$hueFrom, $hueTo];
-                        $excelA[$found->alias]['offset'] = $searchOnField['_xlsLabelWidth'];
+                        $excelA[$found->alias]['offset'] = $filterOnField['_xlsLabelWidth'];
 
                     // Else if $found field's control element is 'Check' or 'Combo', we use '=' clause
                     } else if ($found->elementId == 9 || $found->elementId == 23) {
@@ -886,7 +886,7 @@ class Indi_Controller {
             $primaryWHERE = t()->scope->primary;
 
             // Prepare search data for $this->filtersWHERE()
-            Indi::get()->search = t()->scope->filters;
+            Indi::get()->filter = t()->scope->filters;
 
             // Prepare search data for $this->keywordWHERE()
             Indi::get()->keyword = urlencode(t()->scope->keyword);
