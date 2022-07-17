@@ -27,10 +27,10 @@ CREATE TABLE `action` (
   PRIMARY KEY (`id`),
   KEY `rowRequired` (`selectionRequired`),
   KEY `type` (`fraction`),
-  KEY `toggle1` (`toggle`),
+  KEY `toggle` (`toggle`),
   KEY `display` (`display`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `action` */
 
@@ -78,7 +78,7 @@ CREATE TABLE `admin` (
   KEY `demo` (`demo`),
   KEY `uiedit` (`uiedit`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `admin` */
 
@@ -98,7 +98,7 @@ CREATE TABLE `alteredField` (
   `mode` enum('hidden','readonly','inherit','regular','required') NOT NULL DEFAULT 'inherit',
   `title` text NOT NULL,
   `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `accessExcept` varchar(255) NOT NULL DEFAULT '',
   `rename` text NOT NULL,
   `elementId` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
@@ -112,7 +112,7 @@ CREATE TABLE `alteredField` (
   KEY `toggle` (`toggle`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `alteredField` */
 
@@ -147,7 +147,7 @@ CREATE TABLE `changeLog` (
   KEY `profileId` (`roleId`),
   FULLTEXT KEY `was` (`was`),
   FULLTEXT KEY `now` (`now`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `changeLog` */
 
@@ -163,7 +163,7 @@ CREATE TABLE `columnType` (
   PRIMARY KEY (`id`),
   KEY `canStoreRelation` (`canStoreRelation`),
   KEY `elementId` (`elementId`(250))
-) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `columnType` */
 
@@ -202,7 +202,7 @@ CREATE TABLE `consider` (
   KEY `required` (`required`),
   KEY `connector` (`connector`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `consider` */
 
@@ -261,7 +261,7 @@ CREATE TABLE `element` (
   KEY `storeRelationAbility` (`storeRelationAbility`),
   KEY `storeRelationAbility_2` (`storeRelationAbility`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `element` */
 
@@ -306,7 +306,7 @@ CREATE TABLE `entity` (
   KEY `spaceFields` (`spaceFields`(250)),
   KEY `filesGroupBy` (`filesGroupBy`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=335 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=335 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `entity` */
 
@@ -351,7 +351,7 @@ CREATE TABLE `enumset` (
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=1260 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=1260 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `enumset` */
 
@@ -624,7 +624,7 @@ CREATE TABLE `field` (
   KEY `entry` (`entry`),
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=2610 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2610 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `field` */
 
@@ -982,14 +982,14 @@ CREATE TABLE `filter` (
   `fieldId` int NOT NULL DEFAULT '0',
   `move` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `rename` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `rename` text NOT NULL,
   `title` text NOT NULL,
   `defaultValue` varchar(255) NOT NULL DEFAULT '',
   `filter` varchar(255) NOT NULL DEFAULT '',
   `ignoreTemplate` tinyint(1) NOT NULL DEFAULT '1',
   `consistence` tinyint(1) NOT NULL DEFAULT '1',
   `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `accessExcept` varchar(255) NOT NULL DEFAULT '',
   `allowClear` tinyint(1) NOT NULL DEFAULT '1',
   `further` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
@@ -1003,7 +1003,7 @@ CREATE TABLE `filter` (
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alt` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `filter` */
 
@@ -1045,13 +1045,13 @@ CREATE TABLE `grid` (
   `sectionId` int NOT NULL DEFAULT '0',
   `fieldId` int NOT NULL DEFAULT '0',
   `move` int NOT NULL DEFAULT '0',
-  `rename` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `rename` text NOT NULL,
   `toggle` enum('y','n','h','e') NOT NULL DEFAULT 'y',
   `title` text NOT NULL,
   `gridId` int NOT NULL DEFAULT '0',
   `tooltip` text NOT NULL,
   `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `accessExcept` varchar(255) NOT NULL DEFAULT '',
   `editor` enum('0','1') NOT NULL DEFAULT '0',
   `summaryType` enum('none','sum','average','min','max','text') NOT NULL DEFAULT 'none',
   `summaryText` text NOT NULL,
@@ -1075,7 +1075,7 @@ CREATE TABLE `grid` (
   FULLTEXT KEY `summaryText` (`summaryText`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alterTitle` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=2770 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2770 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `grid` */
 
@@ -1243,7 +1243,7 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (2609,6,2412,2612,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"MySQL\",\"en\":\"MySQL\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2610,6,470,9,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2611,6,2413,8,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
-(2612,6,754,11,'{\"ru\":\"Фильтрация\",\"en\":\"Filtration\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2612,6,754,11,'{\"ru\":\"Фильтрация\",\"en\":\"Filtration\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2611,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
 (2613,6,2414,2321,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2614,6,2199,2614,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}',2613,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2615,13,1337,2616,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сущность пользователей\",\"en\":\"Entity of users\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
@@ -1275,7 +1275,7 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (2641,7,2425,2459,'{\"ru\":\"Привязка к коду\",\"en\":\"Binding to code\"}','y','{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,100,'n'),
 (2642,7,2426,31,'{\"ru\":\"Источник\",\"en\":\"\"}','y','{\"ru\":\"Источник записей\",\"en\":\"Data source\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2643,7,1345,2704,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Запретить создание новых записей\",\"en\":\"Prevent creation of new records\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
-(2644,7,767,2647,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2644,7,767,2647,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
 (2645,7,503,2642,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
 (2646,7,557,2645,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
 (2647,7,2427,2654,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','y','{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
@@ -1299,7 +1299,7 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (2681,405,2413,2681,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Внешние ключи\",\"en\":\"Foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2682,405,470,2682,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Хранит ключи\",\"en\":\"Store keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2683,405,12,2683,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','y','{\"ru\":\"Ключи какой сущности\",\"en\":\"Which entity keys\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
-(2684,405,754,2684,'{\"ru\":\"Фильтрация\",\"en\":\"SQL WHERE\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
+(2684,405,754,2684,'{\"ru\":\"Фильтрация\",\"en\":\"SQL WHERE\"}','y','{\"ru\":\"Статическая фильтрация\",\"en\":\"Filtering through SQL WHERE\"}',2681,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y'),
 (2685,405,2414,2685,'{\"ru\":\"Элемент управления\",\"en\":\"\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Form element\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2686,405,2197,2686,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Режим\",\"en\":\"Mode\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
 (2687,405,10,2687,'{\"ru\":\"Элемент\",\"en\":\"Element\"}','y','{\"ru\":\"Элемент управления\",\"en\":\"Element\"}',2685,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n'),
@@ -1374,7 +1374,7 @@ CREATE TABLE `lang` (
   KEY `adminCustomConst` (`adminCustomConst`),
   KEY `adminCustomData` (`adminCustomData`),
   KEY `adminCustomTmpl` (`adminCustomTmpl`)
-) ENGINE=MyISAM AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `lang` */
 
@@ -1505,7 +1505,7 @@ CREATE TABLE `month` (
   KEY `yearId` (`yearId`),
   KEY `month` (`month`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `month` */
 
@@ -1518,13 +1518,13 @@ CREATE TABLE `notice` (
   `title` text NOT NULL,
   `entityId` int NOT NULL DEFAULT '0',
   `event` varchar(255) NOT NULL DEFAULT '',
-  `roleId` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `roleId` varchar(255) NOT NULL DEFAULT '',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   `qtySql` varchar(255) NOT NULL DEFAULT '',
   `qtyDiffRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
   `sectionId` varchar(255) NOT NULL DEFAULT '',
-  `bg` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '195#008dbc',
-  `fg` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '000#ffffff',
+  `bg` varchar(10) NOT NULL DEFAULT '195#008dbc',
+  `fg` varchar(10) NOT NULL DEFAULT '000#ffffff',
   `tooltip` text NOT NULL,
   `tplFor` enum('inc','dec','evt') NOT NULL DEFAULT 'inc',
   `tplIncSubj` text NOT NULL,
@@ -1534,7 +1534,7 @@ CREATE TABLE `notice` (
   `tplEvtSubj` text NOT NULL,
   `tplEvtBody` text NOT NULL,
   `fraction` enum('custom','system') NOT NULL DEFAULT 'custom',
-  `alias` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `alias` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `profileId` (`roleId`(250)),
@@ -1551,7 +1551,7 @@ CREATE TABLE `notice` (
   FULLTEXT KEY `tplEvtSubj` (`tplEvtSubj`),
   FULLTEXT KEY `tplEvtBody` (`tplEvtBody`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `notice` */
 
@@ -1588,7 +1588,7 @@ CREATE TABLE `noticeGetter` (
   KEY `mail` (`mail`),
   KEY `toggle` (`toggle`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `noticeGetter` */
 
@@ -1611,7 +1611,7 @@ CREATE TABLE `param` (
   KEY `cfgField` (`cfgField`),
   FULLTEXT KEY `cfgValue` (`cfgValue`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=178 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=178 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `param` */
 
@@ -1660,7 +1660,7 @@ CREATE TABLE `queueChunk` (
   KEY `queueChunkId` (`queueChunkId`),
   KEY `fraction` (`fraction`),
   FULLTEXT KEY `where` (`where`)
-) ENGINE=MyISAM AUTO_INCREMENT=12474 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=12474 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueChunk` */
 
@@ -1682,7 +1682,7 @@ CREATE TABLE `queueItem` (
   KEY `stage` (`stage`),
   FULLTEXT KEY `value` (`value`),
   FULLTEXT KEY `result` (`result`)
-) ENGINE=MyISAM AUTO_INCREMENT=138031 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=138031 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
 
@@ -1710,7 +1710,7 @@ CREATE TABLE `queueTask` (
   `applyState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
   `applySize` int NOT NULL DEFAULT '0',
   `stageState` text NOT NULL,
-  `error` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `error` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `stage` (`stage`),
   KEY `state` (`state`),
@@ -1721,7 +1721,7 @@ CREATE TABLE `queueTask` (
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `stageState` (`stageState`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=MyISAM AUTO_INCREMENT=590 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=590 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueTask` */
 
@@ -1760,7 +1760,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=3177 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -1771,7 +1771,7 @@ DROP TABLE IF EXISTS `resize`;
 CREATE TABLE `resize` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fieldId` int NOT NULL DEFAULT '0',
-  `note` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `note` text NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
   `width` int NOT NULL DEFAULT '0',
   `height` int NOT NULL DEFAULT '0',
@@ -1780,7 +1780,7 @@ CREATE TABLE `resize` (
   KEY `fieldId` (`fieldId`),
   KEY `mode` (`mode`),
   FULLTEXT KEY `title` (`note`)
-) ENGINE=MyISAM AUTO_INCREMENT=162 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=162 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `resize` */
 
@@ -1805,7 +1805,7 @@ CREATE TABLE `role` (
   KEY `demo` (`demo`),
   KEY `type` (`fraction`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `role` */
 
@@ -1864,7 +1864,7 @@ CREATE TABLE `section` (
   KEY `rownumberer` (`rownumberer`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `help` (`help`)
-) ENGINE=MyISAM AUTO_INCREMENT=416 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=416 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section` */
 
@@ -1909,7 +1909,7 @@ CREATE TABLE `section2action` (
   `actionId` int NOT NULL DEFAULT '0',
   `toggle` enum('y','n') NOT NULL DEFAULT 'y',
   `move` int NOT NULL DEFAULT '0',
-  `roleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '14',
+  `roleIds` varchar(255) NOT NULL DEFAULT '14',
   `title` text NOT NULL,
   `rename` text NOT NULL,
   `south` enum('auto','yes','no') NOT NULL DEFAULT 'auto',
@@ -1926,7 +1926,7 @@ CREATE TABLE `section2action` (
   KEY `l10n` (`l10n`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=1694 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=1694 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section2action` */
 
@@ -2106,7 +2106,7 @@ CREATE TABLE `year` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `year` */
 
