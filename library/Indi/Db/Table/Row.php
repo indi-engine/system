@@ -121,17 +121,6 @@ class Indi_Db_Table_Row implements ArrayAccess
     protected $_view = [];
 
     /**
-     * Flag, indicating whether or not onUpdate() should be called within save() call
-     * This can be useful when onUpdate() definition contains own save() call, so
-     * setting $this->_onUpdate = false; before own save() call will prevent infinite call recursion
-     *
-     * Note: after save() call $this->_onUpdate will be reverted back to `true` automatically
-     *
-     * @var bool
-     */
-    protected $_onUpdate = true;
-
-    /**
      * Constructor
      *
      * @param array $config
@@ -671,13 +660,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->files(true);
 
         // Do some needed operations that are required to be done right after row was inserted/updated
-        if ($new) {
-            $this->onInsert();
-            $this->onSave();
-        } else if ($this->_onUpdate) {
-            $this->onUpdate($original);
-            $this->onSave();
-        } else $this->_onUpdate = true;
+        $new ? $this->onInsert() : $this->onUpdate($original); $this->onSave();
 
         // Check if row (in it's current/modified state) matches each separate notification's criteria,
         // and compare results with the results of previous check, that was made before any modifications
@@ -5666,11 +5649,17 @@ class Indi_Db_Table_Row implements ArrayAccess
         // If $fieldR's `storeRelationAbility` prop's value is not one oth the keys within $or array - return
         if ((!$this->{$fieldR->alias} || !$or[$fieldR->storeRelationAbility]) && !$consistence) return;
 
+        // Append consustence clause
+        if ($consistence) $where []= $consistence;
+
         // Implode $where
         if (is_array($where)) $where = im($where, ' AND ');
 
         // Append alternative
-        $where = im(['(' . $where . ')', $consistence ? '(' . $consistence . ')' : $or[$fieldR->storeRelationAbility]], ' OR ');
+        if (!$consistence) $where = im(['(' . $where . ')', $or[$fieldR->storeRelationAbility]], ' OR ');
+
+        // Append alternative
+        //$where = im(['(' . $where . ')', /*$consistence ? '(' . $consistence . ')' : $or[$fieldR->storeRelationAbility]*/], ' OR ');
     }
 
     /**

@@ -1669,6 +1669,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously sett default height
             $sheet->getRowDimension($currentRowIndex)->setRowHeight($rowHeight);
 
+            // Check if row is disabled
+            $disabled = $data[$i]['_system']['disabled'] ?: false;
+
             // Foreach column
             foreach ($columnA as $n => $columnI) {
 
@@ -1751,7 +1754,15 @@ class Indi_Controller_Admin extends Indi_Controller {
                         // Set cell's color
                         $sheet->getStyle($columnL . $currentRowIndex)
                             ->getFont()->getColor()->setRGB(ltrim($hex, '#'));
-                }
+
+                // Else if it's a disabled row - setup lightgray font color
+                } else if ($disabled) $sheet->getStyle($columnL . $currentRowIndex)->applyFromArray([
+                    'font' => [
+                        'color' => [
+                            'rgb' => 'cccccc'
+                        ]
+                    ]
+                ]);
 
                 // If cell contains an 'a' tag with href attribute, we set a hyperlink to current cell
                 if (preg_match('/<a/', $value) && preg_match('/href="([^"]+)"/', $value, $a)) {

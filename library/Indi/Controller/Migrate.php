@@ -35,6 +35,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('alteredField', 'toggle', 'n', ['title' => '<span class="i-color-box" style="background: red;"></span>Turned off', 'move' => 'y']);
         grid('alteredFields', 'toggle', ['move' => 'fieldId']);
         grid('filter', 'filter', ['gridId' => 'display', 'rowReqIfAffected' => 'y']);
+        grid('sections', 'filter', ['rowReqIfAffected' => 'y']);
         field('filter', 'alt', ['alias' => 'rename']);
         field('grid', 'alterTitle', ['alias' => 'rename']);
         field('entity', 'useCache')->delete();
