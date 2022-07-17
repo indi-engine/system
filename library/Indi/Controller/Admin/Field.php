@@ -31,7 +31,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $title = mb_strtolower($this->row->field('mode')->title);
 
         // Show prompt and obtain data
-        $prompt = $this->prompt('Пожалуйста, выберите ' . $title, [$combo]);
+        $prompt = $this->prompt(I_SELECT_PLEASE . ' ' . $title, [$combo]);
 
         // Save new mode
         foreach ($this->selected as $selected) $selected->set(['mode' => $prompt['mode']])->save();
@@ -52,7 +52,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         if ($cell != 'l10n') return;
 
         // If current field depends on other fields - deny
-        if (t()->row->nested('consider')->count()) jflush(false, 'Нельзя вручную менять мультиязычность для зависимых полей');
+        if (t()->row->nested('consider')->count()) jflush(false, I_L10N_TOOGLE_FIELD_DENIED);
 
         // Check if [lang]->gapi.key is given in application/config.ini
         if ($value == 'qy' && !ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
@@ -62,17 +62,13 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
 
             // Ask whether we want to turn l10n On/Off,
             // or want to arrange value of `l10n` for it to match real situation.
-            if ('no' == $this->confirm(sprintf(
-                    'Если вы хотите %s мультиязычность для поля "%s" нажмите "%s". ' .
-                    'Если просто нужно привести в соответствие с текущим состоянием - нажмите "%s"',
-                    $value == 'qy' ? 'включить' : 'выключить', t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
+            if ('no' == $this->confirm(__(
+                I_L10N_TOGGLE_FIELD_Y . ' ' . I_L10N_TOGGLE_MATCH,
+                mb_strtolower($value == 'qy' ? I_TOGGLE_Y : I_TOGGLE_N), t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
                 return;
 
             // Else if we're going to setup fraction-status directly
-        } else if ('ok' == $this->confirm(sprintf(
-                'Для поля "%s" мультиязычность будет вручную указана как "%s". Продолжить?',
-                t()->row->title, t()->row->enumset($cell, $value)
-            ), 'OKCANCEL'))
+        } else if ('ok' == $this->confirm(__(I_L10N_TOGGLE_FIELD_EXPL, t()->row->title, t()->row->enumset($cell, $value)), 'OKCANCEL'))
             return;
 
         // Applicable languages WHERE clause
@@ -100,10 +96,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');
 
         // Prompt for source language
-        $prompt = $this->prompt(sprintf(
-            $value == 'qy' ? 'Выберите текущий язык поля "%s"' : 'Выберите язык который должен остаться в поле "%s"',
-            t()->row->title
-        ), [$combo]);
+        $prompt = $this->prompt(__($value == 'qy' ? I_L10N_TOGGLE_FIELD_LANG_CURR : I_L10N_TOGGLE_FIELD_LANG_KEPT, t()->row->title), [$combo]);
 
         // Check prompt data
         $_ = jcheck(['langId' => ['req' => true, 'rex' => 'int11', 'key' => 'lang']], $prompt);

@@ -27,15 +27,14 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
             // Ask whether we want to turn l10n On/Off,
             // or want to arrange value of `l10n` for it to match real situation.
-            if ('no' == $this->confirm(sprintf(
-                    'Если вы хотите %s мультиязычность для действия "%s" нажмите "%s". ' .
-                    'Если просто нужно привести в соответствие с текущим состоянием - нажмите "%s"',
-                    $value == 'qy' ? 'включить' : 'выключить', t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
+            if ('no' == $this->confirm(__(
+                I_L10N_TOGGLE_ACTION_Y . ' ' . I_L10N_TOGGLE_MATCH,
+                mb_strtolower($value == 'qy' ? I_TOGGLE_Y : I_TOGGLE_N), t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
                 return;
 
         // Else if we're going to setup fraction-status directly
-        } else if ('ok' == $this->confirm(sprintf(
-                'Для поля "%s" мультиязычность будет вручную указана как "%s". Продолжить?',
+        } else if ('ok' == $this->confirm(__(
+                I_L10N_TOGGLE_ACTION_EXPL,
                 t()->row->title, t()->row->enumset($cell, $value)
             ), 'OKCANCEL'))
             return;
@@ -65,10 +64,10 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $combo = ['fieldLabel' => '', 'allowBlank' => 0] + t()->row->combo('langId');
 
         // Prompt for source language
-        $prompt = $this->prompt(sprintf(
-            $value == 'qy' ? 'Выберите текущий язык действия "%s"' : 'Выберите язык который должен остаться для действия "%s"',
-            t()->row->title
-        ), [$combo]);
+        $prompt = $this->prompt(__($value == 'qy'
+            ? I_L10N_TOGGLE_ACTION_LANG_CURR
+            : I_L10N_TOGGLE_ACTION_LANG_KEPT
+        , t()->row->title), [$combo]);
 
         // Check prompt data
         $_ = jcheck(['langId' => ['req' => true, 'rex' => 'int11', 'key' => 'lang']], $prompt);

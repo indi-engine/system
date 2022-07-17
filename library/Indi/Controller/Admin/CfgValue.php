@@ -7,13 +7,10 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
     public function adjustCreatingRowAccess(&$row) {
 
         //
-        if (!ini('db')->cfgField) return;
-
-        //
         if (uri()->action != 'form') return;
 
         // Preliminary prompt for cfgField
-        $data = $this->prompt('Выберите параметр настройки элемента управления', [['fieldLabel' => ''] + $row->combo('cfgField')]);
+        $data = $this->prompt(I_SELECT_CFGFIELD, [['fieldLabel' => ''] + $row->combo('cfgField')]);
 
         // Check date
         jcheck(['cfgField' => ['req' => true, 'rex' => 'int11', 'key' => 'field']], $data);
@@ -46,13 +43,6 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
 
         // Make `fieldId` field to be disabled but visible
         $this->appendDisabledField('fieldId', true);
-
-        //
-        if (!ini('db')->cfgField) return;
-
-        // Disable `possibleParamId` and `value` field
-        // They are temporarily kept for backward compatibility
-        $this->appendDisabledField('possibleParamId,value');
     }
 
     /**
@@ -62,7 +52,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
     public function adjustExistingRowAccess(Indi_Db_Table_Row $row) {
 
         //
-        if (!$row->cfgField || !ini('db')->cfgField) return;
+        if (!$row->cfgField) return;
 
         // Prepare field for spoofing `cfgValue` field
         $gen = $row->foreign('cfgField')->set([

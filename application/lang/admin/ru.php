@@ -68,6 +68,8 @@ define('I_BACK', 'Вернуться');
 define('I_SAVE', 'Сохранить');
 define('I_CLOSE', 'Закрыть');
 define('I_TOTAL', 'Всего');
+define('I_TOGGLE_Y', 'Включить');
+define('I_TOGGLE_N', 'Выключить');
 define('I_EXPORT_EXCEL', 'Экспортировать в Excel');
 define('I_EXPORT_PDF', 'Экспортировать в PDF');
 define('I_NAVTO_ROWSET', 'Вернуться к списку');
@@ -284,3 +286,16 @@ define('I_ENT_TOGGLE_N', 'Выключено');
 define('I_ENT_EXTENDS_OTHER', 'Файл php-модели существует, но в нем родительский класс указан как %s');
 
 define('I_GAPI_KEY_REQUIRED', 'Вам необходимо получить ключ доступа для Google Cloud Translate API и указать его как значение параметра \'gapi.key\' в разделе [lang] в файле application/config.ini');
+define('I_SELECT_CFGFIELD', 'Выберите параметр настройки элемента управления');
+define('I_SELECT_PLEASE', 'Пожалуйста, выберите');
+define('I_L10N_TOGGLE_ACTION_Y', 'Если вы хотите %s мультиязычность для действия "%s" нажмите "%s".');
+define('I_L10N_TOGGLE_MATCH', 'Иначе если просто нужно привести в соответствие с текущим состоянием - нажмите "%s"');
+define('I_L10N_TOGGLE_ACTION_EXPL', 'Для действия "%s" мультиязычность будет вручную указана как "%s". Продолжить?');
+define('I_L10N_TOGGLE_ACTION_LANG_CURR', 'Выберите текущий язык действия "%s"');
+define('I_L10N_TOGGLE_ACTION_LANG_KEPT', 'Выберите язык который должен остаться для действия "%s"');
+
+define('I_L10N_TOOGLE_FIELD_DENIED', 'Нельзя вручную менять мультиязычность для зависимых полей');
+define('I_L10N_TOGGLE_FIELD_Y', 'Если вы хотите %s мультиязычность для поля "%s" нажмите "%s".');
+define('I_L10N_TOGGLE_FIELD_EXPL', 'Для поля "%s" мультиязычность будет вручную указана как "%s". Продолжить?');
+define('I_L10N_TOGGLE_FIELD_LANG_CURR', 'Выберите текущий язык поля "%s"');
+define('I_L10N_TOGGLE_FIELD_LANG_KEPT', 'Выберите язык который должен остаться в поле "%s"');

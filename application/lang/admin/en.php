@@ -68,6 +68,8 @@ define('I_BACK', 'Back');
 define('I_SAVE', 'Save');
 define('I_CLOSE', 'Close');
 define('I_TOTAL', 'Total');
+define('I_TOGGLE_Y', 'Turn on');
+define('I_TOGGLE_N', 'Turn off');
 define('I_EXPORT_EXCEL', 'Export as an Excel spreadsheet');
 define('I_EXPORT_PDF', 'Export as an PDF document');
 define('I_NAVTO_ROWSET', 'Go back to rowset');
@@ -284,3 +286,16 @@ define('I_ENT_TOGGLE_N', 'Turned off');
 define('I_ENT_EXTENDS_OTHER', 'File with php-model exists, but %s is specified as parent class there');
 
 define('I_GAPI_KEY_REQUIRED', 'You should obtain Google Cloud Translate API key and specify it as <br>a value of \'gapi.key\' param in [lang] section in application/config.ini file');
+define('I_SELECT_CFGFIELD', 'Select config param you want to add for this field');
+define('I_SELECT_PLEASE', 'Please select');
+define('I_L10N_TOGGLE_ACTION_Y', 'If you want to %s localization for action "%s" press "%s".');
+define('I_L10N_TOGGLE_MATCH', 'Else if you just need to explicitly specify the value of localization status for it to match the current reality - press "%s"');
+define('I_L10N_TOGGLE_ACTION_EXPL', 'For action "%s" localization status will be explicitly set as "%s". Continue?');
+define('I_L10N_TOGGLE_ACTION_LANG_CURR', 'Select current language of action "%s"');
+define('I_L10N_TOGGLE_ACTION_LANG_KEPT', 'Select language to be kept for action "%s"');
+
+define('I_L10N_TOOGLE_FIELD_DENIED', 'It\'s not allowed to turn localization on/off for dependent fields');
+define('I_L10N_TOGGLE_FIELD_Y', 'If you want to %s localization for field "%s" press "%s".');
+define('I_L10N_TOGGLE_FIELD_EXPL', 'For field "%s" localization status will be explicitly set as "%s". Continue?');
+define('I_L10N_TOGGLE_FIELD_LANG_CURR', 'Select current language of field "%s"');
+define('I_L10N_TOGGLE_FIELD_LANG_KEPT', 'Select language to be kept for field "%s"');
