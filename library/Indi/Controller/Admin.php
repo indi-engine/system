@@ -1489,6 +1489,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $columnI['type'] = 'rownumberer';
                 }
 
+                // Replace <br>-s with newlines
+                $hasWrap = preg_match('~<br>~', $columnI['title']);
+                $columnI['title'] = str_replace('<br>', " \n", $columnI['title']);
+
                 // Write header title of a certain column to a header cell
                 $sheet->SetCellValue($cellSinceCoord, $columnI['title']);
 
@@ -1679,7 +1683,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = $data[$i]['_render'][$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?: ' ';
+                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?: ' ';
                 else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
