@@ -5650,7 +5650,14 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ((!$this->{$fieldR->alias} || !$or[$fieldR->storeRelationAbility]) && !$consistence) return;
 
         // Append consustence clause
-        if ($consistence) $where []= $consistence;
+        if ($consistence) {
+            
+            // Convert to array
+            if (!is_array($where)) $where = [$where];
+            
+            // Append $consistence
+            $where []= $consistence;
+        }
 
         // Implode $where
         if (is_array($where)) $where = im($where, ' AND ');
