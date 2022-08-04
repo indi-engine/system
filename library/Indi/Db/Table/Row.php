@@ -4769,17 +4769,17 @@ class Indi_Db_Table_Row implements ArrayAccess
             return false;
         }
 
-        // Check is $url's host name is same as $_SERVER['HTTP_HOST']
-        $purl = parse_url($url); $isOwnUrl = $purl['host'] == $_SERVER['HTTP_HOST'] || !$purl['host'];
+        // Check is $url's host name is same as $_SERVER['SERVER_NAME']
+        $purl = parse_url($url); $isOwnUrl = $purl['host'] == $_SERVER['SERVER_NAME'] || !$purl['host'];
 
         // If no extension was got from the given url
         if (!$ext || ($isOwnUrl && !$uext)) {
 
-            // If $url's hostname is same as $_SERVER['HTTP_HOST']
+            // If $url's hostname is same as $_SERVER['SERVER_NAME']
             if ($isOwnUrl) {
 
                 // If hostname is not specified within $url, prepend $url with self hostname and PRE constant
-                if (!$purl['host']) $url = 'http://' . $_SERVER['HTTP_HOST'] . STD . $url;
+                if (!$purl['host']) $url = 'http://' . $_SERVER['SERVER_NAME'] . STD . $url;
 
                 // Get request headers, and declare $hrdS variable for collecting strigified headers list
                 $hdrA = apache_request_headers(); $hdrS = '';

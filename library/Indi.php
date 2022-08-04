@@ -1683,11 +1683,11 @@ class Indi {
      */
     public static function probe($url) {
 
-        // Check if $url's host name is same as $_SERVER['HTTP_HOST']
-        $purl = parse_url($url); $isOwnUrl = $purl['host'] == $_SERVER['HTTP_HOST'] || !$purl['host'];
+        // Check if $url's host name is same as $_SERVER['SERVER_NAME']
+        $purl = parse_url($url); $isOwnUrl = $purl['host'] == $_SERVER['SERVER_NAME'] || !$purl['host'];
 
         // If hostname is not specified within $url, prepend $url with self hostname and PRE constant
-        if (!$purl['host']) $url = 'http://' . $_SERVER['HTTP_HOST'] . STD . $url;
+        if (!$purl['host']) $url = 'http://' . $_SERVER['SERVER_NAME'] . STD . $url;
 
         // Create curl resource
         $ch = curl_init($url);
@@ -1941,7 +1941,7 @@ class Indi {
     public static function lwget($url) {
 
         // If hostname is not specified within $url, prepend $url with self hostname and PRE constant
-        $url = $_SERVER['REQUEST_SCHEME'] . '://' . explode(':', $_SERVER['HTTP_HOST'])[0] . PRE . $url;
+        $url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . PRE . $url;
 
         // Get request headers, and declare $hrdS variable for collecting stringified headers list
         $hdrA = apache_request_headers(); $hdrS = '';

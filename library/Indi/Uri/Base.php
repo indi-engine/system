@@ -155,7 +155,7 @@ class Indi_Uri_Base {
     public function setCookieDomain(){
         
         // Get current host name without port number
-        $hostname = preg_replace('~:[0-9]+$~', '', $_SERVER['HTTP_HOST']);
+        $hostname = $_SERVER['SERVER_NAME'];
 
         // Detect domain
         $domainA = explode(' ', ini()->general->domain);
@@ -183,7 +183,7 @@ class Indi_Uri_Base {
     public function no3w() {
 
         // If current domain name starts with 'www.'
-        if (preg_match('/^www\./', $_SERVER['HTTP_HOST'])) {
+        if (preg_match('/^www\./', $_SERVER['SERVER_NAME'])) {
 
             // Setup 301 header
             header('HTTP/1.1 301 Moved Permanently');

@@ -140,7 +140,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         $wsServer = ltrim(VDR, '/') . '/system/application/ws.php';
 
         // Get host with no port
-        $host = explode(':', $_SERVER['HTTP_HOST'])[0];
+        $host = $_SERVER['SERVER_NAME'];
 
         // Build websocket startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
