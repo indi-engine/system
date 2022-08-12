@@ -2083,6 +2083,7 @@ class Indi {
 
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
+        $msg .= 'HOST: ' . $_SERVER['HTTP_HOST'] . '<br>';
         $msg .= 'URI: ' . URI . '<br>';
         $msg .= 'Remote IP: ' . $_SERVER['REMOTE_ADDR'] . '<br>';
 
@@ -2301,15 +2302,8 @@ class Indi {
      */
     public static function cmd($method, $args = []) {
 
-        // Default temp dir
-        $dir = sys_get_temp_dir();
-        
-        // If open_basedir restriction is in effect - try to find tmp dir there
-        if ($dirS = ini_get('open_basedir'))
-            if ($dirA = explode(':', $dirS))
-                foreach ($dirA as $dirI)
-                    if (preg_match('~te?mp$~', $dirI))
-                        $dir = $dirI;
+        // Get temp dir
+        $dir = ini_get('upload_tmp_dir') ?: explode(':', ini_get('open_basedir'))[0] ?? sys_get_temp_dir();
 
         // Create temporary file
         $env = tempnam($dir, 'cmd');
