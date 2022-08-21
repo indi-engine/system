@@ -149,18 +149,22 @@ class Indi_Db {
                 'SELECT * FROM `entity`' . ($entityId ? ' WHERE `id` = "' . $entityId . '"' : '')
             )->fetchAll();
 
-            // Get db table containing roles. This is temporary solution to handle
-            // Indi Engine instances where `profile`-table is not yet renamed to `role`
-            $roleTable = array_column($entityA, 'table','table')['profile'] ?? 'role';
+            // If we're not reloading some certain entity
+            if (!$entityId) {
 
-            // Get ids of entities, linked to access roles
-            self::$_roleA = self::$_instance->query('
-                SELECT
-                  GROUP_CONCAT(`id`) AS `roleIds`,
-                  IF(`entityId`,`entityId`,11) AS `entityId`
-                FROM `' . $roleTable . '`
-                GROUP BY `entityId`
-            ')->fetchAll(PDO::FETCH_KEY_PAIR);
+                // Get db table containing roles. This is temporary solution to handle
+                // Indi Engine instances where `profile`-table is not yet renamed to `role`
+                $roleTable = array_column($entityA, 'table','table')['profile'] ?? 'role';
+
+                // Get ids of entities, linked to access roles
+                self::$_roleA = self::$_instance->query('
+                    SELECT
+                      GROUP_CONCAT(`id`) AS `roleIds`,
+                      IF(`entityId`,`entityId`,11) AS `entityId`
+                    FROM `' . $roleTable . '`
+                    GROUP BY `entityId`
+                ')->fetchAll(PDO::FETCH_KEY_PAIR);
+            }
 
             // Fix tablename case, if need
             if (!$entityId && !preg_match('/^WIN/i', PHP_OS) && self::$_instance->query('SHOW TABLES LIKE "columntype"')->fetchColumn()) {

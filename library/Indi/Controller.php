@@ -41,7 +41,7 @@ class Indi_Controller {
                 list($d, $u) = explode(':', $domain);
 
                 // If design's domain does not match current domain - skip
-                if ($d != $_SERVER['HTTP_HOST']) continue;
+                if ($d != $_SERVER['SERVER_NAME']) continue;
 
                 // If design is in public access, or is not, but is accessible for current admin - append design
                 if (!$u || $u == $admin) ini()->design[] = $dsdirI;
