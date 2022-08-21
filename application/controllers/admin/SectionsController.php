@@ -203,18 +203,6 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                     = sprintf('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
             }
 
-            // Add icon for `extendsPhp` prop
-            if (($_ = $item['extendsPhp']) != 'Indi_Controller_Admin') $item['_render']['extendsPhp']
-                = '<img src="resources/images/icons/btn-icon-php-parent.png" class="i-cell-img">' . $_;
-
-            // Add icon for `extendsJs` prop
-            if (($_ = $item['extendsJs']) != 'Indi.lib.controller.Controller') $item['_render']['extendsJs']
-                = '<img src="resources/images/icons/btn-icon-js-parent.png" class="i-cell-img">' . $_;
-
-            // Add icon for `filter` prop
-            if ($_ = $item['filter']) $item['_render']['filter']
-                = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
-
             if ($item['$keys']['fraction'] != 'system') {
 
                 // Get js-controller file name

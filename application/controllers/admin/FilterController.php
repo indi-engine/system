@@ -19,10 +19,6 @@ class Admin_FilterController extends Indi_Controller_Admin_Multinew {
      */
     public function adjustGridDataItem(&$item, $r) {
 
-        // If filter-prop is not empty - prepend with icon
-        if ($_ = $item['filter']) $item['_render']['filter']
-            = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
-
         // If _render prop is not set - set it to empty object
         if (!$item['_render']) $item['_render'] = new stdClass();
     }

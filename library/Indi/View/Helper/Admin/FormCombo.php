@@ -139,12 +139,12 @@ class Indi_View_Helper_Admin_FormCombo {
         $keyProperty = $comboDataA['keyProperty'];
 
         // If combo is boolean
-        if ($this->field->storeRelationAbility == 'none' && $this->field->columnTypeId == 12) {
+        if ($this->field->storeRelationAbility == 'none') {
 
             // Setup a key
             if ($this->getRow()->$name) {
                 $key = $this->getRow()->$name;
-            } else if ($comboDataRs->enumset && $this->type == 'form') {
+            } else if ($comboDataRs->enumset && $this->type == 'form' && $this->field->foreign('elementId')->alias != 'icon') {
                 $key = key($options);
             } else {
                 $key = $this->getDefaultValue();
@@ -162,6 +162,9 @@ class Indi_View_Helper_Admin_FormCombo {
                     'value' => null
                 ];
             }
+
+            // Make sure color box to be rendered if need
+            if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
 
         // Else if current field column type is ENUM or SET, and current row have no selected value, we use first
         // option to get default info about what title should be displayed in input keyword field and what value

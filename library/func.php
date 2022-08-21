@@ -2203,13 +2203,30 @@ function admin($login = null, array $ctor = []) {
  * @param string $type
  * @return ColumnType_Row|null
  */
-function coltype($type) {
+function coltype($type, array $ctor = []) {
 
     // If $type arg is an integer - assume it's a `columnType` entry's `id`, otherwise assume it's a `type`
     $byprop = Indi::rexm('int11', $type) ? 'id' : 'type';
 
-    // Return `columnType` entry
-    return m('ColumnType')->row('`' . $byprop . '` = "' . $type . '"');
+    // Try to find `columnType` entry
+    $columnTypeR = m('ColumnType')->row('`' . $byprop . '` = "' . $type . '"');
+
+    // If $ctor arg is an empty array - return `columnType` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $type arg - is not enough for `columnType` entry to be created
+    if (!$ctor) return $columnTypeR;
+
+    // If `type` prop is not defined within $ctor arg - use value given by $type arg
+    if (!array_key_exists('type', $ctor)) $ctor['type'] = $type;
+
+    // If `columnType` entry was not found - create it
+    if (!$columnTypeR) $columnTypeR = m('columnType')->new();
+
+    // Assign other props and save
+    $columnTypeR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `columnType` entry (newly created, or existing but updated)
+    return $columnTypeR;
 }
 
 /**
@@ -3022,4 +3039,25 @@ function uri() {
  */
 function view() {
     return Indi::view();
+}
+
+/**
+ * Get list of files within given dir according to $pattern, recusively
+ *
+ * @param $pattern
+ * @param int $flags
+ * @return array|false
+ */
+function rglob($pattern, $flags = 0) {
+
+    // Get files only
+    $fileA = glob($pattern, $flags);
+
+    // Foreach dir
+    foreach (glob(dirname($pattern) . '/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+
+        // Append files, recursively
+        $fileA = array_merge($fileA, rglob($dir . '/' . basename($pattern), $flags));
+    }
+    return $fileA;
 }

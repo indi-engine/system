@@ -236,6 +236,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
+                            'icon' => t()->grid->select(': !=""', 'icon')->column('icon', false, 'fieldId'),
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ',')
@@ -768,7 +769,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @param $data
      * @param $format
      */
-    public function export($data, $format = 'excel'){
+    public function export($data, $format = 'excel') {
 
         // Create new PHPExcel object
         $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -794,6 +795,40 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Get the columns, that need to be presented in a spreadsheet
         $_columnA = json_decode(Indi::get()->columns, true);
+
+        // Get dataIndex-es
+        $dataIndexA = []; $alignA = [];
+        foreach (t()->grid->select(array_column($_columnA, 'id')) as $gridR) {
+
+            // Setup dataIndex
+            $dataIndexA[$gridR->id] = $gridR->foreign('fieldId')->alias
+                . rif($gridR->further, '_' . $gridR->foreign('further')->alias);
+
+            // Get element
+            $element = $gridR->foreign($gridR->further ? 'further': 'fieldId')->foreign('elementId')->alias;
+
+            // Setup alignment depending on element
+            if (in($element, 'number,price,move,decimal143')) $alignA[$gridR->id] = 'right';
+        }
+
+        // Apply dataIndex and alignment
+        foreach ($_columnA as $idx => $columnI) {
+
+            // Apply dataIndex and alignment in certain cases
+            if ($dataIndexA[$columnI['id']]) {
+                $_columnA[$idx]['dataIndex'] = $dataIndexA[$columnI['id']];
+            } else if ($columnI['id'] == 'id') {
+                $_columnA[$idx]['dataIndex'] = $columnI['id'];
+                $_columnA[$idx]['align'] = 'right';
+            } else if ($columnI['id'] == 'rownumberer') {
+                $_columnA[$idx]['align'] = 'right';
+            } else {
+                unset($_columnA[$idx]);
+            }
+
+            // Apply alignment in remaining cases
+            if ($alignA[$columnI['id']]) $_columnA[$idx]['align'] = $alignA[$columnI['id']];
+        }
 
         // Build columns array, indexed by 'dataIndex' prop
         foreach ($_columnA as $_columnI) $columnA[$_columnI['dataIndex']] = $_columnI;
@@ -827,9 +862,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $byLevel[$level][$gridR->id] = $column + [
                     'colspan' => 1,
                     'gridId' => $gridR->gridId,
-                    'title' => $gridR->rename ?: $gridR->title,
+                    'title' => $gridR->rename ?: $gridR->further ? $gridR->foreign('further')->title : $gridR->title,
                     'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
-                    'leaf' => true
+                    'leaf' => true,
+                    'icon' => $gridR->icon
                 ];
 
                 // Walk through all parents, and for each
@@ -862,7 +898,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     'colspan' => 1,
                     'gridId' => 0,
                     'leaf' => true
-                ];
+                ] + rif($column['id'] == 'id', ['title' => 'ID'], []);
             }
         }
 
@@ -872,7 +908,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Setup rowspan-prop for each column on each level
         foreach ($byLevel as $level => &$columns)
             foreach ($columns as $gridId => &$column)
-                $column['rowspan'] = $column['align']
+                $column['rowspan'] = $column['leaf']
                     ? $depth - $level + 1
                     : 1;
 
@@ -1452,12 +1488,12 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $columnI['title'] = str_replace('&nbsp;', ' ', $columnI['title']);
 
                 // Try detect an image
-                if (preg_match('/<img src="([^"]+)"/', $columnI['title'], $src)) {
+                if ($columnI['icon']) {
 
                     // If detected image exists
-                    if (!$abs = Indi::abs($src[1]))
-                        if (preg_match('~^resources~', $src[1]))
-                            if (file_exists($img = DOC . STD . VDR . '/client/' . $src[1]))
+                    if (!$abs = Indi::abs($columnI['icon']))
+                        if (preg_match('~^resources~', $columnI['icon']))
+                            if (file_exists($img = DOC . STD . VDR . '/client/' . $columnI['icon']))
                                 $abs = $img;
 
                     //
@@ -1531,10 +1567,23 @@ class Indi_Controller_Admin extends Indi_Controller {
                         ->setWorksheet($sheet);
                 }
 
+                //
+                if ($columnI['colspan'] > 1) {
+                    $align = 'center';
+                } else if ($columnI['align'] == 'right') {
+                    if ($order->property == $columnI['dataIndex']) {
+                        $align = 'left';
+                    } else {
+                        $align = 'center';
+                    }
+                } else {
+                    $align = 'left';
+                }
+
                 // Apply header row style
                 $sheet->getStyle($cellSinceCoord . rif($cellUntilCoord,':$1'))->applyFromArray([
                     'alignment' => [
-                        'horizontal' => $columnI['align'] ?: 'center'
+                        'horizontal' => $align
                     ],
                     'borders' => [
                         'top' => [

@@ -732,8 +732,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                     'entry' => $this->id
                 ];
 
+                // Json-decode scope data
+                $scope = json_decode($realtimeR->scope);
+
                 // If at least one of affected fields stand behind of a grid column, having `rowReqIfAffected` = 'y'
-                if (array_intersect($fieldIdA_affected, ar(json_decode($realtimeR->scope)->rowReqIfAffected))) {
+                if (array_intersect($fieldIdA_affected, ar($scope->rowReqIfAffected))) {
 
                     // It means that such column's cell content IS INVOLVED in the process
                     // of rendering content for at least one other column's cell within same grid,
@@ -748,13 +751,15 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
                     // Get aliases of affected fields involved by context
-                    $dataColumns = [];
+                    $dataColumns = []; $renderCfg = [];
                     foreach ($fieldIds as $fieldId)
-                        if ($field = $this->field($fieldId)->alias)
+                        if ($field = $this->field($fieldId)->alias) {
                             $dataColumns[] = $field;
+                            if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
+                        }
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
-                    $data = [$this->toGridData($dataColumns)];
+                    $data = [$this->toGridData($dataColumns, $renderCfg)];
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
@@ -1707,6 +1712,57 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($exclude = $fieldR->param('exclude')) $dataRs->exclude($exclude, 'alias');
 
             // Return combo data
+            return $dataRs;
+
+        // Else if it's a icon-field
+        } else if ($fieldR->foreign('elementId')->alias == 'icon') {
+
+            // Aux variables
+            $data = []; $groups = [];
+
+            // Foreach directory
+            foreach (ar($fieldR->params['dir']) as $dir) {
+
+                // Get absolute directory path with no trailing slash
+                $pre = DOC . STD . rif(!preg_match('~^/~', $dir), VDR . '/client/');
+
+                // Absolute path
+                $abs = $pre . rtrim($dir, '\\/');
+
+                // Add optgroup
+                $groups []= ['id' => $dir, 'title' => $dir];
+
+                // Glob files in that dir and foreach file
+                foreach (rglob($abs . '/*.{png,ico,gif}', GLOB_BRACE) as $icon) {
+
+                    // Get icon
+                    $icon = preg_replace('~^' . preg_quote($pre, '~') . '~', '', $icon);
+
+                    // Boild color box
+                    $box = '<span class="i-color-box" style="background: url(' . $icon . ');"></span>';
+
+                    // Setup option data
+                    $data []= [
+                        'alias' => $icon,
+                        'dir' => $dir,
+                        'title' => $box . str_replace($dir . '/', '', $icon),
+                        'system' => [
+                            'group' => $dir
+                        ]
+                    ];
+                }
+            }
+
+            // Prepare the data
+            $dataRs = m('Enumset')->createRowset(['data' => $data]);
+
+            // Setup `enumset` prop as `true`
+            $dataRs->enumset = true;
+
+            // Setup optgroup data
+            $dataRs->optgroup = ['by' => 'dir', 'groups' => $groups];
+
+            // Return
             return $dataRs;
 
         // Else if current field column type is BOOLEAN - combo is used as an alternative for checkbox control
@@ -5596,10 +5652,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $fields
      * @return mixed
      */
-    public function toGridData($fields) {
+    public function toGridData($fields, $renderCfg = []) {
 
         // Render grid data
-        $data = $this->model()->createRowset(['rows' => [$this]])->toGridData($fields);
+        $data = $this->model()->createRowset(['rows' => [$this]])->toGridData($fields, $renderCfg);
 
         // Return
         return array_shift($data);

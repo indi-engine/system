@@ -178,10 +178,6 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 if ($parent != $item['extends']) $item['_system']['php-error'] = sprintf(I_ENT_EXTENDS_OTHER, $parent);
             }
 
-            // Add icon for `extends` prop
-            if (($_ = $item['extends']) != 'Indi_Db_Table') $item['_render']['extends']
-                = '<img src="resources/images/icons/btn-icon-php-parent.png" class="i-cell-img">' . $_;
-
             // Hide default values
             foreach ($default as $prop => $defaultValue) if ($item[$prop] == $defaultValue) $item[$prop] = '';
         }

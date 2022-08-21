@@ -1,5 +1,129 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function iconsAction() {
+        section('alteredFields',  ['multiSelect' => '1']);
+        section('filter',         ['multiSelect' => '1']);
+        section('sectionActions', ['multiSelect' => '1']);
+        grid('sectionActions', 'rename',  ['editor' => '1']);
+        grid('sectionActions', 'roleIds', ['editor' => '1']);
+        field('section', 'rowsOnPage', ['elementId' => 'number']);
+        section('columnTypes', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
+
+        element('icon', ['title' => 'Иконка']);
+        cfgField('element', 'icon', 'dir', [
+            'title' => 'Директория',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'defaultValue' => 'resources/images/icons,/i/admin/icons',
+            'move' => '',
+        ]);
+        coltype('VARCHAR(255)', ['canStoreRelation' => 'y', 'elementId' => 'hidden,combo,string,multicheck,icon']);
+
+        field('grid', 'icon', [
+            'title' => 'Иконка',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'icon',
+            'move' => 'rowReqIfAffected',
+        ]);
+        grid('sections', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('sections', 'rowsOnPage', ['icon' => 'resources/images/icons/btn-icon-qty-on-page.png']);
+        grid('sectionActions', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('profiles', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('admins', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('filter', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('alteredFields', 'mode', ['icon' => 'resources/images/icons/field/readonly.png']);
+        grid('filter', 'filter', ['icon' => 'resources/images/icons/btn-icon-filter.png']);
+        grid('grid', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('fields', 'mode', ['icon' => 'resources/images/icons/field/readonly.png']);
+        grid('actions', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('grid', 'editor', ['icon' => 'resources/images/icons/btn-icon-editor.png']);
+        grid('sections', 'rowsetSeparate', ['icon' => 'resources/images/icons/field/required.png']);
+        grid('sectionActions', 'fitWindow', ['icon' => 'resources/images/icons/btn-icon-toggle-lime-gray.png']);
+        grid('fields', 'l10n', ['icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('fieldsAll', 'mode', ['icon' => 'resources/images/icons/field/readonly.png']);
+        grid('fieldsAll', 'storeRelationAbility', ['icon' => 'resources/images/icons/btn-icon-multikey.png']);
+        grid('fieldsAll', 'filter', ['icon' => 'resources/images/icons/btn-icon-filter.png']);
+        grid('fieldsAll', 'l10n', ['icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('sections', 'extendsPhp', ['icon' => 'resources/images/icons/btn-icon-php-parent.png']);
+        grid('sections', 'extendsJs', ['icon' => 'resources/images/icons/btn-icon-js-parent.png']);
+        grid('noticeGetters', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('lang', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('sectionActions', 'l10n', ['icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('fields', 'storeRelationAbility', ['icon' => 'resources/images/icons/btn-icon-multikey.png']);
+        grid('fields', 'filter', ['icon' => 'resources/images/icons/btn-icon-filter.png']);
+        grid('sections', 'disableAdd', ['icon' => 'resources/images/icons/btn-icon-create-deny.png']);
+        grid('sections', 'filter', ['icon' => 'resources/images/icons/btn-icon-filter.png']);
+        grid('sections', 'multiSelect', ['icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        grid('sections', 'rownumberer', ['icon' => 'resources/images/icons/btn-icon-numberer.png']);
+        grid('grid', 'rowReqIfAffected', ['icon' => 'resources/images/icons/btn-icon-reload-affected.png']);
+        grid('elementCfgField', 'storeRelationAbility', ['icon' => 'resources/images/icons/btn-icon-multikey.png']);
+        grid('elementCfgField', 'filter', ['icon' => 'resources/images/icons/btn-icon-filter.png']);
+        grid('elementCfgField', 'mode', ['icon' => 'resources/images/icons/field/readonly.png']);
+        grid('elementCfgField', 'l10n', ['icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('notices', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('entities', 'extends', ['icon' => 'resources/images/icons/btn-icon-php-parent.png']);
+        grid('alteredFields', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+
+        field('action', 'icon', [
+            'title' => 'Иконка',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'icon',
+            'move' => 'toggle',
+        ]);
+        action('index', ['icon' => 'resources/images/icons/btn-icon-grid.png']);
+        action('form', ['icon' => 'resources/images/icons/btn-icon-form.png']);
+        action('save', ['icon' => 'resources/images/icons/btn-icon-save.png']);
+        action('delete', ['icon' => 'resources/images/icons/btn-icon-delete.png']);
+        action('up', ['icon' => 'resources/images/icons/btn-icon-up.png']);
+        action('down', ['icon' => 'resources/images/icons/btn-icon-down.png']);
+        action('toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        action('login', ['icon' => 'resources/images/icons/btn-icon-login.png']);
+        action('php', ['icon' => 'resources/images/icons/btn-icon-php.png']);
+        action('js', ['icon' => 'resources/images/icons/btn-icon-js.png']);
+        action('export', ['icon' => 'resources/images/icons/btn-icon-export.png']);
+        action('goto', ['icon' => 'resources/images/icons/btn-icon-goto.png']);
+        action('activate', ['icon' => 'resources/images/icons/btn-icon-activate.png']);
+        action('chart', ['icon' => 'resources/images/icons/btn-icon-chart.png']);
+        action('copy', ['icon' => 'resources/images/icons/btn-icon-copy.png']);
+        action('import', ['icon' => 'resources/images/icons/btn-icon-import.png']);
+
+        grid('actions', 'icon', ['move' => 'title', 'editor' => '1', 'icon' => 'resources/images/icons/btn-icon-tile.png']);
+        grid('sectionActions', 'actionId', 'icon', ['move' => 'actionId', 'icon' => 'resources/images/icons/btn-icon-tile.png']);
+        grid('grid', 'rename', ['move' => 'tooltip', 'icon' => 'resources/images/icons/btn-icon-rename.png']);
+        grid('grid', 'tooltip', ['icon' => 'resources/images/icons/btn-icon-tooltip.png']);
+        field('grid', 'source', [
+            'title' => 'Источник',
+            'elementId' => 'span',
+            'move' => 'icon',
+            'mode' => 'hidden',
+        ]);
+        grid('grid', 'source', ['move' => 'move']);
+        grid('grid', 'fieldId', ['gridId' => 'source']);
+        grid('grid', 'further', ['gridId' => 'source']);
+        grid('grid', 'width', ['toggle' => 'n']); // ?
+        field('grid', 'props', [
+            'title' => 'Свойства',
+            'elementId' => 'span',
+            'move' => 'source',
+            'mode' => 'hidden',
+        ]);
+        grid('grid', 'icon', [
+            'move' => 'editor',
+            'gridId' => 'display',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/btn-icon-tile.png',
+        ]);
+        grid('filter', 'rename', ['icon' => 'resources/images/icons/btn-icon-rename.png']);
+        grid('filter', 'tooltip', ['icon' => 'resources/images/icons/btn-icon-tooltip.png']);
+        grid('sections', 'filter', ['rowReqIfAffected' => 'n']);
+        grid('sections', 'extendsPhp', ['rowReqIfAffected' => 'n']);
+        grid('sections', 'extendsJs', ['rowReqIfAffected' => 'n']);
+        grid('entities', 'extends', ['rowReqIfAffected' => 'n']);
+        grid('filter', 'filter', ['rowReqIfAffected' => 'n']);
+        grid('fields', 'filter', ['rowReqIfAffected' => 'n']);
+        grid('elementCfgField', 'filter', ['rowReqIfAffected' => 'n']);
+        die('ok');
+    }
     public function refactorAllExceptAction() {
         field('action', 'rowRequired', ['alias' => 'selectionRequired']);
         entity('search', ['table' => 'filter']);

@@ -579,9 +579,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * Converts a rowset to grid data array, using current trail item details, such as columns, filters, etc
      *
      * @param string $fields Comma-separated list of field names
+     * @param array $renderCfg
      * @return array
+     * @throws Exception
      */
-    public function toGridData($fields) {
+    public function toGridData($fields, $renderCfg = []) {
 
         // If there are no rows in $this argument - return
         if ($this->_count == 0) return [];
@@ -600,6 +602,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             'price' => [],
             'date' => [],
             'time' => [],
+            'string' => [],
+            'icon' => [],
             'datetime' => [],
             'upload' => [],
             'other' => ['id' => true],
@@ -662,6 +666,14 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             else if ($gridFieldR->foreign('elementId')->alias == 'upload')
                 $typeA['upload'][$gridFieldR->alias] = true;
 
+            // Icons
+            else if ($gridFieldR->foreign('elementId')->alias == 'icon')
+                $typeA['icon'][$gridFieldR->alias] = true;
+
+            // Strings and texts
+            else if (in($gridFieldR->foreign('elementId')->alias, 'string,textarea'))
+                $typeA['string'][$gridFieldR->alias] = true;
+
             // All other types
             else $typeA['other'][$gridFieldR->alias] = true;
 
@@ -712,7 +724,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // If field column type is regular, e.g no foreign keys, no prices, no dates, etc. - we do no changes
-                if (isset($typeA['other'][$columnI])) $data[$pointer][$columnI] = $value;
+                if (isset($typeA['other'][$columnI]) || isset($typeA['string'][$columnI])) $data[$pointer][$columnI] = $value;
 
                 // If field column type is 'decimal', we right pad column value by certain precision length
                 // so if current row's price is '30.5' - we convert it to '30.50'
@@ -781,9 +793,20 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_upload'][$columnI]['type'] = $file->type;
                 }
 
+                // Render data for a column linked to icon-field
+                if (isset($typeA['icon'][$columnI]))
+                    if ($value) $data[$pointer]['_render'][$columnI]
+                        = '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>';
+
+                // Provide icon overflow feature, so that if a text-column
+                if ($_ = $renderCfg[$columnI]['icon'])
+                    if ($typeA['string'][$columnI] && ($value != $this->model()->fields($columnI)->defaultValue || !$value))
+                        $data[$pointer]['_render'][$columnI] = rif($value, '<img src="' . $_ . '" class="i-cell-img">$1');
+
                 // If there the color-value in format 'hue#rrgbb' can probably be found in field value
                 // we do a try, and if found - inject a '.i-color-box' element
                 if (   isset($typeA['other'][$columnI])
+                    || isset($typeA['string'][$columnI])
                     || isset($typeA['foreign']['single'][$columnI]['title'])
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])) {
 
