@@ -23,7 +23,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'title' => 'Иконка',
             'columnTypeId' => 'VARCHAR(255)',
             'elementId' => 'icon',
-            'move' => 'rowReqIfAffected',
+            'move' => 'editor'
         ]);
         grid('sections', 'toggle', ['icon' => 'resources/images/icons/btn-icon-toggle.png']);
         grid('sections', 'rowsOnPage', ['icon' => 'resources/images/icons/btn-icon-qty-on-page.png']);
@@ -101,18 +101,14 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('grid', 'fieldId', ['gridId' => 'source']);
         grid('grid', 'further', ['gridId' => 'source']);
         grid('grid', 'width', ['toggle' => 'n']); // ?
-        field('grid', 'props', [
-            'title' => 'Свойства',
-            'elementId' => 'span',
-            'move' => 'source',
-            'mode' => 'hidden',
-        ]);
+        field('grid', 'width', ['mode' => 'hidden']);
         grid('grid', 'icon', [
             'move' => 'editor',
             'gridId' => 'display',
             'editor' => '1',
             'icon' => 'resources/images/icons/btn-icon-tile.png',
         ]);
+        field('grid', 'rowReqIfAffected', ['move' => 'summaryText']);
         grid('filter', 'rename', ['icon' => 'resources/images/icons/btn-icon-rename.png']);
         grid('filter', 'tooltip', ['icon' => 'resources/images/icons/btn-icon-tooltip.png']);
         grid('sections', 'filter', ['rowReqIfAffected' => 'n']);
