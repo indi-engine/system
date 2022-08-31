@@ -364,7 +364,7 @@ class Indi_Controller {
 
                     // Get filter `rename` property
                     if (t()->filters instanceof Indi_Db_Table_Rowset)
-                        $rename = t()->filters->select($found->id, $lookupBy)->current()->rename;
+                        $rename = t()->filters->select($found->id, $lookupBy)->at(0)->rename;
 
                     // Set excel filter mention title
                     $excelA[$found->alias] = ['title' => $rename ?: $found->title];
