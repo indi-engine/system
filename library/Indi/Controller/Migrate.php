@@ -118,6 +118,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('filter', 'filter', ['rowReqIfAffected' => 'n']);
         grid('fields', 'filter', ['rowReqIfAffected' => 'n']);
         grid('elementCfgField', 'filter', ['rowReqIfAffected' => 'n']);
+        action('revert', ['title' => 'Восстановить', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-reset.png']);
+        action('print', ['title' => 'Печать', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-print.png']);
         die('ok');
     }
     public function refactorAllExceptAction() {

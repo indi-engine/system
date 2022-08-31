@@ -19,7 +19,7 @@ class Admin_ConfigController extends Indi_Controller_Admin {
     }
 
     /**
-     * Ensure that full access will be provided only for admin users having Configurator role
+     * Ensure that full access will be provided only for admin users having Developer-role
      */
     public function adjustAccess() {
 

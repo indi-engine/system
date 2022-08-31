@@ -8,7 +8,7 @@ class Indi_Queue_L10n_AdminCustomUi extends Indi_Queue_L10n_AdminUi {
         'entity'  => ['field' => 'fraction', 'value' => 'custom'],
         'section' => ['field' => 'fraction', 'value' => 'custom'],
         'action'  => ['field' => 'fraction', 'value' => 'custom,system'],
-        'role' => ['field' => 'fraction', 'value' => 'custom'],
+        'role' =>    ['field' => 'fraction', 'value' => 'custom'],
         'notice'  => ['field' => 'fraction', 'value' => 'custom'],
     ];
 }

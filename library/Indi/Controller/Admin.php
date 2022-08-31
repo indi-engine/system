@@ -2708,7 +2708,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             'user' => [
                 'title' => admin()->title(),
                 'uid' => admin()->roleId . '-' . admin()->id,
-                'role' => admin()->foreign('roleId')->title,
+                'role' => [
+                    'title' => admin()->foreign('roleId')->title,
+                    'alias' => admin()->foreign('roleId')->alias
+                ],
                 'menu' => $this->menu(),
                 'auth' => session_id() . ':' . ini('lang')->admin,
                 'dashboard' => admin()->foreign('roleId')->dashboard ?: false,
