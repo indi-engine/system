@@ -13,7 +13,8 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // Provide ability for some grid col props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'sectionId') $value = section($value)->id;
+            if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = section($value)->id;
+            else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'gridId') $value = grid($this->sectionId, $value)->id;
@@ -94,6 +95,10 @@ class Grid_Row extends Indi_Db_Table_Row {
                 if ($prop == 'gridId') {
                     $value = ($_ = $this->foreign('gridId')) && $_->fieldId ? $_->foreign('fieldId')->alias : $_->alias;
                 }
+
+                // Else if it's one of fields for jump destination definition
+                else if ($prop == 'jumpSectionId')       $value = $this->foreign($prop)->alias;
+                else if ($prop == 'jumpSectionActionId') $value = $this->foreign($prop)->foreign('actionId')->alias;
 
                 // Export roles
                 if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);

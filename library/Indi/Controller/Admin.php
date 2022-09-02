@@ -236,7 +236,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
-                            'icon' => t()->grid->select(': !=""', 'icon')->column('icon', false, 'fieldId'),
+                            'icon' => t()->icons(),
+                            'jump' => t()->jumps(),
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ',')

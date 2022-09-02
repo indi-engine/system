@@ -669,4 +669,61 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             return $realtimeR;
         }
     }
+
+    /**
+     * Get render config
+     *
+     * @return array
+     */
+    public function renderCfg() {
+
+        // Prepare render config
+        foreach ($this->gridFields ? $this->gridFields : [] as $field) {
+            if ($fieldId = m()->fields($field->alias)->id) {
+                if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
+                if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
+            }
+        }
+
+        // Return render config
+        return $renderCfg ?? [];
+    }
+
+    /**
+     * Get array of [fieldId => jumpUri] pairs
+     * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
+     *
+     * @return array
+     */
+    public function jumps() {
+
+        // If jumps are not yet introduced - return
+        if (!m('grid')->fields('jumpSectionId')) return;
+
+        // Collect jumps info
+        foreach ($this->grid->select(': !="0"', 'jumpSectionId') as $gridR)
+            $jumpA[$gridR->further ?: $gridR->fieldId]
+                = '/' . $gridR->foreign('jumpSectionId')->alias
+                . '/' . $gridR->foreign('jumpSectionActionId')->foreign('actionId')->alias
+                . '/id/{id}/' . $gridR->jumpArgs;
+
+        // Return jumps info
+        return $jumpA ?? [];
+    }
+
+    /**
+     * Get array of [fieldId => icon] pairs
+     * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
+     *
+     * @return array
+     */
+    public function icons() {
+
+        // Get icons
+        foreach ($this->grid->select(': !=""', 'icon') as $gridR)
+            $iconA[$gridR->further ?: $gridR->fieldId] = $gridR->icon;
+
+        // Return icons
+        return $iconA ?? [];
+    }
 }

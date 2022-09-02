@@ -1733,7 +1733,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $groups []= ['id' => $dir, 'title' => $dir];
 
                 // Glob files in that dir and foreach file
-                foreach (rglob($abs . '/*.{png,ico,gif}', GLOB_BRACE) as $icon) {
+                foreach (rglob($abs . '/*.{png,ico,gif,svg}', GLOB_BRACE) as $icon) {
 
                     // Get icon
                     $icon = preg_replace('~^' . preg_quote($pre, '~') . '~', '', $icon);

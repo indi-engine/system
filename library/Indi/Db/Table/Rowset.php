@@ -608,7 +608,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             'upload' => [],
             'other' => ['id' => true],
             'shade' => [],
-            'further' => []
+            'further' => [],
+            'enumset' => []
         ];
 
         // Get fields
@@ -637,10 +638,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             }
 
             // Foreign keys (single and multiple)
-            if ($gridFieldR->original('storeRelationAbility') == 'one')
+            if ($gridFieldR->original('storeRelationAbility') == 'one') {
+                $typeA['enumset'][$gridFieldR->alias] = $gridFieldR->rel() && $gridFieldR->rel()->table() == 'enumset';
                 $typeA['foreign']['single'][$gridFieldR->alias]['title'] = $gridFieldR->relation
                     ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
                     : true;
+            }
 
             else if ($gridFieldR->original('storeRelationAbility') == 'many')
                 $typeA['foreign']['multiple'][$gridFieldR->alias]['title'] = $gridFieldR->relation
@@ -742,11 +745,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // If field column type is a multiple foreign key, we use comma-separated titles of related foreign rows
                 if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry) {
-                    $data[$pointer][$columnI] = '';
-                    foreach ($entry->foreign($further ?: $columnI) as $m)
-                        $data[$pointer][$columnI] .= $m
-                                ->{is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title'} .
-                            ($entry->foreign($further ?: $columnI)->key() < $entry->foreign($further ?: $columnI)->count() - 1 ? ', ' : '');
+                    $data[$pointer][$columnI] = [];
+                    foreach ($entry->foreign($further ?: $columnI) as $m) {
+                        $titleCol = is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title';
+                        $data[$pointer][$columnI][$m->id] = $m->$titleCol;
+                        if ($_ = $renderCfg[$columnI]['jump']) $data[$pointer]['_render'][$columnI][$m->id] = $m->$titleCol;
+                    }
+                    $data[$pointer][$columnI] = join(', ', $data[$pointer][$columnI]);
                 }
 
                 // If field column type is 'date' we adjust it's format if need. If date is '0000-00-00' we set it
@@ -798,11 +803,6 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     if ($value) $data[$pointer]['_render'][$columnI]
                         = '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>';
 
-                // Provide icon overflow feature, so that if a text-column
-                if ($_ = $renderCfg[$columnI]['icon'])
-                    if ($typeA['string'][$columnI] && ($value != $this->model()->fields($columnI)->defaultValue || !$value))
-                        $data[$pointer]['_render'][$columnI] = rif($value, '<img src="' . $_ . '" class="i-cell-img">$1');
-
                 // If there the color-value in format 'hue#rrgbb' can probably be found in field value
                 // we do a try, and if found - inject a '.i-color-box' element
                 if (   isset($typeA['other'][$columnI])
@@ -838,6 +838,53 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])
                     || isset($typeA['boolean'][$columnI]))
                     $data[$pointer]['$keys'][$columnI] = $value;
+
+                // Provide icon overflow feature, so that if a text-column
+                if ($_ = $renderCfg[$columnI]['icon']) {
+                    if ($value != $this->model()->fields($columnI)->defaultValue || !$value) {
+                        if ($typeA['string'][$columnI]) {
+                            $data[$pointer]['_render'][$columnI] = rif($value, '<img src="' . $_ . '" class="i-cell-img">$1');
+                        } else if ($typeA['foreign']['single'][$columnI] && !$typeA['enumset'][$columnI]) {
+                            $data[$pointer]['_render'][$columnI] = rif($data[$pointer][$columnI], '<img src="' . $_ . '" class="i-cell-img">$1');
+                        }
+                    }
+                }
+
+                // Provide jump feature
+                if ($_ = $renderCfg[$columnI]['jump']) {
+                    if ($value != $this->model()->fields($columnI)->defaultValue || $value) {
+                        if (!$typeA['enumset'][$columnI]) {
+
+                            // If it's a multiple foreign keys field
+                            if ($typeA['foreign']['multiple'][$columnI]) {
+
+                                // Apply jump markup for each value
+                                foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
+                                    $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
+                                    $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
+                                }
+
+                                // Join values by comma
+                                $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
+
+                            // Else
+                            } else {
+
+                                // Get id to be used as replacement for '{id}'
+                                if ($typeA['foreign']['single'][$columnI]) {
+                                    $id = $data[$pointer]['$keys'][$columnI];
+                                } else {
+                                    $id = $data[$pointer]['id'];
+                                }
+
+                                // Wrap cell contents into a <span jump="someuri">
+                                $wrap = $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI];
+                                $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
+                                $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
+                            }
+                        }
+                    }
+                }
             }
 
             // Setup special 'title' property within '_system' property. This is for having proper title

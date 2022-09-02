@@ -780,13 +780,11 @@ class Indi_Controller {
             // Adjust rowset, before using it as a basement of grid data
             $this->adjustGridDataRowset();
 
-            // Prepare fields list and render config
-            $renderCfg = [];
-            foreach ($fields = t()->gridFields ? t()->gridFields->column('alias') : [] as $field) {
-                if ($fieldId = m()->fields($field)->id) {
-                    if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field]['icon'] = $icon;
-                }
-            }
+            // Get fields
+            $fields = t()->gridFields ? t()->gridFields->column('alias') : [];
+
+            // Get grid data render config
+            $renderCfg = t()->renderCfg();
 
             // Build the grid data, based on current rowset
             $data = $this->rowset->toGridData($fields, $renderCfg);

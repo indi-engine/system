@@ -1,5 +1,157 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function jumpsAction() {
+        grid('elementCfgField', 'filter', ['rowReqIfAffected' => 'n']);
+        field('grid', 'jump', ['title' => 'Навигация', 'elementId' => 'span', 'move' => 'accessExcept']);
+        field('grid', 'jumpSectionId', [
+            'title' => 'Раздел',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'jump',
+            'relation' => 'section',
+            'storeRelationAbility' => 'one',
+        ]);
+        field('grid', 'jumpSectionActionId', [
+            'title' => 'Действие',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'jumpSectionId',
+            'relation' => 'section2action',
+            'storeRelationAbility' => 'one',
+        ]);
+        consider('grid', 'jumpSectionActionId', 'jumpSectionId', ['required' => 'y', 'connector' => 'sectionId']);
+        field('grid', 'jumpArgs', [
+            'title' => 'Аргументы',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'jumpSectionActionId',
+        ]);
+        field('grid', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'jumpArgs']);
+        field('grid', 'properties', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'features', 'mode' => 'hidden']);
+        field('grid', 'display', ['title' => 'Отображение']);
+        field('grid', 'icon', ['move' => 'display']);
+        field('grid', 'tooltip', ['move' => 'rename']);
+        field('grid', 'rename', ['move' => 'tooltip']);
+        field('grid', 'toggle', ['move' => 'gridId']);
+        field('grid', 'features', ['move' => 'rename']);
+        field('grid', 'group', ['move' => 'display']);
+        field('grid', 'rowReqIfAffected', ['move' => 'editor']);
+        section('grid')->nested('grid')->delete();
+        grid('grid', 'title', ['move' => '', 'rename' => 'Столбец']);
+        grid('grid', 'move', ['move' => 'title']);
+        grid('grid', 'properties', ['move' => 'move']);
+        grid('grid', 'toggle', ['move' => '', 'gridId' => 'properties', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('grid', 'source', ['move' => 'toggle', 'gridId' => 'properties']);
+        grid('grid', 'fieldId', [
+            'move' => '',
+            'gridId' => 'source',
+            'editor' => '1',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('grid', 'further', [
+            'move' => 'fieldId',
+            'gridId' => 'source',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/join.png',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('grid', 'access', ['move' => 'source', 'gridId' => 'properties']);
+        grid('grid', 'accessRoles', [
+            'move' => '',
+            'rename' => 'Кому',
+            'gridId' => 'access',
+            'editor' => '1',
+        ]);
+        grid('grid', 'accessExcept', ['move' => 'accessRoles', 'gridId' => 'access', 'editor' => '1']);
+        grid('grid', 'features', ['move' => 'properties']);
+        grid('grid', 'display', ['move' => '', 'gridId' => 'features']);
+        grid('grid', 'icon', [
+            'move' => '',
+            'gridId' => 'display',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/btn-icon-tile.png',
+        ]);
+        grid('grid', 'group', ['move' => 'icon', 'gridId' => 'display']);
+        grid('grid', 'tooltip', [
+            'move' => 'group',
+            'gridId' => 'display',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+        ]);
+        grid('grid', 'rename', [
+            'move' => 'tooltip',
+            'gridId' => 'display',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/btn-icon-rename.png',
+        ]);
+        grid('grid', 'width', [
+            'move' => 'rename',
+            'toggle' => 'n',
+            'gridId' => 'display',
+            'editor' => '1',
+        ]);
+        grid('grid', 'editor', ['move' => 'display', 'gridId' => 'features', 'icon' => 'resources/images/icons/btn-icon-editor.png']);
+        grid('grid', 'jump', ['move' => 'editor', 'gridId' => 'features']);
+        grid('grid', 'jumpSectionId', [
+            'move' => '',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/tree2.png',
+        ]);
+        grid('grid', 'jumpSectionActionId', [
+            'move' => 'jumpSectionId',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/action.png',
+        ]);
+        grid('grid', 'jumpArgs', [
+            'move' => 'jumpSectionActionId',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/args.png',
+        ]);
+        grid('grid', 'rowReqIfAffected', ['move' => 'jump', 'gridId' => 'features', 'icon' => 'resources/images/icons/btn-icon-reload-affected.png']);
+        grid('grid', 'summaryType', ['move' => 'rowReqIfAffected', 'gridId' => 'features', 'editor' => '1']);
+        grid('filter', 'further', ['move' => 'fieldId', 'editor' => '1', 'icon' => 'resources/images/icons/join.png']);
+        grid('fields', 'tooltip', ['icon' => 'resources/images/icons/btn-icon-tooltip.png']);
+        field('role', 'entityId', ['filter' => '`fraction`= "custom"']);
+
+        grid('sections', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('sections', 'groupBy', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('grid', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('grid', 'further', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('filter', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('filter', 'further', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+
+        grid('fields', 'relation',     ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('fields', 'elementId',    ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        grid('fields', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        grid('fieldsAll', 'relation',     ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('fieldsAll', 'elementId',    ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        grid('fieldsAll', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        grid('params', 'cfgField', ['jumpSectionId' => 'elementCfgField', 'jumpSectionActionId' => 'form']);
+        grid('consider', 'consider',  ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('consider', 'foreign',   ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('consider', 'connector', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        section('profiles', ['alias' => 'role']);
+        grid('role', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('columnTypes', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        grid('notices', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        grid('notices', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('paramsAll', 'fieldId', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('paramsAll', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('paramsAll', 'cfgField', ['jumpSectionId' => 'elementCfgField', 'jumpSectionActionId' => 'form']);
+        field('grid', 'rowReqIfAffected', ['move' => 'features']);
+        field('grid', 'editor', ['move' => 'features']);
+        field('grid', 'tooltip', ['move' => 'rename']);
+        grid('sectionActions', 'roleIds', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        die('ok');
+    }
     public function iconsAction() {
         section('alteredFields',  ['multiSelect' => '1']);
         section('filter',         ['multiSelect' => '1']);
