@@ -2892,7 +2892,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach (t()->fields as $fieldR)
             if (in($fieldR->mode, 'hidden,readonly'))
                 if (!strlen($fieldR->defaultValue) || $this->row->id || $this->row->isModified($fieldR->alias)) unset($data[$fieldR->alias]);
-                else $data[$fieldR->alias] = $fieldR->compiled('defaultValue');
+                else if (strlen($cmp = $fieldR->compiled('defaultValue'))) $data[$fieldR->alias] = $cmp;
 
         // If current cms user is an alternate, and if there is corresponding field within current entity structure
         if ($this->alternateWHERE() && admin()->alternate

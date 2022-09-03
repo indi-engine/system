@@ -852,36 +852,36 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Provide jump feature
                 if ($_ = $renderCfg[$columnI]['jump']) {
-                    if ($value != $this->model()->fields($columnI)->defaultValue || $value) {
-                        if (!$typeA['enumset'][$columnI]) {
+                    if (!$typeA['enumset'][$columnI]) {
 
-                            // If it's a multiple foreign keys field
-                            if ($typeA['foreign']['multiple'][$columnI]) {
+                        // If it's a multiple foreign keys field
+                        if ($typeA['foreign']['multiple'][$columnI]) {
 
-                                // Apply jump markup for each value
-                                foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
-                                    $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
-                                    $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
-                                }
+                            $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];
 
-                                // Join values by comma
-                                $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
-
-                            // Else
-                            } else {
-
-                                // Get id to be used as replacement for '{id}'
-                                if ($typeA['foreign']['single'][$columnI]) {
-                                    $id = $data[$pointer]['$keys'][$columnI];
-                                } else {
-                                    $id = $data[$pointer]['id'];
-                                }
-
-                                // Wrap cell contents into a <span jump="someuri">
-                                $wrap = $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI];
+                            // Apply jump markup for each value
+                            foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
                                 $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
-                                $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
+                                $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
                             }
+
+                            // Join values by comma
+                            $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
+
+                        // Else
+                        } else {
+
+                            // Get id to be used as replacement for '{id}'
+                            if ($typeA['foreign']['single'][$columnI]) {
+                                $id = $data[$pointer]['$keys'][$columnI];
+                            } else {
+                                $id = $data[$pointer]['id'];
+                            }
+
+                            // Wrap cell contents into a <span jump="someuri">
+                            $wrap = $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI];
+                            $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
+                            $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
                         }
                     }
                 }

@@ -49,4 +49,34 @@ class Action_Row extends Indi_Db_Table_Row {
         // Stringify and return $ctor
         return _var_export($ctor);
     }
+
+    /**
+     * Check whether <iconFileName>-jump.<iconFileExtension> exists and if yes return current value of icon-prop but
+     * with '-jump' postfixed into icon filename, or return just the value of icon-prop as is
+     *
+     * @param bool $jump
+     * @return string
+     */
+    public function icon($jump = true) {
+
+        // If $jump arg is true and icon-prop is not empty
+        if ($jump && $this->icon) {
+
+            // Foreach directory
+            foreach (ar($this->field('icon')->params['dir']) as $dir) {
+
+                // Get absolute directory path with no trailing slash
+                $pre = DOC . STD . rif(!preg_match('~^/~', $dir), VDR . '/client/');
+
+                // Build icon filename for icon version having small right-arrow
+                $jump = preg_replace('~^(.+?)(\.[^.]+)$~', '$1-jump$2', $this->icon);
+
+                // If original icon file found - it means we're in the right directory
+                if (is_file($pre . '/' . $this->icon)) return is_file($pre . '/' . $jump) ? $jump : $this->icon;
+            }
+        }
+
+        // Return icon-prop as is
+        return $this->icon;
+    }
 }

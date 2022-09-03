@@ -150,6 +150,115 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('grid', 'editor', ['move' => 'features']);
         field('grid', 'tooltip', ['move' => 'rename']);
         grid('sectionActions', 'roleIds', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        grid('elementCfgField', 'relation',     ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        grid('elementCfgField', 'elementId',    ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        grid('elementCfgField', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        field('alteredField', 'jump', ['title' => 'Навигация', 'elementId' => 'span', 'move' => 'defaultValue']);
+        field('alteredField', 'jumpSectionId', [
+            'title' => 'Раздел',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'jump',
+            'relation' => 'section',
+            'storeRelationAbility' => 'one',
+        ]);
+        field('alteredField', 'jumpSectionActionId', [
+            'title' => 'Действие',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'jumpSectionId',
+            'relation' => 'section2action',
+            'storeRelationAbility' => 'one',
+        ]);
+        consider('alteredField', 'jumpSectionActionId', 'jumpSectionId', ['required' => 'y', 'connector' => 'sectionId']);
+        field('alteredField', 'jumpArgs', [
+            'title' => 'Аргументы',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'jumpSectionActionId',
+        ]);
+        section('alteredFields', ['rowsetSeparate' => 'no']);
+        grid('alteredFields', 'jump', ['move' => 'access']);
+        grid('alteredFields', 'jumpSectionId', [
+            'move' => '',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/tree2.png',
+        ]);
+        grid('alteredFields', 'jumpSectionActionId', [
+            'move' => 'jumpSectionId',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/action.png',
+        ]);
+        grid('alteredFields', 'jumpArgs', [
+            'move' => 'jumpSectionActionId',
+            'gridId' => 'jump',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/args.png',
+        ]);
+        grid('alteredFields', 'rename', ['icon' => 'resources/images/icons/btn-icon-rename.png']);
+        grid('alteredFields', 'accessExcept', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+                 grid('grid', 'accessExcept', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+               grid('filter', 'accessExcept', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        alteredField('elementCfgField', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'parentSectionConnector', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'defaultSortField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'groupBy', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'tileField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'tileThumb', ['jumpSectionId' => 'resize', 'jumpSectionActionId' => 'form']);
+        alteredField('sectionActions', 'actionId', ['jumpSectionId' => 'actions', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'further', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'gridId', ['jumpSectionId' => 'grid', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'jumpSectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('grid', 'jumpSectionActionId', ['jumpSectionId' => 'sectionActions', 'jumpSectionActionId' => 'form']);
+        alteredField('alteredFields', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('alteredFields', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('alteredFields', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        alteredField('alteredFields', 'jumpSectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('alteredFields', 'jumpSectionActionId', ['jumpSectionId' => 'sectionActions', 'jumpSectionActionId' => 'form']);
+        alteredField('sectionActions', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('filter', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('filter', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('filter', 'further', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('entities', 'titleFieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('entities', 'spaceFields', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('entities', 'filesGroupBy', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('fields', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('fields', 'relation', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('fields', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        alteredField('fields', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        alteredField('notices', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('resize', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('params', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('params', 'cfgField', ['jumpSectionId' => 'elementCfgField', 'jumpSectionActionId' => 'form']);
+        alteredField('consider', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('consider', 'consider', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('consider', 'foreign', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('consider', 'connector', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('role', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('admins', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        alteredField('columnTypes', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        alteredField('elementCfgField', 'relation', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('elementCfgField', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        alteredField('elementCfgField', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        alteredField('notices', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        alteredField('notices', 'sectionId', ['jumpSectionId' => 'sections', 'jumpSectionActionId' => 'form']);
+        alteredField('noticeGetters', 'noticeId', ['jumpSectionId' => 'notices', 'jumpSectionActionId' => 'form']);
+        alteredField('noticeGetters', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+        alteredField('fieldsAll', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('fieldsAll', 'relation', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('fieldsAll', 'elementId', ['jumpSectionId' => 'controlElements', 'jumpSectionActionId' => 'form']);
+        alteredField('fieldsAll', 'columnTypeId', ['jumpSectionId' => 'columnTypes', 'jumpSectionActionId' => 'form']);
+        alteredField('paramsAll', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('paramsAll', 'cfgField', ['jumpSectionId' => 'elementCfgField', 'jumpSectionActionId' => 'form']);
         die('ok');
     }
     public function iconsAction() {

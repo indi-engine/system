@@ -756,6 +756,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         if ($field = $this->field($fieldId)->alias) {
                             $dataColumns[] = $field;
                             if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
+                            if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
                         }
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level

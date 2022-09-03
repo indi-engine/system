@@ -99,7 +99,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Alter fields
             $originalDefaults = [];
-            foreach ($sectionR->nested(entity('alteredField') ? 'alteredField' : 'disabledField') as $_) {
+            foreach ($sectionR->nested('alteredField') as $_) {
 
                 // Prepare modifications
                 $modify = [];
@@ -116,6 +116,19 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 // If field's `defaultValue` prop changed - collect 'field's alias' => 'original default value' pairs
                 if ($fieldR->isModified('defaultValue'))
                     $originalDefaults[$fieldR->alias] = $fieldR->original('defaultValue');
+
+                // Setup field's altered data. Currently only jump-data is stored here
+                if ($_->jumpSectionId && $_->jumpSectionActionId) {
+                    $fieldR->altered = [
+                        'jump' => [
+                            'text' => $_->foreign('jumpSectionActionId')->title,
+                            'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
+                            'href' => '/' . $_->foreign('jumpSectionId')->alias
+                                . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
+                                . '/id/{id}/'
+                        ]
+                    ];
+                }
             }
 
             // Save save those pairs under 'originalDefaults' key within section's system data

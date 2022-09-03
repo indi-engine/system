@@ -13,7 +13,8 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
 
         // Provide ability for some grid col props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'sectionId') $value = section($value)->id;
+            if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = section($value)->id;
+            else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'elementId') $value = element($value)->id;
             else if ($columnName == 'accessExcept') {
@@ -65,6 +66,10 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
 
                 // If it's elementId-prop
                 if ($fieldR->alias == 'elementId') $value = element($value)->alias;
+
+                // Else if it's one of fields for jump destination definition
+                else if ($prop == 'jumpSectionId')       $value = $this->foreign($prop)->alias;
+                else if ($prop == 'jumpSectionActionId') $value = $this->foreign($prop)->foreign('actionId')->alias;
 
                 // Export roles
                 else if ($fieldR->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
