@@ -2328,4 +2328,20 @@ class Indi {
         // Else use 'exec' fn
         else exec($cmd . ' > /dev/null &');
     }
+
+    /**
+     * Get parentId to be used while building parent-WHERE clause
+     *
+     * @param $sectionId
+     * @param bool $lastOnly
+     * @return array|mixed
+     */
+    public static function parentId($sectionId, $lastOnly = true) {
+
+        // Get parent ids
+        $parents = $_SESSION['indi']['admin']['trail']['parentId'][$sectionId];
+
+        // Return last only or all
+        return $lastOnly ? array_key_last($parents) : array_keys($parents);
+    }
 }

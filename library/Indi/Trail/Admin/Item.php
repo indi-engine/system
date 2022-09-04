@@ -250,8 +250,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             // Get the connector value from session special place and assign it to current row, but only
                             // in case if that connector is not a one of existing fields
                             if (!$this->model->fields($connector))
-                                $this->row->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                                [t($i)->section->id];
+                                $this->row->$connector = Indi::parentId(t($i)->section->id);
                         }
                 }
 
@@ -297,8 +296,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                     // Get the connector value from session special place
                     //if ($this->model->fields($connector))
-                        $this->row->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                        [t($i)->section->id];
+                        $this->row->$connector = Indi::parentId(t($i)->section->id);
                 }
             }
 
@@ -322,7 +320,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $id = t($index-1)->action->selectionRequired == 'n' && $index == 1
                 ? uri('id')
                 : (preg_match('/,/', t($index-1)->row->$connector) // ambiguous check
-                    ? $_SESSION['indi']['admin']['trail']['parentId'][$this->section->id]
+                    ? Indi::parentId($this->section->id)
                     : t($index-1)->row->$connector);
 
             // Add main item to WHERE clause stack

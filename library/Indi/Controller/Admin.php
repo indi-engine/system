@@ -2950,7 +2950,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->updateAix($this->row);
 
             // Update parent id, so nested entries will be mapped under entry, that was just saved
-            $_SESSION['indi']['admin']['trail']['parentId'][t()->section->id] = $this->row->id;
+            $_SESSION['indi']['admin']['trail']['parentId'][t()->section->id][$this->row->id] = true;
         }
 
         // Setup row index
@@ -3122,20 +3122,25 @@ class Indi_Controller_Admin extends Indi_Controller {
             ? t()->section->foreign('parentSectionConnector')->alias
             : t(1)->model->table() . 'Id';
 
+        // Shortcuts
+        $id = uri('id'); $jump = uri('jump');
+
         // Get the connector value. For 'jump' uris, we we are getting it as is - from a certain row's prop
         $connectorValue = uri('action') == 'index'
-            ? uri('id')
-            : (uri('jump')
+            ? $id
+            : ($jump
                 ? m()->row(uri('id'))->$connectorAlias
-                : $_SESSION['indi']['admin']['trail']['parentId'][t(1)->section->id]);
+                : Indi::parentId(t(1)->section->id, false));
 
         // Connector field shortcut
         $connectorField = m()->fields($connectorAlias);
 
         // Return clause
-        $return = $connectorField->storeRelationAbility == 'many'
-            ? 'CONCAT(",", `' . $connectorAlias . '`, ",") REGEXP ",(' . im(ar($connectorValue), '|') . '),"'
-            : '`' . $connectorAlias . '` = "' . $connectorValue . '"';
+        $return = is_array($connectorValue)
+            ? '`' . $connectorAlias . '` IN (' . im($connectorValue) . ')'
+            : ($connectorField->storeRelationAbility == 'many'
+                ? 'CONCAT(",", `' . $connectorAlias . '`, ",") REGEXP ",(' . im(ar($connectorValue), '|') . '),"'
+                : '`' . $connectorAlias . '` = "' . $connectorValue . '"');
 
         // If connector field - is a field having Variable Entity consider dependency
         if ($connectorField->storeRelationAbility != 'none' && !$connectorField->relation) {

@@ -110,9 +110,7 @@ class Indi_Trail_Item {
 
             // Get the connector value from session special place and assign it to current row, but only
             // in case if that connector is not a one of existing fields
-            if ($this->model->fields($connector))
-                $this->filtersSharedRow->$connector = $_SESSION['indi']['admin']['trail']['parentId']
-                [t($i)->section->id];
+            if ($this->model->fields($connector)) $this->filtersSharedRow->$connector = Indi::parentId(t($i)->section->id);
         }
     }
 

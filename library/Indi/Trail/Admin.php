@@ -119,11 +119,11 @@ class Indi_Trail_Admin {
                 $_SESSION['indi']['admin']['trail']['parentId'] = [];
 
             // Save id
-            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = uri('id');
+            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId][uri('id')] = true;
 
         // If we're trying to jump to creation-form in a section, having parent section - setup parent id
         } else if (uri('action') == 'form' && uri('jump') && ($parent = uri('parent')))
-            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId] = uri('parent');
+            $_SESSION['indi']['admin']['trail']['parentId'][self::$items[0]->section->sectionId][uri('parent')] = true;
 
         // Reverse items
         self::$items = array_reverse(self::$items);
