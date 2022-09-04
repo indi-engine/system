@@ -1748,17 +1748,21 @@ class Indi {
         // Define $obar array, that will contain key->value pairs for all involved filters
         $obar = [];
 
-        // If there is no 'filter' param within query string - set up it as json-encoded empty array
-        if (!Indi::get('filter')) Indi::get('filter', json_encode($obar));
+        // If $_GET['filter'] is an array - return it as is
+        if (is_array($_ = Indi::get('filter'))) $obar = $_; else {
 
-        // Json-decode $_GET's 'filter' param
-        $rawA = json_decode(Indi::get('filter'), true);
+            // If there is no 'filter' param within query string - set up it as json-encoded empty array
+            if (!Indi::get('filter')) Indi::get('filter', json_encode($obar));
 
-        // If Json-encoded string was invalid - return empty array
-        if (!is_array($rawA)) return [];
+            // Json-decode $_GET's 'filter' param
+            $rawA = json_decode(Indi::get('filter'), true);
 
-        // Build the $obar array
-        foreach ($rawA as $rawI) $obar[key($rawI)] = current($rawI);
+            // If Json-encoded string was invalid - return empty array
+            if (!is_array($rawA)) return [];
+
+            // Build the $obar array
+            foreach ($rawA as $rawI) $obar[key($rawI)] = current($rawI);
+        }
 
         // If no arguments given - return $_GET's filter param as a usage-friendly array
         if (func_num_args() == 0) return $obar;

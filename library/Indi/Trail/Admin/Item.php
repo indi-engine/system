@@ -125,7 +125,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
                             'href' => '/' . $_->foreign('jumpSectionId')->alias
                                 . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
-                                . '/id/{id}/'
+                                . '/id/{id}/' . $_->jumpArgs
                         ]
                     ];
                 }

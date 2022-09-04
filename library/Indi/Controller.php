@@ -302,6 +302,26 @@ class Indi_Controller {
     }
 
     /**
+     * Convert $_GET['filter'], which is in {param1: value1, param2: value2} format,
+     * into $_GET['filter'] format (e.g. [{param1: value1}, {param2: value2}])
+     *
+     * @return mixed
+     */
+    protected function _filter2search() {
+
+        // If $_GET['filter'] is not an array - return
+        if (!is_array($assoc = Indi::get()->filter)) return;
+
+        // Convert filter values format
+        // from {param1: value1, param2: value2}
+        // to [{param1: value1}, {param2: value2}]
+        $filter = []; foreach ($assoc as $param => $value) $filter []= [$param => $value];
+
+        // Json-encode and return
+        return json_encode($filter);
+    }
+
+    /**
      * Builds and returns a stack of WHERE clauses, that are representing grid's filters usage
      *
      * @param $FROM string table/model/entity name. Current model will be used by default
@@ -320,6 +340,9 @@ class Indi_Controller {
 
         // Use Indi::get()->filter if $filter arg is not given
         $filter = $filter ?: Indi::get()->filter;
+
+        // Convert filters definition format
+        if (is_array($filter) || preg_match('~^{~', $filter)) $filter = $this->_filter2search();
 
         // Clauses stack
         $where = [];

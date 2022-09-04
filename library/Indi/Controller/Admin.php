@@ -141,7 +141,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (uri()->ph) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
-                if (preg_match('~^{~', Indi::get()->filter)) $applyA['filters'] = $this->_filter2search();
+
+                if (is_array($f = Indi::get()->filter) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
+                else if ($f == '[]') $applyA['filters'] = $f;
+
                 t()->scope->apply($applyA);
 
                 // If there was no 'format' param passed within the uri
@@ -3467,7 +3470,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::get('jump', null);
 
         // Now we have proper (containing `ph` and `aix` params) uri, so we dispatch it
-        jflush(true, ['redirect' => array_pop($nav)]);
+        jflush(true, ['redirect' => array_pop($nav) . rif($_SERVER['QUERY_STRING'], '?$1')]);
     }
 
     /**
@@ -3950,26 +3953,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Flush success
         jflush(true, 'OK');
-    }
-
-    /**
-     * Convert $_GET['filter'], which is in {param1: value1, param2: value2} format,
-     * into $_GET['filter'] format (e.g. [{param1: value1}, {param2: value2}])
-     *
-     * @return mixed
-     */
-    protected function _filter2search() {
-
-        // If $_GET['filter'] is not an array - return
-        if (!is_array($assoc = Indi::get()->filter)) return;
-
-        // Convert filter values format
-        // from {param1: value1, param2: value2}
-        // to [{param1: value1}, {param2: value2}]
-        $filter = []; foreach ($assoc as $param => $value) $filter []= [$param => $value];
-
-        // Json-encode and return
-        return json_encode($filter);
     }
 
     /**
