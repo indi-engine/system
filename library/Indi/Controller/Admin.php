@@ -619,7 +619,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // mean that page number should be recalculated, so 'page' param will store recalculated page number). After
         // all necessary operations will be done - valued from this ($modified) array will replace existing values
         // in scope
-        $modified = ['aix' => uri()->aix != 'undefined' ? uri()->aix : 1, 'lastIds' => ar($lastIds ?: $r->id)];
+        $modified = ['aix' => !in(uri()->aix, 'undefined,null') ? uri()->aix : 1, 'lastIds' => ar($lastIds ?: $r->id)];
 
         // Start and end indexes. We calculate them, because we should know, whether page number should be changed or no
         $start = ($original['page'] - 1) * t((int) $upper)->section->rowsOnPage + 1;
