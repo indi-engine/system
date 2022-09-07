@@ -1273,6 +1273,9 @@ class Indi_Controller {
             // If it's array
             if (is_array($jump)) {
 
+                // If it's a single jump - wrap into array of jumps containing just single item
+                if (isset($jump['href'])) $jump = [$jump];
+
                 // Foreach jump - build <span> containing destination, hover title
                 $spanA = []; foreach ($jump as $dest)
                     $spanA []= '<span jump="' . $dest['href'] . '"'
