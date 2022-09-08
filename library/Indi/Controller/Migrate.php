@@ -466,7 +466,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('section', 'type', 'p', ['alias' => 'custom']);
         enumset('section', 'type', 'o', ['alias' => 'public']);
         field('section', 'type', ['alias' => 'fraction']);
-
+        field('profile', 'entityId', ['filter' => '`fraction`= "custom"']);
         die('ok');
     }
     public function updateResizeAction(){
