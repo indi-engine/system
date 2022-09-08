@@ -18,13 +18,13 @@ DROP TABLE IF EXISTS `action`;
 
 CREATE TABLE `action` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
-  `selectionRequired` enum('y','n') NOT NULL DEFAULT 'y',
-  `fraction` enum('custom','system','public') NOT NULL DEFAULT 'custom',
-  `display` enum('0','1') NOT NULL DEFAULT '1',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `icon` varchar(255) NOT NULL DEFAULT '',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `selectionRequired` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `fraction` enum('custom','system','public') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'custom',
+  `display` enum('0','1') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `icon` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `rowRequired` (`selectionRequired`),
   KEY `type` (`fraction`),
@@ -35,7 +35,7 @@ CREATE TABLE `action` (
 
 /*Data for the table `action` */
 
-insert  into `action`(`id`,`title`,`alias`,`selectionRequired`,`fraction`,`display`,`toggle`,`icon`) values
+insert  into `action`(`id`,`title`,`alias`,`selectionRequired`,`fraction`,`display`,`toggle`,`icon`) values 
 (1,'{\"ru\":\"Список\",\"en\":\"List\"}','index','n','system','0','y','resources/images/icons/btn-icon-grid.png'),
 (2,'{\"ru\":\"Детали\",\"en\":\"Details\"}','form','y','system','1','y','resources/images/icons/btn-icon-form.png'),
 (3,'{\"ru\":\"Сохранить\",\"en\":\"Save\"}','save','y','system','0','y','resources/images/icons/btn-icon-save.png'),
@@ -67,12 +67,12 @@ DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
   `id` int NOT NULL AUTO_INCREMENT,
   `roleId` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
-  `email` varchar(255) NOT NULL DEFAULT '',
-  `password` varchar(255) NOT NULL DEFAULT '',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `demo` enum('n','y') NOT NULL DEFAULT 'n',
-  `uiedit` enum('n','y') NOT NULL DEFAULT 'n',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `demo` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `uiedit` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
   KEY `profileId` (`roleId`),
   KEY `toggle` (`toggle`),
@@ -83,7 +83,7 @@ CREATE TABLE `admin` (
 
 /*Data for the table `admin` */
 
-insert  into `admin`(`id`,`roleId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values
+insert  into `admin`(`id`,`roleId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`) values 
 (1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','dev','*27AEDA0D3A56422C3F1D20DAFF0C8109058134F3','y','n','y'),
 (14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
 
@@ -95,17 +95,17 @@ CREATE TABLE `alteredField` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sectionId` int NOT NULL DEFAULT '0',
   `fieldId` int NOT NULL DEFAULT '0',
-  `defaultValue` varchar(255) NOT NULL DEFAULT '',
-  `mode` enum('hidden','readonly','inherit','regular','required') NOT NULL DEFAULT 'inherit',
-  `title` text NOT NULL,
-  `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) NOT NULL DEFAULT '',
-  `rename` text NOT NULL,
+  `defaultValue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `mode` enum('hidden','readonly','inherit','regular','required') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'inherit',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `accessRoles` enum('all','none') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all',
+  `accessExcept` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `rename` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `elementId` int NOT NULL DEFAULT '0',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `jumpSectionId` int NOT NULL DEFAULT '0',
   `jumpSectionActionId` int NOT NULL DEFAULT '0',
-  `jumpArgs` varchar(255) NOT NULL DEFAULT '',
+  `jumpArgs` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
@@ -118,11 +118,11 @@ CREATE TABLE `alteredField` (
   KEY `jumpSectionActionId` (`jumpSectionActionId`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=279 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=280 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `alteredField` */
 
-insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`title`,`accessRoles`,`accessExcept`,`rename`,`elementId`,`toggle`,`jumpSectionId`,`jumpSectionActionId`,`jumpArgs`) values
+insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`title`,`accessRoles`,`accessExcept`,`rename`,`elementId`,`toggle`,`jumpSectionId`,`jumpSectionActionId`,`jumpArgs`) values 
 (216,394,2377,'','inherit','{\"ru\":\"Результат\",\"en\":\"Result\"}','all','','{\"ru\":\"\",\"en\":\"\"}',1,'y',0,0,''),
 (219,6,2435,'','hidden','{\"ru\":\"Экземпляр\",\"en\":\"Instance\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0,'y',0,0,''),
 (220,405,6,'4','inherit','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','all','','{\"ru\":\"\",\"en\":\"\"}',0,'y',5,7,''),
@@ -179,7 +179,8 @@ insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`ti
 (275,391,10,'','inherit','{\"en\":\"Element\",\"ru\":\"Элемент управления\"}','all','','',0,'y',16,53,''),
 (276,391,9,'','inherit','{\"en\":\"MySQL column type\",\"ru\":\"Тип столбца MySQL\"}','all','','',0,'y',2,2,''),
 (277,407,476,'','inherit','{\"en\":\"Field\",\"ru\":\"Поле\"}','all','','',0,'y',6,11,''),
-(278,407,2433,'','inherit','{\"en\":\"Param\",\"ru\":\"Параметр\"}','all','','',0,'y',405,1628,'');
+(278,407,2433,'','inherit','{\"en\":\"Param\",\"ru\":\"Параметр\"}','all','','',0,'y',405,1628,''),
+(279,7,25,'','inherit','{\"en\":\"Number of records per page\",\"ru\":\"Количество записей на странице\"}','all','','',0,'y',11,32,'?filter[toggle]=y');
 
 /*Table structure for table `changeLog` */
 
@@ -190,8 +191,8 @@ CREATE TABLE `changeLog` (
   `entityId` int NOT NULL DEFAULT '0',
   `key` int NOT NULL DEFAULT '0',
   `fieldId` int NOT NULL DEFAULT '0',
-  `was` text NOT NULL,
-  `now` text NOT NULL,
+  `was` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `now` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `monthId` int NOT NULL DEFAULT '0',
   `changerType` int NOT NULL DEFAULT '0',
@@ -217,9 +218,9 @@ DROP TABLE IF EXISTS `columnType`;
 
 CREATE TABLE `columnType` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `type` varchar(255) NOT NULL DEFAULT '',
-  `canStoreRelation` enum('y','n') NOT NULL DEFAULT 'n',
-  `elementId` varchar(255) NOT NULL DEFAULT '',
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `canStoreRelation` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `elementId` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `canStoreRelation` (`canStoreRelation`),
   KEY `elementId` (`elementId`(250))
@@ -227,7 +228,7 @@ CREATE TABLE `columnType` (
 
 /*Data for the table `columnType` */
 
-insert  into `columnType`(`id`,`type`,`canStoreRelation`,`elementId`) values
+insert  into `columnType`(`id`,`type`,`canStoreRelation`,`elementId`) values 
 (1,'VARCHAR(255)','y','1,7,22,23,27'),
 (3,'INT(11)','y','4,5,23,1,18'),
 (4,'TEXT','y','6,7,13,1'),
@@ -251,8 +252,8 @@ CREATE TABLE `consider` (
   `fieldId` int NOT NULL DEFAULT '0',
   `consider` int NOT NULL DEFAULT '0',
   `foreign` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
-  `required` enum('n','y') NOT NULL DEFAULT 'n',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `required` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `connector` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
@@ -266,7 +267,7 @@ CREATE TABLE `consider` (
 
 /*Data for the table `consider` */
 
-insert  into `consider`(`id`,`entityId`,`fieldId`,`consider`,`foreign`,`title`,`required`,`connector`) values
+insert  into `consider`(`id`,`entityId`,`fieldId`,`consider`,`foreign`,`title`,`required`,`connector`) values 
 (1,308,2307,2246,12,'{\"ru\":\"Поле\",\"en\":\"Field\"}','y',0),
 (2,5,9,10,0,'{\"ru\":\"Элемент управления\",\"en\":\"Element\"}','y',0),
 (3,5,10,470,0,'{\"ru\":\"Предназначено для хранения ключей\",\"en\":\"Store keys\"}','y',0),
@@ -315,9 +316,9 @@ DROP TABLE IF EXISTS `element`;
 
 CREATE TABLE `element` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
-  `storeRelationAbility` set('none','one','many') NOT NULL DEFAULT 'none',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `storeRelationAbility` set('none','one','many') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `hidden` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `storeRelationAbility` (`storeRelationAbility`),
@@ -327,7 +328,7 @@ CREATE TABLE `element` (
 
 /*Data for the table `element` */
 
-insert  into `element`(`id`,`title`,`alias`,`storeRelationAbility`,`hidden`) values
+insert  into `element`(`id`,`title`,`alias`,`storeRelationAbility`,`hidden`) values 
 (1,'{\"ru\":\"Строка\",\"en\":\"String\"}','string','none,many',0),
 (4,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move','none',1),
 (5,'{\"ru\":\"Радио-кнопки\",\"en\":\"Radio buttons\"}','radio','one',0),
@@ -354,13 +355,13 @@ DROP TABLE IF EXISTS `entity`;
 
 CREATE TABLE `entity` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
-  `table` varchar(255) NOT NULL DEFAULT '',
-  `extends` varchar(255) NOT NULL DEFAULT 'Indi_Db_Table',
-  `fraction` enum('custom','system','public') NOT NULL DEFAULT 'custom',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `table` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `extends` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Indi_Db_Table',
+  `fraction` enum('custom','system','public') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'custom',
   `titleFieldId` int NOT NULL DEFAULT '0',
-  `spaceScheme` enum('none','date','datetime','date-time','date-timeId','date-dayQty','datetime-minuteQty','date-time-minuteQty','date-timeId-minuteQty','date-timespan') NOT NULL DEFAULT 'none',
-  `spaceFields` varchar(255) NOT NULL DEFAULT '',
+  `spaceScheme` enum('none','date','datetime','date-time','date-timeId','date-dayQty','datetime-minuteQty','date-time-minuteQty','date-timeId-minuteQty','date-timespan') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `spaceFields` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `filesGroupBy` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `system` (`fraction`),
@@ -373,7 +374,7 @@ CREATE TABLE `entity` (
 
 /*Data for the table `entity` */
 
-insert  into `entity`(`id`,`title`,`table`,`extends`,`fraction`,`titleFieldId`,`spaceScheme`,`spaceFields`,`filesGroupBy`) values
+insert  into `entity`(`id`,`title`,`table`,`extends`,`fraction`,`titleFieldId`,`spaceScheme`,`spaceFields`,`filesGroupBy`) values 
 (1,'{\"ru\":\"Тип столбца\",\"en\":\"MySQL column type\"}','columnType','Indi_Db_Table','system',2,'none','',0),
 (2,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entity','Indi_Db_Table','system',4,'none','',0),
 (3,'{\"ru\":\"Раздел\",\"en\":\"Section\"}','section','Indi_Db_Table','system',20,'none','',0),
@@ -408,8 +409,8 @@ DROP TABLE IF EXISTS `enumset`;
 CREATE TABLE `enumset` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fieldId` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
@@ -418,7 +419,7 @@ CREATE TABLE `enumset` (
 
 /*Data for the table `enumset` */
 
-insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values
+insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values 
 (1,3,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',1),
 (2,3,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',2),
 (5,22,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',5),
@@ -434,6 +435,7 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values
 (64,66,'{\"ru\":\"С набором значений ключей\",\"en\":\"With a set of key values\"}','many',64),
 (112,345,'{\"ru\":\"Да\",\"en\":\"Yes\"}','y',112),
 (113,345,'{\"ru\":\"Нет\",\"en\":\"No\"}','n',113),
+(122,0,'Всем друзьям, кроме указанных в разделе \"Исключения из правил доступа на просмотр блога\"','ae',122),
 (181,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>Нет\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: white;\\\"><\\/span>No\"}','none',164),
 (183,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Да, несколько ключей\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-multikey.png);\\\"><\\/span>Yes, multiple keys\"}','many',296),
 (184,470,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Да, но только один ключ\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/btn-icon-login.png);\\\"><\\/span>Yes, but only one key\"}','one',295),
@@ -441,6 +443,7 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values
 (214,557,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>По убыванию\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/grid\\/sort_desc.png) -5px -1px;\\\"><\\/span>Descending\"}','DESC',182),
 (227,612,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','custom',301),
 (228,612,'{\"ru\":\"<span style=\'color: red\'>Системная<\\/span>\",\"en\":\"<span style=\'color: red\'>System<\\/span>\"}','system',186),
+(328,0,'Очень плохо','1',254),
 (566,612,'{\"ru\":\"<font color=lime>Публичная<\\/font>\",\"en\":\"<font color=lime>Common<\\/font>\"}','public',457),
 (567,1364,'{\"ru\":\"Проектная\",\"en\":\"Custom\"}','custom',0),
 (568,1364,'{\"ru\":\"<font color=red>Системная<\\/font>\",\"en\":\"<font color=red>System<\\/font>\"}','system',458),
@@ -458,12 +461,12 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`) values
 (982,2197,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Скрытое\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: url(resources\\/images\\/icons\\/field\\/hidden.png);\\\"><\\/span>Hidden\"}','hidden',982),
 (983,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Включено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lime;\\u0022><\\/span>Turned on\"}','y',983),
 (984,2202,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Выключено\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: red;\\u0022><\\/span>Turned off\"}','n',984),
-(985,2203,'{\"en\":\"Any role\",\"ru\":\"Все\"}','all',985),
-(986,2203,'{\"en\":\"No roles\",\"ru\":\"Никто\"}','none',986),
+(985,2203,'{\"en\":\"All\",\"ru\":\"Все\"}','all',985),
+(986,2203,'{\"en\":\"None\",\"ru\":\"Никто\"}','none',986),
 (988,2205,'{\"en\":\"All\",\"ru\":\"Все\"}','all',988),
 (989,2205,'{\"en\":\"None\",\"ru\":\"Никто\"}','none',989),
-(991,2207,'{\"en\":\"Any role\",\"ru\":\"Все\"}','all',991),
-(992,2207,'{\"en\":\"No roles\",\"ru\":\"Никто\"}','none',992),
+(991,2207,'{\"en\":\"All\",\"ru\":\"Все\"}','all',991),
+(992,2207,'{\"en\":\"None\",\"ru\":\"Никто\"}','none',992),
 (994,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Выключен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: lightgray;\\u0022><\\/span>Turned off\"}','0',994),
 (995,2210,'{\"ru\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Включен\",\"en\":\"<span class=\\u0022i-color-box\\u0022 style=\\u0022background: blue;\\u0022><\\/span>Turned on\"}','1',995),
 (996,2212,'{\"ru\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Авто\",\"en\":\"<span class=\\\"i-color-box\\\" style=\\\"background: blue;\\\"><\\/span>Auto\"}','auto',996),
@@ -661,18 +664,18 @@ DROP TABLE IF EXISTS `field`;
 CREATE TABLE `field` (
   `id` int NOT NULL AUTO_INCREMENT,
   `entityId` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `columnTypeId` int NOT NULL DEFAULT '0',
   `elementId` int NOT NULL DEFAULT '0',
-  `defaultValue` varchar(255) NOT NULL DEFAULT '',
+  `defaultValue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
   `relation` int NOT NULL DEFAULT '0',
-  `storeRelationAbility` enum('none','many','one') NOT NULL DEFAULT 'none',
-  `filter` varchar(255) NOT NULL DEFAULT '',
-  `mode` enum('regular','required','readonly','hidden') NOT NULL DEFAULT 'regular',
-  `tooltip` text NOT NULL,
-  `l10n` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
+  `storeRelationAbility` enum('none','many','one') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `filter` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `mode` enum('regular','required','readonly','hidden') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'regular',
+  `tooltip` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `l10n` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `entry` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
@@ -689,7 +692,7 @@ CREATE TABLE `field` (
 
 /*Data for the table `field` */
 
-insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,`defaultValue`,`move`,`relation`,`storeRelationAbility`,`filter`,`mode`,`tooltip`,`l10n`,`entry`) values
+insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,`defaultValue`,`move`,`relation`,`storeRelationAbility`,`filter`,`mode`,`tooltip`,`l10n`,`entry`) values 
 (2,1,'{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}','type',1,1,'',2,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (3,1,'{\"ru\":\"Можно хранить ключи\",\"en\":\"Compatible with foreign keys\"}','canStoreRelation',10,5,'n',3,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (4,2,'{\"ru\":\"Наименование\",\"en\":\"Title\"}','title',4,1,'',4,0,'none','','required','{\"ru\":\"\",\"en\":\"\"}','y',0),
@@ -1056,18 +1059,18 @@ CREATE TABLE `filter` (
   `sectionId` int NOT NULL DEFAULT '0',
   `fieldId` int NOT NULL DEFAULT '0',
   `move` int NOT NULL DEFAULT '0',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `rename` text NOT NULL,
-  `title` text NOT NULL,
-  `defaultValue` varchar(255) NOT NULL DEFAULT '',
-  `filter` varchar(255) NOT NULL DEFAULT '',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `rename` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `defaultValue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `filter` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `ignoreTemplate` tinyint(1) NOT NULL DEFAULT '1',
   `consistence` tinyint(1) NOT NULL DEFAULT '1',
-  `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) NOT NULL DEFAULT '',
+  `accessRoles` enum('all','none') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all',
+  `accessExcept` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `allowClear` tinyint(1) NOT NULL DEFAULT '1',
   `further` int NOT NULL DEFAULT '0',
-  `tooltip` text NOT NULL,
+  `tooltip` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
@@ -1078,11 +1081,11 @@ CREATE TABLE `filter` (
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alt` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `filter` */
 
-insert  into `filter`(`id`,`sectionId`,`fieldId`,`move`,`toggle`,`rename`,`title`,`defaultValue`,`filter`,`ignoreTemplate`,`consistence`,`accessRoles`,`accessExcept`,`allowClear`,`further`,`tooltip`) values
+insert  into `filter`(`id`,`sectionId`,`fieldId`,`move`,`toggle`,`rename`,`title`,`defaultValue`,`filter`,`ignoreTemplate`,`consistence`,`accessRoles`,`accessExcept`,`allowClear`,`further`,`tooltip`) values 
 (13,5,612,13,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
 (116,7,1366,116,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Тип\",\"en\":\"Fraction\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
 (117,7,19,117,'y','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"Сущность\",\"en\":\"Entity\"}','','',1,1,'all','',1,0,'{\"ru\":\"\",\"en\":\"\"}'),
@@ -1120,24 +1123,24 @@ CREATE TABLE `grid` (
   `sectionId` int NOT NULL DEFAULT '0',
   `fieldId` int NOT NULL DEFAULT '0',
   `move` int NOT NULL DEFAULT '0',
-  `rename` text NOT NULL,
-  `toggle` enum('y','n','h','e') NOT NULL DEFAULT 'y',
-  `title` text NOT NULL,
+  `rename` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `toggle` enum('y','n','h','e') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `gridId` int NOT NULL DEFAULT '0',
-  `tooltip` text NOT NULL,
-  `accessRoles` enum('all','none') NOT NULL DEFAULT 'all',
-  `accessExcept` varchar(255) NOT NULL DEFAULT '',
-  `editor` enum('0','1') NOT NULL DEFAULT '0',
-  `summaryType` enum('none','sum','average','min','max','text') NOT NULL DEFAULT 'none',
-  `summaryText` text NOT NULL,
-  `group` enum('normal','locked') NOT NULL DEFAULT 'normal',
+  `tooltip` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `accessRoles` enum('all','none') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all',
+  `accessExcept` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `editor` enum('0','1') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
+  `summaryType` enum('none','sum','average','min','max','text') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `summaryText` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `group` enum('normal','locked') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
   `further` int NOT NULL DEFAULT '0',
   `width` int NOT NULL DEFAULT '0',
-  `rowReqIfAffected` enum('n','y') NOT NULL DEFAULT 'n',
-  `icon` varchar(255) NOT NULL DEFAULT '',
+  `rowReqIfAffected` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `icon` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `jumpSectionId` int NOT NULL DEFAULT '0',
   `jumpSectionActionId` int NOT NULL DEFAULT '0',
-  `jumpArgs` varchar(255) NOT NULL DEFAULT '',
+  `jumpArgs` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
@@ -1160,7 +1163,7 @@ CREATE TABLE `grid` (
 
 /*Data for the table `grid` */
 
-insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,`gridId`,`tooltip`,`accessRoles`,`accessExcept`,`editor`,`summaryType`,`summaryText`,`group`,`further`,`width`,`rowReqIfAffected`,`icon`,`jumpSectionId`,`jumpSectionActionId`,`jumpArgs`) values
+insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,`gridId`,`tooltip`,`accessRoles`,`accessExcept`,`editor`,`summaryType`,`summaryText`,`group`,`further`,`width`,`rowReqIfAffected`,`icon`,`jumpSectionId`,`jumpSectionActionId`,`jumpArgs`) values 
 (2,2,2,2,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Тип столбца MySQL\",\"en\":\"MySQL column type\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
 (3,2,3,3,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Пригоден для хранения внешних ключей\",\"en\":\"Compatible with foreign keys\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
 (6,6,7,6,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Наименование\",\"en\":\"Title\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
@@ -1175,7 +1178,7 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (16,7,21,15,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Контроллер\",\"en\":\"Controller\"}',2641,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
 (17,7,22,16,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',2655,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-toggle.png',0,0,''),
 (18,7,23,18,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
-(20,7,25,2644,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-qty-on-page.png',0,0,''),
+(20,7,25,2644,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Количество записей на странице\",\"en\":\"Number of records per page\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-qty-on-page.png',11,32,'?filter=[]'),
 (23,8,27,23,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Действие\",\"en\":\"Action\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
 (24,8,29,2324,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Статус\",\"en\":\"Toggle\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-toggle.png',0,0,''),
 (25,8,30,2771,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Порядок\",\"en\":\"Order\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,''),
@@ -1449,16 +1452,16 @@ DROP TABLE IF EXISTS `lang`;
 
 CREATE TABLE `lang` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL DEFAULT '',
-  `alias` varchar(255) NOT NULL DEFAULT '',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `state` enum('noth','smth') NOT NULL DEFAULT 'noth',
-  `adminSystemUi` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `adminSystemConst` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `adminCustomUi` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `adminCustomConst` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `adminCustomData` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
-  `adminCustomTmpl` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `state` enum('noth','smth') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'noth',
+  `adminSystemUi` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `adminSystemConst` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `adminCustomUi` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `adminCustomConst` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `adminCustomData` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `adminCustomTmpl` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `toggle` (`toggle`),
@@ -1473,7 +1476,7 @@ CREATE TABLE `lang` (
 
 /*Data for the table `lang` */
 
-insert  into `lang`(`id`,`title`,`alias`,`toggle`,`state`,`adminSystemUi`,`adminSystemConst`,`adminCustomUi`,`adminCustomConst`,`adminCustomData`,`adminCustomTmpl`,`move`) values
+insert  into `lang`(`id`,`title`,`alias`,`toggle`,`state`,`adminSystemUi`,`adminSystemConst`,`adminCustomUi`,`adminCustomConst`,`adminCustomData`,`adminCustomTmpl`,`move`) values 
 (1,'Русский','ru','y','smth','y','y','n','n','n','n',2),
 (2,'Engish','en','y','smth','y','y','y','y','y','y',1),
 (3,'Afrikaans','af','n','noth','n','n','n','n','n','n',3),
@@ -1593,8 +1596,8 @@ DROP TABLE IF EXISTS `month`;
 CREATE TABLE `month` (
   `id` int NOT NULL AUTO_INCREMENT,
   `yearId` int NOT NULL DEFAULT '0',
-  `month` enum('01','02','03','04','05','06','07','08','09','10','11','12') NOT NULL DEFAULT '01',
-  `title` text NOT NULL,
+  `month` enum('01','02','03','04','05','06','07','08','09','10','11','12') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '01',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `move` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `yearId` (`yearId`),
@@ -1610,26 +1613,26 @@ DROP TABLE IF EXISTS `notice`;
 
 CREATE TABLE `notice` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `entityId` int NOT NULL DEFAULT '0',
-  `event` varchar(255) NOT NULL DEFAULT '',
-  `roleId` varchar(255) NOT NULL DEFAULT '',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
-  `qtySql` varchar(255) NOT NULL DEFAULT '',
-  `qtyDiffRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
-  `sectionId` varchar(255) NOT NULL DEFAULT '',
-  `bg` varchar(10) NOT NULL DEFAULT '195#008dbc',
-  `fg` varchar(10) NOT NULL DEFAULT '000#ffffff',
-  `tooltip` text NOT NULL,
-  `tplFor` enum('inc','dec','evt') NOT NULL DEFAULT 'inc',
-  `tplIncSubj` text NOT NULL,
-  `tplIncBody` text NOT NULL,
-  `tplDecSubj` text NOT NULL,
-  `tplDecBody` text NOT NULL,
-  `tplEvtSubj` text NOT NULL,
-  `tplEvtBody` text NOT NULL,
-  `fraction` enum('custom','system') NOT NULL DEFAULT 'custom',
-  `alias` varchar(255) NOT NULL DEFAULT '',
+  `event` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `roleId` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `qtySql` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `qtyDiffRelyOn` enum('event','getter') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'event',
+  `sectionId` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `bg` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '195#008dbc',
+  `fg` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '000#ffffff',
+  `tooltip` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplFor` enum('inc','dec','evt') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'inc',
+  `tplIncSubj` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplIncBody` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplDecSubj` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplDecBody` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplEvtSubj` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tplEvtBody` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fraction` enum('custom','system') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'custom',
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `profileId` (`roleId`(250)),
@@ -1650,7 +1653,7 @@ CREATE TABLE `notice` (
 
 /*Data for the table `notice` */
 
-insert  into `notice`(`id`,`title`,`entityId`,`event`,`roleId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`,`fraction`,`alias`) values
+insert  into `notice`(`id`,`title`,`entityId`,`event`,`roleId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`,`fraction`,`alias`) values 
 (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','','','system','failed'),
 (2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','','','system','started');
 
@@ -1662,17 +1665,17 @@ CREATE TABLE `noticeGetter` (
   `id` int NOT NULL AUTO_INCREMENT,
   `noticeId` int NOT NULL DEFAULT '0',
   `roleId` int NOT NULL DEFAULT '0',
-  `criteriaRelyOn` enum('event','getter') NOT NULL DEFAULT 'event',
-  `criteriaEvt` varchar(255) NOT NULL DEFAULT '',
-  `criteriaInc` varchar(255) NOT NULL DEFAULT '',
-  `criteriaDec` varchar(255) NOT NULL DEFAULT '',
-  `title` text NOT NULL,
-  `email` enum('n','y') NOT NULL DEFAULT 'n',
-  `vk` enum('n','y') NOT NULL DEFAULT 'n',
-  `sms` enum('n','y') NOT NULL DEFAULT 'n',
-  `criteria` varchar(255) NOT NULL DEFAULT '',
-  `mail` enum('n','y') NOT NULL DEFAULT 'n',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
+  `criteriaRelyOn` enum('event','getter') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'event',
+  `criteriaEvt` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `criteriaInc` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `criteriaDec` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `vk` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `sms` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `criteria` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `mail` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   PRIMARY KEY (`id`),
   KEY `noticeId` (`noticeId`),
   KEY `profileId` (`roleId`),
@@ -1687,7 +1690,7 @@ CREATE TABLE `noticeGetter` (
 
 /*Data for the table `noticeGetter` */
 
-insert  into `noticeGetter`(`id`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`,`toggle`) values
+insert  into `noticeGetter`(`id`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`,`toggle`) values 
 (1,1,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n','y'),
 (2,2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n','y');
 
@@ -1698,9 +1701,9 @@ DROP TABLE IF EXISTS `param`;
 CREATE TABLE `param` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fieldId` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `cfgField` int NOT NULL DEFAULT '0',
-  `cfgValue` text NOT NULL,
+  `cfgValue` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   KEY `cfgField` (`cfgField`),
@@ -1710,7 +1713,7 @@ CREATE TABLE `param` (
 
 /*Data for the table `param` */
 
-insert  into `param`(`id`,`fieldId`,`title`,`cfgField`,`cfgValue`) values
+insert  into `param`(`id`,`fieldId`,`title`,`cfgField`,`cfgValue`) values 
 (127,109,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),
 (128,110,'{\"ru\":\"Единица измерения\",\"en\":\"Unit of measurement\"}',2462,'{\"ru\":\"px\",\"en\":\"px\"}'),
 (156,18,'{\"ru\":\"Группировка опций по столбцу\",\"en\":\"Group options by column\"}',2439,'1366'),
@@ -1732,19 +1735,19 @@ DROP TABLE IF EXISTS `queueChunk`;
 CREATE TABLE `queueChunk` (
   `id` int NOT NULL AUTO_INCREMENT,
   `queueTaskId` int NOT NULL DEFAULT '0',
-  `location` varchar(255) NOT NULL DEFAULT '',
-  `where` text NOT NULL,
-  `countState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `where` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `countState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `countSize` int NOT NULL DEFAULT '0',
-  `itemsState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `itemsState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `itemsSize` int NOT NULL DEFAULT '0',
-  `queueState` enum('waiting','progress','finished','noneed') NOT NULL DEFAULT 'waiting',
+  `queueState` enum('waiting','progress','finished','noneed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `queueSize` int NOT NULL DEFAULT '0',
-  `applyState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `applyState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `applySize` int NOT NULL DEFAULT '0',
   `move` int NOT NULL DEFAULT '0',
   `queueChunkId` int NOT NULL DEFAULT '0',
-  `fraction` enum('none','adminSystemUi','adminCustomUi','adminCustomData') NOT NULL DEFAULT 'none',
+  `fraction` enum('none','adminSystemUi','adminCustomUi','adminCustomData') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `itemsBytes` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `queueTaskId` (`queueTaskId`),
@@ -1755,7 +1758,7 @@ CREATE TABLE `queueChunk` (
   KEY `queueChunkId` (`queueChunkId`),
   KEY `fraction` (`fraction`),
   FULLTEXT KEY `where` (`where`)
-) ENGINE=MyISAM AUTO_INCREMENT=13416 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=13523 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueChunk` */
 
@@ -1767,17 +1770,17 @@ CREATE TABLE `queueItem` (
   `id` int NOT NULL AUTO_INCREMENT,
   `queueTaskId` int NOT NULL DEFAULT '0',
   `queueChunkId` int NOT NULL DEFAULT '0',
-  `target` varchar(255) NOT NULL DEFAULT '',
-  `value` text NOT NULL,
-  `result` text NOT NULL,
-  `stage` enum('items','queue','apply') NOT NULL DEFAULT 'items',
+  `target` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `result` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `stage` enum('items','queue','apply') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'items',
   PRIMARY KEY (`id`),
   KEY `queueTaskId` (`queueTaskId`),
   KEY `queueChunkId` (`queueChunkId`),
   KEY `stage` (`stage`),
   FULLTEXT KEY `value` (`value`),
   FULLTEXT KEY `result` (`result`)
-) ENGINE=MyISAM AUTO_INCREMENT=153941 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=156689 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
 
@@ -1787,25 +1790,25 @@ DROP TABLE IF EXISTS `queueTask`;
 
 CREATE TABLE `queueTask` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL DEFAULT '',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `params` text NOT NULL,
+  `params` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `procSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `procID` int NOT NULL DEFAULT '0',
-  `stage` enum('count','items','queue','apply') NOT NULL DEFAULT 'count',
-  `state` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `stage` enum('count','items','queue','apply') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'count',
+  `state` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `chunk` int NOT NULL DEFAULT '0',
-  `countState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `countState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `countSize` int NOT NULL DEFAULT '0',
-  `itemsState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `itemsState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `itemsSize` int NOT NULL DEFAULT '0',
   `itemsBytes` int NOT NULL DEFAULT '0',
-  `queueState` enum('waiting','progress','finished','noneed','error') NOT NULL DEFAULT 'waiting',
+  `queueState` enum('waiting','progress','finished','noneed','error') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `queueSize` int NOT NULL DEFAULT '0',
-  `applyState` enum('waiting','progress','finished') NOT NULL DEFAULT 'waiting',
+  `applyState` enum('waiting','progress','finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `applySize` int NOT NULL DEFAULT '0',
-  `stageState` text NOT NULL,
-  `error` text NOT NULL,
+  `stageState` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `error` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `stage` (`stage`),
   KEY `state` (`state`),
@@ -1816,7 +1819,7 @@ CREATE TABLE `queueTask` (
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `stageState` (`stageState`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=MyISAM AUTO_INCREMENT=617 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=618 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueTask` */
 
@@ -1827,21 +1830,21 @@ DROP TABLE IF EXISTS `realtime`;
 CREATE TABLE `realtime` (
   `id` int NOT NULL AUTO_INCREMENT,
   `realtimeId` int NOT NULL DEFAULT '0',
-  `type` enum('session','channel','context') NOT NULL DEFAULT 'session',
+  `type` enum('session','channel','context') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'session',
   `roleId` int NOT NULL DEFAULT '0',
   `adminId` int NOT NULL DEFAULT '0',
-  `token` varchar(255) NOT NULL DEFAULT '',
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `spaceSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `spaceUntil` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `spaceFrame` int NOT NULL DEFAULT '0',
   `langId` int NOT NULL DEFAULT '0',
   `sectionId` int NOT NULL DEFAULT '0',
   `entityId` int NOT NULL DEFAULT '0',
-  `entries` text NOT NULL,
-  `fields` text NOT NULL,
-  `title` text NOT NULL,
-  `mode` enum('none','rowset','row') NOT NULL DEFAULT 'none',
-  `scope` text NOT NULL,
+  `entries` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fields` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mode` enum('none','rowset','row') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `scope` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `realtimeId` (`realtimeId`),
   KEY `type` (`type`),
@@ -1855,7 +1858,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=3311 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3780 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -1866,11 +1869,11 @@ DROP TABLE IF EXISTS `resize`;
 CREATE TABLE `resize` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fieldId` int NOT NULL DEFAULT '0',
-  `note` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
+  `note` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `width` int NOT NULL DEFAULT '0',
   `height` int NOT NULL DEFAULT '0',
-  `mode` enum('both','width','height','auto') NOT NULL DEFAULT 'both',
+  `mode` enum('both','width','height','auto') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'both',
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   KEY `mode` (`mode`),
@@ -1885,15 +1888,15 @@ DROP TABLE IF EXISTS `role`;
 
 CREATE TABLE `role` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` text NOT NULL,
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `entityId` int NOT NULL DEFAULT '11',
-  `dashboard` varchar(255) NOT NULL DEFAULT '',
+  `dashboard` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
   `maxWindows` int NOT NULL DEFAULT '15',
-  `demo` enum('n','y') NOT NULL DEFAULT 'n',
-  `fraction` enum('custom','system') NOT NULL DEFAULT 'custom',
-  `alias` varchar(255) NOT NULL DEFAULT '',
+  `demo` enum('n','y') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
+  `fraction` enum('custom','system') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'custom',
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `toggle` (`toggle`),
   KEY `entityId` (`entityId`),
@@ -1904,7 +1907,7 @@ CREATE TABLE `role` (
 
 /*Data for the table `role` */
 
-insert  into `role`(`id`,`title`,`toggle`,`entityId`,`dashboard`,`move`,`maxWindows`,`demo`,`fraction`,`alias`) values
+insert  into `role`(`id`,`title`,`toggle`,`entityId`,`dashboard`,`move`,`maxWindows`,`demo`,`fraction`,`alias`) values 
 (1,'{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','y',11,'',1,15,'n','system','dev'),
 (12,'{\"ru\":\"Администратор\",\"en\":\"Admin\"}','y',11,'',12,15,'n','custom','admin');
 
@@ -1916,29 +1919,29 @@ CREATE TABLE `section` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sectionId` int NOT NULL DEFAULT '0',
   `entityId` int NOT NULL DEFAULT '0',
-  `title` text NOT NULL,
-  `alias` varchar(255) NOT NULL DEFAULT '',
-  `toggle` enum('y','n','h') NOT NULL DEFAULT 'y',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `toggle` enum('y','n','h') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `move` int NOT NULL DEFAULT '0',
   `rowsOnPage` int NOT NULL DEFAULT '25',
-  `extendsPhp` varchar(255) NOT NULL DEFAULT 'Indi_Controller_Admin',
+  `extendsPhp` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Indi_Controller_Admin',
   `defaultSortField` int NOT NULL DEFAULT '0',
-  `defaultSortDirection` enum('ASC','DESC') NOT NULL DEFAULT 'ASC',
-  `filter` varchar(255) NOT NULL DEFAULT '',
-  `disableAdd` enum('0','1') NOT NULL DEFAULT '0',
-  `fraction` enum('system','custom','public') NOT NULL DEFAULT 'custom',
+  `defaultSortDirection` enum('ASC','DESC') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ASC',
+  `filter` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `disableAdd` enum('0','1') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
+  `fraction` enum('system','custom','public') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'custom',
   `parentSectionConnector` int NOT NULL DEFAULT '0',
   `groupBy` int NOT NULL DEFAULT '0',
-  `rowsetSeparate` enum('auto','yes','no') NOT NULL DEFAULT 'auto',
-  `expand` enum('all','only','except','none') NOT NULL DEFAULT 'all',
-  `expandRoles` varchar(255) NOT NULL DEFAULT '',
-  `roleIds` varchar(255) NOT NULL DEFAULT '',
-  `extendsJs` varchar(255) NOT NULL DEFAULT 'Indi.lib.controller.Controller',
-  `rownumberer` enum('0','1') NOT NULL DEFAULT '0',
-  `multiSelect` enum('0','1') NOT NULL DEFAULT '0',
+  `rowsetSeparate` enum('auto','yes','no') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
+  `expand` enum('all','only','except','none') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all',
+  `expandRoles` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `roleIds` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `extendsJs` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Indi.lib.controller.Controller',
+  `rownumberer` enum('0','1') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
+  `multiSelect` enum('0','1') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `tileField` int NOT NULL DEFAULT '0',
   `tileThumb` int NOT NULL DEFAULT '0',
-  `help` text NOT NULL,
+  `help` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `entityId` (`entityId`),
@@ -1963,7 +1966,7 @@ CREATE TABLE `section` (
 
 /*Data for the table `section` */
 
-insert  into `section`(`id`,`sectionId`,`entityId`,`title`,`alias`,`toggle`,`move`,`rowsOnPage`,`extendsPhp`,`defaultSortField`,`defaultSortDirection`,`filter`,`disableAdd`,`fraction`,`parentSectionConnector`,`groupBy`,`rowsetSeparate`,`expand`,`expandRoles`,`roleIds`,`extendsJs`,`rownumberer`,`multiSelect`,`tileField`,`tileThumb`,`help`) values
+insert  into `section`(`id`,`sectionId`,`entityId`,`title`,`alias`,`toggle`,`move`,`rowsOnPage`,`extendsPhp`,`defaultSortField`,`defaultSortDirection`,`filter`,`disableAdd`,`fraction`,`parentSectionConnector`,`groupBy`,`rowsetSeparate`,`expand`,`expandRoles`,`roleIds`,`extendsJs`,`rownumberer`,`multiSelect`,`tileField`,`tileThumb`,`help`) values 
 (1,0,0,'{\"ru\":\"Конфигурация\",\"en\":\"Configuration\"}','configuration','y',403,25,'Indi_Controller_Admin',0,'ASC','','0','system',0,0,'auto','all','','','Indi.lib.controller.Controller','0','0',0,0,''),
 (2,1,1,'{\"ru\":\"Столбцы\",\"en\":\"Columns\"}','columnTypes','y',6,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
 (5,1,2,'{\"ru\":\"Сущности\",\"en\":\"Entities\"}','entities','y',4,50,'Indi_Controller_Admin_Exportable',4,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
@@ -2002,14 +2005,14 @@ CREATE TABLE `section2action` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sectionId` int NOT NULL DEFAULT '0',
   `actionId` int NOT NULL DEFAULT '0',
-  `toggle` enum('y','n') NOT NULL DEFAULT 'y',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `move` int NOT NULL DEFAULT '0',
-  `roleIds` varchar(255) NOT NULL DEFAULT '14',
-  `title` text NOT NULL,
-  `rename` text NOT NULL,
-  `south` enum('auto','yes','no') NOT NULL DEFAULT 'auto',
-  `fitWindow` enum('y','n') NOT NULL DEFAULT 'y',
-  `l10n` enum('n','qy','y','qn') NOT NULL DEFAULT 'n',
+  `roleIds` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '14',
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rename` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `south` enum('auto','yes','no') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
+  `fitWindow` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `l10n` enum('n','qy','y','qn') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `sectionId_2` (`sectionId`),
@@ -2025,7 +2028,7 @@ CREATE TABLE `section2action` (
 
 /*Data for the table `section2action` */
 
-insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`roleIds`,`title`,`rename`,`south`,`fitWindow`,`l10n`) values
+insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`roleIds`,`title`,`rename`,`south`,`fitWindow`,`l10n`) values 
 (1,2,1,'y',1,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (2,2,2,'y',2,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (3,2,3,'y',3,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
@@ -2062,7 +2065,7 @@ insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`move`,`roleI
 (36,11,5,'y',35,'1','{\"ru\":\"Выше\",\"en\":\"Move up\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (37,11,6,'y',36,'1','{\"ru\":\"Ниже\",\"en\":\"Move down\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (38,13,1,'y',37,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
-(39,13,2,'y',38,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
+(39,13,2,'y',38,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','no','y','n'),
 (40,13,3,'y',39,'1','{\"ru\":\"Сохранить\",\"en\":\"Save\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (41,12,1,'y',40,'1','{\"ru\":\"Список\",\"en\":\"List\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
 (42,12,2,'y',41,'1','{\"ru\":\"Детали\",\"en\":\"Details\"}','{\"ru\":\"\",\"en\":\"\"}','auto','y','n'),
@@ -2199,7 +2202,7 @@ DROP TABLE IF EXISTS `year`;
 
 CREATE TABLE `year` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL DEFAULT '',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
