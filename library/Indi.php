@@ -2002,7 +2002,7 @@ class Indi {
         // DELETE queries
         foreach (Indi_Db::$DELETEQueryA as $i => $DELETEQueryI)
             $msg .= '#' . ($i + 1)
-                . '-' . ($DELETEQueryI['affected'] === false ? 'false' : $DELETEQueryI['affected'] + '') . ': '
+                . '-' . ($DELETEQueryI['affected'] === false ? 'false' : $DELETEQueryI['affected'] . '') . ': '
                 . nl2br($DELETEQueryI['sql']) . '<br>';
 
         // Separator
@@ -2330,18 +2330,28 @@ class Indi {
     }
 
     /**
-     * Get parentId to be used while building parent-WHERE clause
+     * Get parentId to be used while building parent-WHERE clause,
+     * or set it with given $parentId value
      *
      * @param $sectionId
-     * @param bool $lastOnly
+     * @param bool|int $parentId
      * @return array|mixed
      */
-    public static function parentId($sectionId, $lastOnly = true) {
+    public static function parentId($sectionId, $parentId = true) {
 
         // Get parent ids
-        $parents = $_SESSION['indi']['admin']['trail']['parentId'][$sectionId];
+        $parents = &$_SESSION['indi']['admin']['trail']['parentId'][$sectionId];
 
-        // Return last only or all
-        return $lastOnly ? array_key_last($parents) : array_keys($parents);
+        // If $parentId arg is false - return all parentId-values for the given section
+        if ($parentId === false) return array_keys($parents);
+
+        // If $parentId arg is true - return last parentId-value
+        if ($parentId === true) return array_key_last($parents);
+
+        // Unset if already exists
+        unset($parents[$parentId]);
+
+        // Re-add, but now we're sure it's last
+        $parents[$parentId] = true;
     }
 }

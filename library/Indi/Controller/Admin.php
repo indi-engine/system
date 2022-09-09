@@ -2950,7 +2950,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->updateAix($this->row);
 
             // Update parent id, so nested entries will be mapped under entry, that was just saved
-            $_SESSION['indi']['admin']['trail']['parentId'][t()->section->id][$this->row->id] = true;
+            Indi::parentId(t()->section->id, $this->row->id);
         }
 
         // Setup row index
