@@ -201,6 +201,9 @@ class Grid_Row extends Indi_Db_Table_Row {
         else if ($this->modified('colorDirect'))       $this->zero('colorBreak,colorField,colorEntry', true);
         else if ($this->modified('colorField') || $this->modified('colorEntry'))
             $this->zero('colorBreak,colorDirect', true);
+
+        // If variable-entity field was zeroed - do zero for colorEntry-field
+        if ($this->fieldIsZeroed('colorField')) $this->zero('colorEntry', true);
     }
 
     /**
