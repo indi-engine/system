@@ -604,12 +604,14 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             'time' => [],
             'string' => [],
             'icon' => [],
+            'color' => [],
             'datetime' => [],
             'upload' => [],
             'other' => ['id' => true],
             'shade' => [],
             'further' => [],
-            'enumset' => []
+            'enumset' => [],
+            'numeric' => [],
         ];
 
         // Get fields
@@ -673,12 +675,20 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             else if ($gridFieldR->foreign('elementId')->alias == 'icon')
                 $typeA['icon'][$gridFieldR->alias] = true;
 
+            // Icons
+            else if ($gridFieldR->foreign('elementId')->alias == 'color')
+                $typeA['color'][$gridFieldR->alias] = true;
+
             // Strings and texts
             else if (in($gridFieldR->foreign('elementId')->alias, 'string,textarea'))
                 $typeA['string'][$gridFieldR->alias] = true;
 
             // All other types
             else $typeA['other'][$gridFieldR->alias] = true;
+
+            // Collect numeric fields
+            if (in($gridFieldR->foreign('elementId')->alias, 'number,price,decimal143'))
+                $typeA['numeric'][$gridFieldR->alias] = true;
 
             // Shaded fields
             if (Indi::demo(false) && ($gridFieldR->param('shade')  || (
@@ -803,6 +813,14 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     if ($value) $data[$pointer]['_render'][$columnI]
                         = '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>';
 
+                // Render data for a column linked to color-field
+                if (isset($typeA['color'][$columnI])) {
+                    $data[$pointer][$columnI] = preg_replace('~^[0-9]{3}#~', '#', $value);
+                    $data[$pointer]['_render'][$columnI]
+                        = rif(Indi::rexm('rgb', $data[$pointer][$columnI], 1),
+                        '<span class="i-color-box" style="background: #$1;"></span>#$1', '');
+                }
+
                 // If there the color-value in format 'hue#rrgbb' can probably be found in field value
                 // we do a try, and if found - inject a '.i-color-box' element
                 if (   isset($typeA['other'][$columnI])
@@ -811,21 +829,18 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])) {
 
                     // Process color boxes
-                    if (preg_match(Indi::rex('hrgb'), $data[$pointer][$columnI], $color)) {
-                        $data[$pointer][$columnI] = '<span class="i-color-box" style="background: #'
-                            . $color[1] . ';"></span>#'. $color[1];
-                    } else if (preg_match(Indi::rex('hrgb'), $value, $color)) {
-                        $data[$pointer][$columnI] = '<span class="i-color-box" style="background: #'
+                    if (preg_match(Indi::rex('hrgb'), $value, $color)) {
+                        $data[$pointer]['_render'][$columnI] = '<span class="i-color-box" style="background: #'
                             . $color[1] . ';"></span>';
                     } else if (preg_match('/box/', $data[$pointer][$columnI]) && !in($this->table(), 'enumset,changeLog')) {
                         if (preg_match('/background:\s*url\(/', $data[$pointer][$columnI])) {
                             if ($this->model()->fields($columnI)->relation == 6) {
-                                $data[$pointer][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
+                                $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
                             } else {
-                                $data[$pointer][$columnI] = preg_replace('~(url\()(/data/)~', '$1' . STD .  '$2', $data[$pointer][$columnI]);
+                                $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/)~', '$1' . STD .  '$2', $data[$pointer][$columnI]);
                             }
                         } else {
-                            $data[$pointer][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
+                            $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
                         }
                     }
                 }
@@ -838,6 +853,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])
                     || isset($typeA['boolean'][$columnI]))
                     $data[$pointer]['$keys'][$columnI] = $value;
+
+                // Set _render to be empty if no value
+                if (isset($typeA['foreign']['single'][$columnI]['title']) && !$value)
+                    $data[$pointer]['_render'][$columnI] = '';
 
                 // Provide icon overflow feature, so that if a text-column
                 if ($_ = $renderCfg[$columnI]['icon']) {
@@ -883,6 +902,31 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
                             $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
                         }
+                    }
+                }
+
+                // If column is numeric and value is 0 - apply lightgray color
+                if ($typeA['numeric'][$columnI] && !(float) $data[$pointer][$columnI])
+                    $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
+
+                // Else if color is defined for column
+                else if (null !== ($color = $renderCfg[$columnI]['color'])) {
+
+                    // If it's a numeric column
+                    if ($typeA['numeric'][$columnI]) {
+                        // Get floating value
+                        $value = (float) $data[$pointer][$columnI];
+
+                        // Else if $color is a level, so value at and above level should be limegreen and below should be red
+                        if (Indi::rexm('int11', $level = $color))
+                            $data[$pointer]['_style'][$columnI] = 'color: ' . ($value >= $level ? 'limegreen' : 'red') . ';';
+
+                        // Else if $color is a color - use it as it is
+                        else $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
+
+                    // Else simple apply defined color
+                    } else {
+                        $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
                     }
                 }
             }
@@ -1199,6 +1243,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Mappings to be further used to distribute foreign rows
                 $entityIdByConsiderFieldA = [];
 
+                // Entries grouped by entityId will be collected here
+                $distinctA = [];
+
                 // Foreach row within current rowset
                 foreach ($this as $r) {
 
@@ -1225,6 +1272,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                     // Else assume that consider-field's value is a direct entityId
                     } else $entityId = $r->$consider;
+
+                    // If no entityId detected - skip
+                    if (!$entityId) continue;
 
                     // Collect foreign key values, grouped by entity id
                     $distinctA[$entityId] = array_merge(
@@ -1278,6 +1328,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Check whether or not current field has a column within database table
             $imitated = !array_key_exists($fieldR->alias, $this->at(0)->original());
+
+            // Foreign rows will be here
+            $foreignRs = [];
 
             // For each $entityId => $key pair within $distinctA array we fetch rowsets, that contain all rows that
             // are 'mentioned' in all rows within current rowset
@@ -1400,7 +1453,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if ($fieldR->original('storeRelationAbility') == 'one') {
 
                     // For each foreign row, fetched for entity, that have same id as $foreignKeyEntityId
-                    foreach ($foreignRs[$foreignKeyEntityId] as $foreignR) {
+                    foreach ($foreignRs[$foreignKeyEntityId] ?? [] as $foreignR) {
 
                         // If foreign key value of current row is equal to foreign row id
                         if (($col == 'alias' ? $foreignR->fieldId == $fieldR->id : true) && '' . $r->$key == '' . $foreignR->$col) {
@@ -1602,6 +1655,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // If color was detected as a box, append $system['boxColor'] property
             if ($info['box']) $system['boxColor'] = $info['color'];
+
+            // Else color is defined via colorField - pick color from there
+            else if ($params['colorField']) $system['color'] = $o->rgb($params['colorField']);
 
             // Get max length
             $substr = $params['substr'] ?: 50;

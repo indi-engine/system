@@ -759,7 +759,7 @@ class Indi_Controller {
         if ($comboDataRs->found()) $options['found'] = $comboDataRs->found();
 
         // Setup tree flag
-        if ($comboDataRs->model()->treeColumn()) $options['tree'] = true;
+        if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
 
         // Setup groups for options
         if ($comboDataRs->optgroup) $options['optgroup'] = $comboDataRs->optgroup;

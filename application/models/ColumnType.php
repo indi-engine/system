@@ -20,7 +20,7 @@ class ColumnType extends Indi_Db_Table {
         'ENUM' => '0',
         'SET' => '',
         'BOOLEAN' => '0',
-        'VARCHAR(10)' => '000#000000'
+        'VARCHAR(10)' => ''
     ];
 
     /**

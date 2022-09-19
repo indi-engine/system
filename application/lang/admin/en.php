@@ -299,3 +299,4 @@ define('I_L10N_TOGGLE_FIELD_Y', 'If you want to %s localization for field "%s" p
 define('I_L10N_TOGGLE_FIELD_EXPL', 'For field "%s" localization status will be explicitly set as "%s". Continue?');
 define('I_L10N_TOGGLE_FIELD_LANG_CURR', 'Select current language of field "%s"');
 define('I_L10N_TOGGLE_FIELD_LANG_KEPT', 'Select language to be kept for field "%s"');
+define('I_GRID_COLOR_BREAK_INCOMPAT', 'This feature is only applicable for numeric columns');

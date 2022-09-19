@@ -1,5 +1,91 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function colcolorAction() {
+        foreach (ar('decimal143,number,price') as $element)
+            cfgField('element', $element, 'colorBreakLevel', [
+                'title' => 'Уровень разбивки по цвету',
+                'columnTypeId' => 'INT(11)',
+                'elementId' => 'number',
+                'defaultValue' => '0',
+                'move' => '',
+            ]);
+
+        cfgField('element', 'combo', 'colorField', [
+            'title' => 'Цветовое поле',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'noLookup',
+            'relation' => 'field',
+            'storeRelationAbility' => 'one',
+        ]);
+
+        field('grid', 'color', ['title' => 'Цвет', 'elementId' => 'span', 'move' => 'properties']);
+        field('grid', 'colorBreak', [
+            'title' => 'Разбивка по уровню',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'n',
+            'move' => 'color',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('grid', 'colorBreak', 'n', ['title' => '<span class="i-color-box" style="background: white;"></span>Выключена', 'move' => '']);
+        enumset('grid', 'colorBreak', 'y', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/color-level.png);"></span>Включена', 'move' => 'n']);
+        field('grid', 'colorDirect', [
+            'title' => 'Указан вручную',
+            'columnTypeId' => 'VARCHAR(10)',
+            'elementId' => 'color',
+            'move' => 'colorBreak',
+        ]);
+        field('grid', 'colorField', [
+            'title' => 'Внешний источник',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'colorDirect',
+            'relation' => 'field',
+            'storeRelationAbility' => 'one',
+            'filter' => '`elementId` = "11"',
+        ]);
+        param('grid', 'colorField', 'groupBy', ['cfgValue' => '6']);
+        field('grid', 'colorEntry', [
+            'title' => 'Внешняя запись',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'colorField',
+            'storeRelationAbility' => 'one',
+        ]);
+        consider('grid', 'colorEntry', 'colorField', ['foreign' => 'entityId', 'required' => 'y']);
+
+        grid('grid', 'color', ['move' => 'rowReqIfAffected', 'gridId' => 'features']);
+        grid('grid', 'colorBreak', ['move' => '', 'gridId' => 'color', 'icon' => 'resources/images/icons/color-level.png']);
+        grid('grid', 'colorDirect', [
+            'move' => 'colorBreak',
+            'gridId' => 'color',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/color-text.svg',
+        ]);
+        grid('grid', 'colorField', [
+            'move' => 'colorDirect',
+            'gridId' => 'color',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/table-col.png',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('grid', 'colorEntry', [
+            'move' => 'colorField',
+            'gridId' => 'color',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/table-row.png',
+        ]);
+        alteredField('grid', 'colorField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        die('ok');
+    }
     public function jumpsAction() {
         grid('elementCfgField', 'filter', ['rowReqIfAffected' => 'n']);
         field('grid', 'jump', ['title' => 'Навигация', 'elementId' => 'span', 'move' => 'accessExcept']);

@@ -2343,10 +2343,10 @@ class Indi {
         $parents = &$_SESSION['indi']['admin']['trail']['parentId'][$sectionId];
 
         // If $parentId arg is false - return all parentId-values for the given section
-        if ($parentId === false) return array_keys($parents);
+        if ($parentId === false) return array_keys($parents ?? []);
 
         // If $parentId arg is true - return last parentId-value
-        if ($parentId === true) return array_key_last($parents);
+        if ($parentId === true) return array_key_last($parents ?? []);
 
         // Unset if already exists
         unset($parents[$parentId]);

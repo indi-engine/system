@@ -693,6 +693,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if ($fieldId = m()->fields($field->alias)->id) {
                 if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
                 if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
+                if (null !== ($color = t()->scope->color[$fieldId])) $renderCfg[$field->alias]['color'] = $color;
             }
         }
 
@@ -736,5 +737,42 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Return icons
         return $iconA ?? [];
+    }
+
+    /**
+     * Get array of [fieldId => color] pairs
+     * color can be either color in #rrggbb-format or level for color to be break down by
+     *
+     * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
+     *
+     * @return array
+     */
+    public function colors() {
+
+        // Get icons
+        foreach ($this->grid as $gridR) {
+
+            // Get fieldId-value for either further-prop or fieldId-prop
+            $fieldId = $gridR->further ?: $gridR->fieldId;
+
+            // If color break-by-level is defined - get the level
+            if ($gridR->colorBreak == 'y') {
+                $colorA[$fieldId] = $gridR->foreign($gridR->further ? 'further' : 'fieldId')->param('colorBreakLevel');
+
+            // Else get color directly specified for this column
+            } else if ($gridR->colorDirect) {
+                $colorA[$fieldId] = $gridR->rgb('colorDirect');
+
+            // Else get color from certain property of an external entry, specified for this column
+            } else if ($gridR->colorField && $gridR->colorEntry) {
+                $colorA[$fieldId] = $gridR->foreign('colorEntry')->rgb($gridR->foreign('colorField')->alias);
+            }
+
+            // Unset empty values
+            if (!strlen($colorA[$fieldId])) unset($colorA[$fieldId]);
+        }
+
+        // Return columns colors
+        return $colorA ?? [];
     }
 }

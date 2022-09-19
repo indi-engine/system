@@ -137,7 +137,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Set 'hash' scope param at least. Additionally, set scope info about primary hash and row index,
                 // related to parent section, if these params are passed within the uri.
-                $applyA = ['hash' => t()->section->primaryHash];
+                $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
                 if (uri()->ph) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
@@ -241,6 +241,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
                             'icon' => t()->icons(),
                             'jump' => t()->jumps(),
+                            'color' => t()->scope->color,
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ',')
@@ -310,7 +311,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Set last accessed rows
                 $this->setScopeRow(false, null, $this->selected->column('id'));
-
             }
         }
     }
@@ -851,7 +851,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $widthA = array_column($columnA, 'width', 'id'); $hasRowNumberer = (int) !!$widthA['rownumberer']; $hasID = (int) !!$widthA['id'];
 
         // Foreach data-column
-        foreach ($columnA as $column) {
+        foreach ($columnA as $idx => $column) {
 
             // If $column['id'] is an integer
             if (Indi::rexm('int11', $column['id'])) {
@@ -863,13 +863,15 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $level = $gridR->level() + 1;
 
                 // Put column info into $byLevel array
-                $byLevel[$level][$gridR->id] = $column + [
+                $byLevel[$level][$gridR->id] = $columnA[$idx] += [
                     'colspan' => 1,
                     'gridId' => $gridR->gridId,
                     'title' => $gridR->rename ?: $gridR->further ? $gridR->foreign('further')->title : $gridR->title,
                     'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
                     'leaf' => true,
-                    'icon' => $gridR->icon
+                    'icon' => $gridR->icon,
+                    'color' => t()->scope->color[$gridR->further ?: $gridR->fieldId],
+                    'element' => $gridR->foreign($gridR->further ? 'further' : 'fieldId')->foreign('elementId')->alias,
                 ];
 
                 // Walk through all parents, and for each
@@ -926,8 +928,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Setup groups quantity
         $groupQty = $group ? count($this->rowset->column($group['property'], false, true)) : 0;
 
-        // Calculate last row index
-        $lastRowIndex =
+        // Calculate before data row index
+        $beforeDataRowIndex =
 
             // Bread crumbs row
             1 +
@@ -942,7 +944,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             (bool) (Indi::get()->keyword || (is_array($this->_excelA) && count($this->_excelA) > 1)) +
 
             // Header rows depth
-            $depth +
+            $depth;
+
+        // Calculate last row index
+        $lastRowIndex = $beforeDataRowIndex +
 
             // Data rows
             count($data) +
@@ -970,14 +975,29 @@ class Indi_Controller_Admin extends Indi_Controller {
                 'font' => [
                     'size' => 8,
                     'name' => $font,
-                    'color' => [
-                        'rgb' => '04408C'
-                    ]
                 ],
                 'alignment' => [
                     'vertical' => 'center'
                 ]
             ]);
+
+            // If color definition is a value in rgb-format
+            if ($color = Indi::rexm('rgb', $columnI['color'], 1)) {
+
+                // Apply default color for all non-data cells within this column
+                $sheet->getStyle($columnL . '1:' . $columnL . $beforeDataRowIndex)
+                    ->getFont()->getColor()->setRGB('04408C');
+
+                // Apply given color for all data cells within this column (e.g. all cells of this column starting from first data-row)
+                $sheet->getStyle($columnL . ($beforeDataRowIndex + 1) . ':' . $columnL . $lastRowIndex)
+                    ->getFont()->getColor()->setRGB($color);
+
+            // Else
+            } else {
+
+                // Apply given color for all (data cells and non-data cells) cells within this column
+                $sheet->getStyle($columnL . '1:' . $columnL . $lastRowIndex)->getFont()->getColor()->setRGB('04408C');
+            }
         }
 
         // Capture last column letter(s)
@@ -1735,13 +1755,19 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Convert the column index to excel column letter
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
+                // Get the control element
+                $el = in($columnI['id'], 'id,rownumberer')
+                    ? 'number'
+                    : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
+
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?: ' ';
+                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?? ' ';
                 else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
                 // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
                 if (preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);" title="([^"]+)">/', $value, $c)
+                 || preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);"><\/span>(#[a-fA-F0-9]{6})/', $value, $c)
                  || preg_match('~<img src="(.+?)" class="i-cell-img">(.+?)$~', $value, $c)) {
 
                     // If color was detected
@@ -1754,7 +1780,9 @@ class Indi_Controller_Admin extends Indi_Controller {
                         );
 
                         // Setup additional x-offset for color-box, for it to be centered within the cell
-                        $additionalOffsetX = ceil(($columnI['width']-14)/2) + 0.5;
+                        $additionalOffsetX = $columnI['dataIndex'] == 'color'
+                            ? ($columnI['icon'] ? 8 : 5)
+                            : ceil(($columnI['width']-14)/2) + 0.5;
 
                         //  Add the image to a worksheet
                         $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
@@ -1762,6 +1790,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $objDrawing->setImageResource($gdImage);
                         $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
                         $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
+                        $objDrawing->setDescription($c[2]);
+                        $objDrawing->setName($c[2]);
                         $objDrawing->setHeight(11);
                         $objDrawing->setWidth(14);
                         $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
@@ -1797,9 +1827,19 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Use second capture group value
                     $value = $c[2];
 
-                    // Set text color same as row background to achieve 'transparency'-effect
-                    $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
-                    $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ff' . $rgb);
+                    // If column's field underlying element is not 'color', or is, but header-icon is defined
+                    if ($el != 'color' || $columnI['icon']) {
+
+                        // Set text color same as row background to achieve 'transparency'-effect
+                        $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
+                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ff' . $rgb);
+
+                    // Else if column's field underlying element IS 'color'
+                    } else if ($el == 'color') {
+
+                        // Set indent so that both color-box and #rrggbb-value to be displayed
+                        $sheet->getStyle($columnL . $currentRowIndex)->getAlignment()->setIndent(2);
+                    }
 
                 // Else if cell value contain a color definition within 'color' attribute,
                 // or as a 'color: xxxxxxxx' expression within 'style' attribute, we extract that color definition
@@ -1905,23 +1945,22 @@ class Indi_Controller_Admin extends Indi_Controller {
                         ]
                     ]);
 
-                // Get the control element
-                $el = in($columnI['id'], 'id,rownumberer')
-                    ? 'number'
-                    : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
-
                 // If control element is 'price' or 'number'
-                if (in($el, 'price,number')) {
-
-                    // Display zero-values only if `displayZeroes` flag for current column is `true`
-                    if ($value == 0 && !$columnI['displayZeroes']) $value = '';
+                if (in($el, 'price,number,decimal143')) {
 
                     // Set format
-                    if ($el == 'price') $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()
-                        ->setFormatCode('#,##0.00');
-                    else $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()
-                        ->setFormatCode('#,##0');
+                    $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()->setFormatCode([
+                        'number    ' => '#,##0',
+                        'price'      => '#,##0.00',
+                        'decimal143' => '#,##0.000',
+                    ][$el]);
 
+                    // Apply color
+                    if ($value == 0) {
+                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB('d3d3d3');
+                    } else if (Indi::rexm('int11', $level = $columnI['color'])) {
+                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB($value >= $level ? '32cd32' : 'ff0000');
+                    }
                 }
 
                 // Set cell value
@@ -1988,17 +2027,21 @@ class Indi_Controller_Admin extends Indi_Controller {
                     : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // If control element is 'price' or 'number'
-                if (in($el, 'price,number')) {
-
-                    // Display zero-values only if `displayZeroes` flag for current column is `true`
-                    if ($value == 0 && !$columnI['displayZeroes']) $value = '';
+                if (in($el, 'price,number,decimal143')) {
 
                     // Set format
-                    if ($el == 'price') $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()
-                        ->setFormatCode('#,##0.00');
-                    else $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()
-                        ->setFormatCode('#,##0');
+                    $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()->setFormatCode([
+                        'number    ' => '#,##0',
+                        'price'      => '#,##0.00',
+                        'decimal143' => '#,##0.000',
+                    ][$el]);
 
+                    // Apply color
+                    if ($value == 0) {
+                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB('d3d3d3');
+                    } else if (Indi::rexm('int11', $level = $columnI['color'])) {
+                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB($value >= $level ? '32cd32' : 'ff0000');
+                    }
                 }
 
                 // Set cell value

@@ -757,6 +757,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $dataColumns[] = $field;
                             if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
                             if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
+                            if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
                         }
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
@@ -2293,7 +2294,12 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
 
-    protected function _comboDataConsiderWHERE(&$where, Field_Row $fieldR, Field_Row $cField, $cValue, $required) {
+    protected function _comboDataConsiderWHERE(&$where, Field_Row $fieldR, Field_Row $cField, $cValue, $required, $cValueForeign = null) {
+
+        // In case of variable-entity we don't build WHERE clause
+        // unless this behaviour is overridden in child classes,
+        // See Role_Row->_comboDataConsiderWHERE() as an example
+        if (!$fieldR->relation && $cValueForeign) return false;
 
         // Setup a key, that current consider's WHERE clause will be set up within $where arg under,
         $_wkey = 'consider:' . $cField->alias;
@@ -2525,8 +2531,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If field's storeRelationAbility is 'one' - pick first
                         if ($methodType == 'Row') $foreign = $foreign->at(0);
 
-                    // Else
-                    } else {
+                    // Else if model is non-zero
+                    } else if ($model) {
 
                         // Declare array for WHERE clause
                         $where = [];
@@ -2565,6 +2571,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                                     : null
                             );
                         }
+                    } else {
+                        $foreign = null;
                     }
                 }
 
@@ -3290,7 +3298,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else return $this->_mismatch[$check];
 
         // Return array of errors
-        return $this->scratchy() ?: $this->validate();
+        return $this->scratchy() ?: $this->validate() ?: $this->_mismatch;
     }
 
     /**
@@ -3540,13 +3548,21 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // If $value is not a color in format #rrggbb or in format hue#rrggbb
                 if (!preg_match(Indi::rex('rgb'), $value) && !preg_match(Indi::rex('hrgb'), $value)) {
 
-                    // Push a error to errors stack
-                    $this->_mismatch[$column] = sprintf(I_ROWSAVE_ERROR_VALUE_SHOULD_BE_COLOR, $value, $fieldR->title);
+                    // If $value is not a color name
+                    if (!$rgb = Indi::$colorNameA[$value]) {
 
-                    // Jump to checking the next column's value
-                    continue;
+                        // Push a error to errors stack
+                        $this->_mismatch[$column] = sprintf(I_ROWSAVE_ERROR_VALUE_SHOULD_BE_COLOR, $value, $fieldR->title);
 
-                    // Else if $value is a color in format #rrggbb, e.g without hue
+                        // Jump to checking the next column's value
+                        continue;
+
+                    // Else get that color name's rgb
+                    } else {
+                        $value = hrgb($rgb);
+                    }
+
+                // Else if $value is a color in format #rrggbb, e.g without hue
                 } else if (preg_match(Indi::rex('rgb'), $value)) {
 
                     // Prepend color with it's hue number

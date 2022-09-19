@@ -20,10 +20,54 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
      */
     public function renderGridDataItem(&$item, $r) {
 
-        // If no icon-overflow html rendered (so no value there) - return
-        if (!$render = &$item['_render']['jumpSectionActionId']) return;
+        // If there is some value rendered for icon-overflow html
+        if ($render = &$item['_render']['jumpSectionActionId']) {
 
-        // Else spoof icon with actual action-icon
-        $render = preg_replace('~src="[^"]+"~', 'src="' . $r->foreign('jumpSectionActionId')->foreign('actionId')->icon . '"', $render);
+            // Spoof icon with actual action-icon
+            $render = preg_replace('~src="[^"]+"~', 'src="' . $r->foreign('jumpSectionActionId')->foreign('actionId')->icon . '"', $render);
+        }
+
+        // Spoof rendered value with color-box having color picked from the external source
+        if ($render = &$item['_render']['colorEntry']) {
+            $color = $r->foreign('colorEntry')->rgb('color');
+            $title = $r->foreign('colorEntry')->attr('title');
+            $render = '<span class="i-color-box" style="background: ' . $color . ';" title="' . $title . '"></span>';
+        }
+
+        // Prepend entity title to colorField title
+        if ($render = &$item['_render']['colorField']) {
+            $render = preg_replace('~<img.+?>~', '$0' . $r->foreign('colorField')->foreign('entityId')->title . ' &raquo; ', $render);
+        }
+    }
+
+    /**
+     * Apply colorField-param for variable-entity field `colorEntry`
+     *
+     * @param int $fieldId
+     */
+    protected function _color(int $fieldId) {
+
+        // Get color field alias
+        $prop = m('field')->row((int) $fieldId)->alias;
+
+        // Set it as colorField-param's value
+        t()->fields->field('colorEntry')->param('colorField', $prop);
+    }
+
+    /**
+     * Apply colorField-param for variable-entity field `colorEntry` on form load
+     */
+    public function adjustTrailingRowAccess() {
+        $this->_color(t()->row->colorField);
+    }
+
+    /**
+     * Apply colorField-param for variable-entity field `colorEntry`
+     * on value-change of colorField-prop, which colorEntry-field consider on
+     *
+     * @param $consider
+     */
+    public function formActionOdataColorEntry($consider) {
+        $this->_color($consider['colorField']);
     }
 }

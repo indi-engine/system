@@ -17,6 +17,10 @@ class Grid_Row extends Indi_Db_Table_Row {
             else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
+            else if ($columnName == 'colorField') $value = $value ? field(explode('.', $value)[0], explode('.', $value)[1])->id : 0;
+            else if ($columnName == 'colorEntry') $value = $value ? m(
+                m('field')->row($this->colorField)->entityId
+            )->row('`alias` = "' . $value . '"')->id : 0;
             else if ($columnName == 'gridId') $value = grid($this->sectionId, $value)->id;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
             else if ($columnName == 'accessExcept') {
@@ -100,8 +104,15 @@ class Grid_Row extends Indi_Db_Table_Row {
                 else if ($prop == 'jumpSectionId')       $value = $this->foreign($prop)->alias;
                 else if ($prop == 'jumpSectionActionId') $value = $this->foreign($prop)->foreign('actionId')->alias;
 
+                // Else if it's one of fields for color definition
+                else if ($prop == 'colorField') $value = join('.', [
+                    $this->foreign($prop)->foreign('entityId')->table,
+                    $this->foreign($prop)->alias
+                ]);
+                else if ($prop == 'colorEntry') $value = $this->foreign($prop)->alias ?: $this->foreign($prop)->id;
+
                 // Export roles
-                if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
+                else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
             }
         }
 
@@ -166,6 +177,13 @@ class Grid_Row extends Indi_Db_Table_Row {
                 if ($parent->group != $this->group)
                     $this->_mismatch['group'] = sprintf('One of parent entries has non-same value');
 
+        // If colorBreak-prop was modified to 'y',
+        // and underlying data source field's element is non-numeric
+        // setup mismatch as colorBreak=y is applicable for numeric-columns only
+        if ($this->isModified('colorBreak') && $this->colorBreak == 'y')
+            if ($element = $this->foreign($this->further ? 'further' : 'fieldId')->foreign('elementId')->alias)
+                if (!in($element, 'number,price,decimal143')) $this->_mismatch['colorBreak'] = I_GRID_COLOR_BREAK_INCOMPAT;
+
         // Call parent
         return $this->callParent();
     }
@@ -177,6 +195,12 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // If summaryType is not 'text' - set `summaryText` to be empty
         if ($this->summaryType != 'text') $this->zero('summaryText', true);
+
+        // Make sure only one way of setting color is used at a time
+             if ($this->modified('colorBreak') == 'y') $this->zero('colorDirect,colorField,colorEntry', true);
+        else if ($this->modified('colorDirect'))       $this->zero('colorBreak,colorField,colorEntry', true);
+        else if ($this->modified('colorField') || $this->modified('colorEntry'))
+            $this->zero('colorBreak,colorDirect', true);
     }
 
     /**
