@@ -97,15 +97,15 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Delete field
+     * Do preliminary things before field deletion
      *
-     * @return int|void
+     * @throws Exception
      */
-    public function delete() {
+    public function onBeforeDelete() {
 
-		// Delete uploaded images or files as they were uploaded as values
-		// of this field if they were uploaded
-		$this->deleteFiles();
+        // Delete uploaded images or files as they were uploaded as values
+        // of this field if they were uploaded
+        $this->deleteFiles();
 
         // Delete related enumset rows
         db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
@@ -119,48 +119,26 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $this->foreign('entityId')->save();
         }
 
-        // Prevent deletion of `section` entries, having current `field` entry as `defaultSortField`
-        if ($sectionRs = m('Section')->all('`defaultSortField` = "' . $this->id . '"'))
-            foreach ($sectionRs as $sectionR) {
-                $sectionR->defaultSortField = 0;
-                $sectionR->save();
-            }
+        // Prevent deletion of `section` entries, having current `field` entry's id  as the value of one of below fields
+        $propA = ar('defaultSortField,parentSectionConnector,groupBy,tileField,colorField,colorFurther');
+        foreach (m('section')->all('"' . $this->id . '" IN (`' . join('`,`', $propA) . '`)') as $sectionR) {
+            foreach ($propA as $prop) if ($sectionR->$prop == $this->id) $sectionR->zero($prop, true);
+            $sectionR->save();
+        }
+    }
 
-        // Prevent deletion of `section` entries, having current `field` entry as `parentSectionConnector`
-        if ($sectionRs = m('Section')->all('`parentSectionConnector` = "' . $this->id . '"'))
-            foreach ($sectionRs as $sectionR) {
-                $sectionR->parentSectionConnector = 0;
-                $sectionR->save();
-            }
-
-        // Prevent deletion of `section` entries, having current `field` entry as `groupBy`
-        if (m('Section')->fields('groupBy')
-            && $sectionRs = m('Section')->all('`groupBy` = "' . $this->id . '"'))
-            foreach ($sectionRs as $sectionR) {
-                $sectionR->groupBy = 0;
-                $sectionR->save();
-            }
-
-        // Prevent deletion of `section` entries, having current `field` entry as `tileField`
-        if (m('Section')->fields('tileField')
-            && $sectionRs = m('Section')->all('`tileField` = "' . $this->id . '"'))
-            foreach ($sectionRs as $sectionR) {
-                $sectionR->tileField = 0;
-                $sectionR->tileThumb = 0;
-                $sectionR->save();
-            }
-
-        // Standard deletion
-        $return = parent::delete();
+    /**
+     * After delete
+     *
+     * @return int|void
+     */
+    public function onDelete() {
 
         // Delete db table associated column
         $this->deleteColumn();
 
         // Delete current field from model's fields
         m($this->entityId)->fields()->exclude($this->id);
-
-        // Return
-        return $return;
     }
 
     /**
