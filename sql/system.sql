@@ -118,7 +118,7 @@ CREATE TABLE `alteredField` (
   KEY `jumpSectionActionId` (`jumpSectionActionId`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `rename` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=281 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=283 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `alteredField` */
 
@@ -181,7 +181,9 @@ insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`defaultValue`,`mode`,`ti
 (277,407,476,'','inherit','{\"en\":\"Field\",\"ru\":\"Поле\"}','all','','',0,'y',6,11,''),
 (278,407,2433,'','inherit','{\"en\":\"Param\",\"ru\":\"Параметр\"}','all','','',0,'y',405,1628,''),
 (279,7,25,'','inherit','{\"en\":\"Number of records per page\",\"ru\":\"Количество записей на странице\"}','all','','',0,'y',11,32,'?filter[toggle]=y'),
-(280,11,2631,'','inherit','{\"en\":\"External source\",\"ru\":\"Внешний источник\"}','all','','',0,'y',6,11,'');
+(280,11,2631,'','inherit','{\"en\":\"External source\",\"ru\":\"Внешний источник\"}','all','','',0,'y',6,11,''),
+(281,7,2634,'','inherit','{\"en\":\"Field\",\"ru\":\"Поле\"}','all','','',0,'y',6,11,''),
+(282,7,2635,'','inherit','{\"en\":\"Further field\",\"ru\":\"Поле по ключу\"}','all','','',0,'y',6,11,'');
 
 /*Table structure for table `changeLog` */
 
@@ -264,7 +266,7 @@ CREATE TABLE `consider` (
   KEY `required` (`required`),
   KEY `connector` (`connector`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `consider` */
 
@@ -310,7 +312,9 @@ insert  into `consider`(`id`,`entityId`,`fieldId`,`consider`,`foreign`,`title`,`
 (48,318,2409,2397,16,'{\"ru\":\"Тип\",\"en\":\"Type\"}','y',0),
 (61,9,2616,2615,0,'{\"en\":\"Section\",\"ru\":\"Раздел\"}','y',26),
 (62,171,2622,2621,0,'{\"en\":\"Section\",\"ru\":\"Раздел\"}','y',26),
-(63,9,2632,2631,6,'{\"en\":\"External source\",\"ru\":\"Внешний источник\"}','y',0);
+(63,9,2632,2631,6,'{\"en\":\"External source\",\"ru\":\"Внешний источник\"}','y',0),
+(64,3,2634,19,0,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y',0),
+(65,3,2635,2634,12,'{\"en\":\"Field\",\"ru\":\"Поле\"}','y',6);
 
 /*Table structure for table `element` */
 
@@ -692,7 +696,7 @@ CREATE TABLE `field` (
   KEY `entry` (`entry`),
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=2633 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2637 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `field` */
 
@@ -875,7 +879,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2309,3,'{\"ru\":\"JS\",\"en\":\"JS\"}','extendsJs',1,1,'Indi.lib.controller.Controller',443,0,'none','','regular','{\"ru\":\"Родительский класс JS\",\"en\":\"Parent JS class\"}','n',0),
 (2310,3,'{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}','rownumberer',10,23,'0',2323,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2311,195,'{\"ru\":\"Разрешить сброс\",\"en\":\"Allow reset\"}','allowClear',12,9,'1',2420,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(2312,3,'{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}','multiSelect',10,23,'0',2322,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
+(2312,3,'{\"en\":\"Enable&nbsp;multi‑selection\",\"ru\":\"Выделение более одной записи\"}','multiSelect',10,23,'0',2322,6,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','y',0),
 (2313,9,'{\"en\":\"Further \\/ JOINed field\",\"ru\":\"Поле по ключу\"}','further',3,23,'0',30,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2314,195,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','further',3,23,'0',1315,5,'one','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2315,9,'{\"ru\":\"Ширина\",\"en\":\"Width\"}','width',3,18,'0',2422,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -977,7 +981,7 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2424,171,'{\"en\":\"Access\",\"ru\":\"Доступ\"}','access',0,16,'',2169,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2425,3,'{\"ru\":\"Родительские классы\",\"en\":\"Parent classes\"}','extends',0,16,'',310,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2426,3,'{\"en\":\"Data source\",\"ru\":\"Источник данных\"}','data',0,16,'',462,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
-(2427,3,'{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}','display',0,16,'',2312,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
+(2427,3,'{\"en\":\"Display\",\"ru\":\"Отображение записей\"}','display',0,16,'',2312,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2428,3,'{\"ru\":\"Записи\",\"en\":\"Recordings\"}','store',0,16,'',2429,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2429,3,'{\"ru\":\"Подгрузка записей\",\"en\":\"Loading records\"}','load',0,16,'',2301,0,'none','','regular','{\"ru\":\"\",\"en\":\"\"}','n',0),
 (2430,3,'{\"ru\":\"Параметры\",\"en\":\"Parameters\"}','params',0,16,'',2430,0,'none','','hidden','{\"ru\":\"\",\"en\":\"\"}','n',0),
@@ -1060,8 +1064,12 @@ insert  into `field`(`id`,`entityId`,`title`,`alias`,`columnTypeId`,`elementId`,
 (2628,9,'{\"en\":\"Color\",\"ru\":\"Цвет\"}','color',0,16,'',2628,0,'none','','regular','','n',0),
 (2629,9,'{\"en\":\"Breakdown by level\",\"ru\":\"Разбивка по уровню\"}','colorBreak',10,23,'n',2629,6,'one','','regular','','y',0),
 (2630,9,'{\"en\":\"Manually defined\",\"ru\":\"Указан вручную\"}','colorDirect',13,11,'',2630,0,'none','','regular','','n',0),
+(2633,3,'{\"en\":\"Row color\",\"ru\":\"Цвет\"}','color',0,16,'',2633,0,'none','','regular','','n',0),
 (2631,9,'{\"en\":\"External source\",\"ru\":\"Внешний источник\"}','colorField',3,23,'0',2631,5,'one','`elementId` = \"11\"','regular','','n',0),
-(2632,9,'{\"en\":\"External record\",\"ru\":\"Внешняя запись\"}','colorEntry',3,23,'0',2632,0,'one','','regular','','n',0);
+(2632,9,'{\"en\":\"External record\",\"ru\":\"Внешняя запись\"}','colorEntry',3,23,'0',2632,0,'one','','regular','','n',0),
+(2634,3,'{\"en\":\"Field\",\"ru\":\"Поле\"}','colorField',3,23,'0',2634,5,'one','','regular','','n',0),
+(2635,3,'{\"en\":\"Further field\",\"ru\":\"Поле по ключу\"}','colorFurther',3,23,'0',2635,5,'one','','regular','','n',0),
+(2636,3,'{\"en\":\"Features\",\"ru\":\"Функции\"}','features',0,16,'',2636,0,'none','','hidden','','n',0);
 
 /*Table structure for table `filter` */
 
@@ -1179,7 +1187,7 @@ CREATE TABLE `grid` (
   FULLTEXT KEY `summaryText` (`summaryText`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alterTitle` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=2807 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2811 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `grid` */
 
@@ -1385,10 +1393,10 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (2644,7,767,2647,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Фильтрация через SQL WHERE\",\"en\":\"Filtering through SQL WHERE\"}',2642,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-filter.png',0,0,'','n','',0,0),
 (2645,7,503,2642,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Сортировка\",\"en\":\"Sort by\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y','',0,0,'','n','',0,0),
 (2646,7,557,2645,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Направление сортировки\",\"en\":\"Sort direction\"}',2654,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'y','',0,0,'','n','',0,0),
-(2647,7,2427,2654,'{\"ru\":\"Отображение\",\"en\":\"Display\"}','y','{\"ru\":\"Отображение записей\",\"en\":\"Displaying records\"}',2653,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,'','n','',0,0),
-(2648,7,2312,2648,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Выделение более одной записи\",\"en\":\"Selecting more than one record\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-multi-select.png',0,0,'','n','',0,0),
+(2647,7,2427,2648,'{\"en\":\"\",\"ru\":\"Вид\"}','y','{\"en\":\"Display\",\"ru\":\"Отображение записей\"}',2807,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,'','n','',0,0),
+(2648,7,2312,2808,'{\"ru\":\"\",\"en\":\"\"}','y','{\"en\":\"Enable&nbsp;multi‑selection\",\"ru\":\"Выделение более одной записи\"}',2807,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-multi-select.png',0,0,'','n','',0,0),
 (2649,7,2310,2649,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Включить нумерацию записей\",\"en\":\"Enable records numbering\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/btn-icon-numberer.png',0,0,'','n','',0,0),
-(2650,7,2211,2650,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировка\",\"en\":\"Group by\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',6,11,'','n','',0,0),
+(2650,7,2211,2650,'{\"ru\":\"\",\"en\":\"\"}','y','{\"ru\":\"Группировка\",\"en\":\"Group by\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','1','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','resources/images/icons/group.png',6,11,'','n','',0,0),
 (2651,7,2322,2651,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Плитка\",\"en\":\"Tile\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,'','n','',0,0),
 (2652,7,2323,2652,'{\"ru\":\"\",\"en\":\"\"}','h','{\"ru\":\"Превью\",\"en\":\"Preview\"}',2647,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,'','n','',0,0),
 (2653,7,2428,2655,'{\"ru\":\"\",\"en\":\"Records\"}','y','{\"ru\":\"Записи\",\"en\":\"Recordings\"}',0,'{\"ru\":\"\",\"en\":\"\"}','all','','0','none','{\"ru\":\"\",\"en\":\"\"}','normal',0,0,'n','',0,0,'','n','',0,0),
@@ -1469,7 +1477,11 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`move`,`rename`,`toggle`,`title`,
 (2803,11,2629,2803,'','y','{\"en\":\"Breakdown by level\",\"ru\":\"Разбивка по уровню\"}',2802,'','all','','0','none','','normal',0,0,'n','resources/images/icons/color-level.png',0,0,'','n','',0,0),
 (2804,11,2630,2804,'','y','{\"en\":\"Manually defined\",\"ru\":\"Указан вручную\"}',2802,'','all','','1','none','','normal',0,0,'y','resources/images/icons/color-text.svg',0,0,'','n','',0,0),
 (2805,11,2631,2805,'','y','{\"en\":\"External source\",\"ru\":\"Внешний источник\"}',2802,'','all','','1','none','','normal',0,0,'n','resources/images/icons/table-col.png',6,11,'','n','',0,0),
-(2806,11,2632,2806,'','y','{\"en\":\"External record\",\"ru\":\"Внешняя запись\"}',2802,'','all','','1','none','','normal',0,0,'y','resources/images/icons/table-row.png',0,0,'','n','',0,0);
+(2806,11,2632,2806,'','y','{\"en\":\"External record\",\"ru\":\"Внешняя запись\"}',2802,'','all','','1','none','','normal',0,0,'y','resources/images/icons/table-row.png',0,0,'','n','',0,0),
+(2807,7,2636,2807,'','y','{\"en\":\"Features\",\"ru\":\"Функции\"}',0,'','all','','0','none','','normal',0,0,'n','',0,0,'','n','',0,0),
+(2808,7,2633,2654,'{\"en\":\"Color\",\"ru\":\"\"}','y','{\"en\":\"Row color\",\"ru\":\"Цвет\"}',2807,'','all','','0','none','','normal',0,0,'n','',0,0,'','n','',0,0),
+(2809,7,2634,2809,'','y','{\"en\":\"Field\",\"ru\":\"Поле\"}',2808,'','all','','1','none','','normal',0,0,'n','resources/images/icons/table-col.png',6,11,'','n','',0,0),
+(2810,7,2635,2810,'','y','{\"en\":\"Further field\",\"ru\":\"Поле по ключу\"}',2808,'','all','','1','none','','normal',0,0,'n','resources/images/icons/join.png',6,11,'','n','',0,0);
 
 /*Table structure for table `lang` */
 
@@ -1884,7 +1896,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=3838 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3857 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -1968,6 +1980,8 @@ CREATE TABLE `section` (
   `tileField` int NOT NULL DEFAULT '0',
   `tileThumb` int NOT NULL DEFAULT '0',
   `help` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `colorField` int NOT NULL DEFAULT '0',
+  `colorFurther` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `entityId` (`entityId`),
@@ -1986,42 +2000,44 @@ CREATE TABLE `section` (
   KEY `disableAdd` (`disableAdd`),
   KEY `multiSelect` (`multiSelect`),
   KEY `rownumberer` (`rownumberer`),
+  KEY `colorField` (`colorField`),
+  KEY `colorFurther` (`colorFurther`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `help` (`help`)
 ) ENGINE=MyISAM AUTO_INCREMENT=416 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section` */
 
-insert  into `section`(`id`,`sectionId`,`entityId`,`title`,`alias`,`toggle`,`move`,`rowsOnPage`,`extendsPhp`,`defaultSortField`,`defaultSortDirection`,`filter`,`disableAdd`,`fraction`,`parentSectionConnector`,`groupBy`,`rowsetSeparate`,`expand`,`expandRoles`,`roleIds`,`extendsJs`,`rownumberer`,`multiSelect`,`tileField`,`tileThumb`,`help`) values 
-(1,0,0,'{\"ru\":\"Конфигурация\",\"en\":\"Configuration\"}','configuration','y',403,25,'Indi_Controller_Admin',0,'ASC','','0','system',0,0,'auto','all','','','Indi.lib.controller.Controller','0','0',0,0,''),
-(2,1,1,'{\"ru\":\"Столбцы\",\"en\":\"Columns\"}','columnTypes','y',6,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(5,1,2,'{\"ru\":\"Сущности\",\"en\":\"Entities\"}','entities','y',4,50,'Indi_Controller_Admin_Exportable',4,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(6,5,5,'{\"ru\":\"Поля в структуре\",\"en\":\"Fields in structure\"}','fields','y',7,100,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','0','system',0,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),
-(7,1,3,'{\"ru\":\"Разделы\",\"en\":\"Sections\"}','sections','y',2,50,'Indi_Controller_Admin_Exportable',23,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(8,7,8,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','sectionActions','y',8,25,'Indi_Controller_Admin_Multinew',30,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(10,1,7,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','actions','y',9,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(11,7,9,'{\"ru\":\"Столбцы грида\",\"en\":\"Grid columns\"}','grid','y',10,25,'Indi_Controller_Admin_Multinew',35,'ASC','','0','system',0,2308,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(12,6,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','enumset','y',11,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(13,1,10,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','role','y',5,25,'Indi_Controller_Admin_Exportable',2132,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(14,13,11,'{\"ru\":\"Пользователи\",\"en\":\"Users\"}','admins','y',13,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(16,1,4,'{\"ru\":\"Элементы\",\"en\":\"Form elements\"}','controlElements','y',14,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(22,6,20,'{\"ru\":\"Копии изображения\",\"en\":\"Resized copies\"}','resize','y',19,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(101,6,91,'{\"ru\":\"Параметры\",\"en\":\"Settings\"}','params','y',91,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(201,7,171,'{\"ru\":\"Измененные поля\",\"en\":\"Adjusted fields\"}','alteredFields','y',188,25,'Indi_Controller_Admin_Multinew',1342,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(224,7,195,'{\"ru\":\"Фильтры\",\"en\":\"Filters\"}','filter','y',192,25,'Indi_Controller_Admin_Multinew',1444,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(387,1,307,'{\"ru\":\"Языки\",\"en\":\"Languages\"}','lang','y',387,25,'Indi_Controller_Admin',2335,'ASC','','0','system',0,2325,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(388,6,308,'{\"ru\":\"Зависимости\",\"en\":\"Dependencies\"}','consider','y',388,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(389,1,309,'{\"ru\":\"Уведомления\",\"en\":\"Notifications\"}','notices','y',389,25,'Indi_Controller_Admin_Exportable',2254,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(390,389,310,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','noticeGetters','y',390,25,'Indi_Controller_Admin',2275,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(391,1,5,'{\"ru\":\"Все поля\",\"en\":\"All fields\"}','fieldsAll','y',391,25,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','1','system',0,6,'auto','all','','1','Indi.lib.controller.Field','0','0',0,0,''),
-(392,1,314,'{\"ru\":\"Очереди задач\",\"en\":\"Queue tasks\"}','queueTask','y',392,25,'Indi_Controller_Admin',2337,'DESC','','1','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(393,392,315,'{\"ru\":\"Сегменты очереди\",\"en\":\"Queue chunks\"}','queueChunk','y',393,25,'Indi_Controller_Admin',2379,'ASC','','1','system',0,2381,'no','all','','1','Indi.lib.controller.Controller','1','0',0,0,''),
-(394,393,316,'{\"ru\":\"Элементы очереди\",\"en\":\"Queue items\"}','queueItem','y',394,25,'Indi_Controller_Admin',0,'ASC','','1','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(396,1,318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','y',396,25,'Indi_Controller_Admin',2401,'ASC','','0','system',0,2399,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,''),
-(403,0,0,'{\"ru\":\"Database\",\"en\":\"Database\"}','db','y',408,25,'Indi_Controller_Admin',0,'ASC','','0','custom',0,0,'auto','all','','12,1','Indi.lib.controller.Controller','0','0',0,0,''),
-(405,16,5,'{\"ru\":\"Возможные настройки\",\"en\":\"Possible params\"}','elementCfgField','y',405,100,'Indi_Controller_Admin_CfgField',14,'ASC','','0','system',2435,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,''),
-(406,405,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','elementCfgFieldEnumset','y',406,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,''),
-(407,1,91,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y',407,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'');
+insert  into `section`(`id`,`sectionId`,`entityId`,`title`,`alias`,`toggle`,`move`,`rowsOnPage`,`extendsPhp`,`defaultSortField`,`defaultSortDirection`,`filter`,`disableAdd`,`fraction`,`parentSectionConnector`,`groupBy`,`rowsetSeparate`,`expand`,`expandRoles`,`roleIds`,`extendsJs`,`rownumberer`,`multiSelect`,`tileField`,`tileThumb`,`help`,`colorField`,`colorFurther`) values 
+(1,0,0,'{\"ru\":\"Конфигурация\",\"en\":\"Configuration\"}','configuration','y',403,25,'Indi_Controller_Admin',0,'ASC','','0','system',0,0,'auto','all','','','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(2,1,1,'{\"ru\":\"Столбцы\",\"en\":\"Columns\"}','columnTypes','y',6,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(5,1,2,'{\"ru\":\"Сущности\",\"en\":\"Entities\"}','entities','y',4,50,'Indi_Controller_Admin_Exportable',4,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(6,5,5,'{\"ru\":\"Поля в структуре\",\"en\":\"Fields in structure\"}','fields','y',7,100,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','0','system',0,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,'',0,0),
+(7,1,3,'{\"ru\":\"Разделы\",\"en\":\"Sections\"}','sections','y',2,50,'Indi_Controller_Admin_Exportable',23,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(8,7,8,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','sectionActions','y',8,25,'Indi_Controller_Admin_Multinew',30,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(10,1,7,'{\"ru\":\"Действия\",\"en\":\"Actions\"}','actions','y',9,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(11,7,9,'{\"ru\":\"Столбцы грида\",\"en\":\"Grid columns\"}','grid','y',10,25,'Indi_Controller_Admin_Multinew',35,'ASC','','0','system',0,2308,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(12,6,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','enumset','y',11,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(13,1,10,'{\"ru\":\"Роли\",\"en\":\"Roles\"}','role','y',5,25,'Indi_Controller_Admin_Exportable',2132,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(14,13,11,'{\"ru\":\"Пользователи\",\"en\":\"Users\"}','admins','y',13,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(16,1,4,'{\"ru\":\"Элементы\",\"en\":\"Form elements\"}','controlElements','y',14,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(22,6,20,'{\"ru\":\"Копии изображения\",\"en\":\"Resized copies\"}','resize','y',19,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(101,6,91,'{\"ru\":\"Параметры\",\"en\":\"Settings\"}','params','y',91,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(201,7,171,'{\"ru\":\"Измененные поля\",\"en\":\"Adjusted fields\"}','alteredFields','y',188,25,'Indi_Controller_Admin_Multinew',1342,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(224,7,195,'{\"ru\":\"Фильтры\",\"en\":\"Filters\"}','filter','y',192,25,'Indi_Controller_Admin_Multinew',1444,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(387,1,307,'{\"ru\":\"Языки\",\"en\":\"Languages\"}','lang','y',387,25,'Indi_Controller_Admin',2335,'ASC','','0','system',0,2325,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(388,6,308,'{\"ru\":\"Зависимости\",\"en\":\"Dependencies\"}','consider','y',388,25,'Indi_Controller_Admin_Exportable',0,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(389,1,309,'{\"ru\":\"Уведомления\",\"en\":\"Notifications\"}','notices','y',389,25,'Indi_Controller_Admin_Exportable',2254,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(390,389,310,'{\"ru\":\"Получатели\",\"en\":\"Recipients\"}','noticeGetters','y',390,25,'Indi_Controller_Admin',2275,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(391,1,5,'{\"ru\":\"Все поля\",\"en\":\"All fields\"}','fieldsAll','y',391,25,'Indi_Controller_Admin_Field',14,'ASC','`entry` = \"0\"','1','system',0,6,'auto','all','','1','Indi.lib.controller.Field','0','0',0,0,'',0,0),
+(392,1,314,'{\"ru\":\"Очереди задач\",\"en\":\"Queue tasks\"}','queueTask','y',392,25,'Indi_Controller_Admin',2337,'DESC','','1','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(393,392,315,'{\"ru\":\"Сегменты очереди\",\"en\":\"Queue chunks\"}','queueChunk','y',393,25,'Indi_Controller_Admin',2379,'ASC','','1','system',0,2381,'no','all','','1','Indi.lib.controller.Controller','1','0',0,0,'',0,0),
+(394,393,316,'{\"ru\":\"Элементы очереди\",\"en\":\"Queue items\"}','queueItem','y',394,25,'Indi_Controller_Admin',0,'ASC','','1','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(396,1,318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','y',396,25,'Indi_Controller_Admin',2401,'ASC','','0','system',0,2399,'auto','all','','1','Indi.lib.controller.Controller','0','1',0,0,'',0,0),
+(403,0,0,'{\"ru\":\"Database\",\"en\":\"Database\"}','db','y',408,25,'Indi_Controller_Admin',0,'ASC','','0','custom',0,0,'auto','all','','12,1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(405,16,5,'{\"ru\":\"Возможные настройки\",\"en\":\"Possible params\"}','elementCfgField','y',405,100,'Indi_Controller_Admin_CfgField',14,'ASC','','0','system',2435,0,'no','all','','1','Indi.lib.controller.Field','0','1',0,0,'',0,0),
+(406,405,6,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','elementCfgFieldEnumset','y',406,25,'Indi_Controller_Admin_Exportable',377,'ASC','','0','system',0,0,'no','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0),
+(407,1,91,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y',407,25,'Indi_Controller_Admin_CfgValue',0,'ASC','','0','system',0,0,'auto','all','','1','Indi.lib.controller.Controller','0','0',0,0,'',0,0);
 
 /*Table structure for table `section2action` */
 
