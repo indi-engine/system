@@ -758,6 +758,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                             if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
                             if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
                             if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
+                            if ($field == $scope->colorField) $renderCfg['_system'] = [
+                                'colorField' => $scope->colorField,
+                                'colorFurther' => $scope->colorFurther
+                            ];
                         }
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level

@@ -150,7 +150,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // Add icon for `defaultSortField` prop
         if ($item['$keys']['defaultSortField']
-            && $info = Indi::rexm('~<span (.*?) title="(.*?)"></span>$~', $item['defaultSortDirection'])) {
+            && $info = Indi::rexm('~<span (.*?)( title="(.*?)"|)></span>(.*)$~', $item['defaultSortDirection'])) {
 
             // If defaultSortField is -1 - assume it's ID-column
             if ($item['$keys']['defaultSortField'] == -1) $item['defaultSortField'] = 'ID';
@@ -159,7 +159,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $item['_system']['jump']['defaultSortField'] = [[
                 'href' => 'cell:defaultSortDirection',
                 'ibox' => $info[1],
-                'over' => $info[2]
+                'over' => $info[3] ?: $info[4]
             ]];
         }
     }

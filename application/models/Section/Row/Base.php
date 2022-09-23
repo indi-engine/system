@@ -210,6 +210,9 @@ class Section_Row_Base extends Indi_Db_Table_Row {
      */
     public function onBeforeSave() {
 
+        // Clear colorFurther-field, which depends on colorField-field
+        if ($this->fieldIsZeroed('colorField')) $this->zero('colorFurther', true);
+
         // Clear value for `expandRoles` prop, if need
         if (in($this->expand, 'all,none')) $this->expandRoles = '';
 

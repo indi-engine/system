@@ -705,6 +705,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Setup foreign rows, fetched by foreign keys, mentioned in fields, that are set up as grid columns
         if ($foreign = $typeA['foreign']['single'] + $typeA['foreign']['multiple']) $this->foreign($foreign);
 
+        // Get color config
+        if ($colorField = $renderCfg['_system']['colorField']) {
+            if ($colorFurther = $renderCfg['_system']['colorFurther']) $this->foreign($colorField);
+            else if ($this->model()->fields($colorField)->foreign('elementId')->alias != 'color') unset($colorField);
+        }
+
         // Declare an array for grid data
         $data = [];
 
@@ -906,8 +912,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // If column is numeric and value is 0 - apply lightgray color
-                if ($typeA['numeric'][$columnI] && !(float) $data[$pointer][$columnI])
-                    $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
+                if ($typeA['numeric'][$columnI])
+                    $data[$pointer]['_style'][$columnI] = !(float) $data[$pointer][$columnI] ? 'color: lightgray;' : '';
 
                 // Else if color is defined for column
                 else if (null !== ($color = $renderCfg[$columnI]['color'])) {
@@ -935,7 +941,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // for each grid data row, event if grid does not have `title` property at all, or have, but
             // affected by indents or some other manipulations
             $data[$pointer]['_system']['title'] = $titleProp ? $data[$pointer][$titleProp] : $r->title();
-            
+
+            // If color field is defined - get color and apply to record data
+            if ($colorField)
+                if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField))
+                    $data[$pointer]['_system']['style'] = 'color: ' . $color . ';';
+
             // Implement indents if need
             if ($data[$pointer][$_ = $titleProp ?: 'title'] && $treeColumn)
                 if ($r->system('level') !== null || $r->system('level', $r->level()))

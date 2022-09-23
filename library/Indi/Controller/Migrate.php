@@ -1,5 +1,62 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function rowcolorAction() {
+        field('section', 'color', ['title' => 'Цвет', 'elementId' => 'span', 'move' => 'help']);
+        field('section', 'colorField', [
+            'title' => 'Поле',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'color',
+            'relation' => 'field',
+            'storeRelationAbility' => 'one',
+        ]);
+        consider('section', 'colorField', 'entityId', ['required' => 'y']);
+        field('section', 'colorFurther', [
+            'title' => 'Поле по ключу',
+            'columnTypeId' => 'INT(11)',
+            'elementId' => 'combo',
+            'defaultValue' => '0',
+            'move' => 'colorField',
+            'relation' => 'field',
+            'storeRelationAbility' => 'one',
+        ]);
+        consider('section', 'colorFurther', 'colorField', ['foreign' => 'relation', 'required' => 'y', 'connector' => 'entityId']);
+        field('section', 'features', [
+            'title' => 'Функции',
+            'elementId' => 'span',
+            'move' => 'colorFurther',
+            'mode' => 'hidden',
+        ]);
+        grid('sections', 'features', ['move' => 'store']);
+        grid('sections', 'display', ['gridId' => 'features']);
+        grid('sections', 'groupBy', [
+            'icon' => 'resources/images/icons/group-13.png',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('sections', 'color', ['move' => 'display', 'gridId' => 'features']);
+        grid('sections', 'multiSelect', ['move' => 'color', 'gridId' => 'features']);
+        grid('sections', 'colorField', [
+            'move' => '',
+            'gridId' => 'color',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/table-col.png',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('sections', 'colorFurther', [
+            'move' => 'colorField',
+            'gridId' => 'color',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/join.png',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        alteredField('sections', 'colorField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('sections', 'colorFurther', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        die('ok');
+    }
     public function colcolorAction() {
         foreach (ar('decimal143,number,price') as $element)
             cfgField('element', $element, 'colorBreakLevel', [

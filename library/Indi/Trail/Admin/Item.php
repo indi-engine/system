@@ -688,7 +688,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      */
     public function renderCfg() {
 
-        // Prepare render config
+        // Prepare render config for fields
         foreach ($this->gridFields ? $this->gridFields : [] as $field) {
             if ($fieldId = m()->fields($field->alias)->id) {
                 if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
@@ -697,6 +697,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
         }
 
+        // Prepare render config for records
+        foreach (ar('colorField,colorFurther') as $prop)
+            if (t()->section->$prop)
+                $renderCfg['_system'][$prop] = t()->section->foreign($prop)->alias; 
+        
         // Return render config
         return $renderCfg ?? [];
     }
