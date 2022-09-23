@@ -31,7 +31,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('sections', 'features', ['move' => 'store']);
         grid('sections', 'display', ['gridId' => 'features']);
         grid('sections', 'groupBy', [
-            'icon' => 'resources/images/icons/group-13.png',
+            'icon' => 'resources/images/icons/group.png',
             'jumpSectionId' => 'fields',
             'jumpSectionActionId' => 'form',
         ]);

@@ -242,11 +242,15 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'icon' => t()->icons(),
                             'jump' => t()->jumps(),
                             'color' => t()->scope->color,
-                            'colorField' => t()->section->foreign('colorField')->alias,
-                            'colorFurther' => t()->section->foreign('colorFurther')->alias,
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ',')
+                        ];
+
+                        // Backward compatibility
+                        if (t()->section->colorField) $scope += [
+                            'colorField' => t()->section->foreign('colorField')->alias,
+                            'colorFurther' => t()->section->foreign('colorFurther')->alias
                         ];
 
                         // Create context if need
