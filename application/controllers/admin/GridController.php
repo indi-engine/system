@@ -29,7 +29,8 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
 
         // Spoof rendered value with color-box having color picked from the external source
         if ($render = &$item['_render']['colorEntry']) {
-            $color = $r->foreign('colorEntry')->rgb('color');
+            $field = $r->foreign('colorField')->alias;
+            $color = $r->foreign('colorEntry')->rgb($field);
             $title = $r->foreign('colorEntry')->attr('title');
             $render = '<span class="i-color-box" style="background: ' . $color . ';" title="' . $title . '"></span>';
         }
