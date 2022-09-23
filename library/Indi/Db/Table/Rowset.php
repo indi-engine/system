@@ -912,8 +912,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // If column is numeric and value is 0 - apply lightgray color
-                if ($typeA['numeric'][$columnI])
-                    $data[$pointer]['_style'][$columnI] = !(float) $data[$pointer][$columnI] ? 'color: lightgray;' : '';
+                if ($typeA['numeric'][$columnI] && !(float) $data[$pointer][$columnI])
+                    $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
 
                 // Else if color is defined for column
                 else if (null !== ($color = $renderCfg[$columnI]['color'])) {
@@ -934,6 +934,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     } else {
                         $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
                     }
+
+                // Else if column is numeric, value is non-zero but color is not defined
+                } else if ($typeA['numeric'][$columnI] && $data[$pointer][$columnI]) {
+                    $data[$pointer]['_style'][$columnI] = '';
                 }
             }
 
