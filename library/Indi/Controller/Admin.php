@@ -4087,8 +4087,8 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function createContextIfNeed($scope) {
 
-        // Prevent `realtime` entry from being created in case of excel-export
-        if (uri()->format == 'excel') return;
+        // Prevent `realtime` entry from being created in case of excel-export or jumping
+        if (uri()->format == 'excel' || Indi::get()->jump) return;
 
         // Track involved entries
         if ($_ = m('realtime')->row([
