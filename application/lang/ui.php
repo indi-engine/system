@@ -89,6 +89,7 @@ field('section', 'rowsetSeparate')->toggleL10n('qy', $lang, false);
 field('section', 'defaultSortDirection')->toggleL10n('qy', $lang, false);
 field('section', 'multiSelect')->toggleL10n('qy', $lang, false);
 field('section', 'rownumberer')->toggleL10n('qy', $lang, false);
+field('section', 'showID')->toggleL10n('qy', $lang, false);
 field('section2action', 'toggle')->toggleL10n('qy', $lang, false);
 field('section2action', 'south')->toggleL10n('qy', $lang, false);
 field('section2action', 'fitWindow')->toggleL10n('qy', $lang, false);

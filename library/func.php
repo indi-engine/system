@@ -2984,11 +2984,11 @@ function _var_export($ctor, $oneLine = 3) {
     // If $ctor is empty - return 'true'
     if (count($ctor) == 0) return 'true';
 
-    // Collect props having newlines in values
+    // Collect props having newlines in values, and replace null-values with '' (empty string)
     $nl = [];
-    foreach ($ctor as $prop => $value)
-        if (preg_match('~\n~', $value))
-            $nl [] = $prop;
+    foreach ($ctor as $prop => &$value)
+        if (preg_match('~\n~', $value)) $nl [] = $prop;
+        else if ($value === null) $value = '';
 
     // Stringify
     $ctorS = var_export($ctor, true);

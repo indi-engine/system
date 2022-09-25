@@ -546,6 +546,8 @@ enumset('section', 'rownumberer', '1', ['title' => '<span class="i-color-box" st
 enumset('section', 'rowsetSeparate', 'auto', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/inherit.png);"></span>Авто']);
 enumset('section', 'rowsetSeparate', 'no', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/required.png);"></span>В том же запросе']);
 enumset('section', 'rowsetSeparate', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/field/readonly.png);"></span>Отдельным запросом']);
+enumset('section', 'showID', 'n', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет']);
+enumset('section', 'showID', 'y', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/id.png);"></span>Да']);
 enumset('section', 'toggle', 'h', ['title' => '<span class="i-color-box" style="background: lightgray;"></span>Скрыт']);
 enumset('section', 'toggle', 'n', ['title' => '<span class="i-color-box" style="background: red;"></span>Выключен']);
 enumset('section', 'toggle', 'y', ['title' => '<span class="i-color-box" style="background: lime;"></span>Включен']);
@@ -1166,6 +1168,8 @@ field('section', 'rowsetSeparate', ['title' => 'Режим подгрузки'])
 field('section', 'rowsetSeparate', ['tooltip' => '']);
 field('section', 'sectionId', ['title' => 'Вышестоящий раздел']);
 field('section', 'sectionId', ['tooltip' => '']);
+field('section', 'showID', ['title' => 'Показывать ID']);
+field('section', 'showID', ['tooltip' => '']);
 field('section', 'store', ['title' => 'Записи']);
 field('section', 'store', ['tooltip' => '']);
 field('section', 'tileField', ['title' => 'Плитка']);
@@ -2419,6 +2423,10 @@ grid('sections', 'rowsetSeparate', ['rename' => '']);
 grid('sections', 'rowsetSeparate', ['summaryText' => '']);
 grid('sections', 'rowsetSeparate', ['title' => 'Режим подгрузки']);
 grid('sections', 'rowsetSeparate', ['tooltip' => 'Режим подгрузки данных']);
+grid('sections', 'showID', ['rename' => '']);
+grid('sections', 'showID', ['summaryText' => '']);
+grid('sections', 'showID', ['title' => 'Показывать ID']);
+grid('sections', 'showID', ['tooltip' => '']);
 grid('sections', 'store', ['rename' => '']);
 grid('sections', 'store', ['summaryText' => '']);
 grid('sections', 'store', ['title' => 'Записи']);

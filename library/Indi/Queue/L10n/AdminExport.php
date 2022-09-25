@@ -260,6 +260,20 @@ trait Indi_Queue_L10n_AdminExport {
         // Sort lines and re-append first two lines
         sort($php); array_unshift($php, $tag, $ini);
 
+        // Main developer email
+        $email = 'pavel.perminov.23@gmail.com';
+
+        // Reg exp to find main developer title line
+        $rex = "~(admin\('" . preg_quote($email, '~') . "'), \['title' => '.+?'\]\);$~";
+        foreach ($php as $idx => &$line) {
+            if (preg_match($rex, $line, $m)) {
+                $line = 'if (' . $m[1] . ')) ' . $line;
+                $dev = str_replace($email, 'dev', $line);
+                array_splice($php, $idx + 1, 0, $dev);
+                break;
+            }
+        }
+
         // Put back into file
         file_put_contents($l10n_target_abs, join('', $php));
 
