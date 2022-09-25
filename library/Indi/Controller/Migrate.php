@@ -1,5 +1,22 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function idcolAction(){
+        field('section', 'showID', [
+            'title' => 'Show ID column',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'n',
+            'move' => 'groupBy',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('section', 'showID', 'n', ['title' => '<span class="i-color-box" style="background: white;"></span>No', 'move' => '']);
+        enumset('section', 'showID', 'y', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/id.png);"></span>Yes', 'move' => 'n']);
+        grid('sections', 'showID', ['move' => 'tileThumb', 'gridId' => 'display', 'icon' => 'resources/images/icons/id.png']);
+        grid('sections', 'color', ['move' => '']);
+        grid('sections', 'groupBy', ['move' => '']);
+        die('ok');
+    }
     public function rowcolorAction() {
         field('section', 'color', ['title' => 'Цвет', 'elementId' => 'span', 'move' => 'help']);
         field('section', 'colorField', [
