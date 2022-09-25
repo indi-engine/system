@@ -296,7 +296,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
                     // Get the connector value from session special place
                     //if ($this->model->fields($connector))
-                        $this->row->$connector = Indi::parentId(t($i)->section->id);
+                        $this->row->$connector = $i === 1 && isset(uri()->parent)
+                            ? (int) uri()->parent
+                            : Indi::parentId(t($i)->section->id);
                 }
             }
 
@@ -463,13 +465,26 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Basement if base id - include section alias and action alias
         $bid = 'i-section-' . $this->section->alias . '-action-' . $this->action->alias;
 
+        // Get shortcuts
+        $row = $this->row; $prow = $this->parent()->row;
+
         // If current trail item has a row - append it's id
-        if ($this->row)
+        if ($this->row) {
+
+            // Append row id
             $bid .= '-row-' . (int) $this->row->id;
 
+            // If row is is zero - append parent row id
+            if (!$this->row->id) {
+                if ($this->parent()->row) {
+                    $bid .= '-parentrow-' . (int) $this->parent()->row->id;
+                }
+            }
+
         // Else if current trail item doesn't have a row, but parent trail item do - append it's id
-        else if ($this->parent()->row)
+        } else if ($this->parent()->row) {
             $bid .= '-parentrow-' . (int) $this->parent()->row->id;
+        }
 
         // Return base id
         return $bid;
