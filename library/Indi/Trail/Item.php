@@ -256,4 +256,13 @@ class Indi_Trail_Item {
         // If summary definitions given by $_GET['summary'] - return as is
         if ($summary = Indi::get('summary')) return $json ? $summary : json_decode($summary);
     }
+
+    /**
+     * Empty render config, by default
+     *
+     * @return array
+     */
+    public function renderCfg() {
+        return [];
+    }
 }
