@@ -929,7 +929,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Adjust summary if need
                     foreach (ar($scope['sum']) as $sumCol)
                         $byChannel[$channel][$context]['sum'][$sumCol]
-                            = $this->$sumCol;
+                            = $this->$sumCol * 1;
 
                     // If there are at least 1 entry on current page
                     if ($realtimeR->entries) {

@@ -195,7 +195,7 @@ class Indi_Trail_Item {
             foreach (t()->grid as $r) {
 
                 // If editor is turned off - skip
-                if (!$r->editor) continue;
+                if (!$r->editor || $r->editor == 'enumNoCycle') continue;
 
                 // Else if it's underlying field is not an enumset-field - skip
                 if (t()->fields($r->fieldId)->relation != 6) continue;

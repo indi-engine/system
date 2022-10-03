@@ -1,5 +1,12 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function allowcycleAction() {
+        enumset('grid', 'editor', 'enumNoCycle', ['title' => '<span class="i-color-box" style="background: orange;"></span>Выключен, в том числе смена значения из набора по клику', 'move' => '1']);
+        grid('fields', 'storeRelationAbility', ['editor' => 'enumNoCycle']);
+        grid('elementCfgField', 'storeRelationAbility', ['editor' => 'enumNoCycle']);
+        grid('fieldsAll', 'storeRelationAbility', ['editor' => 'enumNoCycle']);
+        die('ok');
+    }
     public function idcolAction(){
         field('section', 'showID', [
             'title' => 'Show ID column',

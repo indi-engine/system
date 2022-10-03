@@ -398,6 +398,7 @@ enumset('grid', 'colorBreak', 'n', ['title' => '<span class="i-color-box" style=
 enumset('grid', 'colorBreak', 'y', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/color-level.png);"></span>Включена']);
 enumset('grid', 'editor', '0', ['title' => '<span class="i-color-box" style="background: lightgray;"></span>Выключен']);
 enumset('grid', 'editor', '1', ['title' => '<span class="i-color-box" style="background: blue;"></span>Включен']);
+enumset('grid', 'editor', 'enumNoCycle', ['title' => '<span class="i-color-box" style="background: orange;"></span>Выключен, в том числе смена значения из набора по клику']);
 enumset('grid', 'group', 'locked', ['title' => 'Зафиксированные']);
 enumset('grid', 'group', 'normal', ['title' => 'Обычные']);
 enumset('grid', 'rowReqIfAffected', 'n', ['title' => '<span class="i-color-box" style="background: lightgray;"></span>Нет']);

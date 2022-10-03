@@ -861,7 +861,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['$keys'][$columnI] = $value;
 
                 // Set _render to be empty if no value
-                if (isset($typeA['foreign']['single'][$columnI]['title']) && !$value)
+                if (isset($typeA['foreign']['single'][$columnI]['title']) && !isset($typeA['enumset'][$columnI]) && !$value)
                     $data[$pointer]['_render'][$columnI] = '';
 
                 // Provide icon overflow feature, so that if a text-column

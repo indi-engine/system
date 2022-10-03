@@ -260,25 +260,47 @@ trait Indi_Queue_L10n_AdminExport {
         // Sort lines and re-append first two lines
         sort($php); array_unshift($php, $tag, $ini);
 
-        // Main developer email
-        $email = 'pavel.perminov.23@gmail.com';
-
-        // Reg exp to find main developer title line
-        $rex = "~(admin\('" . preg_quote($email, '~') . "'), \['title' => '.+?'\]\);$~";
-        foreach ($php as $idx => &$line) {
-            if (preg_match($rex, $line, $m)) {
-                $line = 'if (' . $m[1] . ')) ' . $line;
-                $dev = str_replace($email, 'dev', $line);
-                array_splice($php, $idx + 1, 0, $dev);
-                break;
-            }
-        }
+        // Fix dev-users titles
+        $this->_fixDev($php, 'pavel.perminov.23@gmail.com', 'dev', 1);
+        $this->_fixDev($php, 'dev', 'pavel.perminov.23@gmail.com', 0);
 
         // Put back into file
         file_put_contents($l10n_target_abs, join('', $php));
 
         // Mark stage as 'Finished' and save `queueTask` entry
         $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
+    }
+
+    /**
+     * @param $php
+     * @param $email1
+     * @param $email2
+     * @param $shift
+     */
+    public function _fixDev(&$php, $email1, $email2, $shift) {
+
+        // Reg exp to find $email1-developer title line
+        $rex = "~(admin\('" . preg_quote($email1, '~') . "'), \['title' => '.+?'\]\);$~";
+
+        // Foreach line
+        foreach ($php as $idx => &$line) {
+
+            // If it's $email1-developer line
+            if (preg_match($rex, $line, $m)) {
+
+                // Prepend 'if'
+                $line = 'if (' . $m[1] . ')) ' . $line;
+
+                // Prepare line for $email2-developer
+                $other = str_replace($email1, $email2, $line);
+
+                // Append that line right after original line
+                array_splice($php, $idx + $shift, 0, $other);
+
+                // Stop loop
+                break;
+            }
+        }
     }
 
     /**
