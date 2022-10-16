@@ -1,6 +1,8 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function filterOwnerAction() {
+        field('section2action', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'title']);
+        section('sectionActions', ['rowsetSeparate' => 'no']);
         field('section', 'filterOwner', [
             'title' => 'Владельцам - только свои записи',
             'columnTypeId' => 'ENUM',
@@ -40,7 +42,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'relation' => 'role',
             'storeRelationAbility' => 'many',
         ]);
-        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '']);
+        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => -1]);
         field('section2action', 'view', [
             'title' => 'Вид',
             'elementId' => 'span',
