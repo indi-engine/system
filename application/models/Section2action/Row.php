@@ -32,6 +32,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
      *
      * @param string $certain
      * @return string
+     * @throws Exception
      */
     protected function _ctor($certain = '') {
 
@@ -115,6 +116,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
      *
      * @param string $certain
      * @return string
+     * @throws Exception
      */
     public function export($certain = '') {
 
@@ -179,6 +181,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
 
     /**
      *
+     * @throws Exception
      */
     public function onSave() {
 
@@ -194,6 +197,37 @@ class Section2action_Row extends Indi_Db_Table_Row {
             // Position field for it to be after field, specified by $this->_system['move']
             $this->position($after);
         }
+
+        // If `filterOwner` prop was changed - replicate that on section2action-level
+        if ($this->affected('filterOwner') && !$this->system('replication')) {
+
+            // If `filterOwner` prop was changed to 'certain'
+            if ($this->filterOwner == 'certain') {
+
+                // Set up $filterOwner to be further applied to section-entry
+                $filterOwner = 'certain';
+
+            // Else if `filterOwner` prop was changed to 'no' or 'yes'
+            } else {
+
+                // Get list of distinct values of filterOwner-prop across all actions (including current one) in this section
+                $distinct = db()->query('
+                    SELECT GROUP_CONCAT(DISTINCT `filterOwner`) 
+                    FROM `section2action` 
+                    WHERE `sectionId` = "' . $this->sectionId . '"
+                ')->fetchColumn();
+
+                // If list consists of just one value, use that value else, else use 'certain'
+                $filterOwner = count(ar($distinct)) == 1 ? $distinct : 'certain';
+            }
+
+            // Apply new value of filterOwner-prop for section-record
+            $this
+                ->foreign('sectionId')
+                ->system('replication', true)
+                ->set('filterOwner', $filterOwner)
+                ->save();
+        }
     }
 
     /**
@@ -201,5 +235,24 @@ class Section2action_Row extends Indi_Db_Table_Row {
      */
     public function onDelete() {
         Indi::ws(['type' => 'menu', 'to' => true]);
+    }
+
+    /**
+     * Adjust value of filterOwner-prop in case if filterOwnerRoleIds-prop is changed
+     */
+    public function onBeforeSave() {
+
+        // If roles list in filterOwnerRoleIds-prop was changed from empty to non-empty
+        if ($this->fieldIsUnzeroed('filterOwnerRoleIds')) {
+
+            // Setup filterOwner-prop as 'certain'
+            $this->filterOwner = 'certain';
+
+        // Else if roles list was emptied
+        } else if ($this->fieldIsZeroed('filterOwnerRoleIds')) {
+
+            // Setup filterOwner-prop as 'certain'
+            $this->filterOwner = 'no';
+        }
     }
 }

@@ -1,5 +1,174 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function filterOwnerAction() {
+        field('section', 'filterOwner', [
+            'title' => 'Владельцам - только свои записи',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'no',
+            'move' => 'filter',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('section', 'filterOwner', 'no', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет', 'move' => '']);
+        enumset('section', 'filterOwner', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-red.png);"></span>Да, для всех действий', 'move' => 'no']);
+        enumset('section', 'filterOwner', 'certain', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-blue.png);"></span>Да, для некоторых действий', 'move' => 'yes']);
+        grid('sections', 'filter', ['icon' => 'resources/images/icons/filter-db-blue.png']);
+        grid('sections', 'filterOwner', ['move' => 'filter', 'gridId' => 'data', 'icon' => 'resources/images/icons/filter-key-red.png']);
+
+        grid('actions', 'icon', ['icon' => 'resources/images/icons/icon-image.png']);
+        grid('grid', 'icon', ['icon' => 'resources/images/icons/icon-image.png']);
+
+        field('section2action', 'access', ['title' => 'Доступ', 'elementId' => 'span', 'move' => 'toggle']);
+        field('section2action', 'filterOwner', [
+            'title' => 'Только для владельцев',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'no',
+            'move' => 'roleIds',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('section2action', 'filterOwner', 'no', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет', 'move' => '']);
+        enumset('section2action', 'filterOwner', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-red.png);"></span>Да, для всех ролей', 'move' => 'no']);
+        enumset('section2action', 'filterOwner', 'certain', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-blue.png);"></span>Да, для некоторых ролей', 'move' => 'yes']);
+        field('section2action', 'filterOwnerRoleIds', [
+            'title' => 'Для каких ролей владельцев',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'combo',
+            'move' => 'filterOwner',
+            'relation' => 'role',
+            'storeRelationAbility' => 'many',
+        ]);
+        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '']);
+        field('section2action', 'view', [
+            'title' => 'Вид',
+            'elementId' => 'span',
+            'move' => 'l10n',
+            'mode' => 'hidden',
+        ]);
+        field('section2action', 'win', [
+            'title' => 'Окно',
+            'elementId' => 'span',
+            'move' => 'view',
+            'mode' => 'hidden',
+        ]);
+        field('section2action', 'props', [
+            'title' => 'Свойства',
+            'elementId' => 'span',
+            'move' => 'win',
+            'mode' => 'hidden',
+        ]);
+        field('section2action', 'access', ['title' => 'Доступ', 'elementId' => 'span', 'move' => 'toggle']);
+        field('section2action', 'filterOwner', [
+            'title' => 'Только для владельцев',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'defaultValue' => 'no',
+            'move' => 'roleIds',
+            'relation' => 'enumset',
+            'storeRelationAbility' => 'one',
+        ]);
+        enumset('section2action', 'filterOwner', 'no', ['title' => '<span class="i-color-box" style="background: white;"></span>Нет', 'move' => '']);
+        enumset('section2action', 'filterOwner', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-red.png);"></span>Да, для всех ролей', 'move' => 'no']);
+        enumset('section2action', 'filterOwner', 'certain', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/filter-key-blue.png);"></span>Да, для некоторых ролей', 'move' => 'yes']);
+        field('section2action', 'filterOwnerRoleIds', [
+            'title' => 'Для каких ролей владельцев',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'combo',
+            'move' => 'filterOwner',
+            'relation' => 'role',
+            'storeRelationAbility' => 'many',
+        ]);
+        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '-1']);
+        field('section2action', 'view', [
+            'title' => 'Вид',
+            'elementId' => 'span',
+            'move' => 'l10n',
+            'mode' => 'hidden',
+        ]);
+        field('section2action', 'win', [
+            'title' => 'Окно',
+            'elementId' => 'span',
+            'move' => 'view',
+            'mode' => 'hidden',
+        ]);
+        field('section2action', 'props', [
+            'title' => 'Свойства',
+            'elementId' => 'span',
+            'move' => 'win',
+            'mode' => 'hidden',
+        ]);
+
+        enumset('section2action', 'south', 'auto', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/south-blue.png);"></span>Авто', 'move' => '']);
+        enumset('section2action', 'south', 'yes', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/south-green.png);"></span>Отображать', 'move' => 'auto']);
+        enumset('section2action', 'south', 'no', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/south-red.png);"></span>Не отображать', 'move' => 'yes']);
+        enumset('section2action', 'fitWindow', 'n', ['title' => '<span class="i-color-box" style="background: white;"></span>Выключено', 'move' => '']);
+        enumset('section2action', 'fitWindow', 'y', ['title' => '<span class="i-color-box" style="background: url(resources/images/icons/fit.png);"></span>Включено', 'move' => 'n']);
+
+        // Reorder fields
+        field('section2action', 'sectionId', ['move' => '']);
+        field('section2action', 'actionId', ['move' => 'sectionId']);
+        field('section2action', 'toggle', ['move' => 'actionId']);
+        field('section2action', 'access', ['move' => 'toggle']);
+        field('section2action', 'roleIds', ['move' => 'access']);
+        field('section2action', 'filterOwner', ['move' => 'roleIds']);
+        field('section2action', 'filterOwnerRoleIds', ['move' => 'filterOwner']);
+        field('section2action', 'move', ['move' => 'filterOwnerRoleIds']);
+        field('section2action', 'title', ['move' => 'move']);
+        field('section2action', 'features', ['move' => 'title']);
+        field('section2action', 'rename', ['move' => 'features']);
+        field('section2action', 'south', ['move' => 'rename']);
+        field('section2action', 'fitWindow', ['move' => 'south']);
+        field('section2action', 'l10n', ['move' => 'fitWindow']);
+        field('section2action', 'view', ['move' => 'l10n']);
+        field('section2action', 'win', ['move' => 'view']);
+        field('section2action', 'props', ['move' => 'win']);
+
+        section('sectionActions')->nested('grid')->delete();
+
+        grid('sectionActions', 'actionId', ['move' => '']);
+        grid('sectionActions', 'props', ['move' => 'actionId']);
+        grid('sectionActions', 'toggle', ['move' => '', 'gridId' => 'props', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('sectionActions', 'access', ['move' => 'toggle', 'gridId' => 'props']);
+        grid('sectionActions', 'roleIds', [
+            'move' => '',
+            'gridId' => 'access',
+            'editor' => '1',
+            'jumpSectionId' => 'role',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('sectionActions', 'filterOwner', ['move' => 'roleIds', 'gridId' => 'access', 'icon' => 'resources/images/icons/filter-key-red.png']);
+        grid('sectionActions', 'filterOwnerRoleIds', [
+            'move' => 'filterOwner',
+            'gridId' => 'access',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/square-key-blue.png',
+            'jumpSectionId' => 'role',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('sectionActions', 'features', ['move' => 'props']);
+        grid('sectionActions', 'view', ['move' => '', 'gridId' => 'features']);
+        grid('sectionActions', 'actionId', 'icon', ['move' => '', 'gridId' => 'view', 'icon' => 'resources/images/icons/icon-image.png']);
+        grid('sectionActions', 'rename', [
+            'move' => 'icon',
+            'gridId' => 'view',
+            'editor' => '1',
+            'icon' => 'resources/images/icons/btn-icon-rename.png',
+        ]);
+        grid('sectionActions', 'win', ['move' => 'view', 'gridId' => 'features']);
+        grid('sectionActions', 'fitWindow', ['move' => '', 'gridId' => 'win', 'icon' => 'resources/images/icons/fit.png']);
+        grid('sectionActions', 'south', [
+            'move' => 'fitWindow',
+            'rename' => 'ЮП',
+            'tooltip' => 'Режим отображения южной панели',
+            'gridId' => 'win',
+            'icon' => 'resources/images/icons/south-green.png',
+        ]);
+        grid('sectionActions', 'l10n', ['move' => 'win', 'gridId' => 'features', 'icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('sectionActions', 'move', ['move' => 'features']);
+        die('ok');
+    }
     public function allowcycleAction() {
         enumset('grid', 'editor', 'enumNoCycle', ['title' => '<span class="i-color-box" style="background: orange;"></span>Выключен, в том числе смена значения из набора по клику', 'move' => '1']);
         grid('fields', 'storeRelationAbility', ['editor' => 'enumNoCycle']);

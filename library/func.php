@@ -531,7 +531,7 @@ function ldate($format, $date = '', $when = '') {
         $formatted = strftime($format, strtotime($date));
 
         // Return
-        return mb_strtolower($_SERVER['WINDIR'] ? iconv('windows-1251', 'UTF-8', $formatted) : $formatted, 'utf-8');
+        return mb_strtolower($formatted, 'utf-8');
 
     // Else
     } else {

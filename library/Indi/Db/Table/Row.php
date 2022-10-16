@@ -4471,10 +4471,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @return mixed
      */
     public function system() {
+        if (func_num_args() >= 1) $prop  = func_get_arg(0);
+        if (func_num_args() == 2) $value = func_get_arg(1);
+
+
         if (func_num_args() == 0) return $this->_system;
         else if (func_num_args() == 1) return $this->_system[func_get_arg(0)];
-        else if (func_get_arg(1) === null) unset($this->_system[func_get_arg(0)]);
-        else return $this->_system[func_get_arg(0)] = func_get_arg(1);
+        else {
+            if (func_get_arg(1) === null) unset($this->_system[func_get_arg(0)]);
+            else $this->_system[func_get_arg(0)] = func_get_arg(1);
+            return $this;
+        }
     }
 
     /**
@@ -7108,7 +7115,16 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @return int
      */
     public function level() {
-        $level = 0; $up = $this; while ($up = $up->parent()) $level ++; return $level;
+        $level = 0; $up = $this;
+
+        // Get level
+        while ($up = $up->parent()) $level ++;
+
+        // Assign into system prop
+        $this->system('level', $level);
+
+        // Return
+        return $this->system('level');
     }
 
     /**

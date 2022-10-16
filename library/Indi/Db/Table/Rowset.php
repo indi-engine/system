@@ -911,6 +911,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     }
                 }
 
+                // Provide icon overflow feature for columns representing multiple foreign key fields
+                if ($_ = $renderCfg[$columnI]['icon'])
+                    if ($typeA['foreign']['multiple'][$columnI] && !$typeA['enumset'][$columnI])
+                        $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI], '<img src="' . $_ . '" class="i-cell-img">$1');
+
                 // If column is numeric and value is 0 - apply lightgray color
                 if ($typeA['numeric'][$columnI] && !(float) $data[$pointer][$columnI])
                     $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
@@ -953,7 +958,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Implement indents if need
             if ($data[$pointer][$_ = $titleProp ?: 'title'] && $treeColumn)
-                if ($r->system('level') !== null || $r->system('level', $r->level()))
+                if ($r->system('level') !== null || $r->level())
                     $data[$pointer]['_render'][$_]
                         = str_repeat('&nbsp;', 5 * $r->system('level')) . $data[$pointer][$_];
 
@@ -1920,6 +1925,23 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Return rowset itself
         return $this->assign($assign);
+    }
+
+    /**
+     * Set system $prop for each row in this rowset
+     * If $value arg is given as null, $prop will be unset from system props
+     *
+     * @param $prop
+     * @param $value
+     * @return $this
+     */
+    public function system($prop, $value) {
+
+        // Set system prop for each row in this rowset
+        foreach ($this as $row) $row->system($prop, $value);
+
+        // Return rowset itself
+        return $this;
     }
 
     /**

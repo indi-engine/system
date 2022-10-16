@@ -222,7 +222,6 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     // Prepend an additional part to WHERE clause array, so if row would be found,
                     // it will mean that that row match all necessary requirements
                     array_unshift($where, db()->sql('`id` = :s', uri('id')));
-                    //i($where, 'a');
 
                     // Try to find a row by given id, that, hovewer, also match all requirements,
                     // mentioned in all other WHERE clause parts
@@ -321,7 +320,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             // Get the id
             $id = t($index-1)->action->selectionRequired == 'n' && $index == 1
                 ? uri('id')
-                : (preg_match('/,/', t($index-1)->row->$connector) // ambiguous check
+                : (preg_match('~,~', t($index-1)->row->$connector) // ambiguous check
                     ? Indi::parentId($this->section->id)
                     : t($index-1)->row->$connector);
 

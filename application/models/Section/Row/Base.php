@@ -227,6 +227,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
     /**
      *
+     * @throws Exception
      */
     public function onSave() {
 
@@ -239,6 +240,23 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             // Position field for it to be after field, specified by $this->_system['move']
             $this->position($after);
         }
+
+        // If `filterOwner` prop was changed to 'no' or 'yes' - replicate that on section2action-level
+        if ($this->affected('filterOwner')
+            && $this->filterOwner != 'certain'
+            && !$this->system('replication')) $this
+
+            // Get nested section2action-entries
+            ->nested('section2action')
+
+            // Setup system replication flags to prevent endless loops
+            ->system('replication', true)
+
+            // Spread new value of filterOwner-prop
+            ->set('filterOwner', $this->filterOwner)
+
+            // Save
+            ->save();
 
         // Send signal for menu to be reloaded
         Indi::ws(['type' => 'menu', 'to' => true]);
