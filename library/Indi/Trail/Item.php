@@ -136,6 +136,9 @@ class Indi_Trail_Item {
         if ($this->row) {
             $array['row'] = $this->row->toArray('current', true, $this->action->alias);
             $array['row']['_system']['title'] = $this->row->title();
+            if ($ownerField = $this->scope->filterOwner) {
+                $array['row']['_system']['owner'] = in(admin()->id, $array['row'][$ownerField]);
+            }
 
             // Append original values for fields that are modified by calendar space pre-selection
             $space = m()->space();

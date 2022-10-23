@@ -831,7 +831,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Setup $filterOwner flag based on action's filterOwner-prop
             $filterOwner = $this->action->filterOwner == 'yes' || (
-                $this->action->filterOwner == 'certain' && in($owner->roleId, $this->action->filterOwnerRoleIds)
+                $this->action->filterOwner == 'certain' && in($owner->role, $this->action->filterOwnerRoles)
             );
 
         // Else if $level is section
