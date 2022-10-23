@@ -1001,6 +1001,9 @@ class Indi {
                 $adminR->roleId = $adminR->foreign('roleId')->id;
             }
 
+            // Setup role alias to be directly accessible
+            $adminR->role = $adminR->foreign('roleId')->alias;
+
             // Push $obj object in registry under 'uri' key
             Indi::store('admin', $adminR);
         }

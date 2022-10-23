@@ -121,8 +121,17 @@ function jerror($errno, $errstr, $errfile, $errline) {
  */
 function d($value) {
 
+    // If it's a bool value
+    if (is_bool($value)) {
+
+        // Use var_dump() to produce 'bool(true)' or 'bool(false)' instead of '1' or '' (empty string), respectively
+        ob_start(); var_dump($value); $out = ob_get_clean();
+
+    // Else use print_r()
+    } else $out = print_r($value, true);
+
     // Wrap the $value with the '<pre>' tag, and write it to the output
-    echo '<pre>'; print_r($value); echo '</pre>';
+    echo '<pre>' . $out . '</pre>';
 }
 
 /**
@@ -176,8 +185,17 @@ function i($value, $type = 'w', $file = 'debug.txt') {
     // Else
     } else {
 
+        // If it's a bool value - use var_dump() to produce 'bool(true)' or 'bool(false)' instead of '1' or '' (empty string), respectively
+        if (is_bool($value)) {
+            ob_start(); var_dump($value); $out = ob_get_clean();
+
+        // Else use print_r()
+        } else {
+            $out = print_r($value, true);
+        }
+
         // Write the data
-        $fp = fopen($abs, $type); fwrite($fp, print_r($value, true) . "\n"); fclose($fp);
+        $fp = fopen($abs, $type); fwrite($fp, $out . "\n"); fclose($fp);
     }
 }
 
@@ -1526,7 +1544,7 @@ function _2sec($expr) {
 /**
  * Shortcut for accessing Indi::trail()
  *
- * @return Indi_Trail_Admin/Indi_Trail_Front
+ * @return Indi_Trail_Admin|Indi_Trail_Front|Indi_Trail_Item
  */
 function t() {
     return forward_static_call_array(['Indi', 'trail'], func_get_args());

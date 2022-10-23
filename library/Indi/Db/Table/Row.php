@@ -751,18 +751,27 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
                     // Get aliases of affected fields involved by context
-                    $dataColumns = []; $renderCfg = [];
+                    $dataColumns = []; $renderCfg = ['_system' => []];
                     foreach ($fieldIds as $fieldId)
                         if ($field = $this->field($fieldId)->alias) {
                             $dataColumns[] = $field;
                             if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
                             if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
                             if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
-                            if ($field == $scope->colorField) $renderCfg['_system'] = [
+                            if ($field == $scope->colorField) $renderCfg['_system'] += [
                                 'colorField' => $scope->colorField,
                                 'colorFurther' => $scope->colorFurther
                             ];
                         }
+
+                    // If scope's filterOwner is non-false
+                    if ($scope->filterOwner) {
+                        $renderCfg['_system']['owner'] = [
+                            'field' => $scope->filterOwner,
+                            'role' => $realtimeR->roleId,
+                            'id' => $realtimeR->adminId,
+                        ];
+                    }
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
                     $data = [$this->toGridData($dataColumns, $renderCfg)];
@@ -1924,14 +1933,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $keyword = $selectedR->{trim($orderColumn ?: $order, '`')};
         }
 
-        // Alternate WHERE
-        if (admin()->alternate && !$fieldR->ignoreAlternate && !$fieldR->params['ignoreAlternate']
-            && ($af = admin()->alternate($relatedM->table()))
-            && ($alternateField = $relatedM->fields($af))
-            && !array_key_exists('consider:' . $af, $where))
-            $where['alternate'] = $alternateField->storeRelationAbility == 'many'
-                ? 'FIND_IN_SET("' . admin()->id . '", `' . $alternateField->alias . '`)'
-                : '`' . $alternateField->alias . '` = "' . admin()->id .'"';
+        // Owner WHERE
+        if (admin()->table() != 'admin' && !$fieldR->ignoreAlternate && !$fieldR->params['ignoreAlternate']
+            && ($ownerField = $relatedM->ownerField(admin()))
+            && !array_key_exists('consider:' . $ownerField->alias, $where))
+            $where['owner'] = $relatedM->ownerWHERE(admin());
 
         // If related entity has tree-structure
         if ($relatedM->treeColumn()) {
@@ -5257,7 +5263,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
             if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
-            $storageR->changerType = m(admin()->alternate ? admin()->alternate : 'Admin')->id();
+            $storageR->changerType = admin()->model()->id();
             $storageR->roleId = admin()->roleId ?: 0;
             $storageR->changerId = admin()->id ?: 0;
             $storageR->save();
@@ -6821,25 +6827,10 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
-     * Adjust alternate-connector column name
-     * Function can be overridden in child classes
-     *
-     * @param string $table
-     * @return string
-     */
-    public function alternate($table) {
-
-        // If current instance is not an account having some role - return
-        if (!$this->model()->hasRole()) return;
-
-        // Build connector name
-        return $this->alternate . 'Id';
-    }
-
-    /**
      * Get parent entry
      *
      * @return Indi_Db_Table_Row|Indi_Db_Table_Rowset|null
+     * @throws Exception
      */
     public function parent() {
 
@@ -6853,6 +6844,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     /**
      * @param string $level DEFAULT 'model'
      * @return mixed
+     * @throws Exception
      */
     public function compileDefaults($level = 'model') {
 
@@ -7312,6 +7304,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * where hue is a number below 360
      *
      * @param $field
+     * @return string|string[]|null
      */
     public function rgb($field) {
         return preg_replace('~^[0-9]{3}~', '', $this->$field);

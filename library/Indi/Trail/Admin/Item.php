@@ -11,6 +11,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      *
      * @param $sectionR
      * @param $level
+     * @throws Exception
      */
     public function __construct($sectionR, $level) {
 
@@ -37,6 +38,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $actionI['id'] = $section2actionR->id;
             $actionI['south'] = $section2actionR->south;
             $actionI['fitWindow'] = $section2actionR->fitWindow;
+            $actionI['filterOwner'] = $section2actionR->filterOwner;
+            $actionI['filterOwnerRoles'] = $section2actionR->filterOwnerRoleIds
+                ? $section2actionR->foreign('filterOwnerRoleIds')->col('alias', ',')
+                : '';
             $actionI['indi'] = ['ui' => 'section2action', 'id' => $section2actionR->id];
             $actionI['l10n'] = $section2actionR->l10n;
             $actionR = m('Action')->new($actionI);
@@ -147,6 +152,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      *
      * @param null $sectionR
      * @return Indi_Db_Table_Rowset|null
+     * @throws Exception
      */
     public function gridFields($sectionR = null) {
 
@@ -204,6 +210,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      *
      * @param $index
      * @return string
+     * @throws Exception
      */
     public function row($index){
 
@@ -274,10 +281,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     }
 
                 // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-                if (admin()->alternate && in($aid = admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
+                if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
 
                     // Force setup of that field value as id of current cms user
-                    $this->row->$aid = admin()->id;
+                    $this->row->$ownerColumn = admin()->id;
 
                 // Setup several properties within the empty row, e.g if we are trying to create a 'City' row, and
                 // a moment ago we were browsing cities list within Canada - we should autosetup a proper `countryId`
@@ -332,8 +339,8 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $where[] = t($index)->section->compiled('filter');
 
             // Owner control
-            if ($alternateWHERE = Indi_Trail_Admin::$controller->alternateWHERE($index))
-                $where[] =  $alternateWHERE;
+            if ($ownerWHERE = Indi_Trail_Admin::$controller->ownerWHERE($index))
+                $where[] =  $ownerWHERE;
 
             // Try to find a row by given id, that, hovewer, also match all requirements,
             // mentioned in all other WHERE clause parts
@@ -699,6 +706,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      * Get render config
      *
      * @return array
+     * @throws Exception
      */
     public function renderCfg() {
 
@@ -715,7 +723,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         foreach (ar('colorField,colorFurther') as $prop)
             if (t()->section->$prop)
                 $renderCfg['_system'][$prop] = t()->section->foreign($prop)->alias; 
-        
+
+        // If scope's filterOwner is non-false
+        if ($this->scope->filterOwner) {
+            $renderCfg['_system']['owner'] = [
+                'field' => $this->scope->filterOwner,
+                'role' => admin()->roleId,
+                'id' => admin()->id,
+            ];
+        }
+
         // Return render config
         return $renderCfg ?? [];
     }
@@ -793,5 +810,41 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Return columns colors
         return $colorA ?? [];
+    }
+
+    /**
+     * Check whether owner-access restriction should be applied.
+     * If no - boolean false will be returned.
+     * If yes, but no owner-column applicable for current user does not exist in current model - null will be returned
+     * If yes, and owner-column applicable for current user does exist - column name will be returned
+     * If yes, but 2 fields are intended for owner ('ownerRole' and 'ownerId') - null will be returned as well
+     *
+     * @return bool|string
+     */
+    public function filterOwner($level) {
+
+        // Owner shortcut
+        $owner = admin();
+
+        // If $level is action
+        if ($level == 'action') {
+
+            // Setup $filterOwner flag based on action's filterOwner-prop
+            $filterOwner = $this->action->filterOwner == 'yes' || (
+                $this->action->filterOwner == 'certain' && in($owner->roleId, $this->action->filterOwnerRoleIds)
+            );
+
+        // Else if $level is section
+        } else if ($level == 'section') {
+
+            // Setup $filterOwner flag based on section's filterOwner-prop
+            $filterOwner = in($this->section->filterOwner, 'yes,certain');
+        }
+
+        // If $filterOwner flag is true, so 'Owner only'-restriction should be applied
+        // return name of field (if exists), responsible for storing ownerId for a record
+        return $filterOwner
+            ? $this->model->ownerField($owner)->alias
+            : false;
     }
 }

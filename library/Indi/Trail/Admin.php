@@ -23,10 +23,21 @@ class Indi_Trail_Admin {
     public static $controller = null;
 
     /**
+     * @var Section_Row_Base
+     */
+    public $section;
+
+    /**
+     * @var Action_Row
+     */
+    public $action;
+
+    /**
      * Constructor
      *
      * @param array $routeA Array of section ids, starting from current section and up to the top
      * @param Indi_Controller_Admin $controller
+     * @throws Exception
      */
     public function __construct($routeA, Indi_Controller_Admin &$controller) {
 

@@ -244,7 +244,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'color' => t()->scope->color,
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
-                            )->column('alias', ',')
+                            )->column('alias', ','),
+                            'filterOwner' => t()->filterOwner('section')
                         ];
 
                         // Backward compatibility
@@ -678,7 +679,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // So we can create a 'Questions' section within cms, and if `question` table will contain `expertId` column
         // (it will contain - we will create it for that purpose) - the only questions, addressed to curently logged-in
         // expert will be available for view and answer.
-        if ($alternateWHERE = $this->alternateWHERE()) $where['alternate'] =  $alternateWHERE;
+        if ($ownerWHERE = $this->ownerWHERE()) $where['owner'] =  $ownerWHERE;
 
         // Adjust primary WHERE clauses stack - apply some custom adjustments
         $where = $this->adjustPrimaryWHERE($where);
@@ -704,25 +705,21 @@ class Indi_Controller_Admin extends Indi_Controller {
      * Get part of WHERE clause, that provide owner control access restriction
      *
      * @param int $trailStepsUp
-     * @return string
+     * @return string|null
      */
-    public function alternateWHERE($trailStepsUp = 0) {
+    public function ownerWHERE($trailStepsUp = 0) {
 
-        // If current admin is not alternate - return
-        if (!admin()->alternate) return;
+        // Shortcuts
+        $owner  = admin();
+        $model  = t($trailStepsUp)->model;
 
-        // Get alternate-connector
-        $af = admin()->alternate(t($trailStepsUp)->model->table());
+        // If no restriction should be applied - return false
+        if (t($trailStepsUp)->filterOwner('action') === false) return false;
 
-        // If one of model's fields relates to alternate
-        if ($alternateFieldR = t($trailStepsUp)->model->fields($af))
-            return $alternateFieldR->original('storeRelationAbility') == 'many'
-                ? 'FIND_IN_SET("' . admin()->id . '", `' . $af . '`)'
-                : '`' . $af . '` = "' . admin()->id . '"';
-
-        // Else if model itself is the same as alternate
-        else if (t($trailStepsUp)->model->table() == admin()->alternate)
-            return '`id` = "' . admin()->id . '"';
+        // If model itself is the same as alternate - just use id-col clause, else call ownerWHERE() on model level
+        return $model->table() == $owner->table()
+            ? sprintf('`id` = "%s"', $owner->id)
+            : $model->ownerWHERE($owner);
     }
 
     /**
@@ -2946,14 +2943,6 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (!strlen($fieldR->defaultValue) || $this->row->id || $this->row->isModified($fieldR->alias)) unset($data[$fieldR->alias]);
                 else if (strlen($cmp = $fieldR->compiled('defaultValue'))) $data[$fieldR->alias] = $cmp;
 
-        // If current cms user is an alternate, and if there is corresponding field within current entity structure
-        if ($this->alternateWHERE() && admin()->alternate
-            && in($aid = admin()->alternate . 'Id', $possibleA) && !$this->allowOtherAlternateForSave())
-
-            // Prevent alternate field to be set via POST, as it was already (properly)
-            // set at the stage of trail item row initialization
-            unset($data[$aid]);
-
         // Update current row properties with values from $data array
         $this->row->set($data);
 
@@ -3585,10 +3574,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                     return;
 
             // Else if belonging mode is represented by 'alternate' concept, and current system user is an alternate
-            } else if (admin()->alternate && m()->fields($af = admin()->alternate(m()->table()))) {
+            } else if (admin()->table() != 'admin' && $ownerColumn = m()->ownerField(admin())->alias) {
 
                 // If current entry does not belongto current system user - return
-                if (in(admin()->id, $this->row->$af)) return;
+                if (in(admin()->id, $this->row->$ownerColumn)) return;
             
             // Else if there is no any kind of belonging
             } else return;
@@ -4015,13 +4004,6 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function adjustRowsetAccess() {
 
-    }
-    
-    /**
-     *
-     */
-    public function allowOtherAlternateForSave() {
-        return false;
     }
 
     /**

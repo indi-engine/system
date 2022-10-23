@@ -75,6 +75,7 @@ class Indi_Trail_Item {
      *
      * @param $start
      * @return null
+     * @throws Exception
      */
     public function filtersSharedRow($start) {
 
@@ -89,10 +90,10 @@ class Indi_Trail_Item {
             if ($prop != 'id') $this->filtersSharedRow->zero($prop, true);
 
         // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-        if (admin()->alternate && in($aid = admin()->alternate . 'Id', $this->model->fields(null, 'columns')))
+        if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
 
             // Force setup of that field value as id of current cms user, within filters shared row
-            $this->filtersSharedRow->$aid = admin()->id;
+            $this->filtersSharedRow->$ownerColumn = admin()->id;
 
         // Setup several temporary properties within the existing row, as these may be involved in the
         // process of parent trail items rows retrieving
@@ -264,5 +265,12 @@ class Indi_Trail_Item {
      */
     public function renderCfg() {
         return [];
+    }
+
+    /**
+     * No filtering by owner applied, by default
+     */
+    public function filterOwner($level) {
+        return false;
     }
 }

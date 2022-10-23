@@ -956,6 +956,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField))
                     $data[$pointer]['_system']['style'] = 'color: ' . $color . ';';
 
+            // Setup _system owner flag
+            if ($owner = $renderCfg['_system']['owner']) {
+                $data[$pointer]['_system']['owner'] = in($owner['id'], $r->{$owner['field']});
+            }
+
             // Implement indents if need
             if ($data[$pointer][$_ = $titleProp ?: 'title'] && $treeColumn)
                 if ($r->system('level') !== null || $r->level())

@@ -1916,4 +1916,58 @@ class Indi_Db_Table
     public function inQtySum() {
         return $this->_inQtySum;
     }
+
+    /**
+     * Get instance of field, that can be used to check ownership by given $owner
+     *
+     * @param Indi_Db_Table_Row $owner
+     * @return Field_Row|null
+     */
+    public function ownerField(Indi_Db_Table_Row $owner) {
+
+        // Get owner field alias
+        $ownerColumn = $this->ownerColumn($owner);
+
+        // Get owner field instance
+        return $this->fields($ownerColumn);
+    }
+
+    /**
+     * Get column name, that can be used to check ownership by given $owner
+     * NOTE: this column may not really exist
+     *
+     * @param Indi_Db_Table_Row $owner
+     * @return string
+     */
+    public function ownerColumn($owner) {
+        return $owner->table() . 'Id';
+    }
+
+    /**
+     * Build WHERE clause so that records that are owned by given $owner are fetched
+     *
+     * @param Indi_Db_Table_Row $owner
+     * @return string
+     */
+    public function ownerWHERE(Indi_Db_Table_Row $owner) {
+
+        // If model have both ownerRole and ownerId columns
+        if ($this->fields('ownerRole,ownerId')->count() == 2) {
+
+            // Use clause based on two columns
+            return sprintf('`ownerRole` = "%s" AND `ownerId` = "%s"', $owner->roleId, $owner->id);
+
+        // Else if one of model's fields points to owner
+        } else if ($ownerField = $this->ownerField($owner)) {
+
+            // Here we use original value of field's storeRelationAbility prop
+            // due to that value can be temporarily changed in certain circumstances
+            $ownerWHERE = $ownerField->original('storeRelationAbility') == 'many'
+                ? 'FIND_IN_SET("%s", `%s`)'
+                : '"%s" = `%s`';
+
+            // Fill with params
+            return sprintf($ownerWHERE, $owner->id, $ownerField->alias);
+        }
+    }
 }
