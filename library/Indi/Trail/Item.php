@@ -90,7 +90,7 @@ class Indi_Trail_Item {
             if ($prop != 'id') $this->filtersSharedRow->zero($prop, true);
 
         // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-        if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
+        if (admin() && admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
 
             // Force setup of that field value as id of current cms user, within filters shared row
             $this->filtersSharedRow->$ownerColumn = admin()->id;
