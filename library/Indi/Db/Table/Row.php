@@ -5263,7 +5263,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
             if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
-            $storageR->changerType = admin()->model()->id();
+            $storageR->changerType = admin() ? admin()->model()->id() : 0;
             $storageR->roleId = admin()->roleId ?: 0;
             $storageR->changerId = admin()->id ?: 0;
             $storageR->save();
