@@ -7124,9 +7124,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param $prop
      * @param $lang
+     * @param $value
      * @return array|mixed
      */
-    public function language($prop = null, $lang = null) {
+    public function language($prop = null, $lang = null, $value = null) {
 
         // If no args given - return $this->_language
         if (func_num_args() == 0) return $this->_language;
@@ -7136,6 +7137,16 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If $prop and $lang args given - return certain translation for certain prop
         if (func_num_args() == 2) return $this->_language[$prop][$lang];
+
+        // If $prop, $lang and $value args given
+        if (func_num_args() == 3) {
+
+            // Set certain translation for certain prop
+            $this->_language[$prop][$lang] = $value;
+
+            // Return
+            return $this;
+        }
     }
 
     /**

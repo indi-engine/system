@@ -192,6 +192,7 @@ class Indi_View_Helper_Admin_FormCombo {
             ];
 
             if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
+            if ($options[$key]['system']['cssStyle']) $selected['cssStyle'] = $options[$key]['system']['cssStyle'];
 
             // Setup css color property for input, if original title of selected value contained a color definition
             if ($options[$selected['value']]['system']['color'])
@@ -323,24 +324,25 @@ class Indi_View_Helper_Admin_FormCombo {
         ($t = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', $option['title'], $color)) ||
         ($s = preg_match('/color[:=][ ]*[\'"]{0,1}([#a-zA-Z0-9]+)/i', $option['title'], $color)) ||
         ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: ([#0-9a-zA-Z]{3,20});[^"]*"[^>]*>/', $option['title'], $color)) ||
-        ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\(.*\).*?);[^"]*"[^>]*>/', $option['title'], $color));
+        ($i = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\((.*)\).*?);[^"]*"[^>]*>/', $option['title'], $color));
 
         // If color was detected somewhere
-        if ($v || $t || $s || $b || $option['boxColor']) {
+        if ($v || $t || $s || $b || $i || $option['boxColor'] || $option['textColor'] || $option['boxIcon']) {
 
             // Setup color
-            $option['color'] = $color[1] ? $color[1] : $option['boxColor'];
+            $option['color'] = $color[1] ? $color[1] : ($option['textColor'] ?: $option['boxColor']);
 
             // If color was detected in 'title' property, and found as 'color' or 'background' css property
             // - strip tags from title
-            if ($s || $b) $option['title'] = strip_tags($option['title']);
+            if ($s || $b || $i) $option['title'] = strip_tags($option['title']);
 
             // If color was detected in 'title' property as 'color' css property
-            if ($s) {
+            if ($s || $option['textColor']) {
 
                 // If there is no 'style' property within $option variable -
                 // set it as 'color' and 'font' css properties specification
                 if (!$option['style']) $option['style'] = ' style="color: ' . $option['color'] . '; ' . $option['font'] . '"';
+                if (!$option['textColor']) $option['textColor'] = $option['color'];
 
             // Else if color was not detected in 'title' property as 'color' css property - we assume that color should
             // be represented as a color-box
@@ -349,8 +351,16 @@ class Indi_View_Helper_Admin_FormCombo {
                 // If color was detected in 'value' property of $option variable - set 'input' property as a purified color
                 if ($t) $option['input'] = $option['color'];
 
+                // Setup style values
+                if ($option['boxIcon']) $option['color'] = 'url(' . $option['boxIcon'] . ');';
+                if ($i && !$option['boxIcon']) $option['boxIcon'] = $color[2];
+                if ($b && !$option['boxColor']) $option['boxColor'] = $color[1];
+
                 // Setup color box
-                $option['box'] = '<span class="i-combo-color-box" style="background: ' . $option['color'] . ';"></span>';
+                $option['box'] = sprintf('<span class="i-combo-color-box" style="background: %s;%s"></span>',
+                    $option['color'],
+                    rif($option['cssStyle'], ' $1')
+                );
             }
         }
 

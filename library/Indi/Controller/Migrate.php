@@ -1,5 +1,108 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function enumsetStyleAction() {
+        field('enumset', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'move']);
+        field('enumset', 'boxIcon', [
+            'title' => 'Иконка',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'icon',
+            'move' => 'features',
+        ]);
+        field('enumset', 'boxColor', [
+            'title' => 'Цвет бокса',
+            'columnTypeId' => 'VARCHAR(10)',
+            'elementId' => 'color',
+            'move' => 'boxIcon',
+        ]);
+        field('enumset', 'textColor', [
+            'title' => 'Цвет текста',
+            'columnTypeId' => 'VARCHAR(10)',
+            'elementId' => 'color',
+            'move' => 'boxColor',
+        ]);
+        field('enumset', 'cssStyle', [
+            'title' => 'CSS стили',
+            'columnTypeId' => 'VARCHAR(255)',
+            'elementId' => 'string',
+            'move' => 'textColor',
+        ]);
+        section('enumset', ['multiSelect' => '1'])->nested('grid')->delete();
+        grid('enumset', 'title', ['move' => '']);
+        grid('enumset', 'alias', ['move' => 'title']);
+        grid('enumset', 'features', ['move' => 'alias']);
+        grid('enumset', 'boxIcon', [
+            'move' => '',
+            'gridId' => 'features',
+            'editor' => 1,
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/icon-image.png',
+        ]);
+        grid('enumset', 'boxColor', [
+            'move' => 'boxIcon',
+            'gridId' => 'features',
+            'editor' => 1,
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/box-color.png',
+        ]);
+        grid('enumset', 'textColor', [
+            'move' => 'boxColor',
+            'gridId' => 'features',
+            'editor' => 1,
+            'rowReqIfAffected' => 'y',
+            'icon' => 'resources/images/icons/color-text.svg',
+        ]);
+        grid('enumset', 'move', ['move' => 'features']);
+        $fieldIdA = db()->query('SELECT DISTINCT `fieldId` FROM `enumset` WHERE `title` LIKE "%<%"')->fetchAll(PDO::FETCH_COLUMN);
+        d('fields having styled enumset ' . count($fieldIdA));
+        d($fieldIdA);
+        foreach (m('field')->all('`id` IN (' . im($fieldIdA ?: [0]) . ')') as $f) {
+            $enumsetRs = m('enumset')->all('fieldId = "' . $f->id . '"');
+            if ($f->l10n == 'y') {
+                foreach ($enumsetRs as $enumsetR) {
+                    $option = Indi_View_Helper_Admin_FormCombo::detectColor(['title' => $enumsetR->title]);
+                    unset($option['box'], $option['color'], $option['style']);
+                    d($option);
+                    foreach ($enumsetR->language('title') ?: [] as $lang => $title) {
+                        $enumsetR->language('title', $lang, strip_tags($title));
+                    }
+                    if ($option['boxColor'] == 'transparent') $option['boxColor'] = 'white';
+                    $enumsetR->set($option)->save();
+
+                    //db()->query('UPDATE `enumset` SET `tooltip` = \'{"ru":"","en":""}\' WHERE `id` = "' . $enumsetR->id . '"');
+                }
+
+            } else {
+                foreach ($enumsetRs as $enumsetR) {
+                    $option = Indi_View_Helper_Admin_FormCombo::detectColor(['title' => $enumsetR->title]);
+                    unset($option['box'], $option['color'], $option['style']);
+                    d($option);
+                    $enumsetR->set($option)->save();
+                }
+            }
+        }
+        enumset('field', 'l10n', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('field', 'l10n', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('grid', 'toggle', 'e', ['cssStyle' => 'border: 1px solid blue;']);
+        enumset('lang', 'adminCustomConst', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminCustomConst', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('lang', 'adminCustomData', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminCustomData', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('lang', 'adminCustomTmpl', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminCustomTmpl', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('lang', 'adminCustomUi', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminCustomUi', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('lang', 'adminSystemConst', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminSystemConst', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('lang', 'adminSystemUi', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('lang', 'adminSystemUi', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('section2action', 'l10n', 'qn', ['cssStyle' => 'border: 3px solid lightgray;']);
+        enumset('section2action', 'l10n', 'qy', ['cssStyle' => 'border: 3px solid blue;']);
+        enumset('section', 'defaultSortDirection', 'ASC', ['cssStyle' => 'background-position: -5px -1px;']);
+        enumset('section', 'defaultSortDirection', 'DESC', ['cssStyle' => 'background-position: -5px -1px;']);
+        enumset('section', 'disableAdd', '0', ['cssStyle' => 'background: transparent;']);
+        enumset('section', 'rownumberer', '0', ['cssStyle' => 'background: transparent;']);
+        die('ok');
+    }
     public function filterOwnerAction() {
         field('section2action', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'title']);
         section('sectionActions', ['rowsetSeparate' => 'no']);

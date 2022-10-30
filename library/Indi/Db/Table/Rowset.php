@@ -639,9 +639,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $typeA['further'][$gridFieldR->alias] = true;
             }
 
+            // Collect enumset-fields
+            if ($gridFieldR->rel() && $gridFieldR->rel()->table() == 'enumset')
+                $typeA['enumset'][$gridFieldR->alias] = true;
+
             // Foreign keys (single and multiple)
             if ($gridFieldR->original('storeRelationAbility') == 'one') {
-                $typeA['enumset'][$gridFieldR->alias] = $gridFieldR->rel() && $gridFieldR->rel()->table() == 'enumset';
                 $typeA['foreign']['single'][$gridFieldR->alias]['title'] = $gridFieldR->relation
                     ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
                     : true;
@@ -816,8 +819,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Render data for a column linked to icon-field
                 if (isset($typeA['icon'][$columnI]))
-                    if ($value) $data[$pointer]['_render'][$columnI]
-                        = '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>';
+                    $data[$pointer]['_render'][$columnI] = $value
+                        ? '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>'
+                        : '';
 
                 // Render data for a column linked to color-field
                 if (isset($typeA['color'][$columnI])) {
@@ -848,6 +852,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         } else {
                             $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
                         }
+                    } else if ($typeA['enumset'][$columnI]) {
+                        $data[$pointer]['_render'][$columnI] = $entry->foreign($further ?: $columnI)->styled();
                     }
                 }
 
@@ -1630,6 +1636,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @param array $params
      * @param bool $ignoreTemplate
      * @return array
+     * @throws Exception
      */
     public function toComboData($params = [], $ignoreTemplate = false) {
 
@@ -1668,6 +1675,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Set group identifier for an option
             if ($by) $system = array_merge($system, ['group' => $o->$by]);
 
+            //
+            if ($this->_table == 'enumset') $system += ['cssStyle' => $o->cssStyle];
+
             // If title column's field is a foreign-key field - use it to obtain the actual title
             $title = $foreign ? $o->foreign($foreign)->$column : $o->{$this->titleColumn};
 
@@ -1675,7 +1685,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // <span style="color: red">Some option title</span> or <font color=lime>Some option title</font>, etc.
             // We should do that because such tags existance may cause a dom errors while performing usubstr()
             $info = Indi_View_Helper_Admin_FormCombo::detectColor([
-                'title' => $title, 'value' => $o->$keyProperty
+                'title' => $title, 'value' => $o->$keyProperty,
+                'textColor' => $o->rgb('textColor'),
+                'boxColor'  => $o->rgb('boxColor'),
+                'boxIcon'   => $o->boxIcon,
             ]);
 
             // If color was detected as a box, append $system['boxColor'] property
@@ -1683,6 +1696,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Else color is defined via colorField - pick color from there
             else if ($params['colorField']) $system['color'] = $o->rgb($params['colorField']);
+
+            // Add css style, if any
+            if ($o->table() == 'enumset' && $o->cssStyle) $system['cssStyle'] = $o->cssStyle;
 
             // Get max length
             $substr = $params['substr'] ?: 50;
@@ -1694,7 +1710,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if (preg_match('/\.\.$/', $options[$o->$keyProperty]['title']))
                 $options[$o->$keyProperty]['system']['tooltip'] = '..' . mb_substr($info['title'], $substr, 1024, 'utf-8');
 
-            $options[$o->$keyProperty]['raw'] = $o->{$this->titleColumn};
+            $options[$o->$keyProperty]['raw'] = $this->_table == 'enumset' ? $o->styled() : $o->{$this->titleColumn};
 
             // Setup foreign entries titles
             if ($params['foreign'])

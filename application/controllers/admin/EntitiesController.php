@@ -140,8 +140,8 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         ]);
 
         // Create enum option
-        enumset($table, 'toggle', 'y', ['title' => '<span class="i-color-box" style="background: lime;"></span>' . I_ENT_TOGGLE_Y, 'move' => '']);
-        enumset($table, 'toggle', 'n', ['title' => '<span class="i-color-box" style="background: red;"></span>'  . I_ENT_TOGGLE_N, 'move' => 'y']);
+        enumset($table, 'toggle', 'y', ['title' => I_ENT_TOGGLE_Y, 'boxColor' => 'lime', 'move' => '']);
+        enumset($table, 'toggle', 'n', ['title' => I_ENT_TOGGLE_N, 'boxColor' => 'red' , 'move' => 'y']);
 
         // Flush success
         jflush(true, 'OK');

@@ -28,6 +28,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      * Check the unicity of value of `alias` prop, within certain ENUM|SET field
      *
      * @return array
+     * @throws Exception
      */
     public function validate() {
 
@@ -50,6 +51,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      * Save possible value
      *
      * @return int
+     * @throws Exception
      */
     public function save() {
 
@@ -192,6 +194,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      * Delete
      *
      * @return int
+     * @throws Exception
      */
     public function delete() {
 
@@ -311,7 +314,10 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            // $field = m('Enumset')->fields($prop);
+            $field = m('Enumset')->fields($prop);
+
+            // Exclude prop, if it has value equal to default value
+            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Else if $prop is 'move' - get alias of the enumset, that current enumset is after,
             // among enumsets with same value of `fieldId` prop
@@ -327,6 +333,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param string $certain
      * @return string
+     * @throws Exception
      */
     public function export($certain = '') {
 
@@ -416,5 +423,58 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
 
         // Standard __set()
         parent::__set($columnName, $value);
+    }
+
+    /**
+     * Make sure only one way of setting style is used at a time
+     */
+    public function onBeforeSave() {
+             if ($this->fieldIsUnzeroed('boxIcon'))   $this->zero('boxColor,textColor', true);
+        else if ($this->fieldIsUnzeroed('boxColor'))  $this->zero('boxIcon,textColor' , true);
+        else if ($this->fieldIsUnzeroed('textColor')) $this->zero('boxColor,boxIcon'  , true);
+    }
+
+    /**
+     * Get styled title to be shown in grid column
+     *
+     * @param bool $preview If given as true, title won't be moved to title-attr.
+     *                      This is now used of enumset-grid only
+     * @return mixed|string
+     */
+    public function styled($preview = false) {
+
+        // Shortcuts
+        $boxIcon   = $this->boxIcon;
+        $boxColor  = $this->rgb('boxColor');
+        $textColor = $this->rgb('textColor');
+
+        // Get css style (css expr itself or wrapped into style-attr)
+        $cssStyle = rif($this->cssStyle,$textColor ? ' style="$1"' : ' $1');
+
+        // Replace quotes
+        $title = str_replace('"', '&quot;', $this->title);
+
+        // Default title, not styled so far
+        $styled = $title;
+
+        // Templates
+        $tplA = $preview
+            ? [
+                'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s"></span>%s',
+                'boxColor'  => '<span class="i-color-box" style="background: %s;%s"></span>%s',
+                'textColor' => '<span style="color: %s;%s">%s</span>',
+            ] : [
+                'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s" title="%s"></span>',
+                'boxColor'  => '<span class="i-color-box" style="background: %s;%s" title="%s"></span>',
+                'textColor' => '<font color="%s"%s>%s</font>',
+            ];
+
+        // Apply styles, if any
+        foreach ($tplA as $prop => $tpl)
+            if ($$prop)
+                $styled = sprintf($tpl, $$prop, $cssStyle, $title);
+
+        // Return
+        return $styled;
     }
 }

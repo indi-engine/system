@@ -1750,7 +1750,6 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 'notice' => 'event,qtySql',
                 'filter' => 'filter,defautValue',
                 'element' => 'alias',
-                'role' => 'dashboard',
                 'lang' => 'title,alias',
                 'queueTask' => 'title',
                 'queueItem' => 'target,value,result',

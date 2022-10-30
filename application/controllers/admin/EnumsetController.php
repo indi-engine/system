@@ -15,4 +15,14 @@ class Admin_EnumsetController extends Indi_Controller_Admin_Exportable {
         // Default form action
         parent::formAction();
     }
+
+    /**
+     * Apply style to titles
+     *
+     * @param $item
+     * @param $r
+     */
+    public function adjustGridDataItem(&$item, $r) {
+        $item['_render']['title'] = $r->styled(true);
+    }
 }
