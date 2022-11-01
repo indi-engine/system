@@ -169,7 +169,7 @@ class Indi_View_Helper_Admin_FormCombo {
         // Else if current field column type is ENUM or SET, and current row have no selected value, we use first
         // option to get default info about what title should be displayed in input keyword field and what value
         // should have hidden field
-        } else if ($this->field->storeRelationAbility == 'one' && ($this->filter ? !$this->filter->any() : true)) {
+        } else if ($this->field->storeRelationAbility == 'one' && ($this->filter ? !$this->filter->multiSelect() : true)) {
 
             // Setup a key
             if (($this->getRow()->id && !$comboDataRs->enumset) || !is_null($this->getRow()->$name)) {
@@ -208,7 +208,7 @@ class Indi_View_Helper_Admin_FormCombo {
             }
 
         // Else if combo is mulptiple
-        } else if ($this->field->storeRelationAbility == 'many' || ($this->filter && $this->filter->any())) {
+        } else if ($this->field->storeRelationAbility == 'many' || ($this->filter && $this->filter->multiSelect())) {
 
             // Set value for hidden input
             $selected = ['value' => $selected];

@@ -1934,7 +1934,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Owner WHERE
-        if (admin() && admin()->table() != 'admin' && !$fieldR->ignoreAlternate && !$fieldR->params['ignoreAlternate']
+        if (admin() && admin()->table() != 'admin' && ($fieldR->filterOwner || $fieldR->params['filterOwner'])
             && ($ownerField = $relatedM->ownerField(admin()))
             && !array_key_exists('consider:' . $ownerField->alias, $where))
             $where['owner'] = $relatedM->ownerWHERE(admin());

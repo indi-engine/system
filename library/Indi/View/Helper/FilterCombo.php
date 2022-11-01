@@ -15,7 +15,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
      * @return bool
      */
     public function isMultiSelect() {
-        return $this->filter->any();
+        return $this->filter->multiSelect();
     }
 
     /**

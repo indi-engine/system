@@ -32,8 +32,8 @@ class Filter_Row extends Indi_Db_Table_Row {
      *
      * @return bool
      */
-    public function any() {
-        return $this->any || $this->foreign('fieldId')->storeRelationAbility == 'many';
+    public function multiSelect() {
+        return $this->multiSelect || $this->foreign($this->further ? 'further' : 'fieldId')->storeRelationAbility == 'many';
     }
 
     /**

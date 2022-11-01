@@ -1,5 +1,60 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function missingThingsAction() {
+        action('revert', ['title' => 'Восстановить', 'fraction' => 'system', 'icon' => 'resources/images/icons/revert.png']);
+        action('author', ['title' => 'Автор', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-author.png']);
+        action('cancel', ['title' => 'Отменить', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-cancel.png']);
+        action('confirm', ['title' => 'Подтвердить', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-confirm.png']);
+        action('deactivate', ['title' => 'Деактивировать', 'fraction' => 'system', 'icon' => 'resources/images/icons/field/readonly.png']);
+        action('notify', ['title' => 'Уведомить', 'fraction' => 'system']);
+        action('pay', ['title' => 'Оплатить', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-pay.png']);
+        action('receipt', ['title' => 'Чек', 'fraction' => 'system', 'icon' => 'resources/images/icons/receipt.png']);
+        action('refund', ['title' => 'Вернуть платеж', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-refund.png']);
+        action('reset', ['title' => 'Сбросить', 'fraction' => 'system']);
+        action('start', ['title' => 'Начать', 'fraction' => 'system']);
+        cfgField('element', 'combo', 'substr', [
+            'title' => 'Длина опции не более',
+            'elementId' => 'number',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '50',
+            'move' => 'colorField',
+        ]);
+        if ($_ = cfgField('element', 'combo', 'ignoreAlternate'))
+            cfgField('element', 'combo', 'ignoreAlternate', ['alias' => 'filterOwner']);
+
+        cfgField('element', 'combo', 'filterOwner', [
+            'title' => 'Владельцам - только свои опции',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'substr',
+        ]);
+        cfgField('element', 'textarea', 'shade', [
+            'title' => 'Шейдинг',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'allowedTags',
+        ]);
+        field('admin', 'phone', [
+            'title' => 'Телефон',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'email',
+        ]);
+        param('admin', 'phone', 'inputMask', ['cfgValue' => '+9 (999) 999-99-99']);
+        grid('admins', 'password', ['fieldId' => 'phone', 'editor' => '1']);
+        if ($_ = field('filter', 'any')) field('filter', 'any', ['alias' => 'multiSelect']);
+        field('filter', 'multiSelect', [
+            'title' => 'Выбор более одного значения',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'ignoreTemplate',
+        ]);
+        field('filter', 'accessExcept', ['elementId' => 'combo']);
+        die('ok');
+    }
     public function fieldmoveAction(){
         foreach (m('entity')->all()->column('table') as $table) {
             $colA = m($table)->fields(null, 'columns');

@@ -498,8 +498,8 @@ class Indi_Controller {
                 // Else if $found field is able to store only one foreign key, use '=' clause
                 } else if ($found->original('storeRelationAbility') == 'one') {
 
-                    // Set $any as `false`
-                    $any = false;
+                    // Set $multiSelect as `false`
+                    $multiSelect = false;
 
                     // Try to find filter
                     if (t()->filters instanceof Indi_Db_Table_Rowset) {
@@ -507,8 +507,8 @@ class Indi_Controller {
                         // Get filter row
                         $filterR = t()->filters->gb($found->id, $lookupBy);
 
-                        // If filter is multiple (desipite field is singe) set up $mode as `any`
-                        if ($filterR->any()) $any = true;
+                        // If filter is multiple (desipite field is single) set up $multiSelect as `true`
+                        if ($filterR->multiSelect()) $multiSelect = true;
                     }
 
                     // If further-foreign filter's field should be used
@@ -516,7 +516,9 @@ class Indi_Controller {
 
                         // Get WHERE clause to be run on table, that filter's field's relation points to
                         $furtherWHERE = db()->sql(
-                            $any ? 'FIND_IN_SET(`' . $further . '`, :s)' : '`' . $further . '` = :s',
+                            $multiSelect
+                                ? 'FIND_IN_SET(`' . $further . '`, :s)'
+                                : '`' . $further . '` = :s',
                             $filterSearchFieldValue
                         );
 
@@ -526,13 +528,16 @@ class Indi_Controller {
                             m($found->entityId)->table()
                         )->fetchAll(PDO::FETCH_COLUMN);
 
-                        // Set up WHERE clause according to value of $any flag
+                        // Set up WHERE clause according to value of $multiSelect flag
                         $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
 
-                    // Else set up WHERE clause according to value of $any flag
-                    } else $where[$found->alias] = db()->sql($any
-                        ? 'FIND_IN_SET(`' . $filterSearchFieldAlias . '`, :s)'
-                        : '`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
+                    // Else set up WHERE clause according to value of $multiSelect flag
+                    } else $where[$found->alias] = db()->sql(
+                        $multiSelect
+                            ? 'FIND_IN_SET(`' . $filterSearchFieldAlias . '`, :s)'
+                            : '`' . $filterSearchFieldAlias . '` = :s',
+                        $filterSearchFieldValue
+                    );
 
                     // Pick the current filter value and fieldId (if foreign table name is 'enumset')
                     // or foreign table name, to $excelA
@@ -549,8 +554,8 @@ class Indi_Controller {
                     // Declare array for FIND_IN_SET clauses
                     $fisA = [];
 
-                    // Set $any as `false`
-                    $any = false;
+                    // Set $multiSelect as `false`
+                    $multiSelect = false;
 
                     // Try to find filter
                     if (t()->filters instanceof Indi_Db_Table_Rowset) {
@@ -559,7 +564,7 @@ class Indi_Controller {
                         $filterR = t()->filters->gb($found->id, $lookupBy);
 
                         // If filter should search any match rather than all matches
-                        if ($filterR->any()) $any = true;
+                        if ($filterR->multiSelect()) $multiSelect = true;
                     }
 
                     // If $filterSearchFieldValue is a non-empty string, convert it to array
@@ -571,7 +576,7 @@ class Indi_Controller {
                         $fisA[] = db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
 
                     // Implode array of FIND_IN_SET clauses with AND, and enclose by round brackets
-                    $where[$found->alias] = '(' . implode(' ' . ($any ? 'OR' : 'AND') . ' ', $fisA) . ')';
+                    $where[$found->alias] = '(' . implode(' ' . ($multiSelect ? 'OR' : 'AND') . ' ', $fisA) . ')';
 
                     // Pick the current filter value and fieldId (if foreign table name is 'enumset')
                     // or foreign table name, to $excelA
