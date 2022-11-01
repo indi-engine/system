@@ -79,11 +79,11 @@ CREATE TABLE `admin` (
   `roleId` int NOT NULL DEFAULT '0',
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `phone` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `toggle` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `demo` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `uiedit` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
-  `phone` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `profileId` (`roleId`),
   KEY `toggle` (`toggle`),
@@ -94,9 +94,9 @@ CREATE TABLE `admin` (
 
 /*Data for the table `admin` */
 
-insert  into `admin`(`id`,`roleId`,`title`,`email`,`password`,`toggle`,`demo`,`uiedit`,`phone`) values 
-(1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','dev','*27AEDA0D3A56422C3F1D20DAFF0C8109058134F3','y','n','y',''),
-(14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n','');
+insert  into `admin`(`id`,`roleId`,`title`,`email`,`phone`,`password`,`toggle`,`demo`,`uiedit`) values 
+(1,1,'{\"ru\":\"Павел Перминов\",\"en\":\"Pavel Perminov\"}','dev','','*27AEDA0D3A56422C3F1D20DAFF0C8109058134F3','y','n','y'),
+(14,12,'{\"ru\":\"John Smith\",\"en\":\"John smith\"}','admin','','*4ACFE3202A5FF5CF467898FC58AAB1D615029441','y','n','n');
 
 /*Table structure for table `alteredField` */
 
