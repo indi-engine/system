@@ -948,7 +948,7 @@ class Indi_Db_Table
      *
      * @param string $names
      * @param string $format rowset|cols
-     * @return Field_Row|Field_Rowset
+     * @return Field_Row|Field_Rowset|array
      */
     public function fields($names = '', $format = 'rowset') {
 
