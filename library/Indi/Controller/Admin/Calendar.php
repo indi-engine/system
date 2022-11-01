@@ -278,7 +278,7 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         $found = [];
         foreach ($ENUM_fieldRs as $ENUM_fieldR)
             foreach ($ENUM_fieldR->nested('enumset') as $enumsetR)
-                if ($color = Indi::rexm('/(background|color):([^;]+);?/', $enumsetR->title, 2))
+                if ($color = $enumsetR->rgb('boxColor') ?: $enumsetR->rgb('textColor'))
                     $found[$ENUM_fieldR->alias][$enumsetR->alias] = trim($color);
 
         // If nothing found - return
