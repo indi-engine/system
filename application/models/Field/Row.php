@@ -1629,14 +1629,17 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // If current field does not have underlying db table column - return
         if (!$this->columnTypeId) return;
 
+        // Get entity, where current field is in
+        $model = m($this->entityId); $table = $model->table(); $column = $this->alias;
+
         // Get all column in the right order
-        $colA = m($this->_table)->fields(null, 'columns');
+        $colA = $model->fields(null, 'columns');
 
         // Get index if current field among all fields
-        $idx = array_search($this->alias, $colA);
+        $idx = array_search($column, $colA);
 
         // Get table definition as raw SQL
-        $def = db()->query("SHOW CREATE TABLE `{$this->_table}`")->fetchColumn(1);
+        $def = db()->query("SHOW CREATE TABLE `$table`")->fetchColumn(1);
 
         // Parse column definitions from raw SQL
         preg_match_all('~^\s+`([^`]+)` .*?,$~m', $def, $m);
@@ -1645,13 +1648,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         array_walk($m[0], fn (&$line) => $line = trim($line, ' ,'));
 
         // If no definition found - return
-        if (!$def = array_combine($m[1], $m[0])[$this->alias]) return;
+        if (!$definition = array_combine($m[1], $m[0])[$column]) return;
 
         // Get name of the column, after which current column should be moved
         $after = $colA[$idx - 1] ?: 'id';
 
         // Move the column
-        db()->query("ALTER TABLE {$this->_table} CHANGE `{$this->alias}` $def AFTER {$after}");
+        db()->query("ALTER TABLE `$table` CHANGE `$column` $definition AFTER `$after`");
     }
 
     /**
