@@ -1,5 +1,26 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function fieldmoveAction(){
+        foreach (m('entity')->all()->column('table') as $table) {
+            $colA = m($table)->fields(null, 'columns');
+            $def = db()->query("SHOW CREATE TABLE `$table`")->fetchColumn(1);
+            preg_match_all('~^  `([^`]+)` .*?(?:,)$~m', $def, $m);
+            array_walk($m[0], fn (&$line) => $line = trim($line, ' ,'));
+            $defA = array_combine($m[1], $m[0]);
+            //d($colA);
+            //d($posA);
+            //d($defA);
+            $sql = "ALTER TABLE `$table`\n";
+            $change = [];
+            foreach ($colA as $idx => $col) $change []= "\tCHANGE `$col` {$defA[$col]} AFTER `" . ($colA[$idx - 1] ?: 'id') . "`";
+            $sql .= im($change, ",\n") . ";";
+            db()->query($sql);
+        }
+        db()->query('DELETE FROM `enumset` WHERE `fieldId` = 0');
+        $c = coltype('INT(11)');
+        $c->set('elementId', $c->foreign('elementId')->column('id', ','))->save();
+        die('ok');
+    }
     public function enumsetStyleAction() {
         field('enumset', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'move']);
         field('enumset', 'boxIcon', [

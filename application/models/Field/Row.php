@@ -1608,7 +1608,50 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (func_num_args() < 2) $within = '`entityId` = "' . $this->entityId . '"';
 
         // Call parent
-        return parent::move($direction, $within);
+        $return = parent::move($direction, $within);
+
+        // Adjust underlying db table column position as well
+        $this->_colAFTER();
+
+        // Return
+        return $return;
+    }
+
+    /**
+     * Adjust underlying column position within table  structure
+     * for it to match   field  position within entity structure
+     */
+    protected function _colAFTER() {
+
+        // If current field is a config-field - return
+        if ($this->entry) return;
+
+        // If current field does not have underlying db table column - return
+        if (!$this->columnTypeId) return;
+
+        // Get all column in the right order
+        $colA = m($this->_table)->fields(null, 'columns');
+
+        // Get index if current field among all fields
+        $idx = array_search($this->alias, $colA);
+
+        // Get table definition as raw SQL
+        $def = db()->query("SHOW CREATE TABLE `{$this->_table}`")->fetchColumn(1);
+
+        // Parse column definitions from raw SQL
+        preg_match_all('~^\s+`([^`]+)` .*?,$~m', $def, $m);
+
+        // Trim leading whitespaces and trailing commas
+        array_walk($m[0], fn (&$line) => $line = trim($line, ' ,'));
+
+        // If no definition found - return
+        if (!$def = array_combine($m[1], $m[0])[$this->alias]) return;
+
+        // Get name of the column, after which current column should be moved
+        $after = $colA[$idx - 1] ?: 'id';
+
+        // Move the column
+        db()->query("ALTER TABLE {$this->_table} CHANGE `{$this->alias}` $def AFTER {$after}");
     }
 
     /**
