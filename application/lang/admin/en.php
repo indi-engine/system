@@ -25,6 +25,7 @@ define('I_THROW_OUT_PASSWORD_CHANGED', 'Your password had just been changed');
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Your account had just beed switched off');
 define('I_THROW_OUT_ROLE_IS_OFF', 'Your account is of type, that had just been switched off');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Now there is no sections remaining accessible for you');
+define('I_THROW_OUT_SESSION_EXPIRED', 'You session is no longer available. Proceed to re-login?');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Such section does not exist');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'Section is switched off');

@@ -69,20 +69,33 @@ class Realtime_Row extends Indi_Db_Table_Row {
      */
     public function onDelete() {
 
-        // If it's a channel-entry
-        if ($this->type == 'channel') {
+        // If it's a session-entry
+        if ($this->type == 'session') {
 
-            // If no more channels left for that session - remove parent/session entry
-            if (!$this->model()->row([
-                '`type` = "channel"',
-                '`realtimeId` = "' . $this->realtimeId . '"'
-            ])) $this->foreign('realtimeId')->delete();
+            // Get session files dir
+            $session = ini_get('session.save_path') ?: sys_get_temp_dir();
 
-        // Else if it's a context-entry
-        } else if ($this->type == 'context') {
+            // Append filename
+            $session .= '/sess_' . $this->token;
 
-            // Make sure parent/channel entry's spaceUntil prop is updated
-            $this->foreign('realtimeId')->set('spaceUntil', date('Y-m-d H:i:s'))->basicUpdate();
+            // If session file exists - delete it
+            if (is_file($session)) unlink($session);
+
+        // Else
+        } else {
+
+            // Prepare data to be updated
+            $ts = ['spaceUntil' => date('Y-m-d H:i:s')];
+
+            // Update on parent record
+            $this->foreign('realtimeId')->set($ts)->basicUpdate();
+
+            // If it's a context-entry
+            if ($this->type == 'context') {
+
+                // Update session record
+                $this->foreign('realtimeId')->foreign('realtimeId')->set($ts)->basicUpdate();
+            }
         }
     }
 }

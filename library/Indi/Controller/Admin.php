@@ -2474,6 +2474,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // If user is trying to access server-app using standalone client-app
                 if (APP) {
 
+                    // If session is no longer available
+                    // Show prompt asking whether proceed to re-login
+                    // If OK is pressed - reload the page so login screen will be shown
+                    if (uri()->section != 'index' || uri()->action != 'index')
+                        if ($this->confirm(I_THROW_OUT_SESSION_EXPIRED))
+                            jflush(false, ['throwOutMsg' => true]);
+
                     // Flush basic info
                     jflush(true, [
                         'std' => STD,

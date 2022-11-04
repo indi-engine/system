@@ -260,7 +260,7 @@ while (true) {
                 }
 
                 // Log
-                if ($ini['log']) logd('?newtab init: ' . $index);
+                if ($ini['log']) logd('opentab init: ' . $index);
 
                 // Build url
                 $prevcid = '';
@@ -286,7 +286,7 @@ while (true) {
 
                 // Set opts
                 curl_setopt_array($ch, [
-                    CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/?newtab',
+                    CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/opentab/',
                     CURLOPT_RETURNTRANSFER => 1,
                     CURLOPT_HTTPHEADER => [
                         'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
@@ -304,7 +304,7 @@ while (true) {
                 curl_close($ch);
 
                 // Log
-                if ($ini['log']) logd('?newtab done: ' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/?newtab');
+                if ($ini['log']) logd('opentab done: ' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/opentab/');
             }
         }
 
@@ -724,11 +724,11 @@ function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rab
                     $ch = curl_init();
 
                     // Log that Indi Engine is going to be notified about closed channel
-                    if ($ini['log']) logd('?closetab init: ' . $rid . '-' . $uid . '-' . $index);
+                    if ($ini['log']) logd('closetab init: ' . $rid . '-' . $uid . '-' . $index);
 
                     // Set opts
                     curl_setopt_array($ch, [
-                        CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/?closetab',
+                        CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/closetab/',
                         CURLOPT_HTTPHEADER => [
                             'Indi-Auth: ' . implode(':', [$sessidA[$index], $langidA[$index], $index]),
                             'Cookie: ' . 'PHPSESSID=' . $sessidA[$index] . '; i-language=' . $langidA[$index]
@@ -745,7 +745,7 @@ function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rab
                     curl_close($ch);
 
                     // Log
-                    if ($ini['log']) logd('?closetab done: '  . $rid . '-' . $uid . '-' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/?closetab');
+                    if ($ini['log']) logd('closetab done: '  . $rid . '-' . $uid . '-' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/closetab/');
 
                     // Drop session id and language id
                     unset($sessidA[$index], $langidA[$index], $pathA[$index], $hostA[$index]);

@@ -25,6 +25,7 @@ define('I_THROW_OUT_PASSWORD_CHANGED', 'Ваш пароль только что 
 define('I_THROW_OUT_ACCOUNT_IS_OFF', 'Ваш аккаунт только что был отключен');
 define('I_THROW_OUT_ROLE_IS_OFF', 'Тип вашего аккаунта только что был отключен');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'В системе не осталось ни одного доступного для вас раздела');
+define('I_THROW_OUT_SESSION_EXPIRED', 'Ваш сеанс более недоступен, требуется повторный вход в систему. Продолжить?');
 
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Нет такого раздела');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'Этот раздел выключен');
