@@ -2,41 +2,8 @@
 class Realtime_Row extends Indi_Db_Table_Row {
 
     /**
-     * @throws Exception
-     */
-    public function onBeforeSave() {
-
-        // Set `title`
-        $this->setTitle();
-    }
-
-    /**
-     * Keep spaceUntil-prop updated
-     */
-    public function onBeforeUpdate() {
-
-        // If entry of type = context is going to be updated
-        if ($this->type == 'context' && $this->_modified)
-
-            // Update it's spaceUntil-prop as well
-            $this->set('spaceUntil', date('Y-m-d H:i:s'));
-    }
-
-    /**
-     * Keep parent parent/channel record's spaceUntil-prop updated
+     * Setter method for title-prop
      *
-     * @throws Exception
-     */
-    public function onUpdate() {
-
-        // If entry of type = context was really updated
-        if ($this->type == 'context' && $this->_affected)
-
-            // Update parent/channel record's spaceUntil-prop
-            $this->foreign('realtimeId')->set('spaceUntil', date('Y-m-d H:i:s'))->basicUpdate();
-    }
-
-    /**
      * @return $this
      * @throws Exception
      */
@@ -54,18 +21,35 @@ class Realtime_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Force `title` to be set on parent (channel) entry
-     * Make sure parent/channel entry's spaceUntil is updated as well
+     * Set title- and spaceUntil-prop
+     *
+     * @throws Exception
      */
-    public function onInsert() {
-        if ($this->type == 'context' && $parent = $this->parent()) {
-            if (!$parent->title) $parent->setTitle();
-            $parent->set('spaceUntil', date('Y-m-d H:i:s'))->basicUpdate();
-        }
+    public function onBeforeSave() {
+
+        // Set `title`
+        $this->setTitle();
+
+        // Keep spaceUntil-prop updated
+        $this->set('spaceUntil', date('Y-m-d H:i:s'));
     }
 
     /**
-     * Delete parent `realtime` entry (session-entry) if this was the last remaining tab/channel
+     * Update parent records, if any
+     */
+    public function onUpdate() {
+        $this->updateParents();
+    }
+
+    /**
+     * Update parent records, if any
+     */
+    public function onInsert() {
+        $this->updateParents();
+    }
+
+    /**
+     * Delete parent session-file if session-entry was deleted, so that corresponding admin will be required to re-login
      */
     public function onDelete() {
 
@@ -81,21 +65,32 @@ class Realtime_Row extends Indi_Db_Table_Row {
             // If session file exists - delete it
             if (is_file($session)) unlink($session);
 
-        // Else
-        } else {
+        // Else if it was channel- or context- entry - update parents
+        } else $this->updateParents();
+    }
 
-            // Prepare data to be updated
-            $ts = ['spaceUntil' => date('Y-m-d H:i:s')];
+    /**
+     * Keep spaceUntil-prop's value up-to-date for all parents of current entry
+     * Also set title-prop for those of parent where it is so far empty
+     *
+     * @throws Exception
+     */
+    public function updateParents() {
 
-            // Update on parent record
-            $this->foreign('realtimeId')->set($ts)->basicUpdate();
+        // If it's session-entry, e.g. it has no parent entries - do nothing
+        if ($this->type == 'session') return;
 
-            // If it's a context-entry
-            if ($this->type == 'context') {
+        // Shortcuts
+        $parent = $this; $ts = ['spaceUntil' => date('Y-m-d H:i:s')];
 
-                // Update session record
-                $this->foreign('realtimeId')->foreign('realtimeId')->set($ts)->basicUpdate();
-            }
+        // Update spaceUntil on parent entries
+        while ($parent = $parent->parent()) {
+
+            // If parent has no title yet - set it
+            if (!$parent->title) $parent->setTitle();
+
+            // Set spaceUntil timestamp
+            $parent->set($ts)->basicUpdate();
         }
     }
 }

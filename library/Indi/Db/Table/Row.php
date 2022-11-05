@@ -6838,7 +6838,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$tc = $this->model()->treeColumn()) return;
 
         // Return parent entry
-        return $this->foreign($tc);
+        return $this->$tc ? $this->foreign($tc) : null;
     }
 
     /**

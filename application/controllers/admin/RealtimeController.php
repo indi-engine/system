@@ -10,8 +10,15 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         if (in($action = uri()->action, 'restart,cleanup,opentab,closetab'))
             $this->{$action . 'Action'}();
 
-        // Else call parent
-        else parent::preDispatch();
+        // Else
+        else {
+
+            // Do cleanup each time admin opened realtime section
+            if ($action == 'index' && !uri()->format) $this->cleanupAction(false);
+
+            // Call parent
+            parent::preDispatch();
+        }
     }
 
     /**
@@ -67,7 +74,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      *
      * @throws Exception
      */
-    public function cleanupAction() {
+    public function cleanupAction($jflush = true) {
 
         // Get session files dir
         $session = ini_get('session.save_path') ?: sys_get_temp_dir();
@@ -86,7 +93,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         }, ['`type` = "session"', '`token` NOT IN ("' . im($sess, '","') . '")']);
 
         // Flush success
-        jflush(true);
+        if ($jflush) jflush(true);
     }
 
     /**

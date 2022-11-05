@@ -283,6 +283,12 @@ class Indi_Controller_Admin extends Indi_Controller {
                     }
                 }
 
+                // If channel detected and referer context detected - update spaceUntil timestamp
+                if (ini()->ws->realtime && $channel = t()->channel())
+                    if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
+                        if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
+                            $context->set('spaceUntil', date('Y-m-d H:i:s'))->save();
+
             // Else if where is some another action
             } else {
 
@@ -318,6 +324,24 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Set last accessed rows
                 $this->setScopeRow(false, null, $this->selected->column('id'));
+
+                // If channel detected
+                if (ini()->ws->realtime && $channel = t()->channel()) {
+
+                    // Get context where request came from, if possible
+                    $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid)
+                        ? m('realtime')->row([
+                            '`realtimeId` = "' . $channel->id . '"',
+                            '`token` = "' . $ctx . '"'
+                        ])
+                        : false;
+
+                    // Decide which realtime entry should be updated
+                    $realtimeR = $context ?: $channel;
+
+                    // Do update
+                    $realtimeR->set('spaceUntil', date('Y-m-d H:i:s'))->save();
+                }
             }
         }
     }
@@ -4080,11 +4104,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (uri()->format == 'excel' || Indi::get()->jump) return;
 
         // Track involved entries
-        if ($_ = m('realtime')->row([
-            '`type` = "context"',
-            '`token` = "' . t()->bid() . '"',
-            '`realtimeId` = "' . m('realtime')->row('`token` = "' . CID . '"')->id . '"'
-        ]) ?: t()->context()) $_->set([
+        if ($_ = t()->context()) $_->set([
             'entries' => $this->rowset->column('id', ','),
             'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ])->save();

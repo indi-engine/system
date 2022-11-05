@@ -53,6 +53,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'ignoreTemplate',
         ]);
         field('filter', 'accessExcept', ['elementId' => 'combo']);
+        param('realtime', 'spaceUntil', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
+        grid('realtime', 'spaceUntil', ['toggle' => 'y']);
         die('ok');
     }
     public function fieldmoveAction(){

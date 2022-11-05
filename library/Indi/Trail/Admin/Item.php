@@ -665,41 +665,61 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     }
 
     /**
+     * Get `realtime`-entry of `type`="channel", representing browser tab, where request came from
+     *
+     * @return Indi_Db_Table_Row|null
+     */
+    public function channel() {
+        return m('realtime')->row([
+            '`type` = "channel"',
+            '`token` = "' . CID . '"'
+        ]);
+    }
+
+    /**
      * Create `realtime` entry having `type` = "context"
      *
      * @return Indi_Db_Table_Row
      */
     public function context() {
 
-        // If channel found
-        if ($channel = m('realtime')->row('`token` = "' . CID . '"')) {
+        // If no channel found - return
+        if (!$realtimeR_channel = $this->channel()) return;
 
-            // Get data to be copied
-            $data = $channel->original(); unset($data['id'], $data['spaceSince']);
+        // If context entry already exists - return it
+        if ($realtimeR_context = m('realtime')->row([
+            '`type` = "context"',
+            '`token` = "' . $this->bid() . '"',
+            '`realtimeId` = "' . $realtimeR_channel->id . '"'
+        ])) return $realtimeR_context;
 
-            // Get involved fields
-            $fields = t()->row
-                ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
-                : t()->gridFields->select(': > 0')->column('id', ',');
+        // Else:
 
-            // Create `realtime` entry of `type` = "context"
-            $realtimeR = m('realtime')->new([
-                'realtimeId' => $channel->id,
-                'type' => 'context',
-                'token' => t()->bid(),
-                'sectionId' => t()->section->id,
-                'entityId' => t()->section->entityId,
-                'fields' => $fields,
-                'title' => t(true)->toString(),
-                'mode' => $this->action->selectionRequired == 'y' ? 'row' : 'rowset'
-            ] + $data);
+        // Get data to be copied
+        $data = $realtimeR_channel->original(); unset($data['id'], $data['spaceSince']);
 
-            // Save it
-            $realtimeR->save();
+        // Get involved fields
+        $fields = t()->row
+            ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+            : t()->gridFields->select(': > 0')->column('id', ',');
 
-            // Return it
-            return $realtimeR;
-        }
+        // Create `realtime` entry of `type` = "context"
+        $realtimeR_context = m('realtime')->new([
+            'realtimeId' => $realtimeR_channel->id,
+            'type' => 'context',
+            'token' => $this->bid(),
+            'sectionId' => $this->section->id,
+            'entityId' => $this->section->entityId,
+            'fields' => $fields,
+            'title' => t(true)->toString(),
+            'mode' => $this->action->selectionRequired == 'y' ? 'row' : 'rowset'
+        ] + $data);
+
+        // Save it
+        $realtimeR_context->save();
+
+        // Return it
+        return $realtimeR_context;
     }
 
     /**
