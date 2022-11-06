@@ -670,10 +670,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      * @return Indi_Db_Table_Row|null
      */
     public function channel() {
-        return m('realtime')->row([
-            '`type` = "channel"',
-            '`token` = "' . CID . '"'
-        ]);
+        return defined('CID')
+            ? m('realtime')->row(['`type` = "channel"', '`token` = "' . CID . '"'])
+            : false;
     }
 
     /**

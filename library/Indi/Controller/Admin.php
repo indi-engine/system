@@ -893,7 +893,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $byLevel[$level][$gridR->id] = $columnA[$idx] += [
                     'colspan' => 1,
                     'gridId' => $gridR->gridId,
-                    'title' => $gridR->rename ?: $gridR->further ? $gridR->foreign('further')->title : $gridR->title,
+                    'title' => $gridR->rename ?: ($gridR->further ? $gridR->foreign('further')->title : $gridR->title),
                     'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
                     'leaf' => true,
                     'icon' => $gridR->icon,

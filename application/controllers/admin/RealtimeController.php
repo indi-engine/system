@@ -166,7 +166,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 = preg_replace('~( - )(.*?)(, )~', '$1<span style="color: #35baf6;">$2</span>$3', $item['_render']['title']);
 
         // Highlight channel/tab token
-        else if ($item['token'] == CID)
+        else if (defined('CID') && $item['token'] == CID)
             $item['_render']['title']
                 = preg_replace('~( - )(.*?)$~', '$1<span style="color: #35baf6;">$2</span>', $item['_render']['title']);
     }
