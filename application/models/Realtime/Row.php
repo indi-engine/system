@@ -56,14 +56,18 @@ class Realtime_Row extends Indi_Db_Table_Row {
         // If it's a session-entry
         if ($this->type == 'session') {
 
-            // Get session files dir
-            $session = ini_get('session.save_path') ?: sys_get_temp_dir();
+            // If system unlink flag is NOT set to false
+            if ($this->_system['unlink'] !== false) {
 
-            // Append filename
-            $session .= '/sess_' . $this->token;
+                // Get session files dir
+                $session = ini_get('session.save_path') ?: sys_get_temp_dir();
 
-            // If session file exists - delete it
-            if (is_file($session)) unlink($session);
+                // Append filename
+                $session .= '/sess_' . $this->token;
+
+                // If session file exists - delete it
+                if (is_file($session)) unlink($session);
+            }
 
         // Else if it was channel- or context- entry - update parents
         } else $this->updateParents();

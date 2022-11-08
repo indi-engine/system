@@ -3275,11 +3275,14 @@ class Indi_Controller_Admin extends Indi_Controller {
             '`type` = "session"',
             'roleId' => $_SESSION['admin']['roleId'],
             'adminId' => $_SESSION['admin']['id'],
-        ])->delete();
+        ])->system('unlink', false)->delete(true);
 
         // Start a session for user and report that sing-in was ok
         foreach (ar('id,title,email,password,roleId,roleTitle,alternate,mid') as $allowedI)
-            $_SESSION['admin'][$allowedI] = $data[$allowedI];
+            $admin[$allowedI] = $data[$allowedI];
+
+        // Spoof data
+        $_SESSION['admin'] = $admin;
 
         // Create `realtime` entry having `type` = 'session'
         m('Realtime')->new([
