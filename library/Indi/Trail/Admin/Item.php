@@ -752,6 +752,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             ];
         }
 
+        // If rows grouping is turned on - add that into $renderCfg as well
+        if ($this->scope->groupBy) $renderCfg['_system']['groupBy'] = $this->scope->groupBy;
+
         // Return render config
         return $renderCfg ?? [];
     }

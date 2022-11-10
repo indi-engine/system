@@ -979,6 +979,16 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             unset($data[$pointer]['_foreign']);
         }
 
+        // If data should be grouped
+        if ($by = $renderCfg['_system']['groupBy']) {
+
+            // Group items preserving the order in which they do actually appear
+            $groupA = []; foreach ($data as $item) $groupA[$item[$by]] []= $item;
+
+            // Spoof ungrouped data with grouped data
+            $data = []; foreach ($groupA as $group => $itemA) $data = array_merge($data, $itemA);
+        }
+
         // Return grid data
         return $data;
     }
