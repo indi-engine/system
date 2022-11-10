@@ -1,0 +1,74 @@
+#!/c/server/php/php
+<?php
+// Get current status
+$msg = str_replace("\r\n", "\n", `git status`);
+
+// Get project dir
+$dir = getcwd();
+
+// If there are no changes in composer.lock to be committed - exit
+if (!preg_match('~Changes to be committed:\n(?:  \(.+?\)\n)*(?:(?:\s+modified:   .+?\n)*)(?:\s+modified:   composer\.lock\n)~m', $msg, $m))
+    exit(0);
+
+// Get diff for composer.lock
+$diff = `git diff HEAD composer.lock`;
+
+// Prepare regexp to check which indi-engine packages were updated
+$rex = '~';
+$rex .= '"url": "https://github.com/(?<name>indi-engine/[a-z]+).git",\n';
+$rex .=  '-\s+"reference": "(?<was>[0-9a-f]+)"\n';
+$rex .= '\+\s+"reference": "(?<now>[0-9a-f]+)"';
+$rex .= '~';
+
+// If no indi-engine packages were updated - exit
+if (!preg_match_all($rex, $diff, $packageA, PREG_SET_ORDER))
+    exit(0);
+
+// Prepare regexp to parse commit messages
+$rex = '~commit (?<hash>[0-9a-f]+)\nAuthor: .*?\nDate: (?<date>.*?)\n\n(?<msg>(?: {4}.+?\n)+)~s';
+
+// Foreach package
+foreach ($packageA as &$package) {
+
+    // Go to package dir
+    chdir('vendor/' . $package['name']);
+
+    // Get log for the given range of package's own commit history
+    preg_match_all($rex, `git log {$package['was']}..{$package['now']}`, $commitA,PREG_SET_ORDER);
+
+    // Foreach package commit parsed
+    foreach ($commitA as &$commit) {
+
+        // Convert package commit datetime into 'Y-m-d H:i:s' format
+        $datetime = date('Y-m-d H:i:s', strtotime($commit['date']));
+
+        // Prepend it to commit msg
+        $commit['msg'] = '    -----' . $datetime . "" . "-----\n\n" . rtrim($commit['msg']);
+    }
+
+    // Get messages
+    $package['msg'] = array_column($commitA, 'msg');
+
+    // Prepend with package name
+    array_unshift($package['msg'], '  vendor/' . $package['name'] . ":\n");
+
+    // Join by newline
+    $package['msg'] = join("\n", $package['msg']);
+
+    // Go back to project dir
+    chdir($dir);
+}
+
+// Prepend '#'
+$msg = explode("\n", $msg);
+$msg = array_map(fn($line) => '# ' . $line, $msg);
+$msg = join("\n", $msg);
+
+// Build msg
+$msg = "composer.lock updated:\n\n" . join("\n\n", array_column($packageA, 'msg')) . "\n\n"  . $msg;
+
+// Spoof COMMIT_EDITMSG file contents
+file_put_contents('.git/COMMIT_EDITMSG', $msg);
+
+// Exit
+exit(0);
