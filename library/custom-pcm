@@ -43,14 +43,14 @@ foreach ($packageA as &$package) {
         $datetime = date('Y-m-d H:i:s', strtotime($commit['date']));
 
         // Prepend it to commit msg
-        $commit['msg'] = '    -----' . $datetime . "" . "-----\n\n" . rtrim($commit['msg']);
+        $commit['msg'] = "\n    -----" . $datetime . "" . "-----\n\n" . rtrim($commit['msg']);
     }
 
     // Get messages
     $package['msg'] = array_column($commitA, 'msg');
 
     // Prepend with package name
-    array_unshift($package['msg'], '  vendor/' . $package['name'] . ":\n");
+    array_unshift($package['msg'], '  vendor/' . $package['name'] . ":");
 
     // Join by newline
     $package['msg'] = join("\n", $package['msg']);
