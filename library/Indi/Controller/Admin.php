@@ -285,7 +285,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // If channel detected and referer context detected - update spaceUntil timestamp
-                if (ini()->ws->realtime && $channel = Realtime::channel())
+                if (!ini()->ws->realtime) Realtime::session()->save();
+                else if ($channel = Realtime::channel())
                     if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
                         if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
                             $context->set('spaceUntil', date('Y-m-d H:i:s'))->save();
@@ -327,7 +328,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $this->setScopeRow(false, null, $this->selected->column('id'));
 
                 // If channel detected
-                if (ini()->ws->realtime && $channel = Realtime::channel()) {
+                if (!ini()->ws->realtime) Realtime::session()->save();
+                else if ($channel = Realtime::channel()) {
 
                     // Get context where request came from, if possible
                     $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid)
@@ -4114,6 +4116,9 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Flush success
                 jflush(true);
             }
+
+            // If realtime is turned off - update last activity timestamp
+            if (!ini('ws')->realtime) Realtime::session()->save();
 
             // Flush success if realtime is turned Off, else flush failure
             jflush(!ini('ws')->realtime);
