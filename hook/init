@@ -1,18 +1,13 @@
 <?php
 
-// Get shebang line depending on OS
-$shebang = preg_match('~WIN~', PHP_OS) 
-    ? '#!/c/server/php/php' 
-    : '#!/usr/bin/php';
-    
 // Get path from where to pick to hook itself
-$self = 'vendor/indi-engine/system/hook/self';
+$self = '#!/bin/sh' . PHP_EOL . 'php vendor/indi-engine/system/hook/self';
 
 // Get path from where hook will be called
 $hook = '.git/hooks/prepare-commit-msg';
 
 // White command to git hook
-file_put_contents($hook, "$shebang $self");
+file_put_contents($hook, $self);
 
 // Make it executable
 chmod($hook, 0744);
