@@ -285,7 +285,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // If channel detected and referer context detected - update spaceUntil timestamp
-                if (ini()->ws->realtime && $channel = t()->channel())
+                if (ini()->ws->realtime && $channel = Realtime::channel())
                     if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
                         if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
                             $context->set('spaceUntil', date('Y-m-d H:i:s'))->save();
@@ -327,7 +327,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $this->setScopeRow(false, null, $this->selected->column('id'));
 
                 // If channel detected
-                if (ini()->ws->realtime && $channel = t()->channel()) {
+                if (ini()->ws->realtime && $channel = Realtime::channel()) {
 
                     // Get context where request came from, if possible
                     $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid)
@@ -2476,14 +2476,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $allowedA = ['id', 'title', 'email', 'password', 'roleId', 'roleTitle', 'alternate', 'mid'];
                     foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
 
-                    // Create `realtime` entry having `type` = 'session'
-                    m('Realtime')->new([
-                        'type' => 'session',
-                        'roleId' => $_SESSION['admin']['roleId'],
-                        'adminId' => $_SESSION['admin']['id'],
-                        'token' => session_id(),
-                        'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
-                    ])->save();
+                    // Create `realtime` record having `type` = session_id(), if not exists so far
+                    Realtime::session();
 
                     // Flush response
                     jflush(true, APP ? $this->info() : ['ok' => '1']);
@@ -2584,18 +2578,9 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Else go further and perform last auth check, within Indi_Trail_Admin::__construct()
                 else t($this->_routeA, $this)->authLevel3();
 
-            // Else if current section is 'index', e.g we are in the root of interface
-            } else if (!m('Realtime')->row(['`type` = "session"', '`token` = "' . session_id() . '"'])) {
-
-                // Create `realtime` entry having `type` = 'session'
-                m('Realtime')->new([
-                    'type' => 'session',
-                    'roleId' => $_SESSION['admin']['roleId'],
-                    'adminId' => $_SESSION['admin']['id'],
-                    'token' => session_id(),
-                    'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
-                ])->save();
-            }
+            // Else if current section is 'index', it means we are in the root of interface,
+            // so create `realtime` record having `type` = 'session', if not exists so far
+            } else Realtime::session();
         }
 
         // If current request had a only aim to check access - report that all is ok
@@ -3271,12 +3256,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!is_array($data)) jflush(false, $data);
 
         // Delete current `realtime` entry, representing the session
-        m('Realtime')->row([
-            '`token` = "' . session_id() . '"',
-            '`type` = "session"',
-            'roleId' => $_SESSION['admin']['roleId'],
-            'adminId' => $_SESSION['admin']['id'],
-        ])->system('unlink', false)->delete(true);
+        Realtime::session()->system('unlink', false)->delete();
 
         // Start a session for user and report that sing-in was ok
         foreach (ar('id,title,email,password,roleId,roleTitle,alternate,mid') as $allowedI)
@@ -3285,14 +3265,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Spoof data
         $_SESSION['admin'] = $admin;
 
-        // Create `realtime` entry having `type` = 'session'
-        m('Realtime')->new([
-            'type' => 'session',
-            'roleId' => $_SESSION['admin']['roleId'],
-            'adminId' => $_SESSION['admin']['id'],
-            'token' => session_id(),
-            'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
-        ])->save();
+        // Create `realtime` record having `type` = session_id(), if not exists so far
+        Realtime::session();
 
         // Reload main window for new session data to be picked
         jflush(true, ['throwOutMsg' => true]);
@@ -4108,7 +4082,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (uri()->format == 'excel' || Indi::get()->jump) return;
 
         // Track involved entries
-        if ($_ = t()->context()) $_->set([
+        if ($_ = Realtime::context()) $_->set([
             'entries' => $this->rowset->column('id', ','),
             'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ])->save();

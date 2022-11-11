@@ -38,7 +38,7 @@ class Indi_View_Action_Admin implements Indi_View_Action_Interface {
     public function render() {
 
         // Create `realtime` entry having `type` = "context"
-        t()->context();
+        Realtime::context();
 
         // Return json-encoded trail data
         return json_encode(['route' =>t(true)->toArray(), 'plain' => $this->plain], JSON_UNESCAPED_UNICODE);

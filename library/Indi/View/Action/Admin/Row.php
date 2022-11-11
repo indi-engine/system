@@ -9,7 +9,7 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         view()->siblingCombo();
 
         // Create `realtime` entry having `type` = "context"
-        t()->context();
+        Realtime::context();
 
         // Prepare and assign raw response for rendering tab contents, if need
         $this->renderTab();

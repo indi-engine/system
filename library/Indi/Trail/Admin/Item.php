@@ -665,63 +665,6 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     }
 
     /**
-     * Get `realtime`-entry of `type`="channel", representing browser tab, where request came from
-     *
-     * @return Indi_Db_Table_Row|null
-     */
-    public function channel() {
-        return defined('CID')
-            ? m('realtime')->row(['`type` = "channel"', '`token` = "' . CID . '"'])
-            : false;
-    }
-
-    /**
-     * Create `realtime` entry having `type` = "context"
-     *
-     * @return Indi_Db_Table_Row
-     */
-    public function context() {
-
-        // If no channel found - return
-        if (!$realtimeR_channel = $this->channel()) return;
-
-        // If context entry already exists - return it
-        if ($realtimeR_context = m('realtime')->row([
-            '`type` = "context"',
-            '`token` = "' . $this->bid() . '"',
-            '`realtimeId` = "' . $realtimeR_channel->id . '"'
-        ])) return $realtimeR_context;
-
-        // Else:
-
-        // Get data to be copied
-        $data = $realtimeR_channel->original(); unset($data['id'], $data['spaceSince']);
-
-        // Get involved fields
-        $fields = t()->row
-            ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
-            : t()->gridFields->select(': > 0')->column('id', ',');
-
-        // Create `realtime` entry of `type` = "context"
-        $realtimeR_context = m('realtime')->new([
-            'realtimeId' => $realtimeR_channel->id,
-            'type' => 'context',
-            'token' => $this->bid(),
-            'sectionId' => $this->section->id,
-            'entityId' => $this->section->entityId,
-            'fields' => $fields,
-            'title' => t(true)->toString(),
-            'mode' => $this->action->selectionRequired == 'y' ? 'row' : 'rowset'
-        ] + $data);
-
-        // Save it
-        $realtimeR_context->save();
-
-        // Return it
-        return $realtimeR_context;
-    }
-
-    /**
      * Get render config
      *
      * @return array
