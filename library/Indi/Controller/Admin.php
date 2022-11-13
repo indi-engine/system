@@ -565,9 +565,6 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Demo mode
         Indi::demo();
         
-        // Do pre delete maintenance
-        $this->preDelete();
-
         // Declare array of ids of entries, that should be deleted, and push main entry's id as first item
         $toBeDeletedIdA[] = $this->row->id;
 
@@ -586,6 +583,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             ['`id` IN (' . im($toBeDeletedIdA) . ')', t()->scope->WHERE],
             t()->scope->ORDER
         );
+
+        // Do pre delete maintenance
+        $this->preDelete($toBeDeletedRs);
 
         // Array of deleted ids
         $deleted = [];
@@ -2435,11 +2435,18 @@ class Indi_Controller_Admin extends Indi_Controller {
     /**
      * Perform authentication by 3 levels
      */
-    public function auth() {
+    public function auth($sessionOnly = false) {
 
         // Allow CORS
         header('Access-Control-Allow-Headers: x-requested-with, indi-auth');
         header('Access-Control-Allow-Origin: *');
+
+        // If only active session should be checked, but none found
+        if ($sessionOnly) {
+            if (Realtime::session(true)) return;
+            else if ($this->confirm(I_THROW_OUT_SESSION_EXPIRED, 'OKCANCEL', '', '401 Unauthorized'))
+                jflush(false, ['throwOutMsg' => true]);
+        }
 
         // If visitor is a visitor, e.g. he has not signed in yet
         if (!$_SESSION['admin']) {

@@ -729,7 +729,7 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
         }
 
     // Else if message type is 'realtime'
-    } else if ($data['type'] == 'realtime' || $data['type'] == 'F5' || $data['type'] == 'menu') {
+    } else if ($data['type'] == 'realtime' || $data['type'] == 'F5' || $data['type'] == 'menu' || $data['type'] == 'message') {
 
         // If recepient channel is given as `true` - send message to all recepients
         if ($data['to'] === true) foreach ($clientA as $clientI) fwrite($clientI, encode(json_encode($data)));

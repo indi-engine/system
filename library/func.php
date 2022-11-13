@@ -3092,3 +3092,20 @@ function rglob($pattern, $flags = 0) {
     }
     return $fileA;
 }
+
+/**
+ * Send message to a websocket channel to be displayed in the same way as notification
+ */
+function msg($msg, $success = true, $to = null) {
+
+    // Prepare msg
+    $msg = [
+        'header' => '',
+        'body' => usubstr($msg, 350),
+        'bg' => $success ? '#008dbc': '#e3495a',
+        'fg' => '#ffffff',
+    ];
+
+    // Do send
+    Indi::ws(['type' => 'message', 'to' => $to ?: CID, 'msg' => $msg]);
+}

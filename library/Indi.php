@@ -2211,7 +2211,7 @@ class Indi {
         if (!ini('ws')->enabled) return;
 
         // If data type is 'realtime' or 'F5', and rabbitmq is enabled
-        if (in($data['type'], 'realtime,F5') && ini('rabbitmq')->enabled) {
+        if (in($data['type'], 'realtime,message,F5') && ini('rabbitmq')->enabled) {
 
             // If rabbitmq connection channel not yet exists
             if (!self::$_mq) {
