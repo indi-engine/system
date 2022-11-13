@@ -126,6 +126,9 @@ class Indi_Db {
                     @self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->dbname . ';host=' . $arg->host,
                         $arg->username, $arg->password);
 
+                    // Set attribute for useing custom statement class
+                    self::$_pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Indi_Db_PDOStatement::class]);
+
                 // If something goes wrong
                 } catch (PDOException $e) {
 
@@ -593,7 +596,7 @@ class Indi_Db {
      *
      * @uses Indi_Db::sql()
      * @param $sql
-     * @return int|PDOStatement
+     * @return int|Indi_Db_PDOStatement
      */
     public function query($sql) {
 

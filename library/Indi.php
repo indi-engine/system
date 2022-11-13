@@ -2207,74 +2207,54 @@ class Indi {
      */
     public static function ws($data) {
 
-        // If websockets is not enabled - return
-        if (!ini('ws')->enabled) return;
+        // If websockets or rabbitmq is not enabled - return
+        if (!ini('ws')->enabled || !ini('rabbitmq')->enabled) return;
 
-        // If data type is 'realtime' or 'F5', and rabbitmq is enabled
-        if (in($data['type'], 'realtime,message,F5') && ini('rabbitmq')->enabled) {
+        // If rabbitmq connection channel not yet exists
+        if (!self::$_mq) {
 
-            // If rabbitmq connection channel not yet exists
-            if (!self::$_mq) {
+            // Get credentials
+            $mq = (array) ini('rabbitmq');
 
-                // Get credentials
-                $mq = (array) ini('rabbitmq');
+            // Create connection
+            $connection = new AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
 
-                // Create connection
-                $connection = new AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
-
-                // Create channel
-                self::$_mq = $connection->channel();
-            }
-
-            // Send message
-            self::$_mq->basic_publish(new AMQPMessage(json_encode($data)), '', $data['to']);
-
-            // Return
-            return;
+            // Create channel
+            self::$_mq = $connection->channel();
         }
 
-        // If client socket is not yet created
-        if (!self::$_ws && $data !== false)  {
+        // Message to be published
+        $message = new AMQPMessage(json_encode($data));
 
-            // Build path
-            $path = str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT) .'/' . grs(8) . '/websocket';
+        // Channels array
+        $channelA = [];
 
-            // Try create client
-            try {
+        // If destination is `true` - it means message should be delivered to ALL channels we currently have
+        if ($data['to'] === true) {
 
-                // Create client
-                self::$_ws = new WsClient('ws://' . ini('ws')->host . ':' . ini('ws')->port . '/' . $path);
+            // Get all channels
+            $channelA = db()->query('SELECT `token` FROM `realtime` WHERE `type` = "channel"')->col();
 
-            // If exception caught
-            } catch (Exception $e) {
+        // Else if destination is an array
+        } else if (is_array($data['to'])) {
 
-                // Log it
-                wslog($e->getMessage());
+            // Assume keys are roleIds and values are adminIds (or `true` which mean all adminIds) of that roleId
+            foreach ($data['to'] as $roleId => $adminIdA) if ($adminIdA) {
+
+                // Build WHERE clause
+                $where = ['`type` = "channel"', "`roleId` = '$roleId'"];
+                if (is_array($adminIdA)) $where [] = '`adminId` IN (' . im($adminIdA) . ')';
+                $where = join(' AND ', $where);
+
+                // Get destination/recepient channels
+                $channelA += db()->query("SELECT `id`, `token` FROM `realtime` WHERE $where")->pairs();
             }
-        }
 
-        // If client socket exists
-        if (self::$_ws) {
+        // Else if destination is a channel id - it means we should deliver to certain channel
+        } else if (Indi::rexm('wskey', $data['to'])) $channelA []= $data['to'];
 
-            // If $data arg is `false`
-            if ($data === false) {
-
-                // Close channel
-                self::$_ws->close();
-
-                // Unset channel
-                self::$_ws = null;
-
-            // Else
-            } else {
-
-                // Log message
-                if (ini('ws')->log) wsmsglog($data, $data['row'] . '.evt');
-
-                // Send message
-                self::$_ws->send(json_encode($data));
-            }
-        }
+        // Send message to each channel need
+        foreach ($channelA as $channel) self::$_mq->basic_publish($message, '', $channel);
     }
 
     /**
