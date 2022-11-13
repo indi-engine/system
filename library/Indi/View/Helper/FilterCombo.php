@@ -118,19 +118,19 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
                   SELECT DISTINCT `' . $connector->alias . '`
                   FROM `' . $tbl . '`' .
                   (strlen($sw) ? 'WHERE ' . $sw : '')
-                )->fetchAll(PDO::FETCH_COLUMN);
+                )->col();
 
                 // Get the distinct list of possibilities
                 $in = db()->query('
                   SELECT DISTINCT `'. $field->original('alias') . '`
                   FROM `' . $connector->rel()->table() .'`
                   WHERE `id` IN (0' . rif(im($connector_in), ',$1') . ')'
-                )->fetchAll(PDO::FETCH_COLUMN);
+                )->col();
 
             // Else get the distinct list of possibilities using usual approach
             } else $in = db()->query('
               SELECT DISTINCT `'. $alias . '` FROM `' . $this->distinctFrom($alias, $tbl) .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
-            )->fetchAll(PDO::FETCH_COLUMN);
+            )->col();
 
             // Setup $m flag/shortcut, indicating whether field is really multi-key,
             // because current value of `storeRelationAbility` may be not same as original,

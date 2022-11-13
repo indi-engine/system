@@ -236,7 +236,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
                 if ($nestedWHERE = m($table)->fields($columns, 'rowset')->keywordWHERE($keyword)) {
                     $idA = db()->query('
                         SELECT `' . $connector . '` FROM `block` WHERE ' . $nestedWHERE
-                    )->fetchAll(PDO::FETCH_COLUMN);
+                    )->col();
                     $where[] = count($idA) ? '`id` IN (' . implode(',', $idA) . ')' : 'FALSE';
                 }
             }

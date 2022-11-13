@@ -382,7 +382,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Get ordered enumset aliases
         $enumsetA_alias = db()->query(
             'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
-        )->fetchAll(PDO::FETCH_COLUMN);
+        )->col();
 
         // Get current position
         $currentIdx = array_flip($enumsetA_alias)[$this->alias];

@@ -853,7 +853,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         SELECT `id` FROM `' . $this->_table . '`
                         WHERE `id` IN (' . rif($first, '$1,') . rif($last, '$1,') .  $this->id . ')
                         ' . rif($order, 'ORDER BY $1') . ' 
-                    ')->fetchAll(PDO::FETCH_COLUMN);
+                    ')->col();
 
                     // If deleted entry ID is above the others, it means it belongs to the one of prev pages
                     if ($this->id == array_shift($idA)) {
@@ -948,7 +948,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             SELECT `id` FROM `' . $this->_table . '`
                             WHERE `id` IN (' . rif($scope['pgupLast'], '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
                             ' . rif($order, 'ORDER BY $1') . ' 
-                        ')->fetchAll(PDO::FETCH_COLUMN);
+                        ')->col();
 
                         // If new entry belongs to prev page
                         if ($scope['pgupLast'] && $this->id == array_shift($idA)) {
@@ -1298,7 +1298,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($this->_table == 'enumset') $sql .= ' AND `consider` = "' . $this->fieldId . '"';
 
         // Fetch usage map entries ids, and if ono found - return
-        if (!$considerIdA = db()->query($sql)->fetchAll(PDO::FETCH_COLUMN)) return;
+        if (!$considerIdA = db()->query($sql)->col()) return;
 
         // Prepare params
         $params = [

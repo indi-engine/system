@@ -468,7 +468,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                       AND `group` = "' . $_['indiId']->group . '" 
                       AND `gridId` = "' . $_['indiId']->gridId . '"
                     ORDER BY `move`
-                ')->fetchAll(PDO::FETCH_COLUMN);
+                ')->col();
 
                 // Do reorder
                 if ($move = array_search($_['indiId']->id, $siblingIdA) - Indi::post()->index)
@@ -2282,14 +2282,14 @@ class Indi_Controller_Admin extends Indi_Controller {
             SELECT `id`
             FROM `section`
             WHERE `sectionId` = "0" AND `toggle` = "y"
-        ')->fetchAll(PDO::FETCH_COLUMN);
+        ')->col();
 
         // Get array of level 1 toggled 'On' sections ids.
         $level1ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
             WHERE FIND_IN_SET(`sectionId`, "' . implode(',', $level0ToggledOnSectionIdA) . '") AND `toggle` = "y"
-        ')->fetchAll(PDO::FETCH_COLUMN);
+        ')->col();
 
         // Try to find user data in primary place - `admin` table
         $data = $this->_findSigninUserData($username, $password, 'admin', null, $level1ToggledOnSectionIdA);
@@ -3310,7 +3310,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                   AND `type` = "channel" 
                   AND `realtimeId` = "' . $_->id . '" 
                   AND `token` != "' . CID . '"
-            ')->fetchAll(PDO::FETCH_COLUMN) as $channel)
+            ')->col() as $channel)
 
                 // Reload tabs
                 Indi::ws([
@@ -3664,7 +3664,7 @@ class Indi_Controller_Admin extends Indi_Controller {
               AND `criteriaRelyOn` = "getter"
               AND `roleId` = "' . admin()->roleId . '"
               AND `toggle` = "y"
-        ')->fetchAll(PDO::FETCH_COLUMN);
+        ')->col();
 
         // Get ids of relyOnEvent-notices, that should be used to setup menu-qty counters for current user's menu
         $noticeIdA_relyOnEvent = db()->query('

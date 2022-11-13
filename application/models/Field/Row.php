@@ -537,7 +537,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $valueA = db()->query($this->entry
                 ? 'SELECT DISTINCT `cfgValue` FROM `param` WHERE `cfgField` = "' . $this->id . '"'
                 : 'SELECT DISTINCT `' . $this->_original['alias'] . '` FROM `' . $table . '`'
-            )->fetchAll(PDO::FETCH_COLUMN);
+            )->col();
 
             // Set default value
             if (!$this->defaultValue) $this->defaultValue = $valueA[0];
@@ -1388,7 +1388,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                             SELECT DISTINCT `' . $this->alias . '` AS `id`
                             FROM `' . m($this->entityId)->table() . '`
                             ' . ($where ? 'WHERE ' . (is_array($where) ? implode(' AND ', $where) : $where) : '') . '
-                        ')->fetchAll(PDO::FETCH_COLUMN);
+                        ')->col();
 
                         // If at least one key was found
                         if (count($setA)) {
@@ -1466,7 +1466,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $idA = db()->query('
                 SELECT `alias` FROM `enumset`
                 WHERE `fieldId` = "' . $this->id . '" AND `title` LIKE :s
-            ', '%' . $keyword . '%')->fetchAll(PDO::FETCH_COLUMN);
+            ', '%' . $keyword . '%')->col();
 
             // Return clause
             return count($idA)
@@ -1493,7 +1493,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     // Get the ids
                     $idA = db()->query('
                         SELECT `id` FROM `' . $relatedM->table() . '` WHERE `id` LIKE :s
-                    ', '%' . $keyword . '%')->fetchAll(PDO::FETCH_COLUMN);
+                    ', '%' . $keyword . '%')->col();
 
             // Else if WHERE clause, got for keyword search on related model title field - is not 'FALSE'
             } else if (($titleColumnWHERE = $relatedM->titleField()->keywordWHERE($keyword)) != 'FALSE') {
@@ -1501,7 +1501,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 // Find matched foreign rows, collect their ids, and add a clause
                 $idA = db()->query($sql = '
                     SELECT `id` FROM `' . $relatedM->table() . '` WHERE ' . $titleColumnWHERE . '
-                ')->fetchAll(PDO::FETCH_COLUMN);
+                ')->col();
             }
 
             // Return clause
@@ -1849,7 +1849,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Get ordered fields aliases
         $fieldA_alias = db()->query(
             'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
-        )->fetchAll(PDO::FETCH_COLUMN);
+        )->col();
 
         // Get current position
         $currentIdx = array_flip($fieldA_alias)[$this->alias];

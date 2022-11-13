@@ -1151,7 +1151,7 @@ class Indi {
                 FROM `' . $model->table() . '`
                 WHERE `id` IN (' . implode(',', $idA) . ')
                 ORDER BY ' . $expr . '
-            ')->fetchAll(PDO::FETCH_COLUMN);
+            ')->col();
         }
 
         // Return reordered ids

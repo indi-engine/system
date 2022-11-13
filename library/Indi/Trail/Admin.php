@@ -59,7 +59,7 @@ class Indi_Trail_Admin {
         // Get array of actions that are toggled on
         self::$toggledActionIdA = db()
             ->query('SELECT `id` FROM `action` WHERE `toggle` = "y"')
-            ->fetchAll(PDO::FETCH_COLUMN);
+            ->col();
 
         // Setup accessible actions
         $sectionRs->nested('section2action', [

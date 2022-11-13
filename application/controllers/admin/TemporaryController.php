@@ -455,13 +455,13 @@ class Admin_TemporaryController extends Indi_Controller {
         // Create `year` entries
         foreach(db()->query('
             SELECT DISTINCT YEAR(`datetime`) FROM `changeLog`
-        ')->fetchAll(PDO::FETCH_COLUMN) as $year)
+        ')->col() as $year)
             Year::o($year);
 
         // Create `month` entries
         foreach (db()->query('
             SELECT DISTINCT DATE_FORMAT(`datetime`, "%Y-%m") AS `Ym` FROM `changeLog` ORDER BY `Ym`
-        ')->fetchAll(PDO::FETCH_COLUMN) as $Ym)
+        ')->col() as $Ym)
             $monthA[$Ym] = Month::o($Ym)->id;
 
         // Setup `monthId` for `changeLog` entries with zero-value in `monthId` col

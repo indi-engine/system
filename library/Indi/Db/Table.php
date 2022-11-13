@@ -1048,7 +1048,7 @@ class Indi_Db_Table
             . ($limit ? ' LIMIT ' . $limit : '');
 
         // Fetch and return result
-        return $data = db()->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        return $data = db()->query($sql)->col();
     }
 
     /**

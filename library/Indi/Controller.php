@@ -526,7 +526,7 @@ class Indi_Controller {
                         $idA = db()->query(
                             'SELECT `id` FROM `:p` WHERE ' . $furtherWHERE,
                             m($found->entityId)->table()
-                        )->fetchAll(PDO::FETCH_COLUMN);
+                        )->col();
 
                         // Set up WHERE clause according to value of $multiSelect flag
                         $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
@@ -635,7 +635,7 @@ class Indi_Controller {
             // Append part of WHERE clause, that will be involved in the process of fetching filter combo data
             $where[] = '`id` IN (' . (($in = db()->query('
                 SELECT DISTINCT `'. $for . '` FROM `' . $tbl .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
-            )->fetchAll(PDO::FETCH_COLUMN)) ? trim(implode(',', $in), ',') : 0) . ')';
+            )->col()) ? trim(implode(',', $in), ',') : 0) . ')';
         }
 
         // Setup a row

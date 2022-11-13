@@ -130,7 +130,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'icon' => 'resources/images/icons/color-text.svg',
         ]);
         grid('enumset', 'move', ['move' => 'features']);
-        $fieldIdA = db()->query('SELECT DISTINCT `fieldId` FROM `enumset` WHERE `title` LIKE "%<%"')->fetchAll(PDO::FETCH_COLUMN);
+        $fieldIdA = db()->query('SELECT DISTINCT `fieldId` FROM `enumset` WHERE `title` LIKE "%<%"')->col();
         d('fields having styled enumset ' . count($fieldIdA));
         d($fieldIdA);
         foreach (m('field')->all('`id` IN (' . im($fieldIdA ?: [0]) . ')') as $f) {
@@ -1294,8 +1294,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section('admins', ['extendsPhp' => 'Indi_Controller_Admin_Exportable']);
         section2action('admins','export', ['move' => 'toggle', 'profileIds' => '1']);
         if ($_ = field('columnType', 'title')) $_->delete();
-        $fieldIdA_enumset = im(db()->query('SELECT `id` FROM `field` WHERE `relation` = "6"')->fetchAll(PDO::FETCH_COLUMN));
-        $fieldIdA_dependent = im(db()->query('SELECT DISTINCT `fieldId` FROM `consider`')->fetchAll(PDO::FETCH_COLUMN));
+        $fieldIdA_enumset = im(db()->query('SELECT `id` FROM `field` WHERE `relation` = "6"')->col());
+        $fieldIdA_dependent = im(db()->query('SELECT DISTINCT `fieldId` FROM `consider`')->col());
         $textTypes = im([coltype('TEXT')->id, coltype('VARCHAR(255)')->id]);
         $fieldIdA_text = im(db()->query('
             SELECT `id` 
@@ -1304,7 +1304,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
               AND `id` IN (' . $fieldIdA_dependent . ') 
               AND `relation` = "0" 
               AND `columnTypeId` IN (' . $textTypes . ')
-        ')->fetchAll(PDO::FETCH_COLUMN));
+        ')->col());
         $foreign = field('enumset', 'title')->id;
         d(m('consider')->all([
             '`fieldId` IN (' . $fieldIdA_text . ')',

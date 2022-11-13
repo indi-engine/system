@@ -76,7 +76,7 @@ trait Indi_Queue_L10n_AdminExport {
             FROM `queueChunk`
             WHERE `id` IN (' . im(array_keys($this->meta)) . ')
             ORDER BY `move`
-        ')->fetchAll(PDO::FETCH_COLUMN);
+        ')->col();
 
         // Collect field ids in right order
         foreach ($chunkIdA as $chunkId) {

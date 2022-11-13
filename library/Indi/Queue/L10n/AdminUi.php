@@ -88,7 +88,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             if ($entityR->table == 'changeLog') {
 
                 // Get distinct `fieldId`-values
-                $fieldIds = im(db()->query('SELECT DISTINCT `fieldId` FROM `changeLog`')->fetchAll(PDO::FETCH_COLUMN));
+                $fieldIds = im(db()->query('SELECT DISTINCT `fieldId` FROM `changeLog`')->col());
 
                 // Collect ids of applicable fields
                 $fieldIdA = [];
@@ -123,7 +123,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                             WHERE 1
                               AND `p`.`cfgField` = `f`.`id`
                               AND `f`.`entityId` IN (' . $master['entity']['instances'] . ')
-                        ')->fetchAll(PDO::FETCH_COLUMN)) ?: 0;
+                        ')->col()) ?: 0;
 
                         //
                         $where = '`cfgField` IN ('. $cfgFieldIds . ')';
@@ -146,7 +146,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                               AND `p`.`cfgField` IN (' . $cfgFieldIds . ')
                               AND `p`.`fieldId` = `f`.`id`
                               AND `f`.`entityId` IN (' . $master['entity']['instances'] . ')
-                        ')->fetchAll(PDO::FETCH_COLUMN)) ?: 0;
+                        ')->col()) ?: 0;
 
                         //
                         $where = '`fieldId` IN ('. $fieldIds . ') AND `cfgField` IN (' . $cfgFieldIds . ')';
@@ -502,7 +502,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                     SELECT IF(`foreign` = "0", `consider`, `foreign`) AS `consider` 
                     FROM `consider`
                     WHERE `fieldId` = "' . $item['fieldId'] . '"
-                ')->fetchAll(PDO::FETCH_COLUMN)) $item['consider'] = $_;
+                ')->col()) $item['consider'] = $_;
             }
 
             // Append item to dict

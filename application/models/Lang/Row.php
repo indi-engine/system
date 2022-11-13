@@ -60,7 +60,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // If localized enumset-fields found, append new item in $fieldA
         if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
-        ')->fetchAll(PDO::FETCH_COLUMN))
+        ')->col())
             foreach(ar('title') as $field)
                 $fieldA []= [
                     'table' => 'enumset',
@@ -115,7 +115,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // If localized enumset-fields found, append them in $fieldA
         if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
-        ')->fetchAll(PDO::FETCH_COLUMN))
+        ')->col())
             foreach(ar('title') as $field)
                 $fieldA []= [
                     'table' => 'enumset',
@@ -164,7 +164,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // If localized enumset-fields found, append new item in $fieldA
         if ($fieldIdA_enumset = db()->query('
             SELECT `id` FROM `field` WHERE `l10n` = "y" AND `relation` = "6"
-        ')->fetchAll(PDO::FETCH_COLUMN))
+        ')->col())
             foreach(ar('title') as $field)
                 $fieldA []= [
                     'table' => 'enumset',

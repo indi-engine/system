@@ -196,7 +196,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         // Get ordered fields aliases
         $sectionA_alias = db()->query(
             'SELECT `alias` FROM `:p` :p ORDER BY `move`', $this->_table, rif($within = im($wfw, ' AND '), 'WHERE $1')
-        )->fetchAll(PDO::FETCH_COLUMN);
+        )->col();
 
         // Get current position
         $currentIdx = array_flip($sectionA_alias)[$this->alias];
