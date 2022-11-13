@@ -189,9 +189,6 @@ $pathA = [];
 // Array, containing hostname mentioned within handshake-headers
 $hostA = [];
 
-// Meta array, containing info about what users the active streams belongs to, and what roles those users are
-$channelA = [];
-
 // RabbitMQ queues array
 $queueA = [];
 
@@ -238,7 +235,7 @@ while (true) {
             if ($ini['log']) logd('nobinary: ' . $index);
 
             // Close client's stream
-            close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
+            close($clientI, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
 
             // Goto next stream
             continue;
@@ -265,7 +262,7 @@ while (true) {
                 if ($ini['log']) logd('type=close: ' . $index);
 
                 // Close client's stream
-                close($clientI,$channelA, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
+                close($clientI, $index,$ini,$sessidA,$langidA,$rabbit,$queueA,$clientA, $pathA, $hostA);
 
                 // Goto next stream
                 continue 2;
@@ -278,7 +275,7 @@ while (true) {
             $data = json_decode($data['payload'], true);
 
             // Write data to clients
-            write($data, $index, $channelA, $clientA, $ini);
+            write($data, $index, $clientA, $ini);
 
         // While binary data remaining
         } while ($binary);
@@ -297,7 +294,7 @@ while (true) {
             logd('mq: ' . $msg->body);
 
             // Write data to clients
-            write($data, $index, $channelA, $clientA, $ini);
+            write($data, $index, $clientA, $ini);
 
             // Acknowledge the queue about that message is picked
             $rabbit->basic_ack($msg->getDeliveryTag());
@@ -508,6 +505,9 @@ function session($info, &$sessidA, $index, $ini, &$langidA, $rabbit, &$queueA, &
  */
 function encode($payload, $type = 'text', $masked = false) {
 
+    // Stringify $payload
+    if (is_array($payload)) $payload = json_encode($payload);
+
     // Frame head
     $fh = [];
 
@@ -654,53 +654,37 @@ function decode($data) {
  *
  * @param $data
  * @param $index
- * @param $channelA
  * @param $clientA
  * @param $ini
  */
-function write($data, $index, &$channelA, &$clientA, $ini) {
+function write($data, $index, &$clientA, $ini) {
 
     // If some user connected
     if ($data['type'] == 'open') {
 
-        // Get user's role id and self id
-        list($rid, $uid) = explode('-', $data['uid']);
-
-        // Organize channels
-        if (!is_array($channelA[$rid])) $channelA[$rid] = [];
-        if (!is_array($channelA[$rid][$uid])) $channelA[$rid][$uid] = [];
-        $channelA[$rid][$uid][$index] = $index;
-
         // Log that open-message is received
         if ($ini['log']) logd('open: ' . $data['uid'] . '-' . $index);
 
-        // Write message into channel
-        fwrite($clientA[$channelA[$rid][$uid][$index]], encode(json_encode(['type' => 'opened', 'cid' => $index])));
+        $data = ['type' => 'opened', 'cid' => $index];
 
     // Else if previously connected user pings the server
     } else if ($data['type'] == 'ping') {
-
-        // Get user's role id and self id
-        list($rid, $uid) = explode('-', $data['uid']);
 
         // If logging is On - do log ping
         if ($ini['log']) logd('ping: ' . json_encode($data));
 
         // Change type to 'pong'
         $data['type'] = 'pong';
+    }
 
-        // Write pong-message into channel
-        fwrite($clientA[ $channelA[$rid][$uid][$data['cid']] ], encode(json_encode($data)));
-
-    // Else else if recepient channel id is given and channel exists - write message into that channel
-    } else if ($clientA[$data['to']]) fwrite($clientA[$data['to']], encode(json_encode($data)));
+    // Write message into that channel
+    fwrite($clientA[$index], encode($data));
 }
 
 /**
  * Close client socket
  *
  * @param $clientI
- * @param $channelA
  * @param $index
  * @param $ini
  * @param $sessidA
@@ -711,70 +695,56 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
  * @param $pathA
  * @param $hostA
  */
-function close(&$clientI, &$channelA, $index, &$ini, &$sessidA, &$langidA, &$rabbit, &$queueA, &$clientA, &$pathA, &$hostA) {
+function close(&$clientI, $index, &$ini, &$sessidA, &$langidA, &$rabbit, &$queueA, &$clientA, &$pathA, &$hostA) {
 
     // Close client's current stream
     fclose($clientI);
 
-    // Unset meta info, related to current stream
-    foreach ($channelA as $rid => $byrid)
-        foreach ($channelA[$rid] as $uid => $byuid) {
-            if (isset($channelA[$rid][$uid][$index])) {
+    // If queue exists
+    if (isset($queueA[$index])) {
 
-                // Remove channel from channels registry
-                unset($channelA[$rid][$uid][$index]);
+        // Delete queue
+        $rabbit->queue_delete($index);
 
-                // Log that channel was closed
-                if ($ini['log']) logd('close: ' . $rid . '-' . $uid . '-' . $index);
-
-                // If session id detected, and `realtime` entry of `type` = "session" found
-                if (array_key_exists($index, $sessidA)) {
-
-                    // Init curl
-                    $ch = curl_init();
-
-                    // Log that Indi Engine is going to be notified about closed channel
-                    if ($ini['log']) logd('closetab init: ' . $rid . '-' . $uid . '-' . $index);
-
-                    // Set opts
-                    curl_setopt_array($ch, [
-                        CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/closetab/',
-                        CURLOPT_HTTPHEADER => [
-                            'Indi-Auth: ' . implode(':', [$sessidA[$index], $langidA[$index], $index]),
-                            'Cookie: ' . 'PHPSESSID=' . $sessidA[$index] . '; i-language=' . $langidA[$index]
-                        ]
-                    ]);
-
-                    // Exec and get output and/or error, if any
-                    $out = curl_exec($ch); $err = curl_error($ch);
-
-                    // Log output and/or error
-                    logd('curl reponse: ' . $out); logd('curl error: ' . $err);
-
-                    // Close curl
-                    curl_close($ch);
-
-                    // Log
-                    if ($ini['log']) logd('closetab done: '  . $rid . '-' . $uid . '-' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/closetab/');
-
-                    // Drop session id and language id
-                    unset($sessidA[$index], $langidA[$index], $pathA[$index], $hostA[$index]);
-
-                    // If queue exists
-                    if (isset($queueA[$index])) {
-
-                        // Delete queue
-                        $rabbit->queue_delete($index);
-
-                        // Unset queue dict
-                        unset($queueA[$index]);
-                    }
-                }
-            }
-        }
+        // Unset queue dict
+        unset($queueA[$index]);
+    }
 
     // Unset current stream
     unset($clientA[$index]); echo 'close';
+
+    // Log that channel was closed
+    if ($ini['log']) logd('close: ' . $index);
+
+    // Init curl
+    $ch = curl_init();
+
+    // Log that Indi Engine is going to be notified about closed channel
+    if ($ini['log']) logd('closetab init: ' . $index);
+
+    // Set opts
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/closetab/',
+        CURLOPT_HTTPHEADER => [
+            'Indi-Auth: ' . implode(':', [$sessidA[$index], $langidA[$index], $index]),
+            'Cookie: ' . 'PHPSESSID=' . $sessidA[$index] . '; i-language=' . $langidA[$index]
+        ]
+    ]);
+
+    // Exec and get output and/or error, if any
+    $out = curl_exec($ch); $err = curl_error($ch);
+
+    // Log output and/or error
+    logd('curl reponse: ' . $out); logd('curl error: ' . $err);
+
+    // Close curl
+    curl_close($ch);
+
+    // Log
+    if ($ini['log']) logd('closetab done: ' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/closetab/');
+
+    // Drop session id and language id
+    unset($sessidA[$index], $langidA[$index], $pathA[$index], $hostA[$index]);
 }
 
 // Shutdown
