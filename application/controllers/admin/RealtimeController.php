@@ -61,8 +61,11 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Check session
         $this->auth(true);
 
-        // Attempt to start websocket-server
+        // Check status of websocket-server
         $flush = $this->status();
+
+        // If websocket-server is not running - start it
+        if ($flush['success'] === false) $flush = $this->start();
 
         // Flush result
         jflush($flush);
