@@ -692,51 +692,8 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
         // Write pong-message into channel
         fwrite($clientA[ $channelA[$rid][$uid][$data['cid']] ], encode(json_encode($data)));
 
-    // Else if message type is 'notice' or 'reload'
-    } else if ($data['type'] == 'notice' || $data['type'] == 'reload') {
-
-        // If logging is On - do log
-        if ($ini['log'] && $data['row']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.rcv.msg', date('Y-m-d H:i:s') . ' => ' . print_r($data, true) . "\n", FILE_APPEND);
-
-        // Walk through roles, that recipients should have
-        // If there are channels already exist for recipients, having such role
-        foreach ($data['to'] as $rid => $uidA) if ($channelA[$rid]) {
-
-            // If all recipients having such role should be messaged
-            // Send message to all recipients having such role
-            if ($data['to'][$rid] === true) foreach ($channelA[$rid] as $uid => $byrole)
-                foreach ($channelA[$rid][$uid] as $cid) {
-
-                    // If logging is On - do log
-                    if ($ini['log']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
-
-                    // Write message into channel
-                    fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
-                }
-
-            // Else if we have certain list of recipients
-            // Send message to certain recipients
-            else foreach ($data['to'][$rid] as $uid)
-                if ($channelA[$rid][$uid])
-                    foreach ($channelA[$rid][$uid] as $cid) {
-
-                        // If logging is On - do log
-                        if ($ini['log']) file_put_contents(DOC . '/application/ws.' . $data['row'] . '.snt.msg', date('Y-m-d H:i:s => ') . print_r($data + compact('rid', 'uid', 'cid'), true) . "\n", FILE_APPEND);
-
-                        // Write message into channel
-                        fwrite($clientA[$channelA[$rid][$uid][$cid]], encode(json_encode($data)));
-                    }
-        }
-
-    // Else if message type is 'realtime'
-    } else if ($data['type'] == 'realtime' || $data['type'] == 'F5' || $data['type'] == 'menu' || $data['type'] == 'message') {
-
-        // If recepient channel is given as `true` - send message to all recepients
-        if ($data['to'] === true) foreach ($clientA as $clientI) fwrite($clientI, encode(json_encode($data)));
-
-        // Else if recepient channel id is given and channel exists - write message into that channel
-        else if ($clientA[$data['to']]) fwrite($clientA[$data['to']], encode(json_encode($data)));
-    }
+    // Else else if recepient channel id is given and channel exists - write message into that channel
+    } else if ($clientA[$data['to']]) fwrite($clientA[$data['to']], encode(json_encode($data)));
 }
 
 /**
