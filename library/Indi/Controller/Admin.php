@@ -2499,7 +2499,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Show prompt asking whether proceed to re-login
                     // If OK is pressed - reload the page so login screen will be shown
                     if (uri()->section != 'index' || uri()->action != 'index')
-                        if ($this->confirm(I_THROW_OUT_SESSION_EXPIRED))
+                        if ($this->confirm(I_THROW_OUT_SESSION_EXPIRED, 'OKCANCEL', '', '401 Unauthorized'))
                             jflush(false, ['throwOutMsg' => true]);
 
                     // Flush basic info
@@ -3921,16 +3921,16 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @param string|null $cancelMsg Msg, that will be shown in case if 'Cancel'
      *                    button was pressed or confirmation window was closed
      */
-    public function confirm($msg, $buttons = 'OKCANCEL', $cancelMsg = null) {
+    public function confirm($msg, $buttons = 'OKCANCEL', $cancelMsg = null, $httpStatus = '400 Bad Request') {
 
         // Get answer
         $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
 
         // If no answer, flush confirmation prompt
-        if (!$answer) jconfirm(is_array($msg) ? im($msg, '<br>') : $msg, $buttons);
+        if (!$answer) jconfirm(is_array($msg) ? im($msg, '<br>') : $msg, $buttons, $httpStatus);
 
         // If answer is 'cancel' - stop request processing
-        else if ($answer == 'cancel') jflush(false, $cancelMsg);
+        else if ($answer == 'cancel') jflush(['success' => false, 'httpStatus' => $httpStatus], $cancelMsg);
 
         // Return answer
         return Indi::$answer[count(Indi::$answer)] = $answer;

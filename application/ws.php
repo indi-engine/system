@@ -216,104 +216,17 @@ while (true) {
     // If server got new client
     if (in_array($server, $listenA)) {
 
-        // Accept client's stream
-        if (($clientI = stream_socket_accept($server, -1)) && $info = handshake($clientI)) {
-
-            // Write empty json
-            fwrite($clientI, encode('{}'));
-
-            // Add to collection
-            $clientA[$index = $info['Sec-WebSocket-Key'] ?: count($clientA)] = $clientI;
-
-            // Log channel id of accepted client
-            if ($ini['log']) logd('accepted: ' . $index);
-
-            // Log headers
-            if ($ini['log']) logd('handshake: ' . var_export($info, 1));
-
-            // If  session id detected, and `realtime` entry of `type` = "session" found
-            if (preg_match('~PHPSESSID=([^; ]+)~', $info['Cookie'], $sessid)) {
-
-                // Remember session id
-                $sessidA[$index] = $sessid[1];
-
-                // Log
-                if ($ini['log']) logd('identified: ' . $index);
-
-                // Get language
-                preg_match('~i-language=([a-zA-Z\-]{2,5})~', $info['Cookie'], $langid);
-
-                // Remember language
-                $langidA[$index] = $langid[1];
-
-                // Init curl
-                $ch = curl_init();
-
-                // If RabbitMQ is turned on
-                if ($rabbit) {
-
-                    // Declare queue
-                    $rabbit->queue_declare($index, false, false, true, false);
-
-                    // Collect client socket
-                    $queueA[$index] = $clientI;
-                }
-
-                // Log
-                if ($ini['log']) logd('opentab init: ' . $index);
-
-                // Build url
-                $prevcid = '';
-
-                // If query string given in $info['path'] and ?prev=xxx param is there
-                if ($q = parse_url($info['uri'], PHP_URL_QUERY)) {
-
-                    // Get query params
-                    parse_str($q, $a);
-
-                    // Append prev cid
-                    if (isset($a['prevcid'])) $prevcid = $a['prevcid'];
-                }
-
-                // Get path, as different Indi Engine instances can run on different dirs within same domain
-                $pathA[$index] = rtrim(parse_url($info['uri'], PHP_URL_PATH), '/');
-
-                // Stip '/index.php' from path (workaround for apache mod_proxy_wstunnel)
-                $pathA[$index] = str_replace('/index.php', '', $pathA[$index]);
-
-                // Stip port from Origin
-                $hostA[$index] = preg_replace('~:[0-9]+$~', '', $info['Origin']);
-
-                // Set opts
-                curl_setopt_array($ch, [
-                    CURLOPT_URL => $hostA[$index] . $pathA[$index] . '/realtime/opentab/',
-                    CURLOPT_RETURNTRANSFER => 1,
-                    CURLOPT_HTTPHEADER => [
-                        'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
-                        'Cookie: ' . $info['Cookie'] . rif($prevcid, '; prevcid=$1'),
-                    ]
-                ]);
-
-                // Exec and get output and/or error, if any
-                $out = curl_exec($ch); $err = curl_error($ch);
-
-                // Log output and/or error
-                logd('curl reponse: ' . $out); logd('curl error: ' . $err);
-
-                // Close curl
-                curl_close($ch);
-
-                // Log
-                if ($ini['log']) logd('opentab done: ' . $index . ' => ' . $hostA[$index] . $pathA[$index] . '/realtime/opentab/');
-            }
-        }
+        // Accept client's stream, but if handshake is not successful - close the client stream
+        if ($clientI = stream_socket_accept($server, -1))
+            if (!handshake($clientI, $ini,$clientA,$sessidA,$langidA, $rabbit,$queueA,$pathA,$hostA))
+                fclose($clientI);
 
         // Remove server's socket from the list of sockets to be listened
         unset($listenA[array_search($server, $listenA)]);
     }
 
     // Foreach client stream
-    foreach($listenA as $index => $clientI) {
+    foreach ($listenA as $index => $clientI) {
 
         // Read data
         $binary = fread($clientI, 10000);
@@ -401,7 +314,7 @@ fclose($server);
  * @param $clientI
  * @return array|bool
  */
-function handshake($clientI) {
+function handshake($clientI, $ini, &$clientA, &$sessidA, &$langidA, $rabbit, &$queueA, &$pathA, &$hostA) {
 
     // Client's stream info
     $info = [];
@@ -425,10 +338,23 @@ function handshake($clientI) {
     $addr = explode(':', stream_socket_get_name($clientI, true)); $info['ip'] = $addr[0]; $info['port'] = $addr[1];
 
     // If no 'Sec-WebSocket-Key' header provided - return false
-    if (empty($info['Sec-WebSocket-Key'])) return false;
+    if (!$index = $info['Sec-WebSocket-Key']) return false;
+
+    // Log attempt
+    if ($ini['log']) logd('identified: ' . $index);
 
     // Prepare value for 'Sec-WebSocket-Accept' header
-    $SecWebSocketAccept = base64_encode(pack('H*', sha1($info['Sec-WebSocket-Key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+    $SecWebSocketAccept = base64_encode(pack('H*', sha1($index . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+
+    // If session is not detected - return false
+    if (!session($info,$sessidA, $index, $ini,$langidA, $rabbit,$queueA,$pathA,$hostA)) {
+
+        // Write 401 Unauthorized header
+        fwrite($clientI, 'HTTP/1.1 401 Unauthorized'. "\r\n\r\n");
+
+        // Return false
+        return false;
+    }
 
     // Prepare full headers list
     $upgrade = implode("\r\n", [
@@ -436,13 +362,140 @@ function handshake($clientI) {
         'Upgrade: websocket',
         'Connection: Upgrade',
         'Sec-WebSocket-Accept: ' . $SecWebSocketAccept
-        ]) . "\r\n\r\n";
+    ]) . "\r\n\r\n";
 
     // Write upgrade headers into client's stream
     fwrite($clientI, $upgrade);
 
-    // Return request info
-    return $info;
+    // Write empty json
+    fwrite($clientI, encode('{}'));
+
+    // Add to collection
+    $clientA[$index] = $clientI;
+
+    // Log channel id of accepted client
+    if ($ini['log']) logd('accepted: ' . $index);
+
+    // Log headers
+    if ($ini['log']) logd('handshake: ' . var_export($info, 1));
+
+    // Return true
+    return true;
+}
+
+/**
+ * Check session
+ *
+ * @param $info
+ * @param $sessidA
+ * @param $index
+ * @param $ini
+ * @param $langidA
+ * @param $rabbit
+ * @param $queueA
+ * @param $pathA
+ * @param $hostA
+ * @return bool
+ */
+function session($info, &$sessidA, $index, $ini, &$langidA, $rabbit, &$queueA, &$pathA, &$hostA) {
+
+    // If session id is NOT detected - return false
+    if (!preg_match('~PHPSESSID=([^; ]+)~', $info['Cookie'], $sessid)) return false;
+
+    // Get language
+    preg_match('~i-language=([a-zA-Z\-]{2,5})~', $info['Cookie'], $langid);
+
+    // Init curl
+    $ch = curl_init();
+
+    // Log
+    if ($ini['log']) logd('opentab init: ' . $index);
+
+    // Build url
+    $prevcid = '';
+
+    // If query string given in $info['path'] and ?prev=xxx param is there
+    if ($q = parse_url($info['uri'], PHP_URL_QUERY)) {
+
+        // Get query params
+        parse_str($q, $a);
+
+        // Append prev cid
+        if (isset($a['prevcid'])) $prevcid = $a['prevcid'];
+    }
+
+    // Get path, as different Indi Engine instances can run on different dirs within same domain
+    $path = rtrim(parse_url($info['uri'], PHP_URL_PATH), '/');
+
+    // Stip '/index.php' from path (workaround for apache mod_proxy_wstunnel)
+    $path = str_replace('/index.php', '', $path);
+
+    // Stip port from Origin
+    $host = preg_replace('~:[0-9]+$~', '', $info['Origin']);
+
+    // Set opts
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $host . $path . '/realtime/opentab/',
+        CURLOPT_RETURNTRANSFER => 1,
+        CURLOPT_HTTPHEADER => [
+            'Indi-Auth: ' . implode(':', [$sessid[1], $langid[1], $index]),
+            'Cookie: ' . $info['Cookie'] . rif($prevcid, '; prevcid=$1'),
+        ]
+    ]);
+
+    // Exec and get output and/or error, if any
+    $out = curl_exec($ch); $err = curl_error($ch);
+
+    // Log output and/or error
+    logd('curl reponse: ' . $out);
+
+    // Close curl
+    curl_close($ch);
+
+    // If curl error occured
+    if ($err) {
+
+        // Log
+        if ($ini['log']) logd('opentab failed: ' . $index . ' => curl error: ' . $err);
+
+        // Return false
+        return false;
+    }
+
+    // If realtime-entry of type=channel was successfully created
+    if (json_decode($out)->success) {
+
+        // If RabbitMQ is turned on
+        if ($rabbit) {
+
+            // Declare queue
+            $rabbit->queue_declare($index, false, false, true, false);
+
+            // Collect client socket
+            $queueA[$index] = $clientI;
+        }
+
+        // Remember session id, language, host and path
+        $sessidA[$index] = $sessid[1];
+        $langidA[$index] = $langid[1];
+        $hostA  [$index] = $host;
+        $pathA  [$index] = $path;
+
+        // Log
+        if ($ini['log']) logd('opentab done: ' . $index . ' => ' . $host . $path . '/realtime/opentab/');
+
+        // Return true
+        return true;
+
+    // Else
+    } else {
+
+        // Log
+        if ($ini['log']) logd('opentab failed: ' . $index . ' => session expired');
+
+        // Return false
+        return false;
+    }
 }
 
 /**
@@ -637,7 +690,7 @@ function write($data, $index, &$channelA, &$clientA, $ini) {
         $data['type'] = 'pong';
 
         // Write pong-message into channel
-        fwrite($clientA[$channelA[$rid][$uid][$data['cid']]], encode(json_encode($data)));
+        fwrite($clientA[ $channelA[$rid][$uid][$data['cid']] ], encode(json_encode($data)));
 
     // Else if message type is 'notice' or 'reload'
     } else if ($data['type'] == 'notice' || $data['type'] == 'reload') {

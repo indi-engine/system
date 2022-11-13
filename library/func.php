@@ -852,6 +852,19 @@ function num2str($num, $iunit = true, $dunit = true) {
  */
 function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
 
+    // Default status
+    $httpStatus = '400 Bad Request';
+
+    // Spoof with one from $success array, if given
+    if (is_array($success) && isset($success['httpStatus'])) {
+
+        // Spoof $httpStatus with given value
+        $httpStatus = $success['httpStatus'];
+
+         // Remove that item from array
+         unset($success['httpStatus']);
+    }
+
     // Start building data for flushing
     $flush = is_array($success) && array_key_exists('success', $success) ? $success : ['success' => $success];
 
@@ -881,7 +894,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
     if (!headers_sent()) {
 
         // Send '400 Bad Request' status code if user agent is not IE
-        if ($flush['success'] === false && !isIE()) header('HTTP/1.1 400 Bad Request');
+        if ($flush['success'] === false && !isIE()) header("HTTP/1.1 $httpStatus");
 
         // Send '200 OK' status code
         if ($flush['success'] === true) header('HTTP/1.1 200 OK');
@@ -950,7 +963,7 @@ function mflush($field, $msg = '') {
  * @param string $msg
  * @param string $buttons
  */
-function jconfirm($msg, $buttons = 'OKCANCEL') {
+function jconfirm($msg, $buttons = 'OKCANCEL', $httpStatus = '400 Bad Request') {
 
     // Start building data for flushing
     $flush = ['confirm' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'buttons' => $buttons];
@@ -959,7 +972,7 @@ function jconfirm($msg, $buttons = 'OKCANCEL') {
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
 
     // Here we send HTTP/1.1 400 Bad Request to prevent success handler from being fired
-    if (!headers_sent() && !isIE()) header('HTTP/1.1 400 Bad Request');
+    if (!headers_sent() && !isIE()) header("HTTP/1.1 $httpStatus");
 
     // Flush
     iexit(json_encode($flush));
