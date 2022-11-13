@@ -399,6 +399,9 @@ function handshake($clientI, $ini, &$clientA, &$sessidA, &$langidA, $rabbit, &$q
  */
 function session($info, &$sessidA, $index, $ini, &$langidA, $rabbit, &$queueA, &$pathA, &$hostA) {
 
+    // If we connected from server-side - return true. todo: think about how to properly do auth for server-side connections
+    if ($info['user-agent'] == 'websocket-client-php') return true;
+
     // If session id is NOT detected - return false
     if (!preg_match('~PHPSESSID=([^; ]+)~', $info['Cookie'], $sessid)) return false;
 

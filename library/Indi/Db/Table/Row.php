@@ -1950,7 +1950,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // Page number is not null when we are paging, and this means that we are trying to fetch
                 // more results that are upper or lower and start point for paging ($selected) was not changed.
-                // So we mark that foundRows property of rowset should be unset, as in indi.combo.form.js 'page-top-reached'
+                // So we mark that foundRows property of rowset should be unset, as in indi.formcombo.js 'page-top-reached'
                 // attribute is set depending on 'found' property existence in response json
                 $unsetFoundRows = true;
             }
@@ -2239,8 +2239,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Set `enumset` property as false, because without definition it will have null value while passing
-        // to indi.combo.form.js and and after Indi.copy there - will have typeof == object, which is not actually boolean
-        // and will cause problems in indi.combo.form.js
+        // to indi.formcombo.js and and after Indi.copy there - will have typeof == object, which is not actually boolean
+        // and will cause problems in indi.formcombo.js
         $dataRs->enumset = false;
 
         if ($fieldR->storeRelationAbility == 'many' || $multiSelect) {
@@ -2361,7 +2361,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Build and return a <span/> element with css class and styles definitions, that will represent a color value
      * for each combo option, in case if combo options have color specification. This function was created for using in
      * optionTemplate param within combos because if combo is simultaneously dealing with color and with optionTemplate
-     * param, javascript in indi.combo.form.js file will not create a color boxes to represent color-options,
+     * param, javascript in indi.formcombo.js file will not create a color boxes to represent color-options,
      * because optionTemplate param assumes, that height of each combo option may be different with default height,
      * so default color box size may not match look and feel of options, builded with optionTemplate param usage.
      * So this function provides a possibility to define custom size for color box
@@ -7060,7 +7060,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Build full config
         $view = [
-            'xtype' =>'combo.form',
+            'xtype' =>'formcombo',
             'fieldLabel' => $fieldR->title,
             'name' => $fieldR->alias,
             'value' => $selectedValue,
