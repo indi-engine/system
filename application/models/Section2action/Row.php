@@ -102,7 +102,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
                 AND `a`.`id` = `sa`.`actionId`
                 AND :p  
             ORDER BY `sa`.`move`
-        ', $within = im($wfw, ' AND '))->fetchAll(PDO::FETCH_KEY_PAIR);
+        ', $within = im($wfw, ' AND '))->pairs();
 
         // Get current position
         $currentIdx = array_flip(array_keys($actionA_alias))[$this->id]; $actionA_alias = array_values($actionA_alias);

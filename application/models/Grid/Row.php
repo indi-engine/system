@@ -256,7 +256,7 @@ class Grid_Row extends Indi_Db_Table_Row {
                 AND `f`.`id` = IF(`g`.`further` != "0", `g`.`further`, `g`.`fieldId`)
                 AND :p  
             ORDER BY `g`.`move`
-        ', $within = im($wfw, ' AND '))->fetchAll(PDO::FETCH_KEY_PAIR);
+        ', $within = im($wfw, ' AND '))->pairs();
 
         // Get current position
         $currentIdx = array_flip(array_keys($fieldA_alias))[$this->id]; $fieldA_alias = array_values($fieldA_alias);

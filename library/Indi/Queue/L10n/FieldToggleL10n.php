@@ -82,7 +82,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 //
                 self::$l10n[$ptable][$pfield] = db()->query('
                     SELECT `target`, `result` FROM `queueItem` WHERE `queueChunkId` = "' . $queueChunkR->queueChunkId . '"
-                ')->fetchAll(PDO::FETCH_KEY_PAIR);
+                ')->pairs();
             }
 
             // If it's parent chunk

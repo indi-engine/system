@@ -3674,7 +3674,7 @@ class Indi_Controller_Admin extends Indi_Controller {
               AND `criteriaRelyOn` = "event"
               AND `roleId` = "' . admin()->roleId . '"
               AND `toggle` = "y"
-        ')->fetchAll(PDO::FETCH_KEY_PAIR);
+        ')->pairs();
 
         // Remove relyOnEvent-notices having criteria that current user/getter not match
         foreach ($noticeIdA_relyOnEvent as $noticeId => $criteriaEvt)

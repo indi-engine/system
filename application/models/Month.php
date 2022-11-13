@@ -157,7 +157,7 @@ class Month extends Indi_Db_Table {
             FROM `month` `m`, `year` `y`
             WHERE `m`.`yearId` = `y`.`id`
             ORDER BY `Ym`
-        ')->fetchAll(PDO::FETCH_KEY_PAIR);
+        ')->pairs();
 
         // If self::$_monthYmA is null - setup it by flipping self::$_monthIdA
         if (self::$_monthYmA === null) self::$_monthYmA = array_flip(self::$_monthIdA);
@@ -179,7 +179,7 @@ class Month extends Indi_Db_Table {
             FROM `month` `m`, `year` `y`
             WHERE `m`.`yearId` = `y`.`id`
             ORDER BY `Ym`
-        ')->fetchAll(PDO::FETCH_KEY_PAIR);
+        ')->pairs();
 
         // If self::$_monthIdA is null - setup it by flipping self::$_monthYmA
         if (self::$_monthIdA === null) self::$_monthIdA = array_flip(self::$_monthYmA);

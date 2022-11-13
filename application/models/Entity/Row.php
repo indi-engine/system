@@ -242,8 +242,8 @@ class Entity_Row extends Indi_Db_Table_Row {
         if ($this->affected('spaceScheme', true) == 'none') {
 
             // Get key-value pairs of `element` and `columnType` entries
-            $elementIdA = db()->query('SELECT `alias`, `id` FROM `element`')->fetchAll(PDO::FETCH_KEY_PAIR);
-            $columnTypeIdA = db()->query('SELECT `type`, `id` FROM `columnType`')->fetchAll(PDO::FETCH_KEY_PAIR);
+            $elementIdA = db()->query('SELECT `alias`, `id` FROM `element`')->pairs();
+            $columnTypeIdA = db()->query('SELECT `type`, `id` FROM `columnType`')->pairs();
 
             // Prepare fields configs
             $fieldA = [
@@ -544,7 +544,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $group = $m->fields($this->filesGroupBy)->alias;
 
         // Get id => group array
-        $groupByIdA = db()->query('SELECT `id`, `' . $group . '` FROM `' . $m->table() . '`')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $groupByIdA = db()->query('SELECT `id`, `' . $group . '` FROM `' . $m->table() . '`')->pairs();
 
         // Model dir
         $dir = $m->dir();

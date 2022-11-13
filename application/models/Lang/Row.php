@@ -71,7 +71,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
-        ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
+        ', $info['field'], $info['table'], $info['where'])->pairs() as $id => $json) {
 
             // Convert json to array
             $dataWas = json_decode($json, true);
@@ -126,7 +126,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
-        ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
+        ', $info['field'], $info['table'], $info['where'])->pairs() as $id => $json) {
 
             // Convert json to array
             $data = json_decode($json, true);
@@ -175,7 +175,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // Foreach table-field pair - fetch rows containing `id` and current value of localized prop
         foreach ($fieldA as $info) foreach (db()->query('
             SELECT `id`, `:p` FROM `:p` WHERE :p
-        ', $info['field'], $info['table'], $info['where'])->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $json) {
+        ', $info['field'], $info['table'], $info['where'])->pairs() as $id => $json) {
 
             // Convert json to array
             $data = json_decode($json, true);

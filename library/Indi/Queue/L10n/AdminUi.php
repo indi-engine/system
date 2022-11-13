@@ -242,7 +242,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
                 // Load tarnslations
                 foreach(db()->query('
                     SELECT `target`, `result` FROM `queueItem` WHERE `queueChunkId` = "' . $queueChunkI['queueChunkId'] . '"
-                ')->fetchAll(PDO::FETCH_KEY_PAIR) as $entryId => $targetTranslation)
+                ')->pairs() as $entryId => $targetTranslation)
                     Indi_Queue_L10n_FieldToggleL10n::$l10n[$ptable][$pfield][$entryId] = json_encode([$target => $targetTranslation], JSON_UNESCAPED_UNICODE);
             }
 

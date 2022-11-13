@@ -1125,7 +1125,7 @@ class Indi_Schedule {
         // If self::$_timeIdA is null - fetch key-value pairs
         if (self::$_timeIdA === null) self::$_timeIdA = db()->query('
             SELECT `title`, `id` FROM `time` WHERE `title` REGEXP ":(00|15|30|45)$" ORDER BY `title`
-        ')->fetchAll(PDO::FETCH_KEY_PAIR);
+        ')->pairs();
 
         // If self::$_timeHiA is null - setup it by flipping self::$_timeIdA
         if (self::$_timeHiA === null) self::$_timeHiA = array_flip(self::$_timeIdA);
@@ -1145,7 +1145,7 @@ class Indi_Schedule {
         // If self::$_timeHiA is null - fetch key-value pairs
         if (self::$_timeHiA === null) self::$_timeHiA = db()->query('
             SELECT `id`, `title` FROM `time` WHERE `title` REGEXP ":(00|15|30|45)$" ORDER BY `title`
-        ')->fetchAll(PDO::FETCH_KEY_PAIR);
+        ')->pairs();
 
         // If self::$_timeIdA is null - setup it by flipping self::$_timeHiA
         if (self::$_timeIdA === null) self::$_timeIdA = array_flip(self::$_timeHiA);

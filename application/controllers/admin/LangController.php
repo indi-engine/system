@@ -7,7 +7,7 @@ class Admin_LangController extends Indi_Controller_Admin {
     public function dictAction() {
 
         // Get languages, already existing as `lang` entries
-        $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->pairs();
 
         // Check if [lang]->gapi.key is given in application/config.ini
         if (!ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
