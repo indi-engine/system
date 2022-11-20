@@ -282,7 +282,7 @@ while (true) {
     }
 
     // If RabbitMQ is turned on
-    if ($rabbit) foreach ($queueA as $index => $clientI) {
+    if ($rabbit) foreach ($queueA as $index => $_) {
 
         // While at least 1 message is available within queue
         while ($msg = $rabbit->basic_get($index)) {
@@ -469,7 +469,7 @@ function session($info, &$sessidA, $index, $ini, &$langidA, $rabbit, &$queueA, &
             $rabbit->queue_declare($index, false, false, true, false);
 
             // Collect client socket
-            $queueA[$index] = $clientI;
+            $queueA[$index] = true;
         }
 
         // Remember session id, language, host and path
