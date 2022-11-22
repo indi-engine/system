@@ -27,7 +27,10 @@ class Indi_Uri_Base {
         $this->clear();
 
         // If $uri argument is given, setup $_SERVER['REQUEST_URI'] as $uri argument
-        if ($uri) $_SERVER['REQUEST_URI'] = $uri;
+        if ($uri) $_SERVER['REQUEST_URI']
+            = (COM ? '' : '/admin')
+            . '/' . ltrim($uri, '/')
+            . rif(!preg_match('~\?~', $uri), '/');
 
         // If project located in some subfolder of $_SERVER['DOCUMENT_ROOT'] instead of directly in it
         // we strip mention of that subfolder from $_SERVER['REQUEST_URI']
@@ -77,6 +80,9 @@ class Indi_Uri_Base {
                 $this->{$uri[$i]} = $uri[$i + 1];
                 $i++;
             }
+
+        // Return instance itself
+        return $this;
     }
 
     /**

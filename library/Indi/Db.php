@@ -123,8 +123,7 @@ class Indi_Db {
                 try {
 
                     // Setup a PDO object
-                    @self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->dbname . ';host=' . $arg->host,
-                        $arg->username, $arg->password);
+                    @self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->name . ';host=' . $arg->host, $arg->user, $arg->pass);
 
                     // Set attribute for useing custom statement class
                     self::$_pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Indi_Db_PDOStatement::class]);

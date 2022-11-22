@@ -118,4 +118,64 @@ class Realtime_Row extends Indi_Db_Table_Row {
             $parent->set($ts)->basicUpdate();
         }
     }
+
+    /**
+     * Set `spaceSince` prop
+     */
+    public function onBeforeInsert() {
+
+        // Set spaceSince to be current timestamp
+        $this->spaceSince = date('Y-m-d H:i:s');
+    }
+
+    /**
+     * Create `realtime` entry of `type` = "channel" nested under current entry of `type` = "session"
+     */
+    public function channel() {
+
+        // This method is applicable for session-entries, due to that we're going to create channel-entry
+        if ($this->type != 'session') return;
+
+        // Generate channel token
+        $token = grs(30);
+
+        // Prepare data for `realtime` entry of `type` = "channel"
+        $ctor = ['type' => 'channel', 'token' => $token, 'realtimeId' => $this->id];
+
+        // Pick other props from parent entry of `type` = "session"
+        $ctor += $this->toArray();
+
+        // Unset 'id' and 'title'
+        unset($ctor['id'], $ctor['title']);
+
+        // Create and save `realtime` entry of `type` = "channel"
+        $channel = $this->model()->new($ctor);
+        $channel->save();
+
+        // Return channel
+        return $channel;
+    }
+
+    /**
+     * Create rabbitmq-queue, and return it's name
+     */
+    public function queue() {
+
+        // If it's not a channel-entry - return
+        if ($this->type != 'channel') return;
+
+        // Prepare rabbitmq-queue name
+        $queue = ini('db')->name . '--' . $this->token;
+
+        // Prepare rabbit
+        $rabbit = (new PhpAmqpLib\Connection\AMQPStreamConnection(
+            ini()->rabbitmq->host,
+            ini()->rabbitmq->port,
+            ini()->rabbitmq->user,
+            ini()->rabbitmq->pass
+        ))->channel()->queue_declare($queue);
+
+        // Return queue name
+        return $queue;
+    }
 }

@@ -3109,3 +3109,34 @@ function msg($msg, $success = true, $to = null) {
     // Do send
     Indi::ws(['type' => 'message', 'to' => $to ?: CID, 'msg' => $msg]);
 }
+
+/**
+ * Run controller action as a separated background process
+ *
+ * @param $action For example 'realtime/cleanup'
+ * @param array $args
+ */
+function cmd($action, $args = []) {
+
+    // Get temp dir
+    $dir = ini_get('upload_tmp_dir') ?: explode(':', ini_get('open_basedir'))[0] ?? sys_get_temp_dir();
+
+    // Create temporary file
+    $env = tempnam($dir, 'cmd');
+
+    // Prepare command
+    $cmd = "php " . __DIR__ . "/../application/cmd.php \"$action\" \"$env\"";
+
+    // Fill temporary file with current state
+    file_put_contents($env, json_encode([
+        '_SERVER' => $_SERVER,
+        '_COOKIE' => $_COOKIE,
+        'args' => $args
+    ]));
+
+    // If OS is Windows - start new process using 'start' command
+    if (preg_match('~^WIN~i', PHP_OS)) pclose(popen('start /B ' . $cmd, 'r'));
+
+    // Else use 'exec' fn
+    else exec($cmd . ' > /dev/null &');
+}

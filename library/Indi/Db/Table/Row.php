@@ -686,8 +686,8 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function realtime($event = 'affected') {
 
-        // If websockets are not enabled, or realtime is not enabled - return
-        if (!ini('ws')->enabled || !ini('ws')->realtime) return;
+        // If rabbitmq is not enabled
+        if (!ini('rabbitmq')->enabled) return;
 
         // Start building WHERE clause
         $where = [

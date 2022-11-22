@@ -285,7 +285,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // If channel detected and referer context detected - update spaceUntil timestamp
-                if (!ini()->ws->realtime) Realtime::session()->save();
+                if (!ini()->rabbitmq->enabled) Realtime::session()->save();
                 else if ($channel = Realtime::channel())
                     if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
                         if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
@@ -328,7 +328,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $this->setScopeRow(false, null, $this->selected->column('id'));
 
                 // If channel detected
-                if (!ini()->ws->realtime) Realtime::session()->save();
+                if (!ini()->rabbitmq->enabled) Realtime::session()->save();
                 else if ($channel = Realtime::channel()) {
 
                     // Get context where request came from, if possible
@@ -2774,7 +2774,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'uri' => uri()->toArray(),
             'time' => time(),
             'ini' => [
-                'ws' => ini('ws'),
+                'realtime' => ini()->rabbitmq->enabled ?? false,
                 'demo' => Indi::demo(false)
             ],
             'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
@@ -3349,10 +3349,10 @@ class Indi_Controller_Admin extends Indi_Controller {
     /**
      * Call the desired action method
      */
-    public function call($action) {
+    public function call($action, $args = []) {
 
         // If no trail - call action and return
-        if (!t(true)) return $this->{$action . 'Action'}();
+        if (!t(true)) return parent::call($action, $args);
 
         // Adjust access rights
         $this->adjustAccess();
@@ -4108,7 +4108,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Check $token format and CID format
             jcheck([
                 'ctx' => ['rex' => 'ctx'],
-                'cid' => ['rex' => 'wskey']
+                'cid' => ['rex' => 'cid']
             ], ['ctx' => $ctx, 'cid' => CID]);
 
             // If websocket-channel is known - remove context
@@ -4125,10 +4125,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             }
 
             // If realtime is turned off - update last activity timestamp
-            if (!ini('ws')->realtime) Realtime::session()->save();
+            if (!ini('rabbitmq')->enabled) Realtime::session()->save();
 
             // Flush success if realtime is turned Off, else flush failure
-            jflush(!ini('ws')->realtime);
+            jflush(!ini('rabbitmq')->enabled);
         }
     }
 }

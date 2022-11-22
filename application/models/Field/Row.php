@@ -1560,7 +1560,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             SELECT `CHARACTER_MAXIMUM_LENGTH`
             FROM `INFORMATION_SCHEMA`.`COLUMNS`
             WHERE `table_name` = "'. $table . '"
-                AND `table_schema` = "' . ini()->db->dbname . '"
+                AND `table_schema` = "' . ini()->db->name . '"
                 AND `column_name` = "'. $this->_original['alias'] . '"
             LIMIT 0 , 1
         ')->fetchColumn();

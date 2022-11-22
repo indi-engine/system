@@ -1,21 +1,47 @@
 <?php
-// Setup CMD constant, indicating that this execution was started via Indi::cmd()
+
+// Setup CMD constant, indicating that this execution was started via command line
 define('CMD', true);
 
-// Get method
-$method = $argv[1];
+// Get uri
+if (isset($argv[1])) $uri = $argv[1]; else exit('No command given');
+
+// Get this directory with 'right' slashes
+$_dir_ = str_replace('\\', '/', __DIR__);
+
+// Change current working directory to project root
+chdir(realpath($_dir_ . '/../../../..'));
+
+// Get vendor name
+preg_match('~^(?<DOCUMENT_ROOT>.+?)/(?<VDR>vendor/.+?)/~', $_dir_, $m);
 
 // Get filepath of a temporary file, containing environment variables
-$tmp = $argv[2];
+if (isset($argv[2])) {
 
-// Extract environment variables
-extract(json_decode(file_get_contents($tmp), true));
+    // If 2nd arg is not a path of an existsing file - exit
+    if (!is_file($tmp = $argv[2])) exit("File \"$tmp\" does not exist");
 
-// Delete temporary file
-unlink($tmp);
+    // Extract environment variables
+    extract(json_decode(file_get_contents($tmp = $argv[2]), true));
+
+    // Delete temporary file
+    unlink($tmp);
+}
+
+// Provide default environment variables at least expected by Indi Engine
+$_SERVER += [
+    'DOCUMENT_ROOT' => $m['DOCUMENT_ROOT'],
+    'REQUEST_METHOD' => 'GET',
+    'HTTP_HOST' => 'localhost',
+    'VDR' => $m['VDR'],
+    'STD' => ''
+];
 
 // Boot
-include('index.php');
+include 'index.php';
+
+// If $method is not defined in 'someSection/someAction'-format - assume it's action in CmdController
+if (!preg_match('~^([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$~', $uri)) $uri = 'cmd/' . $uri;
 
 // Dispatch method
-uri()->dispatch((COM ? '' : '/admin') . '/cmd/' . $method . '/', $args);
+uri()->dispatch($uri, $args ?? []);

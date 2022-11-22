@@ -36,17 +36,19 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     /**
      * @throws Exception
      */
-    public function preDispatch() {
+    public function preDispatch($args = []) {
 
         // If it's special action
-        if (in($action = uri()->action, 'restart,cleanup,opentab,closetab,status'))
-            $this->{$action . 'Action'}();
+        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status')) {
+
+            // Call the desired action method
+            $this->call(uri()->action, $args);
 
         // Else
-        else {
+        } else {
 
             // Do cleanup each time admin opened realtime section
-            if ($action == 'index' && !uri()->format) $this->cleanupAction(false);
+            if (uri()->action == 'index' && !uri()->format) $this->cleanupAction(false);
 
             // Call parent
             parent::preDispatch();
@@ -214,20 +216,25 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function cleanupAction($jflush = true) {
 
         // Get session files dir
-        $session = ini_get('session.save_path') ?: sys_get_temp_dir();
+        $dir = ini_get('session.save_path') ?: sys_get_temp_dir();
 
-        // Collect session ids
-        foreach (glob($session . '/sess_*') as $file)
-            $sess [] = Indi::rexm('~/sess_([0-9a-z]+)$~', $file, 1);
+        // Replace slashes
+        $dir = str_replace('\\', '/', $dir);
 
         // Fetch `realtime` entries by chunks containing 500 entries each
-        m('realtime')->batch(function(Realtime_Row $r){
+        m('realtime')->batch(function(Realtime_Row $r) use ($dir) {
 
-            // Delete entry
+            // Build session file path
+            $file = $dir . '/sess_' . $r->token;
+
+            // If session file exists on disk - skip
+            if (file_exists($file)) return;
+
+            // Else delete entry
             $r->delete();
 
         // Only entries of type=session which are expired
-        }, ['`type` = "session"', '`token` NOT IN ("' . im($sess, '","') . '")']);
+        }, '`type` = "session"');
 
         // Flush success
         if ($jflush) jflush(true);
@@ -238,45 +245,35 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      */
     public function opentabAction() {
 
-        // Check CID
-        jcheck(['cid' => ['req' => true, 'rex' => 'wskey']], ['cid' => CID]);
+        // Check session
+        $this->auth(true);
 
-        // If `realtime` entry of `type` = "session" found
-        if ($session = m('Realtime')->row(['`type` = "session"', '`token` = "' . session_id() . '"'])) {
+        // If no `realtime` entry of `type` = "session" found
+        if (!$session = m('Realtime')->row(['`type` = "session"', '`token` = "' . session_id() . '"']))
 
-            // Prepare data for `realtime` entry of `type` = "channel"
-            $data = [
-                'type' => 'channel', 'token' => CID,
-                'realtimeId' => $session->id, 'spaceSince' => date('Y-m-d H:i:s')
-            ] + $session->toArray();
+            // Flush failure
+            jflush(false);
 
-            // Unset 'id'
-            unset($data['id'], $data['title']);
+        // Else create `realtime` entry of `type` = "channel", create queue and get it's name
+        $cid = $session->channel()->queue();
 
-            // Save into `realtime` table using separate background process
-            Indi::cmd('channel', ['arg' => $data]);
-
-            // Flush success
-            jflush(true);
-        }
-
-        // Flush failure
-        jflush(false);
+        // Flush success
+        jflush(true, ['cid' => $cid]);
     }
 
     /**
      * Delete `realtime`-record having `type` = "channel"
      */
-    public function closetabAction() {
+    public function closetabAction($cid) {
 
         // Check CID
-        jcheck(['cid' => ['req' => true, 'rex' => 'wskey']], ['cid' => CID]);
+        jcheck(['cid' => ['req' => true, 'rex' => 'cid']], ['cid' => $cid]);
 
         // Try to found `realtime` entry having such CID and `type` = 'channel'
-        if ($r = m('realtime')->row(['`token` = "' . CID . '"', '`type` = "channel"'])) {
+        if ($r = m('realtime')->row(['`token` = "' . $cid . '"', '`type` = "channel"'])) {
 
-            // Delete via CmdController->channelAction()
-            Indi::cmd('channel', ['arg' => $r->id]);
+            // Delete
+            $r->delete();
 
             // Flush success
             jflush(true);

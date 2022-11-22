@@ -1,7 +1,5 @@
 <?php
 require_once rtrim(__DIR__, '\\/') . '/../../../autoload.php';
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 
 class Indi {
 
@@ -110,6 +108,7 @@ class Indi {
         'varchar255' => '/^([[:print:]]{0,255})$/',
         'dir' => ':^([A-Z][\:])?/.*/$:',
         'grs' => '/^[a-zA-Z0-9]{15}$/',
+        'cid' => '~^[a-zA-Z0-9]{30}$~',
         'phone' => '/^\+7 \([0-9]{3}\) [0-9]{3}-[0-9]{2}-[0-9]{2}$/',
         'vk' => '~^https://vk.com/([a-zA-Z0-9_\.]{3,})~',
         'coords' => '/^([0-9]{1,3}+\.[0-9]{1,12})\s*,\s*([0-9]{1,3}+\.[0-9]{1,12}+)$/',
@@ -2208,7 +2207,7 @@ class Indi {
     public static function ws($data) {
 
         // If websockets or rabbitmq is not enabled - return
-        if (!ini('ws')->enabled || !ini('rabbitmq')->enabled) return;
+        if (!ini('rabbitmq')->enabled) return;
 
         // If rabbitmq connection channel not yet exists
         if (!self::$_mq) {
@@ -2217,14 +2216,14 @@ class Indi {
             $mq = (array) ini('rabbitmq');
 
             // Create connection
-            $connection = new AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
+            $connection = new PhpAmqpLib\Connection\AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
 
             // Create channel
             self::$_mq = $connection->channel();
         }
 
         // Message to be published
-        $message = new AMQPMessage(json_encode($data));
+        $message = new PhpAmqpLib\Message\AMQPMessage(json_encode($data));
 
         // Channels array
         $channelA = [];
@@ -2251,10 +2250,10 @@ class Indi {
             }
 
         // Else if destination is a channel id - it means we should deliver to certain channel
-        } else if (Indi::rexm('wskey', $data['to'])) $channelA []= $data['to'];
+        } else if (Indi::rexm('cid', $data['to'])) $channelA []= $data['to'];
 
         // Send message to each channel need
-        foreach ($channelA as $channel) self::$_mq->basic_publish($message, '', $channel);
+        foreach ($channelA as $channel) self::$_mq->basic_publish($message, '', ini('db')->name . '--' . $channel);
     }
 
     /**
@@ -2288,28 +2287,7 @@ class Indi {
      * @param array $args
      */
     public static function cmd($method, $args = []) {
-
-        // Get temp dir
-        $dir = ini_get('upload_tmp_dir') ?: explode(':', ini_get('open_basedir'))[0] ?? sys_get_temp_dir();
-
-        // Create temporary file
-        $env = tempnam($dir, 'cmd');
-
-        // Prepare command
-        $cmd = ini('general')->phpdir . "php " . ltrim(VDR, '/') . "/system/application/cmd.php $method \"$env\"";
-
-        // Fill temporary file with current state
-        file_put_contents($env, json_encode([
-            '_SERVER' => $_SERVER,
-            '_COOKIE' => $_COOKIE,
-            'args' => $args
-        ]));
-
-        // If OS is Windows - start new process using 'start' command
-        if (Indi::rexm('/^WIN/i', PHP_OS)) pclose(popen('start /B ' . $cmd, 'r'));
-
-        // Else use 'exec' fn
-        else exec($cmd . ' > /dev/null &');
+        cmd($method, $args);
     }
 
     /**

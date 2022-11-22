@@ -145,7 +145,7 @@ class Indi_Controller {
         header('Content-Type: text/html; charset=' . $this->encoding);
 
         // Do the pre-dispatch maintenance
-        $this->preDispatch();
+        $this->preDispatch($args);
 
         // Here we provide an ability for operations, required for
         // a certain item to be performed, instead actual action call
