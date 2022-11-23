@@ -27,7 +27,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     protected $err = DOC . STD . '/application/ws.err';
 
     /**
-     * Path to WebSocket-server executable php file
+     * Path to 'queue.deleted'-events listener-server executable php file
      *
      * @var string
      */
@@ -39,7 +39,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch($args = []) {
 
         // If it's special action
-        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status')) {
+        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status,stop')) {
 
             // Call the desired action method
             $this->call(uri()->action, $args);
@@ -56,17 +56,32 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Check whether websocket server is already running, and start it if not
+     * Stop server listening for rabbitmq-events of type 'queue.deleted'
+     */
+    public function stopAction() {
+
+        // Check session
+        $this->auth(true);
+
+        // Check status of listener
+        $flush = $this->stop();
+
+        // Flush result
+        jflush($flush);
+    }
+
+    /**
+     * Check whether server listening for rabbitmq-events of type 'queue.deleted' is already running, and start if it is not
      */
     public function statusAction() {
 
         // Check session
         $this->auth(true);
 
-        // Check status of websocket-server
+        // Check status of listener-server
         $flush = $this->status();
 
-        // If websocket-server is not running - start it
+        // If listener-server is not running - start it
         if ($flush['success'] === false) $flush = $this->start();
 
         // Flush result
@@ -74,14 +89,14 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Check whether websocket-server pid-file exists and contains websocket-server's existing process ID
+     * Check whether listener-server pid-file exists and contains PID of existing process
      *
      * @return array jflush-able
      */
     public function status() {
 
         // If no pid-file exists - return false
-        if (!is_file($this->pid)) return ['success' => false, 'msg' => 'No pid file exists'];
+        if (!is_file($this->pid)) return ['success' => false, 'msg' => 'No pid file "' . $this->pid . '" exists'];
 
         // Else if no PID contained inside that pid-file
         if (!$pid = (int) trim(file_get_contents($this->pid))) return ['success' => false, 'msg' => 'Empty pid file'];
@@ -93,7 +108,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Start websocket-server
+     * Start server listening for rabbitmq-events of type 'queue.deleted'
      *
      * @return array
      */
@@ -110,15 +125,15 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Trim left slash from wss
         $this->wss = ltrim($this->wss, '/');
 
-        // Close session
+        // Close session todo: rewrite to start NOT via wget
         session_write_close();
 
-        // Build websocket startup cmd
+        // Build listener-server startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
-            ? sprintf('start /B %sphp %s 2>&1', rif(ini('general')->phpdir, '$1/'), $this->wss)
+            ? "start /B php {$this->wss} 2>&1"
             : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $host . STD . '/' . $this->wss . '" > /dev/null &';
 
-        // Start websocket server
+        // Start listener server
         wslog('------------------------------');
         wslog('Exec: ' . $result['cmd']);
 
@@ -138,9 +153,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Stop websocket-server.
+     * Stop listener-server.
      * Returns jflush-able array-result, having at least 'success'-key
-     * It is assumed that 'success' should be `true` if no websocket-process is running, and this covers the following cases:
+     * It is assumed that 'success' should be `true` if no listener-server is running, and this covers the following cases:
      * - no pid-file exists
      * - it exists but empty, e.g. contains no PID
      * - it contains, but no process with such PID found
@@ -150,33 +165,30 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      */
     public function stop() {
 
-        // Get status of websocket-server
+        // Get status of listener-server
         $status = $this->status();
 
-        // If websocket-server is NOT currently running - nothing to do here
+        // If listener-server is NOT currently running - nothing to do here
         if ($status['success'] === false) return ['success' => true] + $status;
 
-        // Build websocket server kill cmd
+        // Build listener server kill cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
-            ? sprintf('taskkill /f /PID  %s 2>&1', $status['pid'])
-            : sprintf('kill -9 %s', $status['pid']);
+            ? "taskkill /f /PID  {$status['pid']} 2>&1"
+            : "kill -9 {$status['pid']}";
 
-        // Kill websocket server
+        // Kill listener-server process
         wslog('------------------------------');
         wslog('Exec: ' . $result['cmd']);
         exec($result['cmd'], $result['output'], $result['return']);
         wslog('Output: ' . print_r($result['output'], true) . ', return: ' . $result['return']);
 
-        // Unset 'cmd'-key
-        unset($result['cmd']);
-
-        //
+        // Prepare flushable result
         $flush = ['success' => !$result['return']];
         if (is_array($result['output']) && isset($result['output'][0]))
-            if (strlen($flush['msg'] = mb_convert_encoding($result['output'][0], 'utf-8', 'CP-866')));
+            if (strlen($flush['msg'] = mb_convert_encoding($result['output'][0], 'utf-8', 'CP-866')))
                 unset($result['output']);
 
-        //
+        // Append command execution raw result
         $flush['result'] = $result;
 
         // Truncate err- and pid- files
@@ -188,20 +200,20 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Restart websocket-server
+     * Restart listener-server
      */
     public function restartAction() {
 
         // Check session
         $this->auth(true);
 
-        // Stop websocker-server, if it's running
+        // Stop listener-server, if it's running
         $stop = $this->stop();
 
         // If stopping failed - flush failure
         if (!$stop['success']) jflush($stop);
 
-        // Start websocket-server
+        // Start listener-server
         $start = $this->start();
 
         // Flush result

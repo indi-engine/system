@@ -2443,7 +2443,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If only active session should be checked, but none found
         if ($sessionOnly) {
-            if (Realtime::session(true)) return;
+            if (Realtime::session(true) || CMD) return;
             else if ($this->confirm(I_THROW_OUT_SESSION_EXPIRED, 'OKCANCEL', '', '401 Unauthorized'))
                 jflush(false, ['throwOutMsg' => true]);
         }

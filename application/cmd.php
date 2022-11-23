@@ -28,14 +28,19 @@ if (isset($argv[2])) {
     unlink($tmp);
 }
 
-// Provide default environment variables at least expected by Indi Engine
-$_SERVER += [
+// Provide default values for environment variables at least expected by Indi Engine
+$default = [
     'DOCUMENT_ROOT' => $m['DOCUMENT_ROOT'],
     'REQUEST_METHOD' => 'GET',
     'HTTP_HOST' => 'localhost',
     'VDR' => $m['VDR'],
     'STD' => ''
 ];
+
+// Apply those
+foreach ($default as $key => $value)
+    if (!isset($_SERVER[$key]) || !$_SERVER[$key])
+        $_SERVER[$key] = $value;
 
 // Boot
 include 'index.php';

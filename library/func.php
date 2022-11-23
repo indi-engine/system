@@ -904,7 +904,14 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
     }
 
     // If $die arg is an url - do not flush data
-    if (!$redir) echo version_compare(PHP_VERSION, '5.4.0', 'ge') ? json_encode($flush, JSON_UNESCAPED_UNICODE) : json_encode($flush);
+    if (!$redir) {
+
+        // Prepare options
+        $options = JSON_UNESCAPED_UNICODE; if (CMD) $options |= JSON_PRETTY_PRINT;
+
+        // Flush json
+        echo json_encode($flush, $options);
+    }
 
     // Exit if need
     if ($redir) die(header('Location: ' . $die)); else if ($die) iexit();
@@ -974,8 +981,11 @@ function jconfirm($msg, $buttons = 'OKCANCEL', $httpStatus = '400 Bad Request') 
     // Here we send HTTP/1.1 400 Bad Request to prevent success handler from being fired
     if (!headers_sent() && !isIE()) header("HTTP/1.1 $httpStatus");
 
-    // Flush
-    iexit(json_encode($flush));
+    // Prepare options
+    $options = JSON_UNESCAPED_UNICODE; if (CMD) $options |= JSON_PRETTY_PRINT;
+
+    // Flush json
+    iexit(json_encode($flush, $options));
 }
 
 /**
