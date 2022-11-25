@@ -119,25 +119,17 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             if (file_exists($this->$file) && !is_writable($this->$file))
                 return ['success' => false, 'msg' => "ws.$file file is not writable"];
 
-        // Get host with no port
-        $host = $_SERVER['SERVER_NAME'];
-
         // Trim left slash from wss
         $this->wss = ltrim($this->wss, '/');
-
-        // Close session todo: rewrite to start NOT via wget
-        session_write_close();
 
         // Build listener-server startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
             ? "start /B php {$this->wss} 2>&1"
-            : 'nohup wget --no-check-certificate -qO- "'. ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $host . STD . '/' . $this->wss . '" > /dev/null &';
+            : "php {$this->wss} > /dev/null &";
 
         // Start listener server
         wslog('------------------------------');
         wslog('Exec: ' . $result['cmd']);
-
-        // Exec
         preg_match('/^WIN/i', PHP_OS)
             ? pclose(popen($result['cmd'], "r"))
             : exec($result['cmd'], $result['output'], $result['return']);
