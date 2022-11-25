@@ -2359,7 +2359,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If action name is not valid - return an error message
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $action)) return I_URI_ERROR_ACTION_FORMAT;
-
+        
         // Try to find use data
         $data = db()->query('
             SELECT
@@ -3478,9 +3478,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Walk through hierarchy, setup scopes for each step as if user would manually navigate to each uri subsequently
         for ($i = 0; $i < count($nav); $i++) {
-
-            // If $_GLOBALS['cmsOnlyMode'] is not `true` - prepend $nav[$i] with '/admin'
-            if (!COM) $nav[$i] = '/admin' . $nav[$i];
 
             // Append primary hash and row index (none of them will be appended at first-iteration)
             $nav[$i] .=  $ph . $aix;
