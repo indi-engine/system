@@ -680,6 +680,42 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Use $fieldIds and $scope args to prepare args and call $this->toGridData($dataColumns, $renderCfg)
+     *
+     * @param $fieldIds
+     * @param $scope
+     * @return mixed
+     */
+    protected function _toRealtimeGridData($fieldIds, $scope) {
+
+        // Get aliases of affected fields involved by context
+        $dataColumns = []; $renderCfg = ['_system' => []];
+        foreach (ar($fieldIds) as $fieldId)
+            if ($field = $this->field($fieldId)->alias) {
+                $dataColumns[] = $field;
+                if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
+                if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
+                if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
+                if ($field == $scope->colorField) $renderCfg['_system'] += [
+                    'colorField' => $scope->colorField,
+                    'colorFurther' => $scope->colorFurther
+                ];
+            }
+
+        // If scope's filterOwner is non-false
+        if ($scope->filterOwner) {
+            $renderCfg['_system']['owner'] = [
+                'field' => $scope->filterOwner,
+                'role' => $realtimeR->roleId,
+                'id' => $realtimeR->adminId,
+            ];
+        }
+
+        // Render
+        return $this->toGridData($dataColumns, $renderCfg);
+    }
+
+    /**
      * Get info about affected fields and send it to websocket-channels,
      * that are representing browser tabs having grids where current entry
      * and old values of it's affected fields are displayed
@@ -750,31 +786,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Get IDs of affected fields involved by context
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
-                    // Get aliases of affected fields involved by context
-                    $dataColumns = []; $renderCfg = ['_system' => []];
-                    foreach ($fieldIds as $fieldId)
-                        if ($field = $this->field($fieldId)->alias) {
-                            $dataColumns[] = $field;
-                            if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
-                            if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
-                            if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
-                            if ($field == $scope->colorField) $renderCfg['_system'] += [
-                                'colorField' => $scope->colorField,
-                                'colorFurther' => $scope->colorFurther
-                            ];
-                        }
-
-                    // If scope's filterOwner is non-false
-                    if ($scope->filterOwner) {
-                        $renderCfg['_system']['owner'] = [
-                            'field' => $scope->filterOwner,
-                            'role' => $realtimeR->roleId,
-                            'id' => $realtimeR->adminId,
-                        ];
-                    }
-
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
-                    $data = [$this->toGridData($dataColumns, $renderCfg)];
+                    $data = [$this->_toRealtimeGridData($fieldIds, $scope)];
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
@@ -902,6 +915,16 @@ class Indi_Db_Table_Row implements ArrayAccess
                     }
                 }
 
+                // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
+                if (is_numeric($entry = $byChannel[$channel][$context]['deleted']) && !$scope->rowReqIfAffected) {
+
+                    // Get it's actual *_Row instance
+                    $entry = $entry == $this->id ? $this : $this->model()->row($entry);
+
+                    // Render json-data equal to as if separate request would be made
+                    $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope);
+                }
+
             // Else if $event is 'inserted'
             } else if ($event == 'inserted') {
 
@@ -931,8 +954,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context] = [
                         'table' => $this->_table,
-                        'entry' => $this->id,
-                        'inserted' => true
+                        'entry' => $this->id
                     ];
 
                     // Adjust summary if need
@@ -971,7 +993,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             ')->fetchColumn();
 
                         // Else if total number of entries is more than rowsOnPage
-                        } else if (count($idA) > $scope['rowsOnPage'])
+                        } else if (count($idA) > $scope['rowsOnPage']) {
 
                             // If new entry is the last entry - it means that it is needless
                             // entry of current page and belongs to next page
@@ -985,11 +1007,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
 
                                 // Push current entry ID to `entries` column of `realtime` entry
-                                $entries = ar($realtimeR->entries); array_splice($entries, $byChannel[$channel][$context]['inserted'], 0, $this->id);
+                                $entries = ar($realtimeR->entries);
+                                array_splice($entries, $byChannel[$channel][$context]['inserted'], 0, $this->id);
                             }
 
                         // Else it total number of entries on current page is less or equal than the rowsOnPage
-                        else {
+                        } else {
 
                             // Detect the insertion index
                             $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
@@ -1027,6 +1050,19 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                     // Update `realtime` entry
                     $realtimeR->set($data)->basicUpdate();
+
+                    // If some entry should be appended to UI grid store and scope's rowReqIfAffected-prop is empty
+                    if (is_numeric($byChannel[$channel][$context]['inserted']) && !$scope->rowReqIfAffected) {
+
+                        // Get shortcut to id of entry that should be appended to UI grid store
+                        $entry = $byChannel[$channel][$context]['entry'];
+
+                        // Get it's actual *_Row instance
+                        $entry = $entry == $this->id ? $this : $this->model()->row($entry);
+
+                        // Render json-data equal to as if separate request would be made
+                        $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope);
+                    }
                 }
             }
         }
