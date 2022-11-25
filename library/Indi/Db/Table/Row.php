@@ -916,7 +916,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
-                if (is_numeric($entry = $byChannel[$channel][$context]['deleted']) && !$scope->rowReqIfAffected) {
+                if (is_numeric($entry = $byChannel[$channel][$context]['deleted']) && !$scope['rowReqIfAffected']) {
 
                     // Get it's actual *_Row instance
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
@@ -1052,7 +1052,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $realtimeR->set($data)->basicUpdate();
 
                     // If some entry should be appended to UI grid store and scope's rowReqIfAffected-prop is empty
-                    if (is_numeric($byChannel[$channel][$context]['inserted']) && !$scope->rowReqIfAffected) {
+                    if (is_numeric($byChannel[$channel][$context]['inserted']) && !$scope['rowReqIfAffected']) {
 
                         // Get shortcut to id of entry that should be appended to UI grid store
                         $entry = $byChannel[$channel][$context]['entry'];
