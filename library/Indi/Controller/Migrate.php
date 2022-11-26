@@ -55,6 +55,25 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('filter', 'accessExcept', ['elementId' => 'combo']);
         param('realtime', 'spaceUntil', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
         grid('realtime', 'spaceUntil', ['toggle' => 'y']);
+        grid('realtime', 'adminId', ['move' => 'roleId', 'rowReqIfAffected' => 'y']);
+        db()->query('UPDATE `field` SET `move` = `id` WHERE `move` = "1"');
+        field('section2action', 'sectionId', ['move' => '']);
+        field('section2action', 'actionId', ['move' => 'sectionId']);
+        field('section2action', 'toggle', ['move' => 'actionId']);
+        field('section2action', 'access', ['move' => 'toggle']);
+        field('section2action', 'roleIds', ['move' => 'access']);
+        field('section2action', 'filterOwner', ['move' => 'roleIds']);
+        field('section2action', 'filterOwnerRoleIds', ['move' => 'filterOwner']);
+        field('section2action', 'move', ['move' => 'filterOwnerRoleIds']);
+        field('section2action', 'title', ['move' => 'move']);
+        field('section2action', 'features', ['move' => 'title']);
+        field('section2action', 'south', ['move' => 'features']);
+        field('section2action', 'fitWindow', ['move' => 'south']);
+        field('section2action', 'rename', ['move' => 'fitWindow']);
+        field('section2action', 'l10n', ['move' => 'rename']);
+        field('section2action', 'view', ['move' => 'l10n']);
+        field('section2action', 'win', ['move' => 'view']);
+        field('section2action', 'props', ['move' => 'win']);
         die('ok');
     }
     public function fieldmoveAction(){
