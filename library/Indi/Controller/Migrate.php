@@ -74,6 +74,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('section2action', 'view', ['move' => 'l10n']);
         field('section2action', 'win', ['move' => 'view']);
         field('section2action', 'props', ['move' => 'win']);
+        field('section2action', 'roleIds', ['elementId' => 'combo']);
         die('ok');
     }
     public function fieldmoveAction(){
