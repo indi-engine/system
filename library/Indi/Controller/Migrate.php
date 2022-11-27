@@ -56,7 +56,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         param('realtime', 'spaceUntil', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
         grid('realtime', 'spaceUntil', ['toggle' => 'y']);
         grid('realtime', 'adminId', ['move' => 'roleId', 'rowReqIfAffected' => 'y']);
-        db()->query('UPDATE `field` SET `move` = `id` WHERE `move` = "1"');
+        db()->query('UPDATE `field` SET `move` = `id` WHERE `entityId` = "8"');
         field('section2action', 'sectionId', ['move' => '']);
         field('section2action', 'actionId', ['move' => 'sectionId']);
         field('section2action', 'toggle', ['move' => 'actionId']);

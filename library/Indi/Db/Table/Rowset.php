@@ -842,7 +842,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     if (preg_match(Indi::rex('hrgb'), $value, $color)) {
                         $data[$pointer]['_render'][$columnI] = '<span class="i-color-box" style="background: #'
                             . $color[1] . ';"></span>';
-                    } else if (preg_match('/box/', $data[$pointer][$columnI]) && !in($this->table(), 'enumset,changeLog')) {
+                    } else if (preg_match('~<.*?box.*?>~', $data[$pointer][$columnI]) && !in($this->table(), 'enumset,changeLog')) {
                         if (preg_match('/background:\s*url\(/', $data[$pointer][$columnI])) {
                             if ($this->model()->fields($columnI)->relation == 6) {
                                 $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
