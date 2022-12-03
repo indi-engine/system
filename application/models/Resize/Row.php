@@ -125,7 +125,7 @@ class Resize_Row extends Indi_Db_Table_Row {
      * @param string $certain
      * @return string
      */
-    public function export($certain = null) {
+    public function export($certain = '') {
 
         // Shortcuts
         $fieldR = $this->foreign('fieldId');
@@ -155,8 +155,8 @@ class Resize_Row extends Indi_Db_Table_Row {
         // Exclude props that will be already represented by shorthand-fn args
         foreach (ar('fieldId,alias') as $arg) unset($ctor[$arg]);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {

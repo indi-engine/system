@@ -1677,8 +1677,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Exclude props that will be already represented by shorthand-fn args
         foreach (ar('entityId,alias' . rif($this->entry, ',entry')) as $arg) unset($ctor[$arg]);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {
@@ -1716,7 +1716,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @param string $certain
      * @return string
      */
-    public function export($certain = null) {
+    public function export($certain = '') {
 
         // Shortcuts
         $table = $this->foreign('entityId')->table;

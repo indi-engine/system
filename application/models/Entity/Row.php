@@ -444,8 +444,8 @@ class Entity_Row extends Indi_Db_Table_Row {
         // Exclude props that rely on entity's inner fields as they not exist at the moment of ctor usage
         if (!$invert) foreach (ar($deferred) as $defer) unset($ctor[$defer]);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value)
@@ -474,7 +474,7 @@ class Entity_Row extends Indi_Db_Table_Row {
      * @param string $certain
      * @return string
      */
-    public function export($certain = null) {
+    public function export($certain = '') {
 
         // If $certain arg is given - export it only
         if ($certain) return "entity('" . $this->table . "', " . $this->_ctor('', false, $certain) . ");";

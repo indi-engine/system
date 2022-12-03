@@ -53,8 +53,8 @@ class Filter_Row extends Indi_Db_Table_Row {
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('sectionId,fieldId,further') as $arg) unset($ctor[$arg]);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {

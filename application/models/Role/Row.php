@@ -55,8 +55,8 @@ class Role_Row extends Indi_Db_Table_Row {
         // Unset props that are currently not important from the import/export perspective
         unset($ctor['move']);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {

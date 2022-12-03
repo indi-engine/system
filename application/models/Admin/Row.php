@@ -93,8 +93,8 @@ class Admin_Row extends Indi_Db_Table_Row {
         // Unset password
         unset($ctor['password']);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {

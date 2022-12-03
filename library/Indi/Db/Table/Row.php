@@ -7106,7 +7106,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                 'id' => $fieldR->id,
                 'storeRelationAbility' => $fieldR->storeRelationAbility,
                 'alias' => $fieldR->alias,
-                'relation' => $fieldR->relation
+                'relation' => $fieldR->relation,
+                'params' => $params
             ],
             'allowBlank' => $fieldR->mode == 'regular',
             ] + $view;
@@ -7355,5 +7356,26 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function rgb($field) {
         return preg_replace('~^[0-9]{3}~', '', $this->$field);
+    }
+
+    /**
+     * Pick $certain props from $ctor
+     *
+     * @param $certain
+     * @param array $ctor
+     */
+    protected function _certain($certain, array $ctor) {
+
+        // If $certain arg is empty - return
+        if (!$certain) return $ctor;
+
+        // Spoof ctor
+        $spoof = [];
+
+        // Pick certain props
+        foreach(ar($certain) as $prop) $spoof[$prop] = $ctor[$prop];
+
+        // Return spoof ctor, containing only certain fields
+        return $spoof;
     }
 }

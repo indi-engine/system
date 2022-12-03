@@ -107,8 +107,8 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('alias') as $arg) unset($ctor[$arg]);
 
-        // If certain field should be exported - keep it only
-        if ($certain) $ctor = [$certain => $ctor[$certain]];
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {
@@ -129,7 +129,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
                 else if ($prop == 'entityId') $value = entity($value)->table;
                 else if (in($prop, 'parentSectionConnector,groupBy,defaultSortField,tileField')) $value = field($this->entityId, $value)->alias;
                 else if ($prop == 'tileThumb') $value = m('Resize')->row($value)->alias;
-                else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
+                else if ($field->rel()->table() == 'role') $value = $this->$prop ? $this->foreign($prop)->col('alias', true) : '';
             }
         }
 
