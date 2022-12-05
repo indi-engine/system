@@ -1,7 +1,6 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function changelogAction() {
-        field('changeLog', 'changerType')->delete();
         field('changeLog', 'changedId', ['alias' => 'adminId']);
         field('changeLog', 'key', ['alias' => 'entryId']);
         consider('changeLog', 'adminId', 'roleId', ['foreign' => 'entityId', 'required' => 'y']);
@@ -25,6 +24,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'changeLogToggle',
         ]);
+        field('changeLog', 'changerType')->delete();
         die('ok');
     }
     public function missingThingsAction() {

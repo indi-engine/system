@@ -408,8 +408,8 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // Provide ability for some entity props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'titleFieldId' || $columnName == 'filesGroupBy') $value = field($this->table, $value)->id;
-            else if ($columnName == 'spaceFields') {
+            if (in($columnName, 'titleFieldId,filesGroupBy')) $value = field($this->table, $value)->id;
+            else if (in($columnName,'spaceFields,changeLogExcept')) {
                 if ($value && !Indi::rexm('int11list', $value)) {
                     $fieldIdA = [];
                     foreach(ar($value) as $field) $fieldIdA[] = field($this->id, $field)->id;
@@ -451,17 +451,21 @@ class Entity_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value)
 
             // Exclude prop, if it has value equal to default value
-            if (m('Entity')->fields($prop)->defaultValue == $value) unset($ctor[$prop]);
+            if (m('Entity')->fields($prop)->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Exclude prop, if $invert arg is given as `true` and prop is not mentioned in $deferred list
             else if ($invert && !in($prop, $deferred)) unset($ctor[$prop]);
 
             // Else if prop contains keys - use aliases instead
             else {
-                if ($prop == 'titleFieldId' || $prop == 'filesGroupBy') $value = field($this->table, $value)->alias;
-                else if ($prop == 'spaceFields') {
-                    $value = ''; if ($sf = $this->foreign('spaceFields')) $value = $sf->column('alias', true);
-                }
+
+                // If it's titleFieldId or filesGroupBy
+                if (in($prop,'titleFieldId,filesGroupBy'))
+                    $value = field($this->table, $value)->alias;
+
+                // Else if it's spaceFields or changeLogExcept
+                else if (in($prop,'spaceFields,changeLogExcept'))
+                    $value = ($sf = $this->foreign($prop)) ? $sf->column('alias', true) : '';
             }
 
         // Stringify and return
