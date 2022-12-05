@@ -1690,12 +1690,12 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$this->id) return;
 
         // If `ChangeLog` model does not exist - return
-        if (!$changeLogM = m('ChangeLog', true)) return;
+        if (!$changeLogM = m('changeLog', true)) return;
 
         // Find and delete related `changeLog` entries
         $changeLogM->all([
             '`entityId` = "' . $this->model()->id() . '"',
-            '`key` = "' . $this->id . '"'
+            '`entryId` = "' . $this->id . '"'
         ])->delete();
     }
 
@@ -5178,7 +5178,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Provide the ability for changelog
      *
      * @param $original
-     * @return mixed
+     * @throws Exception
      */
     public function changeLog($original) {
 
@@ -5191,14 +5191,30 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Set up `_affected` prop, so it to contain affected field names as keys, and their previous values
         $this->_affected = $affected;
 
-        // Unset fields, that should not be involved in logging
-        if ($cfg['ignore']) foreach(ar($cfg['ignore']) as $ignore) unset($affected[$ignore]);
+        // If no changes should be logged with no exceptions - return
+        if ($cfg['toggle'] != 'all' && !$cfg['except']) return;
 
-        // If no changes logging is not enabled, or current row was a new row, or wasn't, but had no modified properties - return
-        if (!$cfg['toggle'] || !$original['id'] || !count($affected)) return;
+        // If except-fields are defined
+        if ($except = ar($cfg['except'])) {
+
+            // If toggle is 'none'
+            if ($cfg['toggle'] == 'none') {
+
+                // Make sure only except-fields are kept in $affected
+                $affected = []; foreach ($except as $exceptI) $affected[$exceptI] = $this->_affected[$exceptI];
+
+            // Else make sure except-fields are removed from $affected
+            } else foreach($except as $exceptI) unset($affected[$exceptI]);
+        }
+
+        // If current row was a new row, or wasn't, but had no modified properties to be logged - return
+        if (!$original['id'] || !count($affected)) return;
 
         // Get the id of current entity/model
         $entityId = $this->model()->id();
+
+        // Get month id
+        $monthId = Month::o()->id;
 
         // Get the foreign key names
         $foreignA = $this->model()->fields()->select('one,many', 'storeRelationAbility')->column('alias');
@@ -5211,13 +5227,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         $was = clone $this; $was->original($original);
 
         // Setup foreign data for $was object
-        $was->foreign(implode(',', $affectedForeignA), true);
+        $was->foreign(im($affectedForeignA), true);
 
         // Setup $now object as a clone of $this object, at it's current state
-        $now = clone $this; $now->foreign(implode(',', $affectedForeignA));
+        $now = clone $this; $now->foreign(im($affectedForeignA));
 
         // Get the storage model
-        $storageM = m('ChangeLog');
+        $storageM = m('changeLog');
 
         // Get the rowset of modified fields
         $affectedFieldRs = m($entityId)->fields()->select(array_keys($affected), 'alias');
@@ -5230,7 +5246,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Setup a link to current row
             $storageR->entityId = $entityId;
-            $storageR->key = $this->id;
+            $storageR->entryId = $this->id;
 
             // Setup a field, that was modified
             $storageR->fieldId = $affectedFieldR->id;
@@ -5249,14 +5265,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                     foreach ($was->foreign($affectedFieldR->alias) as $r) $implodedWas[] = $r->title();
 
                     // Convert that array to comma-separated string
-                    $storageR->was = implode(', ', $implodedWas);
+                    $storageR->was = im($implodedWas);
 
                 // Else if modified field's foreign data was a row object
                 } else if ($was->foreign($affectedFieldR->alias) instanceof Indi_Db_Table_Row) {
 
                     // Get that row's title
                     $storageR->was = $was->foreign($affectedFieldR->alias)->title();
-
                 }
 
             // Else if modified field is not a foreign key
@@ -5280,7 +5295,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     foreach ($now->foreign($affectedFieldR->alias) as $r) $implodedNow[] = $r->title();
 
                     // Convert that array to comma-separated string
-                    $storageR->now = implode(', ', $implodedNow);
+                    $storageR->now = im($implodedNow);
 
                 // Else if modified field's foreign data was a row object
                 } else if ($now->foreign($affectedFieldR->alias) instanceof Indi_Db_Table_Row) {
@@ -5298,10 +5313,9 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
-            if ($storageM->fields('monthId')) $storageR->monthId = Month::o()->id;
-            $storageR->changerType = admin() ? admin()->model()->id() : 0;
+            $storageR->monthId = $monthId;
             $storageR->roleId = admin()->roleId ?: 0;
-            $storageR->changerId = admin()->id ?: 0;
+            $storageR->adminId = admin()->id ?: 0;
             $storageR->save();
         }
     }

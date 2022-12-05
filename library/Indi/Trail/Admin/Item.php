@@ -665,6 +665,31 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     }
 
     /**
+     * Get comma-separated list of fields ids by their aliases
+     *
+     * @param $aliases
+     * @return array
+     */
+    public function fieldIds($aliases) {
+        return $this->model->fields($aliases, 'rowset')->column('id', true);
+    }
+
+    /**
+     * Get Grid_Rowset instance, containing Grid_Row instances mapped to given fields $aliases
+     *
+     * @param $aliases
+     * @return mixed
+     */
+    public function grid($aliases) {
+
+        // Get field ids
+        $fieldIds = $this->fieldIds($aliases);
+
+        // Search among grid column
+        return $this->grid->select($fieldIds, 'fieldId');
+    }
+
+    /**
      * Get render config
      *
      * @return array

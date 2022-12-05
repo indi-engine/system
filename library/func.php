@@ -1567,7 +1567,7 @@ function _2sec($expr) {
 /**
  * Shortcut for accessing Indi::trail()
  *
- * @return Indi_Trail_Admin|Indi_Trail_Front|Indi_Trail_Item
+ * @return Indi_Trail_Admin|Indi_Trail_Front|Indi_Trail_Item|Indi_Trail_Admin_Item
  */
 function t() {
     return forward_static_call_array(['Indi', 'trail'], func_get_args());

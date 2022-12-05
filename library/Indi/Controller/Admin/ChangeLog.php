@@ -12,7 +12,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
     }
 
     /**
-     * Here is the temporary solution for filters consistence
+     * Make sure filters will be initially consistent (e.g before store is loaded)
+     * to that their widths from jumping where it is not needed
      */
     public function adjustTrail() {
 
@@ -24,35 +25,34 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
             m()->fields('entityId')->filter = '`id` IN (' . im($entityIdA) . ') ';
 
         // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
-        // linked to `changerType` field won't use extra width
-        if ($changerTypeA = db()
-            ->query('SELECT DISTINCT `changerType` FROM `changeLog`')
+        // linked to `adminId` field won't use extra width
+        if ($adminIdA = db()
+            ->query('SELECT DISTINCT `adminId` FROM `changeLog`')
             ->fetchAll(PDO::FETCH_COLUMN, 0))
-            m()->fields('changerType')->filter = '`id` IN (' . im($changerTypeA) . ') ';
-
-        // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
-        // linked to `changerId` field won't use extra width
-        if ($changerIdA = db()
-            ->query('SELECT DISTINCT `changerId` FROM `changeLog`')
-            ->fetchAll(PDO::FETCH_COLUMN, 0))
-            m()->fields('changerId')->filter = '`id` IN (' . im($changerIdA) . ') ';
+            m()->fields('adminId')->filter = '`id` IN (' . im($adminIdA) . ') ';
 
         // Append `was` and `now` columns as they weren't added at the stage
         // of grid columns autocreation after current section entry was created
         $this->inclGridProp('was,now');
 
-        // Exclude `changerType` and `monthId` grid columns
-        $this->exclGridProp('changerType,monthId');
+        // Exclude `monthId` grid columns
+        t()->grid('monthId')->toggle('n');
 
         // If current changeLog-section is for operating on changeLog-entries,
-        // nested under some single entry - exclude `key` grid column
-        if (t(1)->section->entityId) $this->exclGridProp('key');
+        // nested under some single entry - exclude `entryId` grid column
+        if (t(1)->section->entityId) t()->grid('entryId')->toggle('n');
 
         // Else force `fieldId`-filter's combo-data to be grouped by `entityId`
         else m()->fields('fieldId')->param('groupBy', 'entityId');
 
         // If Indi client app is used - make 'datetime' to be grouping field
         if (APP) t()->section->groupBy = 'datetime';
+
+        // Make adminId and roleId columns hidden
+        t()->grid('adminId,roleId')->toggle('h');
+
+        // Make sure whole record will be reloaded if adminId, roleId or datetime is changed
+        t()->grid('adminId,roleId,datetime')->rowReqIfAffected();
 
         // Set grid column titles
         m()->fields('fieldId')->title = I_CHANGELOG_FIELD;
@@ -70,8 +70,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         // If current section does not have a parent section, or have, but is a root section - return
         if (!t(1)->section->sectionId) return;
 
-        // Setup connector alias, which is always is 'key'
-        $connectorAlias = 'key';
+        // Setup connector alias, which is always is 'entryId'
+        $connectorAlias = 'entryId';
 
         // Get the connector value
         $connectorValue = uri('action') == 'index' ? uri('id') : Indi::parentId(t(1)->section->id);
@@ -81,7 +81,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
     }
 
     /**
-     * Adjust values, for 'changerId' and 'key' props
+     * Adjust values, for 'adminId' and 'entryId' props
      *
      * @param array $data
      */
@@ -93,23 +93,23 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
                 if ($fieldR->param('shade'))
                     $shade[$fieldR->id] = true;
 
-        // Set $key flag, indicating whether `key` column is used
-        $key = $data && isset($data[0]['key']);
+        // Set $entryId flag, indicating whether `entryId` column is used
+        $entryId = $data && isset($data[0]['entryId']);
 
         // Adjust data
         for ($i = 0; $i < count($data); $i++) {
 
             // Build group title
             $data[$i]['_render']['datetime'] = $data[$i]['datetime']
-                . rif($key, ' - ' . $data[$i]['entityId'] . ' » ' . $data[$i]['key'])
-                . rif($data[$i]['changerId'], ' - ' . $data[$i]['changerId'] . ' [' . $data[$i]['roleId'] . ']');
+                . rif($entryId, ' - ' . $data[$i]['entityId'] . ' » ' . $data[$i]['entryId'])
+                . rif($data[$i]['adminId'], ' - ' . $data[$i]['adminId'] . ' [' . $data[$i]['roleId'] . ']');
 
             // Encode <iframe> tag descriptors into html entities
             $data[$i]['was'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['was']);
             $data[$i]['now'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['now']);
 
             // Unset props, that are not needed separately anymore
-            unset($data[$i]['key'], $data[$i]['entityId'], $data[$i]['changerId'], $data[$i]['roleId']);
+            unset($data[$i]['entryId'], $data[$i]['entityId'], $data[$i]['adminId'], $data[$i]['roleId']);
 
             // Shade private data
             if ($shade[$data[$i]['$keys']['fieldId']]) {

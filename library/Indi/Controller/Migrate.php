@@ -1,5 +1,32 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function changelogAction() {
+        field('changeLog', 'changerType')->delete();
+        field('changeLog', 'changedId', ['alias' => 'adminId']);
+        field('changeLog', 'key', ['alias' => 'entryId']);
+        consider('changeLog', 'adminId', 'roleId', ['foreign' => 'entityId', 'required' => 'y']);
+        field('entity', 'changeLogToggle', [
+            'title' => 'Журнал изменений',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'none',
+            'move' => 'filesGroupBy',
+        ]);
+        enumset('entity', 'changeLogToggle', 'none', ['title' => 'Нет', 'move' => '']);
+        enumset('entity', 'changeLogToggle', 'all', ['title' => 'Да', 'move' => 'none']);
+        field('entity', 'changeLogExcept', [
+            'title' => 'Кроме полей',
+            'storeRelationAbility' => 'many',
+            'relation' => 'field',
+            'filter' => '`entityId` = "<?=$this->id?>"',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'changeLogToggle',
+        ]);
+        die('ok');
+    }
     public function missingThingsAction() {
         action('revert', ['title' => 'Восстановить', 'fraction' => 'system', 'icon' => 'resources/images/icons/revert.png']);
         action('author', ['title' => 'Автор', 'fraction' => 'system', 'icon' => 'resources/images/icons/btn-icon-author.png']);

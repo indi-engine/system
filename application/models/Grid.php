@@ -9,6 +9,13 @@ class Grid extends Indi_Db_Table {
     public $_rowClass = 'Grid_Row';
 
     /**
+     * Classname for rowset
+     *
+     * @var string
+     */
+    public $_rowsetClass = 'Grid_Rowset';
+
+    /**
      * Info for l10n-fraction detection
      *
      * @var array

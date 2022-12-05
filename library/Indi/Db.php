@@ -427,6 +427,14 @@ class Indi_Db {
                 // Collect "entityId => modelName" pairs
                 $modelNameA[$entityI['id']] = ucfirst($entityI['table']);
 
+                // Prepare comma-separated list of aliases of fields, specified in $entityI['changeLogExcept']
+                $changeLogExcept = [];
+                $_ids = array_values($eFieldA[$entityI['id']]['ids'] ?: []);
+                $_aliases = array_values($eFieldA[$entityI['id']]['aliases'] ?: []);
+                $_map = array_combine($_ids, $_aliases);
+                foreach (ar($entityI['changeLogExcept']) as $exceptFieldId) $changeLogExcept []= $_map[$exceptFieldId];
+                $entityI['changeLogExcept'] = im($changeLogExcept);
+
                 // Create an item within self::$_entityA array, containing some basic info
                 self::$_entityA[$modelNameA[$entityI['id']]] = [
                     'id' => $entityI['id'],
@@ -436,11 +444,15 @@ class Indi_Db {
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
                     'fraction' => $entityI['fraction'],
+                    'changeLog' => [
+                        'toggle' => $entityI['changeLogToggle'],
+                        'except' => $entityI['changeLogExcept'],
+                    ],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],
-                        'aliases' => array_values($eFieldA[$entityI['id']]['aliases'] ?: []),
-                        'ids' => array_values($eFieldA[$entityI['id']]['ids'] ?: []),
+                        'aliases' => $_aliases,
+                        'ids' => $_ids,
                         'rowClass' => 'Field_Row',
                         'found' => count($eFieldA[$entityI['id']]['rows'] ?: [])
                     ])

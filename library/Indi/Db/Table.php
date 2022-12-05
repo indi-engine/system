@@ -117,14 +117,22 @@ class Indi_Db_Table
     /**
      * Changelog config. Example:
      *
-     * protected $_changeLog = array(
-     *      'toggle' => true,
-     *      'ignore' => 'ignoredField1,ignoredField2,etc'
-     * );
+     * protected $_changeLog = [
+     *      'toggle' => 'all',
+     *      'except' => 'ignoredField1,ignoredField2,etc'
+     * ];
+     *
+     * protected $_changeLog = [
+     *      'toggle' => 'none',
+     *      'except' => 'loggedField1,loggedField2,etc'
+     * ];
      *
      * @var array
      */
-    protected $_changeLog = [];
+    protected $_changeLog = [
+        'toggle' => 'none',
+        'except' => ''
+    ];
 
     /**
      * Daily time. This can be used to setup working hours, for example since '10:00:00 until '20:00:00'.
@@ -202,6 +210,9 @@ class Indi_Db_Table
 
         // Setup 'hasRole' flag
         $this->_hasRole = $config['hasRole'];
+
+        // Setup changeLog config
+        if (isset($config['changeLog'])) $this->_changeLog = $config['changeLog'];
 
         // Setup 'fraction' prop
         $this->_fraction = is_array($this->_fraction)
