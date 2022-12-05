@@ -3701,7 +3701,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 SELECT COUNT(`id`)
                 FROM `' . m($_noticeR->entityId)->table().'`
                 WHERE ' . $_noticeR->compiled('qtySql')
-            )->fetchColumn();
+            )->cell();
 
             // Collect qtys for each sections
             foreach (ar($_noticeR->sectionId) as $sectionId)

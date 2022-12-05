@@ -18,6 +18,7 @@ field('element', 'storeRelationAbility')->toggleL10n('qy', $lang, false);
 field('entity', 'title')->toggleL10n('qy', $lang, false);
 field('entity', 'fraction')->toggleL10n('qy', $lang, false);
 field('entity', 'spaceScheme')->toggleL10n('qy', $lang, false);
+field('entity', 'changeLogToggle')->toggleL10n('qy', $lang, false);
 field('field', 'storeRelationAbility')->toggleL10n('qy', $lang, false);
 field('field', 'mode')->toggleL10n('qy', $lang, false);
 field('field', 'tooltip')->toggleL10n('qy', $lang, false);

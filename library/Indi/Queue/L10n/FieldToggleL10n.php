@@ -254,7 +254,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 if ($params['toggle'] == 'n') $value = $r->value; else {
 
                     // Get cell's current value
-                    $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
+                    $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->cell();
 
                     // If cell value is not an empty string, but is not a json - force it to be json
                     if (!preg_match('~^{"~', $json)) $json = json_encode([$params['source'] => $json], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);

@@ -390,7 +390,7 @@ class Indi_Db_Table
             foreach ($union as $select) {
                 $select = preg_replace('~\* FROM~', 'COUNT(*) FROM', $select);
                 $select = preg_replace('~ LIMIT [0-9,]+$~', '', $select);
-                $found[] = (int) db()->query($select)->fetchColumn();
+                $found[] = (int) db()->query($select)->cell();
             }
             
             // Use max
@@ -398,7 +398,7 @@ class Indi_Db_Table
         }
         
         // Default logic
-        return db()->query('SELECT FOUND_ROWS()')->fetchColumn();
+        return db()->query('SELECT FOUND_ROWS()')->cell();
     }
 
     /**
@@ -888,7 +888,7 @@ class Indi_Db_Table
             SELECT `offset`
             FROM `' . $tmpTableName . '`
             WHERE `found` = "1"'
-        )->fetchColumn(0);
+        )->cell();
 
         // Unset offset variable
         db()->query('SET @o=null;');
@@ -1644,7 +1644,7 @@ class Indi_Db_Table
         if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
 
         // Get total qty of entries to be processed
-        $qty = db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->fetchColumn();
+        $qty = db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->cell();
 
         // Fetch usages by $limit at a time
         for ($p = 1; $p <= ceil($qty/$limit); $p++) {

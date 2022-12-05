@@ -17,19 +17,11 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
      */
     public function adjustTrail() {
 
-        // Here we setup `filter` prop for `entityId` field, to ensure that filter-combo,
-        // linked to `entityId` field won't use extra width
-        if ($entityIdA = db()
-            ->query('SELECT DISTINCT `entityId` FROM `changeLog`')
-            ->fetchAll(PDO::FETCH_COLUMN, 0))
-            m()->fields('entityId')->filter = '`id` IN (' . im($entityIdA) . ') ';
-
-        // Here we setup `filter` prop for `changerType` field, to ensure that filter-combo,
-        // linked to `adminId` field won't use extra width
-        if ($adminIdA = db()
-            ->query('SELECT DISTINCT `adminId` FROM `changeLog`')
-            ->fetchAll(PDO::FETCH_COLUMN, 0))
-            m()->fields('adminId')->filter = '`id` IN (' . im($adminIdA) . ') ';
+        // Here we setup `filter` prop for several fields to ensure that
+        // filters linked to those fields won't use extra width
+        foreach (ar('entityId,adminId,entryId') as $field)
+            if ($values = db()->query("SELECT DISTINCT `$field` FROM `changeLog`")->col())
+                m()->fields($field)->filter = '`id` IN (' . im($values) . ') ';
 
         // Append `was` and `now` columns as they weren't added at the stage
         // of grid columns autocreation after current section entry was created

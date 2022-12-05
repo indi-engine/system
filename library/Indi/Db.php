@@ -169,7 +169,7 @@ class Indi_Db {
             }
 
             // Fix tablename case, if need
-            if (!$entityId && !preg_match('/^WIN/i', PHP_OS) && self::$_instance->query('SHOW TABLES LIKE "columntype"')->fetchColumn()) {
+            if (!$entityId && !preg_match('/^WIN/i', PHP_OS) && self::$_instance->query('SHOW TABLES LIKE "columntype"')->cell()) {
             
                 // Build an sql-query, that will construct sql-queries that will 
                 // fix tablename confusion for each database table affected
@@ -228,7 +228,7 @@ class Indi_Db {
                   AND `table_schema` = DATABASE() 
                   AND `table_name` = "lang" 
                   AND `column_name` IN ("adminSystemUi", "move")
-            ')->fetchColumn() == 2)
+            ')->cell() == 2)
                 foreach (['adminSystemUi', 'adminCustomUi', 'adminCustomData', 'adminSystemUi,adminCustomUi'] as $fraction)
                     Lang::$_jtpl[$fraction] = db()->query('
                     SELECT `alias`, "" AS `holder` 
@@ -295,7 +295,7 @@ class Indi_Db {
             unset($considerA);
 
             // Temporary flag indicating whether or not we have already removed legacy cfgFields implementation
-            if ($pep = self::$_instance->query('SHOW TABLES LIKE "possibleElementParam"')->fetchColumn()) {
+            if ($pep = self::$_instance->query('SHOW TABLES LIKE "possibleElementParam"')->cell()) {
 
                 // Get info about existing field params
                 // 1. Get info about possible field element params

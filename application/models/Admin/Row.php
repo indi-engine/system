@@ -14,7 +14,7 @@ class Admin_Row extends Indi_Db_Table_Row {
             // Encrypt the password
             $this->_modified['password'] = db()->query('
                 SELECT CONCAT("*", UPPER(SHA1(UNHEX(SHA1("' . $this->_modified['password'] . '")))))
-            ')->fetchColumn(0);
+            ')->cell();
         }
 
         // Standard save

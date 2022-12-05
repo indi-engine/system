@@ -1361,7 +1361,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     SELECT GROUP_CONCAT(`alias` ORDER BY `move`)
                     FROM `enumset`
                     WHERE `fieldId` = "' . $this->id . '"
-                ')->fetchColumn(0);
+                ')->cell();
 
                 // Build the order clause, using FIND_IN_SET function
                 $order = 'FIND_IN_SET(`' . $this->alias . '`, "' . $set . '") ' . $direction;
@@ -1563,7 +1563,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 AND `table_schema` = "' . ini()->db->name . '"
                 AND `column_name` = "'. $this->_original['alias'] . '"
             LIMIT 0 , 1
-        ')->fetchColumn();
+        ')->cell();
     }
 
     /**
@@ -1639,7 +1639,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $idx = array_search($column, $colA);
 
         // Get table definition as raw SQL
-        $def = db()->query("SHOW CREATE TABLE `$table`")->fetchColumn(1);
+        $def = db()->query("SHOW CREATE TABLE `$table`")->cell(1);
 
         // Parse column definitions from raw SQL
         preg_match_all('~^\s+`([^`]+)` .*?,$~m', $def, $m);

@@ -36,7 +36,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $return = parent::delete();
 
         // Delete database table if that table exists
-        if (db()->query('SHOW TABLES LIKE "' . $this->table . '"')->fetchColumn())
+        if (db()->query('SHOW TABLES LIKE "' . $this->table . '"')->cell())
             db()->query('DROP TABLE `' . $this->table . '`');
 
         // Destroy model

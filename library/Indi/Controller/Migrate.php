@@ -1,7 +1,7 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function changelogAction() {
-        field('changeLog', 'changedId', ['alias' => 'adminId']);
+        field('changeLog', 'changerId', ['alias' => 'adminId']);
         field('changeLog', 'key', ['alias' => 'entryId']);
         consider('changeLog', 'adminId', 'roleId', ['foreign' => 'entityId', 'required' => 'y']);
         field('entity', 'changeLogToggle', [
@@ -25,6 +25,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'changeLogToggle',
         ]);
         field('changeLog', 'changerType')->delete();
+        param('changeLog', 'datetime', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
         die('ok');
     }
     public function missingThingsAction() {
@@ -107,7 +108,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
     public function fieldmoveAction(){
         foreach (m('entity')->all()->column('table') as $table) {
             $colA = m($table)->fields(null, 'columns');
-            $def = db()->query("SHOW CREATE TABLE `$table`")->fetchColumn(1);
+            $def = db()->query("SHOW CREATE TABLE `$table`")->cell(1);
             preg_match_all('~^  `([^`]+)` .*?(?:,)$~m', $def, $m);
             array_walk($m[0], fn (&$line) => $line = trim($line, ' ,'));
             $defA = array_combine($m[1], $m[0]);

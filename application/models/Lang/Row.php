@@ -197,7 +197,7 @@ class Lang_Row extends Indi_Db_Table_Row {
     public function onBeforeDelete() {
 
         // If current entry is the last remaining `lang` entry - flush error
-        if (db()->query('SELECT COUNT(*) FROM `lang`')->fetchColumn() == 1)
+        if (db()->query('SELECT COUNT(*) FROM `lang`')->cell() == 1)
             jflush(false, sprintf(I_LANG_LAST, m('Lang')->title()));
 
         // If current entry is a translation, that is currently used - flush error

@@ -372,7 +372,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             m('QueueItem')->batch(function (&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field) {
 
                 // Get cell's current value
-                $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->fetchColumn();
+                $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->cell();
 
                 // If cell value is not a json - force it to be json
                 if (!preg_match('~^{"~', $json)) $json = json_encode([$params['source'] => $json], JSON_UNESCAPED_UNICODE);

@@ -825,7 +825,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                             ' . rif($order, 'ORDER BY $1') . ' 
                             LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
-                        ')->fetchColumn());
+                        ')->cell());
 
                     // Else if it's the last page - do nothing
                     else $byChannel[$channel][$context]['deleted'] = 'this';
@@ -856,7 +856,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Else if deleted entry is on prev or next page
                 } else if (!$scope['WHERE'] || db()->query($sql = '
                     SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
-                )->fetchColumn()) {
+                )->cell()) {
 
                     // Push current entry ID to the beginning of `entries` column of `realtime` entry
                     $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
@@ -882,7 +882,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                                 ' . rif($order, 'ORDER BY $1') . ' 
                                 LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
-                            ')->fetchColumn());
+                            ')->cell());
 
                         // Else if it's the last page
                         else $byChannel[$channel][$context]['deleted'] = 'prev';
@@ -949,7 +949,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Check whether inserted row match scope's WHERE clause
                 if (!$scope['WHERE'] || db()->query($sql = '
                     SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
-                )->fetchColumn()) {
+                )->cell()) {
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context] = [
@@ -990,7 +990,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                                 ' . rif($order, 'ORDER BY $1') . ' 
                                 LIMIT ' . ($scope['rowsOnPage'] * ($scope['page'] - 1) - 1) . ', 1
-                            ')->fetchColumn();
+                            ')->cell();
 
                         // Else if total number of entries is more than rowsOnPage
                         } else if (count($idA) > $scope['rowsOnPage']) {
@@ -2087,7 +2087,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Get number of total found rows
                 $found = db()->query(
                     'SELECT COUNT(`id`) FROM `' . $relatedM->table() . '`' . $foundRowsWhere
-                )->fetchColumn(0);
+                )->cell();
 
                 // If results should be started from selected value but total found rows number if not too great
                 // we will not use selected value as start point for results, because there will be a sutiation
@@ -2708,7 +2708,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // it was dependent of other column that was deleted.
                 if ($model->fields($field->alias) && $field->columnTypeId && db()->query(
                     'SHOW COLUMNS FROM `' . $model->table(). '` LIKE "' . $field->alias . '"'
-                )->fetchColumn()) {
+                )->cell()) {
 
                     // We delete rows there $this->id in at least one field, which ->storeRelationAbility = 'one'
                     if ($field->storeRelationAbility == 'one') {
@@ -2999,7 +2999,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $sql = 'SELECT COUNT(`id`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
 
         // Get qty
-        return db()->query($sql)->fetchColumn();
+        return db()->query($sql)->cell();
     }
 
     /**
@@ -3027,7 +3027,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $sql = 'SELECT SUM(`' . $column .'`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
 
         // Get qty
-        return db()->query($sql)->fetchColumn() ?: 0;
+        return db()->query($sql)->cell() ?: 0;
     }
 
     /**

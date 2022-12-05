@@ -162,7 +162,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
                 WHERE 1
                   AND `sectionId` = "'. $this->sectionId . '"
                   AND FIND_IN_SET("'. $del.'", `roleIds`)
-            ')->fetchColumn())
+            ')->cell())
 
                 // Remove that role from section entry's `roleIds` prop
                 $this->foreign('sectionId')->drop('roleIds', $del);
@@ -215,7 +215,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
                     SELECT GROUP_CONCAT(DISTINCT `filterOwner`) 
                     FROM `section2action` 
                     WHERE `sectionId` = "' . $this->sectionId . '"
-                ')->fetchColumn();
+                ')->cell();
 
                 // If list consists of just one value, use that value else, else use 'certain'
                 $filterOwner = count(ar($distinct)) == 1 ? $distinct : 'certain';

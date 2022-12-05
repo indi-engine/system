@@ -99,40 +99,17 @@ class Month extends Indi_Db_Table {
             SELECT * FROM `month` WHERE `month` = "' . $m . '" AND `yearId` = "' . $yearO->id . '"
         ')->fetch()) {
 
-            // Build month title
-            $title = db()->query('
-                SELECT `es`.`title`
-                FROM `enumset` `es`, `field` `f`, `entity` `e`
-                WHERE 1
-                  AND `es`.`alias` = "'. $m . '"
-                  AND `f`.`id` = `es`.`fieldId`
-                  AND `f`.`alias` = "month"
-                  AND `f`.`entityId` = `e`.`id`
-                  AND `e`.`table` = "month"
-              ')->fetchColumn() . ' ' . $yearO->title;
-
             // Create month entry
-            db()->query('
-                INSERT INTO `month`
-                SET
-                  `month` = "' . $m . '",
-                  ' . db()->sql('`title` = :s,', $title) . '
-                  `yearId` = "'. $yearO->id . '"
-            ');
-
-            // Get id
-            $id = db()->getPDO()->lastInsertId();
+            $monthR = m('month')->new(['month' => $m, 'yearId' => $yearO->id]);
+            $monthR->save();
 
             // Get it's id
             $monthI = [
-                'id' => $id,
+                'id' => $monthR->id,
                 'yearId' => $yearO->id,
                 'month' => $m,
-                'title' => $title
+                'title' => $monthR->title
             ];
-
-            // Set `move`
-            db()->query('UPDATE `month` SET `move` = "' . $id . '" WHERE `id` = "' . $id . '"');
         }
 
         // Return month entry as an instance of stdClass object
