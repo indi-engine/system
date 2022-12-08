@@ -708,6 +708,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // expert will be available for view and answer.
         if ($ownerWHERE = $this->ownerWHERE()) $where['owner'] =  $ownerWHERE;
 
+        // Notices
+        if ($noticeWHERE = $this->noticeWHERE()) $where['notice'] = $noticeWHERE;
+
         // Adjust primary WHERE clauses stack - apply some custom adjustments
         $where = $this->adjustPrimaryWHERE($where);
 
@@ -726,6 +729,25 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Return primary WHERE clauses stack
         return $where;
+    }
+
+    /**
+     * Part of WHERE clause, responsible for filtering using notice-buttons
+     *
+     * @return string
+     */
+    public function noticeWHERE() {
+
+        // Check notice-param, which is expected to be noticeId
+        $_ = jcheck([
+            'notice' => [
+                'rex' => 'int11',
+                'key' => 'notice'
+            ]
+        ], Indi::get());
+
+        // Return notice WHERE
+        return $_ ? '(' . $_['notice']->compiled('qtySql') . ')' : '';
     }
 
     /**
@@ -3648,71 +3670,13 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function menuNotices(&$menu) {
 
         // Get array of ids of 1st-level sections
-        $sectionIdA = array_column($menu, 'id');
+        $sectionIdA = []; foreach ($menu as $menuItem) $sectionIdA[$menuItem['id']] = '';
 
         // If no 'Notice' entity found - return
         if (!m('NoticeGetter', true) || !m('NoticeGetter')->fields('criteriaRelyOn')) return;
 
-        // Get ids of relyOnGetter-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnGetter = db()->query('
-            SELECT `noticeId`
-            FROM `noticeGetter`
-            WHERE 1
-              AND `criteriaRelyOn` = "getter"
-              AND `roleId` = "' . admin()->roleId . '"
-              AND `toggle` = "y"
-        ')->col();
-
-        // Get ids of relyOnEvent-notices, that should be used to setup menu-qty counters for current user's menu
-        $noticeIdA_relyOnEvent = db()->query('
-            SELECT `noticeId`, `criteriaEvt`
-            FROM `noticeGetter`
-            WHERE 1
-              AND `criteriaRelyOn` = "event"
-              AND `roleId` = "' . admin()->roleId . '"
-              AND `toggle` = "y"
-        ')->pairs();
-
-        // Remove relyOnEvent-notices having criteria that current user/getter not match
-        foreach ($noticeIdA_relyOnEvent as $noticeId => $criteriaEvt)
-            if ($criteriaEvt && !admin()->model()->row('`id` = "' . admin()->id . '" AND ' . $criteriaEvt))
-                unset($noticeIdA_relyOnEvent[$noticeId]);
-                $noticeIdA_relyOnEvent = array_keys($noticeIdA_relyOnEvent);
-
-        // Get notices
-        $_noticeRs = m('Notice')->all([
-            'FIND_IN_SET("' . admin()->roleId . '", `roleId`)',
-            'CONCAT(",", `sectionId`, ",") REGEXP ",(' . im($sectionIdA, '|') . '),"',
-            'FIND_IN_SET(`id`, IF(`qtyDiffRelyOn` = "event", "' . im($noticeIdA_relyOnEvent) . '", "' . im($noticeIdA_relyOnGetter) . '"))',
-            '`toggle` = "y"'
-        ]);
-
-        // If no notices - return
-        if (!$_noticeRs->count()) return;
-
         // Qtys array, containing quantities of rows, matched for each notice, per each section/menu-item
-        $qtyA = [];
-
-        // Foreach notice
-        foreach ($_noticeRs as $_noticeR) {
-
-            // Get qty
-            $_noticeR->qty = db()->query('
-                SELECT COUNT(`id`)
-                FROM `' . m($_noticeR->entityId)->table().'`
-                WHERE ' . $_noticeR->compiled('qtySql')
-            )->cell();
-
-            // Collect qtys for each sections
-            foreach (ar($_noticeR->sectionId) as $sectionId)
-                $qtyA[$sectionId][] = [
-                    'qty' => $_noticeR->qty ?: 0,
-                    'id' => $_noticeR->id,
-                    'bg' => $_noticeR->colorHex('bg'),
-                    'fg' => $_noticeR->colorHex('fg'),
-                    'tip' => $_noticeR->tooltip
-                ];
-        }
+        $qtyA = m('notice')->info(admin(), $sectionIdA);
 
         // Foreach menu item
         foreach ($menu as &$item) {
@@ -3721,7 +3685,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if (!$qtyA[$item['id']]) continue;
 
             // Append each qty to menu item's title
-            foreach ($qtyA[$item['id']] as $qtyI)
+            foreach (array_reverse($qtyA[$item['id']]) as $qtyI)
                 $item['title'] .= '<span class="menu-qty menu-qty-' . $qtyI['id'] . '"'
                     . '" style="' . ($qtyI['bg'] ? 'background: ' . $qtyI['bg'] : '') . '; color: ' . ($qtyI['fg'] ?: 'initial') . ';'
                     . ($qtyI['qty'] ? '' : 'display: none')

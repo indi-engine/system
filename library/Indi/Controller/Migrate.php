@@ -26,6 +26,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         field('changeLog', 'changerType')->delete();
         param('changeLog', 'datetime', 'displayTimeFormat', ['cfgValue' => 'H:i:s']);
+        field('notice', 'sectionId', ['filter' => '']);
         die('ok');
     }
     public function missingThingsAction() {

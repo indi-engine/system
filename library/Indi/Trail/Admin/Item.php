@@ -370,6 +370,15 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Call parent
         $array = parent::toArray();
 
+        // Append notices info
+        $array['notices'] = m('notice')->info(
+            admin(),
+            [$this->section->id => $this->scope->WHERE]
+        )[$this->section->id] ?? [];
+
+        // Setup pressed-prop
+        foreach ($array['notices'] as &$notice) $notice['pressed'] = $notice['id'] == Indi::get()->notice;
+
         // Setup scope
         if (array_key_exists('scope', $array)) {
             if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'])) {
