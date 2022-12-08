@@ -855,7 +855,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2259,309,0,'{\"ru\":\"Счетчик\",\"en\":\"Counter\"}','qty','none',0,'','regular',16,'{\"ru\":\"\",\"en\":\"\"}',0,'','n',2261),
 (2260,309,0,'{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}','qtySql','none',0,'','required',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2262),
 (2261,309,0,'{\"ru\":\"Направление изменения\",\"en\":\"Direction of change\"}','qtyDiffRelyOn','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'event','y',2263),
-(2262,309,0,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId','many',3,'FIND_IN_SET(`sectionId`, \"<?=m(\'section\')->all(\'`sectionId` = \"0\"\')->column(\'id\', true)?>\")','regular',23,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2264),
+(2262,309,0,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId','many',3,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2264),
 (2263,309,0,'{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}','bg','none',0,'','regular',11,'{\"ru\":\"\",\"en\":\"\"}',13,'195#008dbc','n',2265),
 (2264,309,0,'{\"ru\":\"Цвет текста\",\"en\":\"Foreground color\"}','fg','none',0,'','regular',11,'{\"ru\":\"\",\"en\":\"\"}',13,'000#ffffff','n',2266),
 (2265,309,0,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip','none',0,'','regular',6,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2267),
@@ -1881,7 +1881,7 @@ CREATE TABLE `queueItem` (
   KEY `stage` (`stage`),
   FULLTEXT KEY `value` (`value`),
   FULLTEXT KEY `result` (`result`)
-) ENGINE=MyISAM AUTO_INCREMENT=194009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=208828 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
 
@@ -1959,7 +1959,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=4531 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4538 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
