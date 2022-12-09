@@ -373,7 +373,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Append notices info
         $array['notices'] = m('notice')->info(
             admin(),
-            [$this->section->id => $this->scope->WHERE]
+            [$this->section->id => $this->scope->primary]
         )[$this->section->id] ?? [];
 
         // Setup pressed-prop

@@ -708,9 +708,6 @@ class Indi_Controller_Admin extends Indi_Controller {
         // expert will be available for view and answer.
         if ($ownerWHERE = $this->ownerWHERE()) $where['owner'] =  $ownerWHERE;
 
-        // Notices
-        if ($noticeWHERE = $this->noticeWHERE()) $where['notice'] = $noticeWHERE;
-
         // Adjust primary WHERE clauses stack - apply some custom adjustments
         $where = $this->adjustPrimaryWHERE($where);
 
@@ -729,25 +726,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Return primary WHERE clauses stack
         return $where;
-    }
-
-    /**
-     * Part of WHERE clause, responsible for filtering using notice-buttons
-     *
-     * @return string
-     */
-    public function noticeWHERE() {
-
-        // Check notice-param, which is expected to be noticeId
-        $_ = jcheck([
-            'notice' => [
-                'rex' => 'int11',
-                'key' => 'notice'
-            ]
-        ], Indi::get());
-
-        // Return notice WHERE
-        return $_ ? '(' . $_['notice']->compiled('qtySql') . ')' : '';
     }
 
     /**

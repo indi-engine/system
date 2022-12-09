@@ -932,8 +932,13 @@ class Indi_Controller {
         // Push primary part
         if ($primaryWHERE || $primaryWHERE == '0') $finalWHERE['primary'] = $primaryWHERE;
 
+        // Notices
+        if ($noticeWHERE = $this->noticeWHERE()) $finalWHERE['notice'] = $noticeWHERE;
+
         // Get a WHERE stack of clauses, related to filters search and push it into $finalWHERE under 'filters' key
-        if (count($filtersWHERE = $this->filtersWHERE())) $finalWHERE['filters'] = $filtersWHERE;
+        if (count($filtersWHERE = $this->filtersWHERE()))
+            if (!$noticeWHERE || uri()->format)
+                $finalWHERE['filters'] = $filtersWHERE;
 
         // Get a WHERE clause, related to keyword search and push it into $finalWHERE under 'keyword' key
         if ($keywordWHERE = $this->keywordWHERE()) $finalWHERE['keyword'] = $keywordWHERE;
@@ -953,6 +958,25 @@ class Indi_Controller {
 
         // Return
         return $finalWHERE;
+    }
+
+    /**
+     * Part of WHERE clause, responsible for filtering using notice-buttons
+     *
+     * @return string
+     */
+    public function noticeWHERE() {
+
+        // Check notice-param, which is expected to be noticeId
+        $_ = jcheck([
+            'notice' => [
+                'rex' => 'int11',
+                'key' => 'notice'
+            ]
+        ], Indi::get());
+
+        // Return notice WHERE
+        return $_ ? '(' . $_['notice']->compiled('qtySql') . ')' : '';
     }
 
     /**
