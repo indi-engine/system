@@ -814,18 +814,24 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Else build ORDER clause using ordinary approach
                 } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
 
+                // Build usable WHERE clause
+                $where = rif($scope['WHERE'], 'WHERE $1');
+
+                // Build usable ORDER BY clause
+                $order = rif($order, 'ORDER BY $1');
+
+                // Build usable LIMIT clause
+                $limit = 'LIMIT ' . ($scope['rowsOnPage'] * $scope['page'] - 1) . ', 1';
+
                 // If deleted entry is on current page
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
                     // Detect ID of entry that will be shifted from next page's first to current page's last
                     if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query('
-                            SELECT `id` FROM `' . $this->_table . '` 
-                            WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
-                            ' . rif($order, 'ORDER BY $1') . ' 
-                            LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
-                        ')->cell());
+                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query("
+                            SELECT `id` FROM `{$this->_table}` $where $order $limit
+                        ")->cell());
 
                     // Else if it's the last page - do nothing
                     else $byChannel[$channel][$context]['deleted'] = 'this';
@@ -854,19 +860,24 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $realtimeR->basicUpdate();
 
                 // Else if deleted entry is on prev or next page
-                } else if (!$scope['WHERE'] || db()->query($sql = '
-                    SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
-                )->cell()) {
+                } else if (!$where || db()->query("
+                    SELECT `id` FROM ({$this->phantom()}) AS `{$this->_table}` $where
+                ")->cell()) {
 
                     // Push current entry ID to the beginning of `entries` column of `realtime` entry
                     $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
 
+                    // Get comma-separated ids list for First And/Or Last entries/entry on the page
+                    $faol = []; if ($first) $faol []= $first; if ($last) $faol []= $last; $faol = im($faol);
+
+                    // If not empty - build SELECT
+                    if ($faol) $faol = "SELECT * FROM `{$this->_table}` WHERE `id` IN ($faol)";
+
+                    // Create UNION expr
+                    $union = rif($faol, '$1 UNION ') . $this->phantom();
+
                     // Get the ordered IDs: deleted, first on current page, and last on current page
-                    $idA = db()->query($sql = '
-                        SELECT `id` FROM `' . $this->_table . '`
-                        WHERE `id` IN (' . rif($first, '$1,') . rif($last, '$1,') .  $this->id . ')
-                        ' . rif($order, 'ORDER BY $1') . ' 
-                    ')->col();
+                    $idA = db()->query($sql = "SELECT `id` FROM ($union) AS `{$this->_table}` $order")->col();
 
                     // If deleted entry ID is above the others, it means it belongs to the one of prev pages
                     if ($this->id == array_shift($idA)) {
@@ -877,12 +888,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If there is at least 1 next page exists
                         // Detect ID of entry that will be shifted from next page's first to current page's last
                         if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query('
-                                SELECT `id` FROM `' . $this->_table . '` 
-                                WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
-                                ' . rif($order, 'ORDER BY $1') . ' 
-                                LIMIT ' . ($scope['rowsOnPage'] * $scope['page']) . ', 1
-                            ')->cell());
+                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query("
+                                SELECT `id` FROM `{$this->_table}` $where $order $limit
+                            ")->cell());
 
                         // Else if it's the last page
                         else $byChannel[$channel][$context]['deleted'] = 'prev';
@@ -1073,6 +1081,32 @@ class Indi_Db_Table_Row implements ArrayAccess
             'to' => $channel,
             'data' => $byContext
         ]);
+    }
+
+    /**
+     * Build an SQL expression applicable for use as phantom dataset compatible with WHERE and ORDER clauses
+     * Currently this is used in cases when the db-entry, that this instance is representing - was already deleted
+     * from the database, but we still need to invoke into realtime logic as if it would be still there
+     *
+     * @return string
+     */
+    public function phantom() {
+
+        // Original data is used
+        $data = $this->_original;
+
+        // Make sure localized fields to have values for all languages
+        foreach ($this->_language as $prop => $valueByLang) {
+            $data[$prop] = json_encode($valueByLang, JSON_UNESCAPED_UNICODE);
+        }
+
+        // Build
+        foreach ($data as $prop => $value) {
+            $colA []= db()->quote($value) . " AS `$prop`";
+        }
+
+        // Return
+        return 'SELECT ' . join(', ', $colA);
     }
 
     /**
@@ -1649,11 +1683,11 @@ class Indi_Db_Table_Row implements ArrayAccess
         // or row has dependent rowsets
         $this->deleteUsages();
 
-        // Notify UI-users
-        $this->realtime('deleted');
-
         // Standard deletion
         $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
+
+        // Notify UI-users
+        $this->realtime('deleted');
 
         // Delete all files (images, etc) that have been attached to row
         $this->deleteFiles();

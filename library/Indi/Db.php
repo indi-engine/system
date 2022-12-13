@@ -899,4 +899,14 @@ class Indi_Db {
         // Else preload
         foreach (m($entity)->all() as $row) self::$_preloadedA[$entity][$row->id] = $row;
     }
+
+    /**
+     * Proxy for PDO::quote()
+     *
+     * @param $value
+     * @return string
+     */
+    public function quote($value) {
+        return $this->getPDO()->quote($value);
+    }
 }
