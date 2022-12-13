@@ -2633,6 +2633,15 @@ function timeHi($timeId = null) {
 }
 
 /**
+ * Return alias for a given $langId
+ *
+ * @param $langId
+ */
+function lang($langId) {
+    return Lang::alias($langId);
+}
+
+/**
  * Return monthId for a given 'yyyy-mm(-dd)' string, or full array of 'yyyy-mm' => monthId key-pairs
  *
  * @param null $date

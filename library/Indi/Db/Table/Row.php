@@ -686,7 +686,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $scope
      * @return mixed
      */
-    protected function _toRealtimeGridData($fieldIds, $scope) {
+    protected function _toRealtimeGridData($fieldIds, $scope, $langId = 0) {
+
+        // If $langId arg is given
+        if ($langId) {
+
+            // Backup current language
+            $backup = ini()->lang->admin;
+
+            // Spoof current language
+            ini()->lang->admin = lang($langId);
+        }
 
         // Get aliases of affected fields involved by context
         $dataColumns = []; $renderCfg = ['_system' => []];
@@ -712,7 +722,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Render
-        return $this->toGridData($dataColumns, $renderCfg);
+        $data = $this->toGridData($dataColumns, $renderCfg);
+
+        // Restore current language
+        if ($langId) ini('lang')->admin = $backup;
+
+        // Return
+        return $data;
     }
 
     /**
@@ -787,7 +803,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
-                    $data = [$this->_toRealtimeGridData($fieldIds, $scope)];
+                    $data = [$this->_toRealtimeGridData($fieldIds, $scope, $realtimeR->langId)];
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
@@ -930,7 +946,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                     // Render json-data equal to as if separate request would be made
-                    $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope);
+                    $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
                 }
 
             // Else if $event is 'inserted'
@@ -1069,7 +1085,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                         // Render json-data equal to as if separate request would be made
-                        $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope);
+                        $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
                     }
                 }
             }
