@@ -13,13 +13,6 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     ];
 
     /**
-     * Path to pid-file
-     *
-     * @var string
-     */
-    protected $pid = DOC . STD . '/application/ws.pid';
-
-    /**
      * Path to err-file
      *
      * @var string
@@ -95,16 +88,13 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      */
     public function status() {
 
-        // If no pid-file exists - return false
-        if (!is_file($this->pid)) return ['success' => false, 'msg' => 'No pid file "' . $this->pid . '" exists'];
-
-        // Else if no PID contained inside that pid-file
-        if (!$pid = (int) trim(file_get_contents($this->pid))) return ['success' => false, 'msg' => 'Empty pid file'];
+        // Get pid
+        $pid = getpid();
 
         // Else if process having such PID is not found
-        return checkpid($pid)
+        return $pid
             ? ['success' => true , 'pid' => $pid]
-            : ['success' => false, 'msg' => 'No process found with such pid'];
+            : ['success' => false, 'msg' => 'No process found'];
     }
 
     /**
@@ -115,17 +105,20 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function start() {
 
         // Check whether both pid- and err- files are writable, and if no - return jflush-able result
-        foreach (['pid', 'err'] as $file)
+        foreach (['err'] as $file)
             if (file_exists($this->$file) && !is_writable($this->$file))
                 return ['success' => false, 'msg' => "ws.$file file is not writable"];
 
         // Trim left slash from wss
         $this->wss = ltrim($this->wss, '/');
 
+        // Prepare args, which will be used to identify the background process
+        $args = "--instance=" . ini()->db->name;
+
         // Build listener-server startup cmd
         $result['cmd'] = preg_match('/^WIN/i', PHP_OS)
-            ? "start /B php {$this->wss} 2>&1"
-            : "php {$this->wss} > /dev/null &";
+            ? "start /B php {$this->wss} $args 2>&1"
+            : "php {$this->wss} $args > /dev/null &";
 
         // Start listener server
         wslog('------------------------------');

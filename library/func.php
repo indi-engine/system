@@ -2959,20 +2959,40 @@ function wsmsglog($msg, $logtype, $path = null) {
 }
 
 /**
- * Check whether process exists having given $pid
+ * Check whether process exists
  *
  * @param $pid
  * @return bool
  */
-function checkpid($pid) {
+function getpid() {
 
-    // Prepare command, that will check whether process is still running
-    $cmd = preg_match('/^WIN/i', PHP_OS)
-        ? 'tasklist /FI "PID eq ' . $pid . '" | find "' . $pid . '"'
-        : 'ps -p ' . $pid . ' -o comm=';
+    // Get indi-engine instance name (which is same as database name)
+    $instance = ini()->db->name; $vdr = ltrim(VDR, '/');
 
-    // If such process is found - return string output found within process list, else return false
-    return shell_exec($cmd) ?: false;
+    // If we're on Windows
+    if (preg_match('/^WIN/i', PHP_OS)) {
+
+        // Build WHERE clause for Windows WMIC-command
+        $where []= "Caption     LIKE '%php%'";
+        $where []= "CommandLine LIKE '%$vdr%'";
+        $where []= "CommandLine LIKE '%--instance=$instance%'";
+        $where = join(' AND ', $where);
+
+        // Build, exec and get output of WMIC-command
+        $out = trim(`wmic path win32_process where "$where" get ProcessId`);
+
+        // Return PID
+        return preg_match('~^ProcessId\s+?([0-9]+)$~', $out, $m) ? $m[1] : false;
+
+    // Else todo: implement for unix
+    } else {
+
+        // Build ps cmd
+        $cmd = 'ps -p ' . $pid . ' -o comm=';
+
+        // If such process is found - return string output found within process list, else return false
+        return shell_exec($cmd) ?: false;
+    }
 }
 
 /**
