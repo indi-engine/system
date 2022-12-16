@@ -12,19 +12,35 @@ $ini = file_get_contents($doc . '/application/config.ini');
 // Get ini->db->name
 preg_match('~\[db\].*?name\s*=\s*([a-zA-Z_\-]+)~ms', $ini, $m);
 
+// Get indi-engine instance name
+$instance = $m[1];
+
 // Remove 'indi' from args list
 array_shift($argv);
 
-$opts = [];
+// Opts and flags
+$opts = []; $flag = [];
+
+// Distinct between args, opts and flags
+foreach ($argv as $idx => $arg) {
+    if (preg_match('~^--?([a-z]+)~', $arg, $fm)) {
+        if (preg_match('~^--([a-z]+)=([a-z0-9]+)$~', $arg, $om)) {
+            $opts[$om[1]] = $om[2];
+        } else {
+            $flag[$fm[1]] = true;
+        }
+        unset($argv[$idx]);
+    }
+}
+
+// Re-index $argv
+$argv = array_values($argv);
 
 // If '-d' flag is given, run the action in detached-mode
-if ($argv[0] == '-d') {
-
-    // Drop '-d' flag from args list
-    array_shift($argv);
+if ($flag['d'] ?? 0) {
 
     // Append indi-engine instance name
-    $argv []= "--instance={$m[1]}";
+    $argv []= "--instance=$instance";
 
     // Join args by whitespace
     $args = join(' ', $argv);
@@ -41,22 +57,38 @@ if ($argv[0] == '-d') {
         shell_exec($cmd);
     }
 
+    // Print cmd we just did run
     echo $cmd;
+
+// Else if '-k' or '-i' flag is given
+} else if (isset($flag['k']) || isset($flag['i'])) {
+
+    // Make sure below include-operator will work in current directory content
+    chdir(__DIR__);
+
+    // Include func.php
+    include_once '../library/func.php';
+
+    // Try to get PID
+    $pid = getpid($argv[0], $instance);
+
+    // If no PID found - do mention that
+    if (!$pid) echo 'No process found'; else {
+
+        // If '-i' flag is given - echo PID
+        if ($flag['i'] ?? 0) echo $pid;
+
+        // Else if '-k' flag is given - try to kill
+        else echo preg_match('/^WIN/i', PHP_OS)
+          ? `taskkill /f /PID $pid 2>&1`
+          : `kill -9 $pid`;
+    }
+
 // Else run action in syncronous mode
 } else {
 
     // Setup CMD constant, indicating that this execution was started via command line
     define('CMD', true);
-
-    // Distinct between opts and args
-    foreach ($argv as $idx => $arg) {
-        if (preg_match('~^-~', $arg)) {
-            $opts []= $arg; unset($argv[$idx]);
-        }
-    }
-
-    // Arrange keys
-    $argv = array_values($argv);
 
     // Get uri
     if (isset($argv[0])) $uri = $argv[0]; else exit('No command given');

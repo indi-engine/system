@@ -70,12 +70,9 @@ class Indi {
     public static $answer = [];
 
     /**
-     * @var null
-     */
-    protected static $_ws = null;
-
-    /**
-     * @var null
+     * Rabbitmq-channel instance
+     *
+     * @var \PhpAmqpLib\Channel\AMQPChannel
      */
     protected static $_mq = null;
 
@@ -904,6 +901,20 @@ class Indi {
         // Call 'factory' method of Indi_Db class, with first argument, if given. Otherwise just Indi_Db instance
         // will be returned, with no PDO configuration setup
         return Indi_Db::factory(func_num_args() ? func_get_arg(0) : null);
+    }
+
+    /**
+     * Get rabbitmq-channel instance, which will be created if need
+     *
+     * @return \PhpAmqpLib\Channel\AMQPChannel
+     */
+    public static function mq() {
+        return self::$_mq = self::$_mq ?? (new PhpAmqpLib\Connection\AMQPStreamConnection(
+            ini()->rabbitmq->host,
+            ini()->rabbitmq->port,
+            ini()->rabbitmq->user,
+            ini()->rabbitmq->pass,
+        ))->channel();
     }
 
     /**
@@ -2201,26 +2212,12 @@ class Indi {
     }
 
     /**
-     * Send websockets message via client socket, that will be auto-created if not yet exists
-     * If $data arg is `false` - socket client will be closed
+     * Send message to rabbitmq-queue
      */
     public static function ws($data) {
 
         // If websockets or rabbitmq is not enabled - return
         if (!ini('rabbitmq')->enabled) return;
-
-        // If rabbitmq connection channel not yet exists
-        if (!self::$_mq) {
-
-            // Get credentials
-            $mq = (array) ini('rabbitmq');
-
-            // Create connection
-            $connection = new PhpAmqpLib\Connection\AMQPStreamConnection($mq['host'], $mq['port'], $mq['user'], $mq['pass']);
-
-            // Create channel
-            self::$_mq = $connection->channel();
-        }
 
         // Message to be published
         $message = new PhpAmqpLib\Message\AMQPMessage(json_encode($data));
@@ -2252,8 +2249,9 @@ class Indi {
         // Else if destination is a channel id - it means we should deliver to certain channel
         } else if (Indi::rexm('cid', $data['to'])) $channelA []= $data['to'];
 
-        // Send message to each channel need
-        foreach ($channelA as $channel) self::$_mq->basic_publish($message, '', ini('db')->name . '--' . $channel);
+        // Send message to each channel where need
+        foreach ($channelA as $channel)
+            self::mq()->basic_publish($message, '', ini('db')->name . '--' . $channel);
     }
 
     /**

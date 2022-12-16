@@ -2958,23 +2958,21 @@ function wsmsglog($msg, $logtype, $path = null) {
     file_put_contents(rtrim(__DIR__, '\\/') . '/../../../../application/ws.' . $logtype . '.msg', date('Y-m-d H:i:s => ') . print_r($msg, true) . "\n", FILE_APPEND);
 }
 
-/**
- * Check whether process exists
- *
- * @param $pid
- * @return bool
- */
-function getpid() {
 
-    // Get indi-engine instance name (which is same as database name)
-    $instance = ini()->db->name; $vdr = ltrim(VDR, '/');
+/**
+ * Get PID for a running indi-engine instance's action, if such process exists
+ */
+function getpid($action, $instance = '') {
+
+    // If no $instance arg given - use db name
+    if (!$instance) $instance = ini()->db->name;
 
     // If we're on Windows
     if (preg_match('/^WIN/i', PHP_OS)) {
 
         // Build WHERE clause for Windows WMIC-command
         $where []= "Caption     LIKE '%php%'";
-        $where []= "CommandLine LIKE '%$vdr%'";
+        $where []= "CommandLine LIKE '%indi $action%'";
         $where []= "CommandLine LIKE '%--instance=$instance%'";
         $where = join(' AND ', $where);
 
@@ -2982,7 +2980,7 @@ function getpid() {
         $out = trim(`wmic path win32_process where "$where" get ProcessId`);
 
         // Return PID
-        return preg_match('~^ProcessId\s+?([0-9]+)$~', $out, $m) ? $m[1] : false;
+        return preg_match('~^ProcessId\s+?([0-9]+)~', $out, $m) ? $m[1] : false;
 
     // Else todo: implement for unix
     } else {
@@ -3178,4 +3176,14 @@ function cmd($action, $args = []) {
 
     // Else use 'exec' fn
     else exec($cmd . ' > /dev/null &');
+}
+
+/**
+ * Alias for Indi::mq()
+ *
+ * @see Indi::mq()
+ * @return \PhpAmqpLib\Channel\AMQPChannel
+ */
+function mq() {
+    return Indi::mq();
 }

@@ -11,3 +11,6 @@ file_put_contents($hook, $self);
 
 // Make it executable
 chmod($hook, 0744);
+
+// Create indi-command file
+file_put_contents('indi', '<?php' . PHP_EOL . "require 'vendor/indi-engine/system/application/indi';");
