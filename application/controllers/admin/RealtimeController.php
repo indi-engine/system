@@ -178,7 +178,6 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Truncate err- and pid- files
         file_put_contents($this->err, '');
-        file_put_contents($this->pid, '');
 
         // Return flushable result
         return $flush;

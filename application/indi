@@ -1,0 +1,105 @@
+<?php
+
+// Get this directory with 'right' slashes
+$_dir_ = str_replace('\\', '/', __DIR__);
+
+// Get project root
+$doc = realpath($_dir_ . '/../../../..');
+
+// Get contents of ini file
+$ini = file_get_contents($doc . '/application/config.ini');
+
+// Get ini->db->name
+preg_match('~\[db\].*?name\s*=\s*([a-zA-Z_\-]+)~ms', $ini, $m);
+
+// Remove 'indi' from args list
+array_shift($argv);
+
+$opts = [];
+
+// If '-d' flag is given, run the action in detached-mode
+if ($argv[0] == '-d') {
+
+    // Drop '-d' flag from args list
+    array_shift($argv);
+
+    // Append indi-engine instance name
+    $argv []= "--instance={$m[1]}";
+
+    // Join args by whitespace
+    $args = join(' ', $argv);
+
+    // Build command to be run in detached mode
+    $cmd = "php indi $args";
+
+    // Run command
+    if (preg_match('/^WIN/i', PHP_OS)) {
+        $cmd = "start /B $cmd > NUL";
+        pclose(popen($cmd, "r"));
+    } else {
+        $cmd = "$cmd > /dev/null &";
+        shell_exec($cmd);
+    }
+
+    echo $cmd;
+// Else run action in syncronous mode
+} else {
+
+    // Setup CMD constant, indicating that this execution was started via command line
+    define('CMD', true);
+
+    // Distinct between opts and args
+    foreach ($argv as $idx => $arg) {
+        if (preg_match('~^-~', $arg)) {
+            $opts []= $arg; unset($argv[$idx]);
+        }
+    }
+
+    // Arrange keys
+    $argv = array_values($argv);
+
+    // Get uri
+    if (isset($argv[0])) $uri = $argv[0]; else exit('No command given');
+
+    // Get vendor name
+    preg_match('~^(?<DOCUMENT_ROOT>.+?)/(?<VDR>vendor/.+?)/~', $_dir_, $m);
+
+    // Get filepath of a temporary file, containing environment variables
+    if (isset($argv[1])) {
+
+        // If 2nd arg is not a path of an existsing file - exit
+        if (!is_file($tmp = $argv[1])) exit("File \"$tmp\" does not exist");
+
+        // Extract environment variables
+        extract(json_decode(file_get_contents($tmp = $argv[1]), true));
+
+        // Delete temporary file
+        unlink($tmp);
+    }
+
+    // Provide default values for environment variables at least expected by Indi Engine
+    $default = [
+        'DOCUMENT_ROOT' => $m['DOCUMENT_ROOT'],
+        'REQUEST_METHOD' => 'GET',
+        'HTTP_HOST' => 'localhost',
+        'VDR' => $m['VDR'],
+        'STD' => ''
+    ];
+
+    // Apply those
+    foreach ($default as $key => $value)
+        if (!isset($_SERVER[$key]) || !$_SERVER[$key])
+            $_SERVER[$key] = $value;
+
+    // Change current working directory to project root
+    chdir($doc);
+
+    // Boot
+    include 'index.php';
+
+    // If $method is not defined in 'someSection/someAction'-format - assume it's action in CmdController
+    if (!preg_match('~^([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$~', $uri)) $uri = 'cmd/' . $uri;
+
+    // Dispatch method
+    uri()->dispatch($uri, $args ?? []);
+}
