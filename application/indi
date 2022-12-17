@@ -36,6 +36,19 @@ foreach ($argv as $idx => $arg) {
 // Re-index $argv
 $argv = array_values($argv);
 
+// Get action
+$action = $argv[0];
+
+// If any flag is given
+if ($flag) {
+
+    // Make sure below include-operator will work in current directory content
+    chdir(__DIR__);
+
+    // Include func.php
+    include_once '../library/func.php';
+}
+
 // If '-d' flag is given, run the action in detached-mode
 if ($flag['d'] ?? 0) {
 
@@ -58,40 +71,37 @@ if ($flag['d'] ?? 0) {
     }
 
     // Print cmd we just did run
-    echo $cmd;
+    echo $cmd . PHP_EOL;
+
+    // Echo PID of a newly spawned action process
+    echo 'Spawned ' . getpid($action, $instance) . PHP_EOL;
 
 // Else if '-k' or '-i' flag is given
 } else if (isset($flag['k']) || isset($flag['i'])) {
 
-    // Make sure below include-operator will work in current directory content
-    chdir(__DIR__);
-
-    // Include func.php
-    include_once '../library/func.php';
-
     // Try to get PID
-    $pid = getpid($argv[0], $instance);
+    $pid = getpid($action, $instance);
 
     // If no PID found - do mention that
-    if (!$pid) echo 'No process found'; else {
+    if (!$pid) echo 'No process found' . PHP_EOL; else {
 
         // If '-i' flag is given - echo PID
-        if ($flag['i'] ?? 0) echo $pid;
+        if ($flag['i'] ?? 0) echo "Running $pid" . PHP_EOL;
 
         // Else if '-k' flag is given - try to kill
         else echo preg_match('/^WIN/i', PHP_OS)
           ? `taskkill /f /PID $pid 2>&1`
-          : `kill -9 $pid`;
+          : `kill -9 $pid` . "Killed $pid" . PHP_EOL;
     }
 
 // Else run action in syncronous mode
 } else {
 
+    // Get action
+    if (!$action) exit('No action specified' . PHP_EOL);
+
     // Setup CMD constant, indicating that this execution was started via command line
     define('CMD', true);
-
-    // Get uri
-    if (isset($argv[0])) $uri = $argv[0]; else exit('No command given');
 
     // Get vendor name
     preg_match('~^(?<DOCUMENT_ROOT>.+?)/(?<VDR>vendor/.+?)/~', $_dir_, $m);
@@ -130,8 +140,8 @@ if ($flag['d'] ?? 0) {
     include 'index.php';
 
     // If $method is not defined in 'someSection/someAction'-format - assume it's action in CmdController
-    if (!preg_match('~^([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$~', $uri)) $uri = 'cmd/' . $uri;
+    if (!preg_match('~^([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$~', $action)) $action = 'cmd/' . $action;
 
     // Dispatch method
-    uri()->dispatch($uri, $args ?? []);
+    uri()->dispatch($action, $args ?? []);
 }

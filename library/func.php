@@ -2967,13 +2967,16 @@ function getpid($action, $instance = '') {
     // If no $instance arg given - use db name
     if (!$instance) $instance = ini()->db->name;
 
+    // Build instance param expr
+    $instance = "--instance=$instance";
+
     // If we're on Windows
     if (preg_match('/^WIN/i', PHP_OS)) {
 
         // Build WHERE clause for Windows WMIC-command
         $where []= "Caption     LIKE '%php%'";
         $where []= "CommandLine LIKE '%indi $action%'";
-        $where []= "CommandLine LIKE '%--instance=$instance%'";
+        $where []= "CommandLine LIKE '%$instance%'";
         $where = join(' AND ', $where);
 
         // Build, exec and get output of WMIC-command
@@ -2982,14 +2985,17 @@ function getpid($action, $instance = '') {
         // Return PID
         return preg_match('~^ProcessId\s+?([0-9]+)~', $out, $m) ? $m[1] : false;
 
-    // Else todo: implement for unix
+    // Else
     } else {
 
+        // Escape '-' chars, as grep command won't work correctly otherwise
+        $instance = str_replace('-', '\-', $instance);
+
         // Build ps cmd
-        $cmd = 'ps -p ' . $pid . ' -o comm=';
+        $cmd = "ps -ax | grep 'php indi' | grep '$action' | grep '$instance' | awk '{print $1}'";
 
         // If such process is found - return string output found within process list, else return false
-        return shell_exec($cmd) ?: false;
+        return trim(`$cmd`);
     }
 }
 
