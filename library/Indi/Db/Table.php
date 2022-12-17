@@ -1130,6 +1130,31 @@ class Indi_Db_Table
     }
 
     /**
+     * Create *_Row instance based on raw original data, received from maxwell daemon,
+     * so that it's possible to call realtime() on it then
+     *
+     * @return Indi_Db_Table_Row
+     */
+    public function raw($original, $affected = []) {
+
+        // Prepare data for Indi_Db_Table_Row object construction
+        $constructData = [
+            'table'    => $this->_table,
+            'original' => $original,
+            'affected' => $affected ?? []
+        ];
+
+        // Load class if need
+        if (!class_exists($this->_rowClass)) {
+            require_once 'Indi/Loader.php';
+            Indi_Loader::loadClass($this->_rowClass);
+        }
+
+        // Construct and return Indi_Db_Table_Row object
+        return new $this->_rowClass($constructData);
+    }
+
+    /**
      * Alias for fetchRow()
      */
     public function row($where = null, $order = null, $offset = null) {

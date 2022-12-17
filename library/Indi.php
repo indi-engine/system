@@ -1364,9 +1364,10 @@ class Indi {
      *
      * @static
      * @param null $arg
+     * @param null $val
      * @return mixed|null
      */
-    public static function ini($arg = null) {
+    public static function ini($arg = null, $val = null) {
 
         // If $arg argument is a path end with '.ini', and file with that path exists
         if (preg_match('/\.ini$/', $arg) && is_file($arg)) {
@@ -1412,7 +1413,39 @@ class Indi {
         }
 
         // Else if $arg argument is a string, we assume that it is a key, so we return it's value
-        else if (is_string($arg)) return Indi::store('ini')->$arg;
+        else if (is_string($arg)) {
+
+            // If $val arg is given
+            if (func_num_args() > 1) {
+
+                // Get full path to ini-file
+                $ini = DOC . '/application/config.ini';
+
+                // Get contents
+                $raw = file_get_contents($ini);
+
+                // Get section and param we're going to change
+                list ($section, $param) = explode('.', $arg);
+
+                // Spoof value of that param in that section
+                $raw = preg_replace('~(\[' . $section . '\].*?' . $param . '\s*=\s*)(.*?)(\n)~s', '$1' . $val . '$3', $raw);
+
+                // Write back to ini-file
+                file_put_contents($ini, $raw);
+
+                // Convert value, if need
+                switch ($val) {
+                    case 'false': $val = false;
+                    case 'true' : $val = true;
+                    case 'null' : $val = null;
+                }
+
+                // Return value updated in memory
+                return Indi::store('ini')->$section->$param = $val;
+
+            // Return value
+            } else return Indi::store('ini')->$arg;
+        }
 
         // Else we return the whole ini object
         else if (!$arg) return Indi::store('ini');

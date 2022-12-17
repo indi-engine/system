@@ -49,6 +49,7 @@ class Indi_Uri_Base {
         $this->module = 'front';
         $this->section = 'index';
         $this->action = 'index';
+        $this->command = false;
 
         // If URI is '/' - return
         if (!$uri[0]) return;
@@ -77,7 +78,17 @@ class Indi_Uri_Base {
 
             // Setup all other params
             else if (count($uri) > $i && strlen($uri[$i])) {
-                $this->{$uri[$i]} = $uri[$i + 1];
+
+                // Shortcuts
+                $param = $uri[$i]; $value = $uri[$i + 1];
+
+                // Do setup
+                $this->$param = $value;
+
+                // Setup command
+                if ($param && !$value) $this->command = $param;
+
+                // Increment $i
                 $i++;
             }
 

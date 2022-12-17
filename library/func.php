@@ -2962,7 +2962,7 @@ function wsmsglog($msg, $logtype, $path = null) {
 /**
  * Get PID for a running indi-engine instance's action, if such process exists
  */
-function getpid($action, $instance = '') {
+function getpid($action = '', $instance = '') {
 
     // If no $instance arg given - use db name
     if (!$instance) $instance = ini()->db->name;
@@ -2979,11 +2979,16 @@ function getpid($action, $instance = '') {
         $where []= "CommandLine LIKE '%$instance%'";
         $where = join(' AND ', $where);
 
+        // Prepare list of columns to be shown
+        $columns = 'ProcessId'; if (!$action) $columns .= ',CommandLine';
+
         // Build, exec and get output of WMIC-command
-        $out = trim(`wmic path win32_process where "$where" get ProcessId`);
+        $out = trim(`wmic path win32_process where "$where" get $columns`);
 
         // Return PID
-        return preg_match('~^ProcessId\s+?([0-9]+)~', $out, $m) ? $m[1] : false;
+        return $action
+            ? (preg_match('~^ProcessId\s+?([0-9]+)~', $out, $m) ? $m[1] : false)
+            : $out;
 
     // Else
     } else {

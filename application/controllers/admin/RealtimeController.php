@@ -18,7 +18,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch($args = []) {
 
         // If it's special action
-        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status,stop')) {
+        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status,stop,maxwell')) {
 
             // Call the desired action method
             $this->call(uri()->action, $args);
@@ -283,5 +283,177 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         foreach ($this->deleted as $type => $tokenA)
             foreach ($tokenA as $token)
                 if ($type == 'channel') Indi::ws(['type' => 'F5', 'to' => $token]);
+    }
+
+    /**
+     * Check mysql GRANTs are sufficient for maxwell mysql binlog listener server
+     */
+    protected function _maxwellCheckPrivileges() {
+
+        // Get db user
+        $user = ini()->db->user;
+
+        // Grants required to use maxwell
+        $must = [
+            "GRANT ALL PRIVILEGES ON `maxwell`.* TO `$user`@`%`" => true,
+            "GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO `$user`@`%`" => true,
+        ];
+
+        // Real grants
+        $real = db()->query("SHOW GRANTS FOR '$user'")->col();
+
+        // Unset privileges that are already granted
+        foreach ($real as $priv) if ($must[$priv]) unset($must[$priv]);
+
+        // If some of required privileges are not GRANTed so far
+        if ($must) {
+
+            // Get SQLs and append ';' at the end, so can be copied and pasted by root
+            $must = array_keys($must); $must = array_map(fn(&$sql) => $sql.=';', $must);
+
+            // Append header
+            array_unshift($must, 'Mysql privileges missing:');
+
+            // Print that and exit
+            echo join(PHP_EOL, $must); exit;
+        }
+    }
+
+    /**
+     * Server listening for rabbitmq-messages posted by maxwell daemon, which is capturing mysql raw data changes
+     */
+    public function maxwellAction() {
+
+        // If command is 'enable'
+        if (uri()->command == 'enable') {
+
+            // Check mysql GRANTs are sufficient for maxwell mysql binlog listener server
+            $this->_maxwellCheckPrivileges();
+
+            // Start services
+            foreach (ar('binlog,render') as $service) {
+
+                // Build cmd
+                $cmd = "php indi -d realtime/maxwell/$service";
+
+                // Exec cmd
+                if (preg_match('~^WIN~', PHP_OS)) {
+                    pclose(popen($cmd, "r"));
+                } else {
+                    `$cmd`;
+                }
+            }
+
+            // Update ini-file
+            ini('rabbitmq.maxwell', 'true');
+
+            // Do explicit exit, as otherwise 2 instance of each service is somewhy created
+            exit;
+
+        // Else if command is 'disable'
+        } else if (uri()->command == 'disable') {
+
+            // Kill both server and client
+            echo `php indi -k realtime/maxwell/binlog`;
+            echo `php indi -k realtime/maxwell/render`;
+
+            // Update ini-file
+            ini('rabbitmq.maxwell', 'false');
+        }
+
+        // Else if command is 'binlog' or 'render' - directly start that service
+        else if (uri()->command == 'binlog') $this->maxwellBinlog();
+        else if (uri()->command == 'render') $this->maxwellRender();
+    }
+
+    /**
+     * Start maxwell mysql binlog listener server, which is a java-program
+     */
+    protected function maxwellBinlog() {
+
+        // Change current working directory
+        chdir(DOC . '/vendor/zendesk/maxwell/lib');
+
+        // Java opts
+        $opts = '-Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry';
+
+        // Get database name
+        $dn = ini()->db->name;
+
+        // Prepare params
+        $params = [
+            'rabbitmq_exchange' => "maxwell.$dn",
+            'filter' => '"exclude:*.*, include:' . $dn .'.*"',
+            'client_id' => $dn,
+            'replica_server_id' => rand(1000, 9999),
+            'host' => ini()->db->host,
+            'user' => ini()->db->user,
+            'password' => ini()->db->pass,
+            'producer' => 'rabbitmq',
+            'rabbitmq_exchange_type' => 'topic'
+        ];
+
+        // Prepare params string
+        foreach ($params as $param => $value) $params[$param] = "--$param $value"; $params = join(' ', $params);
+
+        // Execute java command
+        `java $opts -cp ;* com.zendesk.maxwell.Maxwell $params`;
+    }
+
+    /**
+     * Start render-server which is consuming database raw changes and sending them pre-rendered to the browser tabs
+     */
+    protected function maxwellRender() {
+
+        // Define constant, indicating we're inside the maxwell php-process
+        define('MAXWELL', true);
+
+        // Get database name
+        $dn = ini()->db->name;
+
+        // RabbitMQ exchange name
+        $en = "maxwell.$dn";
+
+        // RabbitMQ queue name
+        $qn = "$en.pid-" . getmypid();
+
+        // Declare queue that we'll be working with
+        mq()->queue_declare($qn, false, false, true);
+
+        // Make sure messages having routing key '$dn.*' will be sinked to this queue by '$en' exchange
+        mq()->queue_bind($qn, $en, "$dn.*");
+
+        // Mapping between maxwell's type-prop and indi-engine's $event arg for realtime() call
+        $map = [
+            'update' => 'affected',
+            'delete' => 'deleted',
+            'insert' => 'inserted'
+        ];
+
+        // Start endless loop
+        while (true) {
+
+            // While at least 1 unprocessed msg is available
+            while ($msg = mq()->basic_get($queue)) {
+
+                // Get log
+                $log = json_decode($msg->getBody(), true);
+
+                // Setup row instance
+                $row = m($log['table'])->raw($log['data'], $log['old']);
+
+                // If event is known - prepared and deliver changes to subscribers
+                if ($event = $map[$log['type']]) $row->realtime($event);
+
+                // Else show unknown messsage
+                else d($log);
+
+                // Acknowledge the queue about that message is processed
+                mq()->basic_ack($msg->getDeliveryTag());
+            }
+
+            // Sleep
+            usleep(100000);
+        }
     }
 }

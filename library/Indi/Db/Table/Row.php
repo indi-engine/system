@@ -147,6 +147,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->_table = $config['table'];
         $this->_original = $config['original'];
         $this->_modified = is_array($config['modified']) ? $config['modified'] : [];
+        $this->_affected = is_array($config['affected']) ? $config['affected'] : [];
         $this->_system = is_array($config['system']) ? $config['system'] : [];
         $this->_temporary = is_array($config['temporary']) ? $config['temporary'] : [];
         $this->_foreign = is_array($config['foreign']) ? $config['foreign'] : [];
@@ -739,7 +740,11 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function realtime($event = 'affected') {
 
         // If rabbitmq is not enabled
-        if (!ini('rabbitmq')->enabled) return;
+        if (!ini()->rabbitmq->enabled) return;
+
+        // If realtime is configured to listen for mysql binlog events captured by vendor/zendesk/maxwell lib,
+        // proceed only if MAXWELL-constant is defined, so that it means we're inside realtime/maxwell process
+        if (ini()->rabbitmq->maxwell && !defined('MAXWELL')) return;
 
         // Start building WHERE clause
         $where = [

@@ -27,4 +27,11 @@ class Indi_Db_PDOStatement extends PDOStatement {
     public function cell($column_number = 0) {
         return $this->fetchColumn($column_number);
     }
+
+    /**
+     * Alias for fetchAll() method
+     */
+    public function all($style = null) {
+        return $this->fetchAll($style);
+    }
 }

@@ -2708,7 +2708,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
 
         // Else, if we are doing something in a certain section
-        } else {
+        } else if (!CMD) {
 
             // Prevent sub-request
             t()->section->southSeparate = $this->_isNestedSeparate;

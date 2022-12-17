@@ -37,7 +37,7 @@ foreach ($argv as $idx => $arg) {
 $argv = array_values($argv);
 
 // Get action
-$action = $argv[0];
+$action = $argv[0] ?? '';
 
 // If any flag is given
 if ($flag) {
@@ -86,11 +86,20 @@ if ($flag['d'] ?? 0) {
     if (!$pid) echo 'No process found' . PHP_EOL; else {
 
         // If '-i' flag is given - echo PID
-        if ($flag['i'] ?? 0) echo "Running $pid" . PHP_EOL;
+        if ($flag['i'] ?? 0) {
+
+            // If return value contain multiple lines
+            $lines = explode("\n", $pid);
+
+            // Trim header
+            if (preg_match('~^WIN~', PHP_OS)) array_shift($lines);
+
+            // Print info
+            echo (count($lines) > 1 || !$action ? join("\n", $lines) : "Running $pid") . PHP_EOL;
 
         // Else if '-k' flag is given - try to kill
-        else echo preg_match('/^WIN/i', PHP_OS)
-          ? `taskkill /f /PID $pid 2>&1`
+        } else preg_match('/^WIN/i', PHP_OS)
+          ? `taskkill /T /F /PID $pid 2>&1`
           : `kill -9 $pid` . "Killed $pid" . PHP_EOL;
     }
 
@@ -138,9 +147,6 @@ if ($flag['d'] ?? 0) {
 
     // Boot
     include 'index.php';
-
-    // If $method is not defined in 'someSection/someAction'-format - assume it's action in CmdController
-    if (!preg_match('~^([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$~', $action)) $action = 'cmd/' . $action;
 
     // Dispatch method
     uri()->dispatch($action, $args ?? []);
