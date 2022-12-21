@@ -425,9 +425,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Mapping between maxwell's type-prop and indi-engine's $event arg for realtime() call
         $map = [
-            'update' => 'affected',
-            'delete' => 'deleted',
-            'insert' => 'inserted'
+            'update' => true,
+            'delete' => true,
+            'insert' => true
         ];
 
         // Start endless loop
@@ -436,17 +436,14 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // While at least 1 unprocessed msg is available
             while ($msg = mq()->basic_get($queue)) {
 
-                // Get log
-                $log = json_decode($msg->getBody(), true);
+                // Get event
+                $event = json_decode($msg->getBody(), true);
 
-                // Setup row instance
-                $row = m($log['table'])->maxwell($log['data'], $log['old']);
-
-                // If event is known - prepare and deliver changes to subscribers
-                if ($event = $map[$log['type']]) $row->maxwell($event);
+                // If event type is known - prepare and deliver updates to subscribers
+                if ($map[$event['type']]) m($event['table'])->maxwell($event);
 
                 // Else show unknown messsage
-                else i($log, 'a', 'log/maxwell-render.txt');
+                else i($event, 'a', 'log/unknown-event.txt');
 
                 // Acknowledge the queue about that message is processed
                 mq()->basic_ack($msg->getDeliveryTag());

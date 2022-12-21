@@ -1130,70 +1130,77 @@ class Indi_Db_Table
     }
 
     /**
-     * Create *_Row instance based on raw entry current and old data, received from maxwell daemon
-     *
-     * @param array $current
-     * @param array $old
-     * @return Indi_Db_Table_Row
+     * Create *_Row instance based on raw change event data, received from maxwell daemon
      */
-    public function maxwell(array $current, $old = null) {
+    public function maxwell(array $event) {
 
-        // If there is no old data for the row, e.g. it was INSERT - setup and return row instance
-        if (!$old) return $this->new($current);
+        // If new row was created
+        if ($event['type'] == 'insert') {
 
-        // Prepare original data
-        $original = array_merge($current, $old);
+            // Setup row instance
+            $row = $this->new();
 
-        // Prepare modified data
-        $modified = [];
-        foreach ($old as $prop => $value)
-            $modified[$prop] = $current[$prop];
+            // Setup localized value within $row->_language, recognized within given raw data, and return
+            // data containing values for certain (current) language only in case of localized field
+            $modified = $row->l10n($event['data']);
 
-        // Load class if need
-        if (!class_exists($this->_rowClass)) {
-            require_once 'Indi/Loader.php';
-            Indi_Loader::loadClass($this->_rowClass);
-        }
+            // Setup modified data
+            $row->modified($modified);
 
-        // Create Indi_Db_Table_Row instance
-        /** @var Indi_Db_Table_Row $row */
-        $row = new $this->_rowClass([
-            'table'    => $this->_table,
-            'original' => $original,
-            'modified' => $modified
-        ]);
+        // Else
+        } else {
 
-        // Foreach localized prop
-        foreach ($row->language() as $prop => $byLang_original) {
+            // If $event['old'] is not given - make sure it to be empty array
+            $old = $event['old'] ?? [];
 
-            // If value of localized prop was modified
-            if (array_key_exists($prop, $modified)) {
+            // Prepare original data
+            $original = array_merge($event['data'], $old);
 
-                // If modified value of localized prop is json-decodable
-                if (is_array($byLang_modified = json_decode($modified[$prop], true))) {
+            // Prepare modified data
+            $modified = [];
+            foreach ($old as $prop => $value)
+                $modified[$prop] = $event['data'][$prop];
 
-                    // Get language, that value was changed at least for
-                    $lang = key(array_diff_assoc($byLang_original, $byLang_modified));
+            // Create Indi_Db_Table_Row instance
+            /** @var Indi_Db_Table_Row $row */
+            $row = new $this->_rowClass([
+                'table'    => $this->_table,
+                'original' => $original,
+                'modified' => $modified
+            ]);
 
-                    // As long as Indi_Db_Table_Row's both _original and _modified arrays contain
-                    // values only for a single certain language (e.g. for localized fields),
-                    // we need to spoof values in both _original and _modified for the first language
-                    // for which we detected changed value, because otherwise it may happen that
-                    // if ini()->lang->admin is not the same as for which the value was changed,
-                    // it will result in that no change is detected, so no aftermaths are triggered
-                    $row->original($prop, $byLang_original[$lang]);
-                    $row->modified($prop, $byLang_modified[$lang]);
+            // Foreach localized prop
+            if ($modified) foreach ($row->language() as $prop => $byLang_original) {
 
-                    // Spoof _language[$prop] in a whole, to handle cases when values for more than 1 languages
-                    // were changed on the database level, so all subscribers should receive updates even if they're
-                    // logged using different languages
-                    $row->language($prop, $byLang_modified);
+                // If value of localized prop was modified
+                if (array_key_exists($prop, $modified)) {
+
+                    // If modified value of localized prop is json-decodable
+                    if (is_array($byLang_modified = json_decode($modified[$prop], true))) {
+
+                        // Get language, that value was changed at least for
+                        $lang = key(array_diff_assoc($byLang_original, $byLang_modified));
+
+                        // As long as Indi_Db_Table_Row's both _original and _modified arrays contain
+                        // values only for a single certain language (e.g. for localized fields),
+                        // we need to spoof values in both _original and _modified for the first language
+                        // for which we detected changed value, because otherwise it may happen that
+                        // if ini()->lang->admin is not the same as for which the value was changed,
+                        // it will result in that no change is detected, so no aftermaths are triggered
+                        $row->original($prop, $byLang_original[$lang]);
+                        $row->modified($prop, $byLang_modified[$lang]);
+
+                        // Spoof _language[$prop] in a whole, to handle cases when values for more than 1 languages
+                        // were changed on the database level, so all subscribers should receive updates even if they're
+                        // logged using different languages
+                        $row->language($prop, $byLang_modified);
+                    }
                 }
             }
         }
 
-        // Return row
-        return $row;
+        // Prepare and send updates to subscribers
+        $row->maxwell($event['type']);
     }
 
     /**

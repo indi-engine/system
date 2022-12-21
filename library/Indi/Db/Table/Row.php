@@ -630,7 +630,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Check if row (in it's original state) matches each separate notification's criteria,
         // and remember the results separately for each notification, attached to current row's entity
-        $this->_noticesStep1();
+        $this->_noticesStep1($new ? 'insert' : 'update');
 
         // Merge $this->_original and $this->_modified arrays into $this->_original array
         $this->_original = (array) array_merge($this->_original, $this->_modified);
@@ -671,10 +671,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$new) $this->_updateUsages();
 
         // For now, only existing entries changes are supported
-        $this->realtime($new ? 'inserted' : 'affected');
+        $this->realtime($new ? 'insert' : 'update');
 
         // Trigger dependent counters / summaries to be updated
-        $this->_inQtySum($new ? 'inserted' : 'updated');
+        $this->_inQtySum($new ? 'insert' : 'update');
 
         // Return current row id (in case if it was a new row) or number of affected rows (1 or 0)
         return $return;
@@ -692,22 +692,33 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Check if row (in it's original state) matches each separate notification's criteria,
         // and remember the results separately for each notification, attached to current row's entity
-        $this->_noticesStep1();
+        $this->_noticesStep1($event);
 
-        // Merge $this->_original and $this->_modified arrays into $this->_original array
-        $this->_original = (array) array_merge($this->_original, $this->_modified);
+        // If $event is 'delete'
+        if ($event == 'delete') {
 
-        // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
-        $this->_modified = $this->_mismatch = $this->_affected = [];
+            // Force false to be the result of all matches each separate notification's criteria,
+            // and compare results with the results of previous check, that was made before any modifications
+            $this->_noticesStep2();
 
-        // Check if row (in it's current/modified state) matches each separate notification's criteria,
-        // and compare results with the results of previous check, that was made before any modifications
-        $this->_noticesStep2($original);
+        // Else if $event if 'insert' or 'update'
+        } else {
 
-        // Get the state of modified fields, that they were in at the moment before current row was saved
-        $this->_affected = array_diff_assoc($original, $this->_original);
+            // Merge $this->_original and $this->_modified arrays into $this->_original array
+            $this->_original = (array) array_merge($this->_original, $this->_modified);
 
-        // Trigger realtime
+            // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
+            $this->_modified = $this->_mismatch = $this->_affected = [];
+
+            // Check if row (in it's current/modified state) matches each separate notification's criteria,
+            // and compare results with the results of previous check, that was made before any modifications
+            $this->_noticesStep2($original);
+
+            // Get the state of modified fields, that they were in at the moment before current row was saved
+            $this->_affected = array_diff_assoc($original, $this->_original);
+        }
+
+        // Trigger realtime updates to be rendered and delivered to subscribers
         $this->realtime($event);
     }
 
@@ -768,7 +779,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * that are representing browser tabs having grids where current entry
      * and old values of it's affected fields are displayed
      */
-    public function realtime($event = 'affected') {
+    public function realtime($event = 'update') {
 
         // If rabbitmq is not enabled
         if (!ini()->rabbitmq->enabled) return;
@@ -783,8 +794,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             '`entityId` = "' . $this->model()->id() . '"',
         ];
 
-        // If $event is  'affected'
-        if ($event == 'affected') {
+        // If $event is 'update'
+        if ($event == 'update') {
 
             // Append clause for `entries` column
             $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
@@ -811,8 +822,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Get context
             $context = $realtimeR->token;
 
-            // If $event is 'affected'
-            if ($event == 'affected') {
+            // If $event is 'update'
+            if ($event == 'update') {
 
                 // Prepare blank data and group it by channel and context
                 $byChannel[$channel][$context] = [
@@ -845,8 +856,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
                 }
 
-            // Else if $event is 'deleted'
-            } else if ($event == 'deleted') {
+            // Else if $event is 'delete'
+            } else if ($event == 'delete') {
 
                 // Get scope
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
@@ -985,8 +996,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
                 }
 
-            // Else if $event is 'inserted'
-            } else if ($event == 'inserted') {
+            // Else if $event is 'insert'
+            } else if ($event == 'insert') {
 
                 // Get scope
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
@@ -1178,7 +1189,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param bool $notices If `true - notices will not be omitted
      * @param bool $amerge If `true - previous value $this->_affected will be kept, but newly affected will have a priority
-     * @param bool $realtime If `true - $this->realtime('affected') call will be made
+     * @param bool $realtime If `true - $this->realtime('update') call will be made
      * @return int
      */
     public function basicUpdate($notices = false, $amerge = true, $realtime = true) {
@@ -1223,7 +1234,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($notices) $this->_noticesStep2($original);
 
         // Involve realtime feature
-        if ($realtime) $this->realtime('affected');
+        if ($realtime) $this->realtime('update');
 
         // Return number of affected rows (1 or 0)
         return $affected;
@@ -1453,17 +1464,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Check if row (in it's original state) matches each separate notification's criteria,
      * and remember the results separately for each notification, attached to current row's entity
      *
-     * @param string $caller
+     * @param string $event
      * @return mixed
      */
-    private function _noticesStep1($caller = 'save') {
+    private function _noticesStep1($event = 'update') {
 
         // If realtime is configured to listen for mysql binlog events captured by vendor/zendesk/maxwell lib,
         // proceed only if MAXWELL-constant is defined, so that it means we're inside realtime/maxwell process
         if (ini()->rabbitmq->maxwell && !defined('MAXWELL')) return;
 
         // If no modifications made - return
-        if (!$this->_modified && $caller == 'save') return;
+        if (!$this->_modified && $event != 'delete') return;
 
         // If no notices attached - return
         if (!$this->model()->notices()) return;
@@ -1482,7 +1493,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // If this was an existing row - check if it (in it's original state) matched the criteria
             if ($this->_original['id']) {
-                if (strlen($noticeR->event)) eval('$match = ' . $noticeR->event . ' ? true : false;');
+                if (strlen($noticeR->event)) eval('$match = (' . $noticeR->event . ') ? true : false;');
                 else $match = false;
             }
 
@@ -1527,7 +1538,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Note: if $original arg is NOT given, assume that we'd deleted this row from database,
             // so all matches results are false
             if ($original) {
-                if (strlen($noticeR->event)) eval('$match = ' . $noticeR->event . ' ? true : false;');
+                if (strlen($noticeR->event)) eval('$match = (' . $noticeR->event . ') ? true : false;');
                 else $match = $this->_notices[$noticeR->id]['was'];
             }
 
@@ -1747,7 +1758,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
 
         // Notify UI-users
-        $this->realtime('deleted');
+        $this->realtime('delete');
 
         // Delete all files (images, etc) that have been attached to row
         $this->deleteFiles();
@@ -1769,7 +1780,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->_noticesStep2();
 
         // Trigger dependent counters / summaries to be updated
-        $this->_inQtySum('deleted');
+        $this->_inQtySum('delete');
 
         // Return
         return $return;
@@ -7406,13 +7417,13 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $event
      * @throws Exception
      */
-    protected function _inQtySum($event = 'inserted') {
+    protected function _inQtySum($event = 'insert') {
 
         // If we don't need to count/summarize this entry anywhere - return
         if (!$inQtySum = $this->model()->inQtySum()) return;
 
         // If new entry was inserted
-        if ($event == 'inserted') {
+        if ($event == 'insert') {
 
             // Foreach location that we should count/summarize that in
             foreach ($inQtySum as $info) {
@@ -7430,7 +7441,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
         // Else if existing entry was deleted
-        } else if ($event == 'deleted') {
+        } else if ($event == 'delete') {
 
             // Foreach location that we should count/summarize that in
             foreach ($inQtySum as $info) {
@@ -7448,7 +7459,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
         // Else if existing entry was updated
-        } else if ($event == 'updated') {
+        } else if ($event == 'update') {
 
             // Foreach location that we should count/summarize that in
             foreach ($inQtySum as $info) {
