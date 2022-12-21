@@ -681,6 +681,37 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Method to trigger all things to be processed on data change event, captured by maxwell daemon
+     *
+     * @param $event
+     */
+    public function maxwell($event) {
+
+        // Backup original
+        $original = $this->_original;
+
+        // Check if row (in it's original state) matches each separate notification's criteria,
+        // and remember the results separately for each notification, attached to current row's entity
+        $this->_noticesStep1();
+
+        // Merge $this->_original and $this->_modified arrays into $this->_original array
+        $this->_original = (array) array_merge($this->_original, $this->_modified);
+
+        // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
+        $this->_modified = $this->_mismatch = $this->_affected = [];
+
+        // Check if row (in it's current/modified state) matches each separate notification's criteria,
+        // and compare results with the results of previous check, that was made before any modifications
+        $this->_noticesStep2($original);
+
+        // Get the state of modified fields, that they were in at the moment before current row was saved
+        $this->_affected = array_diff_assoc($original, $this->_original);
+
+        // Trigger realtime
+        $this->realtime($event);
+    }
+
+    /**
      * Use $fieldIds and $scope args to prepare args and call $this->toGridData($dataColumns, $renderCfg)
      *
      * @param $fieldIds
@@ -1427,6 +1458,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     private function _noticesStep1($caller = 'save') {
 
+        // If realtime is configured to listen for mysql binlog events captured by vendor/zendesk/maxwell lib,
+        // proceed only if MAXWELL-constant is defined, so that it means we're inside realtime/maxwell process
+        if (ini()->rabbitmq->maxwell && !defined('MAXWELL')) return;
+
         // If no modifications made - return
         if (!$this->_modified && $caller == 'save') return;
 
@@ -1471,6 +1506,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @return mixed
      */
     private function _noticesStep2($original = null) {
+
+        // If realtime is configured to listen for mysql binlog events captured by vendor/zendesk/maxwell lib,
+        // proceed only if MAXWELL-constant is defined, so that it means we're inside realtime/maxwell process
+        if (ini()->rabbitmq->maxwell && !defined('MAXWELL')) return;
 
         // If $original arg is given but no modifications made - return
         if ($original && !$affected = array_diff_assoc($original, $this->_original)) return;
@@ -7242,7 +7281,20 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (func_num_args() == 1) return $this->_language[$prop];
 
         // If $prop and $lang args given - return certain translation for certain prop
-        if (func_num_args() == 2) return $this->_language[$prop][$lang];
+        if (func_num_args() == 2) {
+
+            // If 2nd arg is an array - assume it's a [lang => value] pairs
+            if (is_array($lang)) {
+
+                // So set it directly
+                $this->_language[$prop] = $lang;
+
+                // Return
+                return $this;
+
+            // Else get value of a given $prop for a given $lang
+            } else return $this->_language[$prop][$lang];
+        }
 
         // If $prop, $lang and $value args given
         if (func_num_args() == 3) {

@@ -440,13 +440,13 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 $log = json_decode($msg->getBody(), true);
 
                 // Setup row instance
-                $row = m($log['table'])->raw($log['data'], $log['old']);
+                $row = m($log['table'])->maxwell($log['data'], $log['old']);
 
-                // If event is known - prepared and deliver changes to subscribers
-                if ($event = $map[$log['type']]) $row->realtime($event);
+                // If event is known - prepare and deliver changes to subscribers
+                if ($event = $map[$log['type']]) $row->maxwell($event);
 
                 // Else show unknown messsage
-                else d($log);
+                else i($log, 'a', 'log/maxwell-render.txt');
 
                 // Acknowledge the queue about that message is processed
                 mq()->basic_ack($msg->getDeliveryTag());
