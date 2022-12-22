@@ -39,6 +39,9 @@ $argv = array_values($argv);
 // Get action
 $action = $argv[0] ?? '';
 
+// If nothing given, use '-i' flag
+if (!$action && !$flag && !$opts) $flag['i'] = true;
+
 // If any flag is given
 if ($flag) {
 
@@ -98,9 +101,15 @@ if ($flag['d'] ?? 0) {
             echo (count($lines) > 1 || !$action ? join("\n", $lines) : "Running $pid") . PHP_EOL;
 
         // Else if '-k' flag is given - try to kill
-        } else preg_match('/^WIN/i', PHP_OS)
-          ? `taskkill /T /F /PID $pid 2>&1`
-          : `kill -9 $pid` . "Killed $pid" . PHP_EOL;
+        } else {
+
+            // Kill process
+            if (preg_match('/^WIN/i', PHP_OS)) {
+                `taskkill /T /F /PID $pid 2>&1`;
+            } else {
+                echo `kill -9 $pid` . "Killed $pid" . PHP_EOL;
+            }
+        }
     }
 
 // Else run action in syncronous mode

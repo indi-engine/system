@@ -119,20 +119,32 @@ class Indi_Db {
                 // Create it
                 self::$_instance = new self();
 
-                // Try to create PDO instance
-                try {
+                // Maximum attempts qty
+                // --
+                // Basically we need this dirty hack for case when Indi Engine is running inside a docker container,
+                // and docker-entrypoint.sh has commands that require mysql to be completely initialized, so we wait
+                $tryQty = 5;
+
+                // Do attempts
+                for ($i = 1; $i <= $tryQty; $i++) try {
 
                     // Setup a PDO object
-                    @self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->name . ';host=' . $arg->host, $arg->user, $arg->pass);
+                    self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->name . ';host=' . $arg->host, $arg->user, $arg->pass);
 
                     // Set attribute for useing custom statement class
                     self::$_pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Indi_Db_PDOStatement::class]);
 
+                    // Stop attempts if reached this line
+                    break;
+
                 // If something goes wrong
                 } catch (PDOException $e) {
 
-                    // Pass caught exception to the own handler
-                    self::$_instance->jerror($e);
+                    // If max attempt qty is not yet reached - wait a bit
+                    if ($i < $tryQty) sleep(1);
+
+                    // Else pass caught exception to the own handler
+                    else self::$_instance->jerror($e);
                 }
 
                 // Setup encoding

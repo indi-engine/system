@@ -206,17 +206,20 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // While at least 1 unprocessed event of type 'queue.deleted' is available
             while ($msg = mq()->basic_get($queue)) {
 
-                // Get channel token, which is used as the queue name
-                $channel = $msg->get_properties()['application_headers']->getNativeData()['name'];
+                // Get name of the deleted queue, which was dedicated to the closed browser tab
+                $name = $msg->get_properties()['application_headers']->getNativeData()['name'];
 
                 // Split by --
-                list ($dbname, $channel) = explode('--', $channel);
+                list ($instance, $channel) = explode('--', $name);
 
                 // If it was queue from this instance of Indi Engine
-                if ($dbname == ini()->db->name) {
+                if ($instance == ini()->db->name) {
 
-                    // Delete realtime-record of type=channel
-                    m('realtime')->row(['`token` = "' . $channel . '"', '`type` = "channel"'])->delete();
+                    // Delete realtime-record of type=channel to be deleted
+                    if ($r = m('realtime')->row(['`token` = "' . $channel . '"', '`type` = "channel"'])) $r->delete();
+
+                    // Else log the problem
+                    else i($name, 'a', 'log/closetab.err');
 
                     // Acknowledge the queue about that message is processed
                     mq()->basic_ack($msg->getDeliveryTag());
@@ -396,8 +399,11 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Prepare params string
         foreach ($params as $param => $value) $params[$param] = "--$param $value"; $params = join(' ', $params);
 
+        // Path separator shortcut
+        $ps = PATH_SEPARATOR;
+
         // Execute java command
-        `java $opts -cp ;* com.zendesk.maxwell.Maxwell $params`;
+        `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
     }
 
     /**
@@ -419,6 +425,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Declare queue that we'll be working with
         mq()->queue_declare($qn, false, false, true);
+
+        // Declare exchange, for cases when it is not declared so far by maxwell daemon
+        mq()->exchange_declare($en, 'topic', false, false, false);
 
         // Make sure messages having routing key '$dn.*' will be sinked to this queue by '$en' exchange
         mq()->queue_bind($qn, $en, "$dn.*");

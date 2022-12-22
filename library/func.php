@@ -2996,11 +2996,14 @@ function getpid($action = '', $instance = '') {
         // Escape '-' chars, as grep command won't work correctly otherwise
         $instance = str_replace('-', '\-', $instance);
 
+        // Start building cmd
+        $cmd = "ps -eo pid,cmd | grep 'php indi' | grep '$instance'";
+
         // Build ps cmd
-        $cmd = "ps -ax | grep 'php indi' | grep '$action' | grep '$instance' | awk '{print $1}'";
+        if ($action) $cmd .= " | grep '$action' | awk '{print $1}'";
 
         // If such process is found - return string output found within process list, else return false
-        return trim(`$cmd`);
+        return rtrim(`$cmd`);
     }
 }
 
