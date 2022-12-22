@@ -10,7 +10,7 @@ $doc = realpath($_dir_ . '/../../../..');
 $ini = file_get_contents($doc . '/application/config.ini');
 
 // Get ini->db->name
-preg_match('~\[db\].*?name\s*=\s*([a-zA-Z_\-]+)~ms', $ini, $m);
+preg_match('~\[db\].*?name\s*=\s*([a-zA-Z0-9_\-]+)~ms', $ini, $m);
 
 // Get indi-engine instance name
 $instance = $m[1];
@@ -24,7 +24,7 @@ $opts = []; $flag = [];
 // Distinct between args, opts and flags
 foreach ($argv as $idx => $arg) {
     if (preg_match('~^--?([a-z]+)~', $arg, $fm)) {
-        if (preg_match('~^--([a-z]+)=([a-z0-9]+)$~', $arg, $om)) {
+        if (preg_match('~^--([a-z]+)=([a-zA-Z0-9_\-]+)$~', $arg, $om)) {
             $opts[$om[1]] = $om[2];
         } else {
             $flag[$fm[1]] = true;
