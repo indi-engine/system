@@ -88,6 +88,13 @@ class Indi_Db_Table
     protected $_fileFields = null;
 
     /**
+     * Store array of aliases, related to fields, that are mapped to columns of type SET in database
+     *
+     * @var array
+     */
+    protected $_setFields = null;
+
+    /**
      * Scheme of how any instance of current model/entity can be used as a 'space' within the calendar/schedule
      *
      * @var array
@@ -934,9 +941,30 @@ class Indi_Db_Table
      */
     public function getFileFields($fileField = null) {
 
-        // Setup $this->_fileFields property, if it wasn't yet, and then do the job
-        if ($this->_fileFields === null) $this->_fileFields = $this->fields()->select(14, 'elementId')->column('alias');
+        // Setup $this->_fileFields property, if it wasn't yet
+        if ($this->_fileFields === null) $this->_fileFields
+            = $this->fields()->select(element('upload')->id, 'elementId')->column('alias');
+
+        // Do the job
         return $fileField ? in_array($fileField, $this->_fileFields) : $this->_fileFields;
+    }
+
+    /**
+     * Provide readonly access to _setFields property.
+     * If $setField argument is given - function will return boolean true or false, depends on whether or not
+     * $setField is within list of SET-fields
+     *
+     * @param string $setField
+     * @return array|bool
+     */
+    public function getSetFields($setField = null) {
+
+        // Setup $this->_setFields property, if it wasn't yet
+        if ($this->_setFields === null) $this->_setFields
+            = $this->fields()->select(coltype('SET')->id, 'columnTypeId')->column('alias');
+
+        // Do the job
+        return $setField ? in_array($setField, $this->_setFields) : $this->_setFields;
     }
 
     /**
@@ -1134,6 +1162,11 @@ class Indi_Db_Table
      */
     public function maxwell(array $event) {
 
+        // Implode values for SET-columns, as they're given as arrays by maxwell daemon
+        foreach ($this->getSetFields() as $setField)
+            if (array_key_exists($setField, $event['data']))
+                $event['data'][$setField] = implode(',', $event['data'][$setField]);
+
         // If new row was created
         if ($event['type'] == 'insert') {
 
@@ -1150,8 +1183,12 @@ class Indi_Db_Table
         // Else
         } else {
 
-            // If $event['old'] is not given - make sure it to be empty array
-            $old = $event['old'] ?? [];
+            // If $event['old'] is not given - make sure it to be empty array,
+            // but if not - implode values for SET-columns, as they're given as arrays by maxwell daemon
+            if ($old = $event['old'] ?? [])
+                foreach ($this->getSetFields() as $setField)
+                    if (array_key_exists($setField, $old))
+                        $old[$setField] = implode(',', $old[$setField]);
 
             // Prepare original data
             $original = array_merge($event['data'], $old);

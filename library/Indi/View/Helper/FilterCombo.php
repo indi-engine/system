@@ -54,7 +54,8 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
             if (($cValue = t()->scope->filter($cField)) && strlen($cValue)) t()->filtersSharedRow->$cField = $cValue;
 
             // Else if there is no such filter - set consider field to be not required
-            else if (!t()->filters->gb($considerR->consider, 'fieldId')) $considerR->required = 'n';
+            else if (!t()->filters->gb($considerR->consider, 'fieldId')
+                || (!$cValue && $this->getField()->relation)) $considerR->required = 'n';
         }
 
         // Do stuff
