@@ -402,6 +402,10 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Path separator shortcut
         $ps = PATH_SEPARATOR;
 
+        // Reset binlog position in maxwell database
+        if (db()->query("SHOW DATABASES LIKE 'maxwell'")->cell())
+            db()->query("DELETE FROM `maxwell`.`positions`  WHERE `client_id` = '$dn'");
+
         // Execute java command
         `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
     }
