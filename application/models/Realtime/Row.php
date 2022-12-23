@@ -165,17 +165,12 @@ class Realtime_Row extends Indi_Db_Table_Row {
         if ($this->type != 'channel') return;
 
         // Prepare rabbitmq-queue name
-        $queue = ini('db')->name . '--' . $this->token;
+        $qn = qn('opentab--') . $this->token;
 
-        // Prepare rabbit
-        $rabbit = (new PhpAmqpLib\Connection\AMQPStreamConnection(
-            ini()->rabbitmq->host,
-            ini()->rabbitmq->port,
-            ini()->rabbitmq->user,
-            ini()->rabbitmq->pass
-        ))->channel()->queue_declare($queue);
+        // Create queue
+        mq()->queue_declare($qn);
 
         // Return queue name
-        return $queue;
+        return $qn;
     }
 }

@@ -3201,3 +3201,17 @@ function cmd($action, $args = []) {
 function mq() {
     return Indi::mq();
 }
+
+/**
+ * Get rabbitmq queue name prefix
+ *
+ * @param string $type
+ */
+function qn($type = '') {
+
+    // Get database name and vendor name
+    $dn = ini()->db->name; $vn = explode('/', trim(VDR, '/'))[1];
+
+    // Return as '$vendorName.$databaseName' (with '.$type', if given)
+    return "$vn.$dn" . rif($type, '.$1');
+}

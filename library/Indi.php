@@ -2282,9 +2282,11 @@ class Indi {
         // Else if destination is a channel id - it means we should deliver to certain channel
         } else if (Indi::rexm('cid', $data['to'])) $channelA []= $data['to'];
 
+        // Get queue name prefix
+        $qn = qn('opentab--');
+
         // Send message to each channel where need
-        foreach ($channelA as $channel)
-            self::mq()->basic_publish($message, '', ini('db')->name . '--' . $channel);
+        foreach ($channelA as $channel) self::mq()->basic_publish($message, '', $qn . $channel);
     }
 
     /**

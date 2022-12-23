@@ -175,10 +175,10 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             jflush(false);
 
         // Else create `realtime` entry of `type` = "channel", create queue and get it's name
-        $cid = $session->channel()->queue();
+        $qn = $session->channel()->queue();
 
-        // Flush success
-        jflush(true, ['cid' => $cid]);
+        // Flush success, with channel id to be same as queue name
+        jflush(true, ['cid' => $qn]);
     }
 
     /**
@@ -192,31 +192,28 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function closetabAction() {
 
         // Name of the queue to be a destination for queue.deleted-events forwarded by 'amq.rabbitmq.event'-exchange
-        $queue = ini()->db->name;
+        $qn = qn('closetab'); $prefix = qn('opentab--');
 
         // Declare queue that we'll be working with
-        mq()->queue_declare($queue, false, false, true);
+        mq()->queue_declare($qn, false, false);
 
-        // Make sure event of type 'queue.deleted' will be sent to our queue by 'amq.rabbitmq.event' exchange
-        mq()->queue_bind($queue, 'amq.rabbitmq.event', 'queue.deleted');
+        // Make sure events of type 'queue.deleted' will be sent to our queue by 'amq.rabbitmq.event' exchange
+        mq()->queue_bind($qn, 'amq.rabbitmq.event', 'queue.deleted');
 
         // Start serving
         while (true) {
 
             // While at least 1 unprocessed event of type 'queue.deleted' is available
-            while ($msg = mq()->basic_get($queue)) {
+            while ($msg = mq()->basic_get($qn)) {
 
                 // Get name of the deleted queue, which was dedicated to the closed browser tab
                 $name = $msg->get_properties()['application_headers']->getNativeData()['name'];
 
-                // Split by --
-                list ($instance, $channel) = explode('--', $name);
-
-                // If it was queue from this instance of Indi Engine
-                if ($instance == ini()->db->name) {
+                // If it was an queue from this instance of Indi Engine
+                if (strpos($name, $prefix) !== false && $token = str_replace($prefix, '', $name) ) {
 
                     // Delete realtime-record of type=channel to be deleted
-                    if ($r = m('realtime')->row(['`token` = "' . $channel . '"', '`type` = "channel"'])) $r->delete();
+                    if ($r = m('realtime')->row(['`token` = "' . $token . '"', '`type` = "channel"'])) $r->delete();
 
                     // Else log the problem
                     else i($name, 'a', 'log/closetab.err');
@@ -385,7 +382,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Prepare params
         $params = [
-            'rabbitmq_exchange' => "maxwell.$dn",
+            'rabbitmq_exchange' => qn(),
             'filter' => '"exclude:*.*, include:' . $dn .'.*"',
             'client_id' => $dn,
             'replica_server_id' => rand(1000, 9999),
@@ -393,7 +390,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             'user' => ini()->db->user,
             'password' => ini()->db->pass,
             'producer' => 'rabbitmq',
-            'rabbitmq_exchange_type' => 'topic'
+            'rabbitmq_exchange_type' => 'direct',
+            'rabbitmq_routing_key_template' => '%db%'
         ];
 
         // Prepare params string
@@ -422,32 +420,38 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $dn = ini()->db->name;
 
         // RabbitMQ exchange name
-        $en = "maxwell.$dn";
+        $en = qn();
 
         // RabbitMQ queue name
-        $qn = "$en.pid-" . getmypid();
+        $qn = "$en.binlog";
 
         // Declare queue that we'll be working with
-        mq()->queue_declare($qn, false, false, true);
+        mq()->queue_declare($qn);
 
         // Declare exchange, for cases when it is not declared so far by maxwell daemon
-        mq()->exchange_declare($en, 'topic', false, false, false);
+        mq()->exchange_declare($en, 'direct', false, false, false);
 
         // Make sure messages having routing key '$dn.*' will be sinked to this queue by '$en' exchange
-        mq()->queue_bind($qn, $en, "$dn.*");
+        mq()->queue_bind($qn, $en, "$dn");
 
-        // Mapping between maxwell's type-prop and indi-engine's $event arg for realtime() call
+        // Maxwell event types supported by indi-engine
         $map = [
             'update' => true,
             'delete' => true,
             'insert' => true
         ];
 
-        // Start endless loop
-        while (true) {
+        // Way of fetching messages from the queue
+        $consume = false;
 
-            // While at least 1 unprocessed msg is available
-            while ($msg = mq()->basic_get($queue)) {
+        // If $consume flag is true
+        if ($consume) {
+
+            // Set consumer tag to contain this process PID
+            $ct = qn('render-') . getmypid();
+
+            // Setup queue consumer
+            mq()->basic_consume($qn, "$ct",false, false, false, false, function ($msg) use ($map) {
 
                 // Get event
                 $event = json_decode($msg->getBody(), true);
@@ -460,10 +464,46 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
                 // Acknowledge the queue about that message is processed
                 mq()->basic_ack($msg->getDeliveryTag());
+            });
+
+            // Loop as long as the channel has callbacks registered
+            while (mq()->is_consuming()) {
+
+                // Wait for message
+                mq()->wait();
+
+                // If no messages left - sleep a bit
+                usleep(100000);
             }
 
-            // Sleep
-            usleep(100000);
+        // Else
+        } else {
+
+            // Start endless loop
+            while (true) {
+
+                // While at least 1 unprocessed msg is available
+                while ($msg = mq()->basic_get($qn)) {
+
+                    // Get event
+                    $event = json_decode($msg->getBody(), true);
+
+                    // If event type is known - prepare and deliver updates to subscribers
+                    if ($map[$event['type']]) m($event['table'])->maxwell($event);
+
+                    // Else show unknown messsage
+                    else i($event, 'a', 'log/unknown-event.txt');
+
+                    // Acknowledge the queue about that message is processed
+                    mq()->basic_ack($msg->getDeliveryTag());
+                }
+
+                // Sleep
+                usleep(100000);
+            }
         }
+
+        //
+        exit;
     }
 }
