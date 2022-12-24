@@ -110,51 +110,69 @@ class Indi_Db {
      */
     public static function factory($arg = [])
     {
+        // Setup $refresh flag, indicating that the purpose of why we're here is to globally refresh entities meta
+        $refresh = $arg === true;
+
         // If singleton instance is not yet created or 'reload' key exists within $config array argument
-        if (null === self::$_instance || is_int($arg)) {
+        if (null === self::$_instance || is_int($arg) || $refresh) {
 
-            // If singleton instance is not yet created
-            if (null === self::$_instance) {
+            // If we're in refresh-mode, we don't need to re-instantiate self::$_instance and self::$_pdo
+            if (!$refresh) {
 
-                // Create it
-                self::$_instance = new self();
+                // If singleton instance is not yet created
+                if (null === self::$_instance) {
 
-                // Maximum attempts qty
-                // --
-                // Basically we need this dirty hack for case when Indi Engine is running inside a docker container,
-                // and docker-entrypoint.sh has commands that require mysql to be completely initialized, so we wait
-                $tryQty = 5;
+                    // Create it
+                    self::$_instance = new self();
 
-                // Do attempts
-                for ($i = 1; $i <= $tryQty; $i++) try {
+                    // Maximum attempts qty
+                    // --
+                    // Basically we need this dirty hack for case when Indi Engine is running inside a docker container,
+                    // and docker-entrypoint.sh has commands that require mysql to be completely initialized, so we wait
+                    $tryQty = 5;
 
-                    // Setup a PDO object
-                    self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->name . ';host=' . $arg->host, $arg->user, $arg->pass);
+                    // Do attempts
+                    for ($i = 1; $i <= $tryQty; $i++) try {
 
-                    // Set attribute for useing custom statement class
-                    self::$_pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Indi_Db_PDOStatement::class]);
+                        // Setup a PDO object
+                        self::$_pdo = new PDO($arg->adapter . ':dbname=' . $arg->name . ';host=' . $arg->host, $arg->user, $arg->pass);
 
-                    // Stop attempts if reached this line
-                    break;
+                        // Set attribute for useing custom statement class
+                        self::$_pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Indi_Db_PDOStatement::class]);
 
-                // If something goes wrong
-                } catch (PDOException $e) {
+                        // Stop attempts if reached this line
+                        break;
 
-                    // If max attempt qty is not yet reached - wait a bit
-                    if ($i < $tryQty) sleep(1);
+                        // If something goes wrong
+                    } catch (PDOException $e) {
 
-                    // Else pass caught exception to the own handler
-                    else self::$_instance->jerror($e);
+                        // If max attempt qty is not yet reached - wait a bit
+                        if ($i < $tryQty) sleep(1);
+
+                        // Else pass caught exception to the own handler
+                        else self::$_instance->jerror($e);
+                    }
+
+                    // Setup encoding
+                    self::$_instance->query('SET NAMES utf8');
+                    self::$_instance->query('SET CHARACTER SET utf8');
+
+                    // Else if singleton instance was already created, but $arg agument is an entity id - setup $entityId variable
+                } else if (is_int($arg)) {
+
+                    $entityId = $arg;
                 }
 
-                // Setup encoding
-                self::$_instance->query('SET NAMES utf8');
-                self::$_instance->query('SET CHARACTER SET utf8');
+            // Else
+            } else {
 
-            // Else if singleton instance was already created, but $arg agument is an entity id - setup $entityId variable
-            } else if (is_int($arg)) {
-
-                $entityId = $arg;
+                // Reset static props storing entities meta,
+                // except self::$_roleA and Lang::$_jtpl which will be reset further
+                self::$_modelA     = [];
+                self::$_entityA    = [];
+                self::$_l10nA      = [];
+                self::$_preloadedA = [];
+                self::$_cfgValue   = ['default' => [], 'certain' => []];
             }
 
             // Get info about existing entities, or one certain entity, identified by id,

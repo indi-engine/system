@@ -479,6 +479,22 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Else
         } else {
 
+            // Tables, whose changes should trigger meta reload
+            $meta = array_flip([
+                'columnType',
+                'consider',
+                'element',
+                'entity',
+                'enumset',
+                'field',
+                'lang',
+                'notice',
+                'noticeGetter',
+                'param',
+                'resize',
+                'role',
+            ]);
+
             // Start endless loop
             while (true) {
 
@@ -487,6 +503,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
                     // Get event
                     $event = json_decode($msg->getBody(), true);
+
+                    // Refresh entities meta, if need
+                    if (isset($meta[ $event['table'] ])) db(true);
 
                     // If event type is known - prepare and deliver updates to subscribers
                     if ($map[$event['type']]) m($event['table'])->maxwell($event);

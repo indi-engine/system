@@ -4020,7 +4020,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
-     * Create `realtime` entry having `type` = "context", if not yet created, and assign `scope` and `entries` props
+     * Create `realtime` entry having `type` = "context", if not yet created, and assign `scope`, `fields` and `entries` props
      *
      * @param $scope
      */
@@ -4032,6 +4032,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Track involved entries
         if ($_ = Realtime::context()) $_->set([
             'entries' => $this->rowset->column('id', ','),
+            'fields' => t()->row
+                ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+                : t()->gridFields->select(': > 0')->column('id', ','),
             'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ])->save();
     }

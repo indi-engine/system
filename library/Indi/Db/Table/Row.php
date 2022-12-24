@@ -890,14 +890,19 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    // Detect ID of entry that will be shifted from next page's first to current page's last
-                    if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                        $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query("
+                    if ($scope['page'] * $scope['rowsOnPage'] < $scope['found']) {
+
+                        // Detect ID of entry that will be shifted from next page's first to current page's last
+                        $byChannel[$channel][$context]['deleted'] = (int) db()->query("
                             SELECT `id` FROM `{$this->_table}` $where $order $limit
-                        ")->cell());
+                        ")->cell();
+
+                        // If such entry exists - push it's id to context's entries ids list
+                        if ($byChannel[$channel][$context]['deleted'])
+                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted']);
 
                     // Else if it's the last page - do nothing
-                    else $byChannel[$channel][$context]['deleted'] = 'this';
+                    } else $byChannel[$channel][$context]['deleted'] = 'this';
 
                     // Prepare data and group it by channel and context
                     $byChannel[$channel][$context] += [
@@ -946,17 +951,23 @@ class Indi_Db_Table_Row implements ArrayAccess
                     if ($this->id == array_shift($idA)) {
 
                         // Remove first from $entries to set it as new scope's pgupLast
-                        $scope['pgupLast'] = $first; $realtimeR->drop('entries', $first);
+                        $scope['pgupLast'] = $first;
+                        $realtimeR->drop('entries', $first);
 
                         // If there is at least 1 next page exists
-                        // Detect ID of entry that will be shifted from next page's first to current page's last
-                        if ($scope['page'] * $scope['rowsOnPage'] < $scope['found'])
-                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted'] = (int) db()->query("
+                        if ($scope['page'] * $scope['rowsOnPage'] < $scope['found']) {
+
+                            // Detect ID of entry that will be shifted from next page's first to current page's last
+                            $byChannel[$channel][$context]['deleted'] = (int) db()->query("
                                 SELECT `id` FROM `{$this->_table}` $where $order $limit
-                            ")->cell());
+                            ")->cell();
+
+                            // If such entry exists - push it's id to context's entries ids list
+                            if ($byChannel[$channel][$context]['deleted'])
+                                $realtimeR->push('entries', $byChannel[$channel][$context]['deleted']);
 
                         // Else if it's the last page
-                        else $byChannel[$channel][$context]['deleted'] = 'prev';
+                        } else $byChannel[$channel][$context]['deleted'] = 'prev';
 
                     // Else if deleted entry ID is below the others, it means it belongs to the one of next pages
                     } else if ($this->id == array_pop($idA)) $byChannel[$channel][$context]['deleted'] = 'next';
@@ -987,7 +998,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
-                if (is_numeric($entry = $byChannel[$channel][$context]['deleted']) && !$scope['rowReqIfAffected']) {
+                if ($entry = $byChannel[$channel][$context]['deleted'] && is_numeric($entry) && !$scope['rowReqIfAffected']) {
 
                     // Get it's actual *_Row instance
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
