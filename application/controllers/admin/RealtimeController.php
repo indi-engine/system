@@ -391,7 +391,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             'password' => ini()->db->pass,
             'producer' => 'rabbitmq',
             'rabbitmq_exchange_type' => 'direct',
-            'rabbitmq_routing_key_template' => '%db%'
+            'rabbitmq_routing_key_template' => '%db%',
+            'recapture_schema' => 'true'
         ];
 
         // Prepare params string
@@ -400,9 +401,16 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Path separator shortcut
         $ps = PATH_SEPARATOR;
 
-        // Reset binlog position in maxwell database
-        if (db()->query("SHOW DATABASES LIKE 'maxwell'")->cell())
+        // If it's a re-start of maxwell binlog listener process
+        if (db()->query("SHOW DATABASES LIKE 'maxwell'")->cell()) {
+
+            // Truncate schema tables
+            foreach (ar('schemas,databases,tables,columns') as $table)
+                db()->query("TRUNCATE `maxwell`.`$table`");
+
+            // Reset binlog position
             db()->query("DELETE FROM `maxwell`.`positions`  WHERE `client_id` = '$dn'");
+        }
 
         // Execute java command
         `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
