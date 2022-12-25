@@ -35,100 +35,6 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Stop server listening for rabbitmq-events of type 'queue.deleted'
-     */
-    public function stopAction() {
-
-        // Check session
-        $this->auth(true);
-
-        // Check status of listener
-        $flush = $this->stop();
-
-        // Flush result
-        jflush($flush);
-    }
-
-    /**
-     * Check whether server listening for rabbitmq-events of type 'queue.deleted' is already running, and start if it is not
-     */
-    public function statusAction() {
-
-        // Check session
-        $this->auth(true);
-
-        // Check status of listener-server
-        $flush = $this->status();
-
-        // If listener-server is not running - start it
-        if ($flush['success'] === false) $flush = $this->start();
-
-        // Flush result
-        jflush($flush);
-    }
-
-    /**
-     * Check whether listener-server pid-file exists and contains PID of existing process
-     *
-     * @return array jflush-able
-     */
-    public function status() {
-
-        // Get pid
-        $pid = getpid();
-
-        // Else if process having such PID is not found
-        return $pid
-            ? ['success' => true , 'pid' => $pid]
-            : ['success' => false, 'msg' => 'No process found'];
-    }
-
-    /**
-     * Start server listening for rabbitmq-events of type 'queue.deleted'
-     *
-     * @return array
-     */
-    public function start() {
-
-    }
-
-    /**
-     * Stop listener-server.
-     * Returns jflush-able array-result, having at least 'success'-key
-     * It is assumed that 'success' should be `true` if no listener-server is running, and this covers the following cases:
-     * - no pid-file exists
-     * - it exists but empty, e.g. contains no PID
-     * - it contains, but no process with such PID found
-     * - process with such PID found and it was successfully killed
-     *
-     * @return array
-     */
-    public function stop() {
-
-    }
-
-    /**
-     * Restart listener-server
-     */
-    public function restartAction() {
-
-        // Check session
-        $this->auth(true);
-
-        // Stop listener-server, if it's running
-        $stop = $this->stop();
-
-        // If stopping failed - flush failure
-        if (!$stop['success']) jflush($stop);
-
-        // Start listener-server
-        $start = $this->start();
-
-        // Flush result
-        jflush($start);
-    }
-
-    /**
      * Delete `realtime`-entries of type=session, which have no session-files anymore
      *
      * @throws Exception
@@ -320,6 +226,20 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
+     * @param $proc
+     * @param $pid
+     */
+    public function led($proc, $pid) {
+        msg([
+            'fn' => [
+                'this' => 'i-section-realtime-action-index',
+                'name' => 'led',
+                'args' => [$proc, $pid]
+            ]
+        ]);
+    }
+
+    /**
      * Server listening for rabbitmq-messages posted by maxwell daemon, which is capturing mysql raw data changes
      */
     public function maxwellAction() {
@@ -332,33 +252,30 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
             // Start services
             foreach (ar('binlog,render') as $service) {
-
-                // Build cmd
-                $cmd = "php indi -d realtime/maxwell/$service";
-
-                // Exec cmd
-                if (preg_match('~^WIN~', PHP_OS)) {
-                    pclose(popen($cmd, "r"));
-                } else {
-                    `$cmd`;
-                }
+                $action = "realtime/maxwell/$service";
+                $cmd = "php indi -d $action";
+                preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
+                $this->led($service, getpid($action));
             }
 
-            // Update ini-file
+            // Update ini-file and flush response
             ini('rabbitmq.maxwell', 'true');
-
-            // Do explicit exit, as otherwise 2 instance of each service is somewhy created
-            exit;
+            jflush(true);
 
         // Else if command is 'disable'
         } else if (uri()->command == 'disable') {
 
-            // Kill both server and client
-            echo `php indi -k realtime/maxwell/binlog`;
-            echo `php indi -k realtime/maxwell/render`;
+            // Stop services
+            foreach (ar('binlog,render') as $service) {
+                $action = "realtime/maxwell/$service";
+                $cmd = "php indi -k $action";
+                `$cmd`;
+                $this->led($service, getpid($action));
+            }
 
-            // Update ini-file
+            // Update ini-file and flush response
             ini('rabbitmq.maxwell', 'false');
+            jflush(true);
         }
 
         // Else if command is 'binlog' or 'render' - directly start that service
@@ -532,5 +449,23 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         //
         exit;
+    }
+
+    /**
+     * Setup realtime status info to be available within trail item data
+     */
+    public function adjustTrail() {
+
+        // If we're inside store loading request - return
+        if (uri()->format) return;
+
+        // Setup realtime status data
+        t()->data = [
+            'status' => ini()->rabbitmq->maxwell ? 'mysql' : 'php',
+            'pid' => [
+                'binlog' => getpid('realtime/maxwell/binlog'),
+                'render' => getpid('realtime/maxwell/render'),
+            ]
+        ];
     }
 }

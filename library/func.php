@@ -3149,6 +3149,16 @@ function rglob($pattern, $flags = 0) {
  */
 function msg($msg, $success = true, $to = null) {
 
+    // If function call definition is given
+    if (is_array($msg) && isset($msg['fn']) && is_array($msg['fn'])) {
+
+        // Trigger is expected to be array containing:
+        $fn = $msg['fn'];
+
+        // Overwrite $msg to contain message itself
+        $msg = $msg['msg'];
+    }
+
     // Prepare msg
     $msg = [
         'header' => '',
@@ -3157,8 +3167,14 @@ function msg($msg, $success = true, $to = null) {
         'fg' => '#ffffff',
     ];
 
+    // Append function call definition
+    if ($fn) $msg += compact('fn');
+
+    // Destination
+    $to = $to ?: CID;
+
     // Do send
-    Indi::ws(['type' => 'message', 'to' => $to ?: CID, 'msg' => $msg]);
+    if ($to) Indi::ws(['type' => 'message', 'to' => $to ?: CID, 'msg' => $msg]);
 }
 
 /**
