@@ -203,31 +203,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                     = sprintf('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
             }
 
-            if ($item['$keys']['fraction'] != 'system') {
-
-                // Get js-controller file name
-                $js = DOC . STD . $dir[$item['$keys']['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
-
-                // If js-controller file exists
-                if (file_exists($js)) {
-
-                    // Setup flag
-                    $item['_system']['js-class'] = true;
-
-                    // If js-controller file is empty - setup error
-                    if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
-
-                    // Else we're unable to find parent class mention - setup error
-                    else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
-                        $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
-
-                    // Else if parent class is not as per `extendsJs` prop - setup error
-                    else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
-                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
-                }
-
-            // Else
-            } else {
+            // If it's a system-fraction
+            if ($item['$keys']['fraction'] == 'system') {
 
                 // If system app js is not yet set up - do it
                 if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
@@ -242,6 +219,27 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                     if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
                         = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $m[1]);
                 }
+            }
+
+            // Get js-controller file name
+            $js = DOC . STD . $dir[$item['$keys']['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+
+            // If js-controller file exists
+            if (file_exists($js) && !$item['_system']['js-class']) {
+
+                // Setup flag
+                $item['_system']['js-class'] = true;
+
+                // If js-controller file is empty - setup error
+                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+
+                // Else we're unable to find parent class mention - setup error
+                else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
+                    $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+
+                // Else if parent class is not as per `extendsJs` prop - setup error
+                else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
+                    = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
             }
 
             // Hide default values

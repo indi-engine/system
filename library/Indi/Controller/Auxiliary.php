@@ -119,10 +119,37 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         // Header
         header('Content-Type: application/javascript');
 
-        // Check whether `lang` uri-param is given
-        $dirs = Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang = str_replace('-', '_', uri()->lang))
-            ? VDR . '/client/classic/resources/locale/' . $lang
-            : '/js/admin/app/proxy,/js/admin/app/data,/js/admin/app/lib,/js/admin/app/controller';
+        // Dirs to scan
+        $dirs = [];
+
+        // If lang is given in uri
+        if ($lang = uri()->lang) {
+
+            // Replace dash with underscore to comply with ExtJS locale files naming
+            $lang = str_replace('-', '_', uri()->lang);
+
+            // If it's match the pattern we expect
+            if (Indi::rexm('~^[a-zA-Z_]{2,5}$~', $lang))
+
+                // Use to build dir and append to the to-be-scanned list
+                $dirs []= VDR . '/client/classic/resources/locale/' . $lang;
+
+        // Else
+        } else {
+
+            // Temporary system js, e.g. not compiled into app.js so far
+            // Handy for cases when some new system js controller is created
+            // but not yet moved into client-dev repo for being compiled so that it's temporary
+            // possible to develop with no re-build with 'sencha app build --production' on each change
+            $dirs []= VDR . '/system/js/admin/app/lib';
+            $dirs []= VDR . '/system/js/admin/app/controller';
+
+            // Custom js
+            $dirs []= '/js/admin/app/proxy';
+            $dirs []= '/js/admin/app/data';
+            $dirs []= '/js/admin/app/lib';
+            $dirs []= '/js/admin/app/controller';
+        }
 
         // Flush
         echo appjs($dirs); if ($exit) exit;
