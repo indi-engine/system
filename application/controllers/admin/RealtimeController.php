@@ -230,7 +230,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             $this->led('binlog', false, $err);
 
             // Print error
-            echo $err . PHP_EOL;
+            fwrite(STDERR, $err . PHP_EOL);
 
             // Exit
             exit(1);
@@ -265,9 +265,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             foreach (ar('binlog') as $service) {
                 $out = "log/$service.out";
                 $action = "realtime/maxwell/$service";
-                $cmd = "php indi -d $action > $out";
+                $cmd = "php indi -d $action 2> $out";
                 preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
-                $this->led($service, getpid($action));
                 echo file_get_contents($out);
             }
 
@@ -356,8 +355,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
         $this->led('binlog', false, $err);
 
-        // Print error
-        echo $err;
+        // Write to stderr
+        fwrite(STDERR, $err);
     }
 
     /**
