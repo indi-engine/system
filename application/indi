@@ -77,7 +77,7 @@ if ($flag['d'] ?? 0) {
         pclose(popen($cmd, "r"));
 
         // Wait a bit for stdout file contents to be written
-        usleep(250000);
+        usleep(500000);
 
     // Else
     } else {

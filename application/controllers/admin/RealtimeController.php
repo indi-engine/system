@@ -351,8 +351,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $this->led('binlog', getmypid());
 
         // Execute java command
-        //$err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params 2>&1`;
-        $err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
+        $err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params 2>&1`;
 
         // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
         $this->led('binlog', false, $err);
