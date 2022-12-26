@@ -18,10 +18,13 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch($args = []) {
 
         // If it's special action
-        if (in(uri()->action, 'restart,cleanup,opentab,closetab,status,stop,maxwell')) {
+        if (in(uri()->action, 'cleanup,opentab,closetab,maxwell')) {
 
             // Call the desired action method
             $this->call(uri()->action, $args);
+
+            // Prevent further invokation of $this->call()
+            exit;
 
         // Else
         } else {
@@ -220,8 +223,17 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // Append header
             array_unshift($must, 'Mysql privileges missing:');
 
-            // Print that and exit
-            echo join(PHP_EOL, $must); exit;
+            // Print that
+            $err = join(PHP_EOL, $must);
+
+            // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
+            $this->led('binlog', false, $err);
+
+            // Print error
+            echo $err . PHP_EOL;
+
+            // Exit
+            exit(1);
         }
     }
 
@@ -229,8 +241,10 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      * @param $proc
      * @param $pid
      */
-    public function led($proc, $pid) {
+    public function led($proc, $pid, $msg = '', $success = null) {
         msg([
+            'success' => $success ?? !!$pid,
+            'msg' => nl2br($msg),
             'fn' => [
                 'this' => 'i-section-realtime-action-index',
                 'name' => 'led',
@@ -247,20 +261,21 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // If command is 'enable'
         if (uri()->command == 'enable') {
 
-            // Check mysql GRANTs are sufficient for maxwell mysql binlog listener server
-            $this->_maxwellCheckPrivileges();
-
             // Start services
-            foreach (ar('binlog,render') as $service) {
+            foreach (ar('binlog') as $service) {
+                $out = "log/$service.out";
                 $action = "realtime/maxwell/$service";
-                $cmd = "php indi -d $action";
+                $cmd = "php indi -d $action > $out";
                 preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
                 $this->led($service, getpid($action));
+                echo file_get_contents($out);
             }
 
             // Update ini-file and flush response
             ini('rabbitmq.maxwell', 'true');
-            jflush(true);
+
+            // Exit and flush response, if need
+            if (CMD) exit; else jflush(true);
 
         // Else if command is 'disable'
         } else if (uri()->command == 'disable') {
@@ -287,6 +302,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      * Start maxwell mysql binlog listener server, which is a java-program
      */
     protected function maxwellBinlog() {
+
+        // Check mysql GRANTs are sufficient for maxwell mysql binlog listener server
+        $this->_maxwellCheckPrivileges();
 
         // Change current working directory
         chdir(DOC . '/vendor/zendesk/maxwell/lib');
@@ -329,8 +347,18 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             db()->query("DELETE FROM `maxwell`.`positions`  WHERE `client_id` = '$dn'");
         }
 
+        // Turn on binlog-led
+        $this->led('binlog', getmypid());
+
         // Execute java command
-        `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
+        //$err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params 2>&1`;
+        $err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params`;
+
+        // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
+        $this->led('binlog', false, $err);
+
+        // Print error
+        echo $err;
     }
 
     /**
@@ -446,9 +474,6 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 usleep(100000);
             }
         }
-
-        //
-        exit;
     }
 
     /**

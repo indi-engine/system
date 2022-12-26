@@ -64,20 +64,40 @@ if ($flag['d'] ?? 0) {
     // Build command to be run in detached mode
     $cmd = "php indi $args";
 
-    // Run command
+    // Stdout file
+    $out = "$doc/log/indi.out";
+
+    // If we're on Windows
     if (preg_match('/^WIN/i', PHP_OS)) {
-        $cmd = "start /B $cmd > NUL";
+
+        // Prepare command in windows-style
+        $cmd = "start /B $cmd > $out";
+
+        // Start using popen() as this seems be the only way to prevent this php script from being hanged
         pclose(popen($cmd, "r"));
+
+        // Wait a bit for stdout file contents to be written
+        usleep(250000);
+
+    // Else
     } else {
-        $cmd = "$cmd > /dev/null &";
-        shell_exec($cmd);
+
+        // Exec command in unix-style
+        `$cmd > /dev/null &`;
     }
 
-    // Print cmd we just did run
-    echo $cmd . PHP_EOL;
+    // If stdout file is not empty it means something went wrong
+    if (is_file($out) && $txt = file_get_contents($out)) {
 
-    // Echo PID of a newly spawned action process
-    echo 'Spawned ' . getpid($action, $instance) . PHP_EOL;
+        // Print what's wrong
+        echo $txt;
+
+    // Else if PID of a newly spawned action process is detectable
+    } else if ($pid = getpid($action, $instance)) {
+
+        // Print that
+        echo "Spawned $pid" . PHP_EOL;
+    }
 
 // Else if '-k' or '-i' flag is given
 } else if (isset($flag['k']) || isset($flag['i'])) {
@@ -105,7 +125,7 @@ if ($flag['d'] ?? 0) {
 
             // Kill process
             if (preg_match('/^WIN/i', PHP_OS)) {
-                `taskkill /T /F /PID $pid 2>&1`;
+                echo `taskkill /T /F /PID $pid 2>&1`;
             } else {
                 echo `kill -9 $pid` . "Killed $pid" . PHP_EOL;
             }
