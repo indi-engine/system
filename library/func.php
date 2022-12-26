@@ -2983,7 +2983,7 @@ function getpid($action = '', $instance = '') {
         $columns = 'ProcessId'; if (!$action) $columns .= ',CommandLine';
 
         // Build, exec and get output of WMIC-command
-        $out = trim(`wmic path win32_process where "$where" get $columns`);
+        $out = trim(`wmic path win32_process where "$where" get $columns 2> NUL`);
 
         // Return PID
         return $action
@@ -3149,14 +3149,30 @@ function rglob($pattern, $flags = 0) {
  */
 function msg($msg, $success = true, $to = null) {
 
+    // Destination
+    $to = $to ?: (defined('CID') ? CID : false);
+
     // If function call definition is given
     if (is_array($msg) && isset($msg['fn']) && is_array($msg['fn'])) {
 
         // Trigger is expected to be array containing:
         $fn = $msg['fn'];
 
+        // Setup success flag
+        $success = $msg['success'] ?? $success;
+
         // Overwrite $msg to contain message itself
         $msg = $msg['msg'];
+
+        // If no destination is given, e.g CID-constant is not defined
+        if (!$to && preg_match('~^i-section-~', $fn['this'])) {
+
+            // Get destination channel ids
+            $in = db()->query("SELECT DISTINCT `realtimeId` FROM `realtime` WHERE `token` = '{$fn['this']}'")->in();
+
+            // Get destination channge tokens
+            $to = db()->query("SELECT `token` FROM `realtime` WHERE `id` IN ($in)")->col();
+        }
     }
 
     // Prepare msg
@@ -3170,11 +3186,15 @@ function msg($msg, $success = true, $to = null) {
     // Append function call definition
     if ($fn) $msg += compact('fn');
 
-    // Destination
-    $to = $to ?: CID;
-
     // Do send
-    if ($to) Indi::ws(['type' => 'message', 'to' => $to ?: CID, 'msg' => $msg]);
+    if ($to) {
+
+        // Convert to array, if need
+        if (!is_array($to)) $to = [$to];
+
+        // Send
+        foreach ($to as $channel) Indi::ws(['type' => 'message', 'to' => $channel, 'msg' => $msg]);
+    }
 }
 
 /**

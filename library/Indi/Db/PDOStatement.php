@@ -20,6 +20,20 @@ class Indi_Db_PDOStatement extends PDOStatement {
     }
 
     /**
+     * Get value handy for use in 'IN (...)' expression
+     *
+     * @return array
+     */
+    public function in() {
+
+        // Get array
+        $array = $this->fetchAll(PDO::FETCH_COLUMN);
+
+        // Return value
+        return $array ? join(',', $array) : 0;
+    }
+
+    /**
      * Alias for fetchColumn() method
      *
      * @return mixed
