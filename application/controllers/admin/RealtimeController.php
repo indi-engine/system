@@ -279,7 +279,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 $action = "realtime/maxwell/$service";
                 $cmd = "php indi -d $action 2> $err";
                 preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
-                if ($err = file_get_contents($err)) {
+                if (is_file($err) && $err = file_get_contents($err)) {
                     if (CMD) echo $err;
                     $success = false;
                     break;
@@ -307,18 +307,13 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // Stop services
             foreach (ar('binlog,render') as $service) {
 
-                // If stderr file does not exist anymore, it means it was deleted,
-                // and it, in it's turn, means that corresponding process was already killed,
-                // because it's not possible to delete stderr file of a running process
-                if (!file_exists($err = "log/$service.stderr")) continue;
-
                 // Do kill service process
                 $action = "realtime/maxwell/$service";
                 `php indi -k $action`;
 
                 // Turn off service-led and delete stderr file
                 $this->led($service, getpid($action));
-                unlink($err);
+                @unlink($err);
             }
 
             // Exit and flush response, if need
