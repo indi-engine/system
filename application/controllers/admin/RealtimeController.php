@@ -261,40 +261,76 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // If command is 'enable'
         if (uri()->command == 'enable') {
 
+            // Success flag
+            $success = true;
+
             // Start services
-            foreach (ar('binlog') as $service) {
-                $out = "log/$service.out";
+            foreach (ar('binlog,render') as $service) {
+                $err = "log/$service.stderr";
                 $action = "realtime/maxwell/$service";
-                $cmd = "php indi -d $action 2> $out";
+                $cmd = "php indi -d $action 2> $err";
                 preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
-                echo file_get_contents($out);
+                if ($err = file_get_contents($err)) {
+                    if (CMD) echo $err;
+                    $success = false;
+                    break;
+                }
             }
 
-            // Update ini-file and flush response
-            ini('rabbitmq.maxwell', 'true');
+            // Press the button in GUI
+            $this->button($success ? 'mysql' : 'php');
 
             // Exit and flush response, if need
-            if (CMD) exit; else jflush(true);
+            if (CMD) exit; else jflush($success);
 
         // Else if command is 'disable'
         } else if (uri()->command == 'disable') {
 
+            // Press the button in GUI
+            $this->button('php');
+
             // Stop services
             foreach (ar('binlog,render') as $service) {
+
+                // If stderr file does not exist anymore, it means it was deleted,
+                // and it, in it's turn, means that corresponding process was already killed,
+                // because it's not possible to delete stderr file of a running process
+                if (!file_exists($err = "log/$service.stderr")) continue;
+
+                // Do kill service process
                 $action = "realtime/maxwell/$service";
-                $cmd = "php indi -k $action";
-                `$cmd`;
+                `php indi -k $action`;
+
+                // Turn off service-led and delete stderr file
                 $this->led($service, getpid($action));
+                unlink($err);
             }
 
-            // Update ini-file and flush response
-            ini('rabbitmq.maxwell', 'false');
-            jflush(true);
+            // Exit and flush response, if need
+            if (CMD) exit; else jflush(true);
         }
 
         // Else if command is 'binlog' or 'render' - directly start that service
         else if (uri()->command == 'binlog') $this->maxwellBinlog();
         else if (uri()->command == 'render') $this->maxwellRender();
+    }
+
+    /**
+     * Update ini()->rabbitmq->maxwell directly in ini-file and make corresponding button to be pressed
+     *
+     * @param $press
+     */
+    public function button($press) {
+
+        // Update ini-file and flush response
+        ini('rabbitmq.maxwell', $press == 'php' ? 'false' : 'true');
+
+        // Press 'MySQL'-button
+        msg(['fn' => [
+            'this' => 'i-section-realtime-action-index',
+            'name' => 'pressModeButton',
+            'args' => [$press]
+        ]]);
     }
 
     /**
@@ -395,6 +431,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Way of fetching messages from the queue
         $consume = false;
 
+        // Turn on render-led
+        $this->led('render', getmypid());
+
         // If $consume flag is true
         if ($consume) {
 
@@ -472,6 +511,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 usleep(100000);
             }
         }
+
+        // If execution reached this line it means above loop was broken for some reason, so turn off binlog-led
+        $this->led('render', false, $err);
     }
 
     /**
