@@ -100,6 +100,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      */
     public function closetabAction() {
 
+        // Toggle background process
+        $this->proc('toggle');
+
         // Name of the queue to be a destination for queue.deleted-events forwarded by 'amq.rabbitmq.event'-exchange
         $qn = qn('closetab'); $prefix = qn('opentab--');
 
@@ -108,6 +111,12 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Make sure events of type 'queue.deleted' will be sent to our queue by 'amq.rabbitmq.event' exchange
         mq()->queue_bind($qn, 'amq.rabbitmq.event', 'queue.deleted');
+
+        // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
+        $this->led(uri()->action, getmypid());
+
+        // Make sure 'Tabs'-button to be pressed
+        $this->press($button = uri()->action);
 
         // Start serving
         while (true) {
@@ -277,8 +286,11 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 }
             }
 
+            // Update ini-file and flush response
+            ini('rabbitmq.maxwell', true);
+
             // Press the button in GUI
-            $this->button($success ? 'mysql' : 'php');
+            $this->press($success ? 'mysql' : 'php');
 
             // Exit and flush response, if need
             if (CMD) exit; else jflush($success);
@@ -286,8 +298,11 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Else if command is 'disable'
         } else if (uri()->command == 'disable') {
 
+            // Update ini-file
+            ini('rabbitmq.maxwell', false);
+
             // Press the button in GUI
-            $this->button('php');
+            $this->press('php');
 
             // Stop services
             foreach (ar('binlog,render') as $service) {
@@ -316,20 +331,15 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * Update ini()->rabbitmq->maxwell directly in ini-file and make corresponding button to be pressed
+     * Make specified button to be pressed
      *
-     * @param $press
+     * @param $button
      */
-    public function button($press) {
-
-        // Update ini-file and flush response
-        ini('rabbitmq.maxwell', $press == 'php' ? 'false' : 'true');
-
-        // Press 'MySQL'-button
+    public function press($button) {
         msg(['fn' => [
             'this' => 'i-section-realtime-action-index',
-            'name' => 'pressModeButton',
-            'args' => [$press]
+            'name' => 'press',
+            'args' => [$button]
         ]]);
     }
 
@@ -528,6 +538,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         t()->data = [
             'status' => ini()->rabbitmq->maxwell ? 'mysql' : 'php',
             'pid' => [
+                'closetab' => getpid('realtime/closetab'),
                 'binlog' => getpid('realtime/maxwell/binlog'),
                 'render' => getpid('realtime/maxwell/render'),
             ]

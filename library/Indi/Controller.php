@@ -1383,4 +1383,86 @@ class Indi_Controller {
         // Return prompt data
         return json_decode(Indi::post('_prompt'), true);
     }
+
+    /**
+     * Start background service
+     */
+    protected function _exec() {
+
+        // If we're already in command-line mode - do nothing
+        if (CMD) return;
+
+        // Shortcuts
+        $section = uri()->section; $action = uri()->action;
+
+        // Prepare stderr-file path
+        $err = "log/$section.$action.stderr";
+
+        // Prepare command
+        $cmd = "php indi -d $section/$action 2> $err";
+
+        // Start service
+        preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
+
+        // If stderr-file is not empty
+        if ($err = file_get_contents($err)) {
+
+            // Switch $success flag to false
+            $success = false;
+
+            // Show error message
+            msg($err, $success);
+        }
+
+        // Flush response
+        jflush($success !== false);
+    }
+
+    /**
+     * Stop background service
+     */
+    protected function _kill() {
+
+        // If we're already in command-line mode - do nothing
+        if (CMD) return;
+
+        // Shortcuts
+        $section = uri()->section; $action = uri()->action;
+
+        // Do kill service process
+        `php indi -k $section/$action`;
+
+        // Check killed
+        $pid = getpid("$section/$action");
+
+        // Turn off service-led
+        $this->led("$action", $pid);
+
+        // Flush response
+        jflush(!$pid);
+    }
+
+    /**
+     * Get PID of a running background service, if running
+     */
+    protected function _pid(){
+        return getpid(uri()->section . "/" . uri()->action);
+    }
+
+    /**
+     * Start or toggle background service
+     *
+     * @param string $mode
+     */
+    public function proc($mode = 'exec') {
+
+        // Switch execution to background
+        if ($mode == 'exec') $this->_exec();
+
+        // Toggle background process
+        else if ($mode == 'toggle')
+            $this->_pid()
+                ? $this->_kill()
+                : $this->_exec();
+    }
 }

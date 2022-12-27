@@ -100,7 +100,7 @@ if ($flag['d'] ?? 0) {
     }
 
     // Unlink stdout file
-    unlink($out);
+    @unlink($out);
 
 // Else if '-k' or '-i' flag is given
 } else if (isset($flag['k']) || isset($flag['i'])) {

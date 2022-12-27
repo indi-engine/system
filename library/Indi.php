@@ -1427,18 +1427,19 @@ class Indi {
                 // Get section and param we're going to change
                 list ($section, $param) = explode('.', $arg);
 
+                // New txt-value
+                $txt = $val;
+
+                // Stringify if bool/null
+                if ($txt === false) $txt = 'false';
+                else if ($txt === true)  $txt = 'true';
+                else if ($txt === null)  $txt = 'null';
+
                 // Spoof value of that param in that section
-                $raw = preg_replace('~(\[' . $section . '\].*?' . $param . '\s*=\s*)(.*?)(\n)~s', '$1' . $val . '$3', $raw);
+                $raw = preg_replace('~(\[' . $section . '\].*?' . $param . '\s*=\s*)(.*?)(\n)~s', '$1' . $txt . '$3', $raw);
 
                 // Write back to ini-file
                 file_put_contents($ini, $raw);
-
-                // Convert value, if need
-                switch ($val) {
-                    case 'false': $val = false;
-                    case 'true' : $val = true;
-                    case 'null' : $val = null;
-                }
 
                 // Return value updated in memory
                 return Indi::store('ini')->$section->$param = $val;
