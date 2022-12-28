@@ -262,7 +262,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
             // Start services as separate background processes
             foreach ($serviceA as $service)
-                $this->spawn($service);
+                $this->pipe($service);
 
             // Wait a bit
             usleep(500000);

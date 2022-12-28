@@ -1408,26 +1408,6 @@ class Indi_Controller {
     }
 
     /**
-     * Start $service as separate background process
-     */
-    public function spawn($service = '') {
-
-        // Get service path
-        $uri = $this->_uri($service);
-
-        // Get daemon start command
-        $cmd = "php indi -d $uri";
-
-        // Do start
-        $out = WIN
-            ? pclose(popen($cmd, "r"))
-            : `$cmd &`;
-
-        // Echo output
-        if (CMD) echo $out;
-    }
-
-    /**
      * Get PID of a running background service, if running, or false otherwise
      */
     protected function running($service = '') {
@@ -1500,13 +1480,16 @@ class Indi_Controller {
     /**
      * Start background service
      */
-    protected function pipe() {
+    protected function pipe($service = '') {
 
         // If we're already in command-line mode - do nothing
-        if (CMD) return;
+        if (CMD && !$service) return;
+
+        // Default
+        $success = true;
 
         // Shortcuts
-        $uri = $this->_uri(); $out = str_replace('/', '-', $uri);
+        $uri = $this->_uri($service); $out = str_replace('/', '-', $uri);
 
         // Prepare stderr-file path
         $err = "log/$out.stderr";
@@ -1515,7 +1498,10 @@ class Indi_Controller {
         $cmd = "php indi -d $uri 2> $err";
 
         // Start service
-        WIN ? pclose(popen($cmd, "r")) : `$cmd`;
+        $out = WIN ? pclose(popen($cmd, "r")) : `$cmd &`;
+
+        // Echo output
+        if (CMD && !WIN) echo $out;
 
         // If stderr-file is not empty
         if ($err = file_get_contents($err)) {
@@ -1525,10 +1511,13 @@ class Indi_Controller {
 
             // Show error message
             msg($err, $success);
+
+            // Print error message
+            if (CMD) echo $err;
         }
 
         // Flush response
-        jflush($success !== false);
+        if (!$service) CMD ? exit : jflush($success);
     }
 
     /**
