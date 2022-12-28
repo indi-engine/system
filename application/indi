@@ -83,7 +83,10 @@ if ($flag['d'] ?? 0) {
     } else {
 
         // Exec command in unix-style
-        `$cmd > /dev/null &`;
+        `$cmd > $out &`;
+
+        // Wait a bit for stdout file contents to be written
+        usleep(500000);
     }
 
     // If stdout file is not empty it means something went wrong

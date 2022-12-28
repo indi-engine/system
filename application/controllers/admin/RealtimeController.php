@@ -347,7 +347,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $this->_maxwellCheckPrivileges();
 
         // Change current working directory
-        chdir(DOC . '/vendor/zendesk/maxwell/lib');
+        chdir(DOC . STD . '/vendor/zendesk/maxwell/lib');
 
         // Java opts
         $opts = '-Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry';
@@ -391,7 +391,11 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $this->led('binlog', getmypid());
 
         // Execute java command
-        $err = `java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params 2>&1`;
+        $win = preg_match('~^WIN~', PHP_OS);
+        if (!$win) $params = str_replace('"', '\"', $params);
+        $cmd = "java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params";
+        if (!$win) $cmd = 'bash -c "' . $cmd .'"';
+        $err = `$cmd 2>&1`;
 
         // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
         $this->led('binlog', false, $err);
