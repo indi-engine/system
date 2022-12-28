@@ -1385,24 +1385,137 @@ class Indi_Controller {
     }
 
     /**
+     * Call service-method
+     *
+     * @param $service
+     */
+    public function serve($service) {
+        $this->{$service . 'Service'}();
+    }
+
+    /**
+     * Get uri for a given $service, so that returned value looks like 'section/action/service'.
+     * If no $service is given - single-service action is assumed, so retuned value is just 'section/action'
+     *
+     */
+    protected function _uri($service = '') {
+
+        // Shortcuts
+        $section = uri()->section; $action = uri()->action;
+
+        // Build uri
+        return "$section/$action" . rif($service, '/$1');
+    }
+
+    /**
+     * Start $service as separate background process
+     */
+    public function spawn($service = '') {
+
+        // Get service path
+        $uri = $this->_uri($service);
+
+        // Get daemon start command
+        $cmd = "php indi -d $uri";
+
+        // Do start
+        $out = WIN
+            ? pclose(popen($cmd, "r"))
+            : `$cmd &`;
+
+        // Echo output
+        if (CMD) echo $out;
+    }
+
+    /**
+     * Get PID of a running background service, if running, or false otherwise
+     */
+    protected function running($service = '') {
+        return getpid($this->_uri($service));
+    }
+
+    /**
+     * Stop $service's separate background process
+     *
+     * @param $service
+     */
+    public function stop($service = '') {
+
+        // Get service uri
+        $uri = $this->_uri($service);
+
+        // Run command and get output
+        $out = `php indi -k $uri`;
+
+        // If we're in command-line mode - print the output
+        if (CMD) echo $out;
+
+        // Get pid
+        $pid = getpid($uri);
+
+        // Update service led
+        $this->led($service, $pid);
+
+        // Return $pid
+        return $pid;
+    }
+
+    /**
+     * Update service led state (e.g. on/off)
+     *
+     * @param $service
+     * @param $pid
+     */
+    public function led($service, $pid, $msg = '', $success = null) {
+        msg([
+            'success' => $success ?? !!$pid,
+            'msg' => nl2br($msg),
+            'fn' => [
+                'this' => 'i-section-' . uri()->section . '-action-index',
+                'name' => 'led',
+                'args' => [$service ?: uri()->action, $pid]
+            ]
+        ]);
+    }
+
+    /**
+     * Pipe current execution into a separate background process.
+     * If $mode arg is 'toggle', that background process will be toggled,
+     * e.g. if not running - started, else stopped
+     *
+     * @param bool $mode
+     */
+    public function detach($mode = '') {
+
+        // Pipe execution to background
+        if (!$mode) $this->pipe();
+
+        // Toggle background process
+        else if ($mode == 'toggle')
+            $this->running()
+                ? $this->kill()
+                : $this->pipe();
+    }
+
+    /**
      * Start background service
      */
-    protected function _exec() {
+    protected function pipe() {
 
         // If we're already in command-line mode - do nothing
         if (CMD) return;
 
         // Shortcuts
-        $section = uri()->section; $action = uri()->action;
+        $uri = $this->_uri(); $out = str_replace('/', '-', $uri);
 
         // Prepare stderr-file path
-        $err = "log/$section.$action.stderr";
+        $err = "log/$out.stderr";
 
         // Prepare command
-        $cmd = "php indi -d $section/$action 2> $err";
+        $cmd = "php indi -d $uri 2> $err";
 
         // Start service
-        preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
+        WIN ? pclose(popen($cmd, "r")) : `$cmd`;
 
         // If stderr-file is not empty
         if ($err = file_get_contents($err)) {
@@ -1421,48 +1534,15 @@ class Indi_Controller {
     /**
      * Stop background service
      */
-    protected function _kill() {
+    protected function kill($service = '') {
 
         // If we're already in command-line mode - do nothing
         if (CMD) return;
 
-        // Shortcuts
-        $section = uri()->section; $action = uri()->action;
-
-        // Do kill service process
-        `php indi -k $section/$action`;
-
-        // Check killed
-        $pid = getpid("$section/$action");
-
-        // Turn off service-led
-        $this->led("$action", $pid);
+        // Get pid if service process was not killed
+        $pid = $this->stop($service);
 
         // Flush response
         jflush(!$pid);
-    }
-
-    /**
-     * Get PID of a running background service, if running
-     */
-    protected function _pid(){
-        return getpid(uri()->section . "/" . uri()->action);
-    }
-
-    /**
-     * Start or toggle background service
-     *
-     * @param string $mode
-     */
-    public function proc($mode = 'exec') {
-
-        // Switch execution to background
-        if ($mode == 'exec') $this->_exec();
-
-        // Toggle background process
-        else if ($mode == 'toggle')
-            $this->_pid()
-                ? $this->_kill()
-                : $this->_exec();
     }
 }

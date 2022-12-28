@@ -3222,7 +3222,7 @@ function cmd($action, $args = []) {
     ]));
 
     // If OS is Windows - start new process using 'start' command
-    if (preg_match('~^WIN~i', PHP_OS)) pclose(popen('start /B ' . $cmd, 'r'));
+    if (WIN) pclose(popen('start /B ' . $cmd, 'r'));
 
     // Else use 'exec' fn
     else exec($cmd . ' > /dev/null &');

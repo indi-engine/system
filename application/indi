@@ -1,5 +1,8 @@
 <?php
 
+// Setup WIN constant, indicating whether we're on Windows
+define('WIN', preg_match('~^WIN~', PHP_OS));
+
 // Get this directory with 'right' slashes
 $_dir_ = str_replace('\\', '/', __DIR__);
 
@@ -68,7 +71,7 @@ if ($flag['d'] ?? 0) {
     $out = tempnam("$doc/log", 'indi');
 
     // If we're on Windows
-    if (preg_match('/^WIN/i', PHP_OS)) {
+    if (WIN) {
 
         // Prepare command in windows-style
         $cmd = "start /B $cmd > $out";
@@ -121,7 +124,7 @@ if ($flag['d'] ?? 0) {
             $lines = explode("\n", $pid);
 
             // Trim header
-            if (preg_match('~^WIN~', PHP_OS)) array_shift($lines);
+            if (WIN) array_shift($lines);
 
             // Print info
             echo (count($lines) > 1 || !$action ? join("\n", $lines) : "Running $pid") . PHP_EOL;
@@ -130,7 +133,7 @@ if ($flag['d'] ?? 0) {
         } else {
 
             // Kill process
-            if (preg_match('/^WIN/i', PHP_OS)) {
+            if (WIN) {
                 echo `taskkill /T /F /PID $pid 2>&1`;
             } else {
                 echo `kill -9 $pid` . "Killed $pid" . PHP_EOL;

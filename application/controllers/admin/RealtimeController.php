@@ -100,8 +100,8 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      */
     public function closetabAction() {
 
-        // Toggle background process
-        $this->proc('toggle');
+        // Pipe current execution into a separate background process, if such process is not running so far, or stop it
+        $this->detach('toggle');
 
         // Name of the queue to be a destination for queue.deleted-events forwarded by 'amq.rabbitmq.event'-exchange
         $qn = qn('closetab'); $prefix = qn('opentab--');
@@ -247,25 +247,12 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     }
 
     /**
-     * @param $proc
-     * @param $pid
-     */
-    public function led($proc, $pid, $msg = '', $success = null) {
-        msg([
-            'success' => $success ?? !!$pid,
-            'msg' => nl2br($msg),
-            'fn' => [
-                'this' => 'i-section-realtime-action-index',
-                'name' => 'led',
-                'args' => [$proc, $pid]
-            ]
-        ]);
-    }
-
-    /**
      * Server listening for rabbitmq-messages posted by maxwell daemon, which is capturing mysql raw data changes
      */
     public function maxwellAction() {
+
+        // Services
+        $serviceA = ar('binlog,render');
 
         // If command is 'enable'
         if (uri()->command == 'enable') {
@@ -273,21 +260,24 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // Success flag
             $success = true;
 
-            // Start services
-            foreach (ar('binlog,render') as $service) {
-                $err = "log/$service.stderr";
-                $action = "realtime/maxwell/$service";
-                $cmd = "php indi -d $action 2> $err";
-                preg_match('~^WIN~', PHP_OS) ? pclose(popen($cmd, "r")) : `$cmd`;
-                if (is_file($err) && $err = file_get_contents($err)) {
-                    if (CMD) echo $err;
-                    $success = false;
-                    break;
-                }
-            }
+            // Start services as separate background processes
+            foreach ($serviceA as $service)
+                $this->spawn($service);
 
-            // Update ini-file and flush response
-            ini('rabbitmq.maxwell', true);
+            // Wait a bit
+            usleep(500000);
+
+            // Check if there was at least 1 service that failed
+            $started = [];
+            foreach ($serviceA as $service)
+                if ($pid = $this->running($service)) $started []= $service;
+                else $success = false;
+
+            // If at least 1 service failed - stop others
+            if (!$success) foreach ($started as $service) $this->stop($service);
+
+            // Update ini-file
+            ini('rabbitmq.maxwell', $success);
 
             // Press the button in GUI
             $this->press($success ? 'mysql' : 'php');
@@ -305,24 +295,14 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             $this->press('php');
 
             // Stop services
-            foreach (ar('binlog,render') as $service) {
-
-                // Do kill service process
-                $action = "realtime/maxwell/$service";
-                `php indi -k $action`;
-
-                // Turn off service-led and delete stderr file
-                $this->led($service, getpid($action));
-                @unlink($err);
-            }
+            foreach ($serviceA as $service) $this->stop($service);
 
             // Exit and flush response, if need
             if (CMD) exit; else jflush(true);
         }
 
         // Else if command is 'binlog' or 'render' - directly start that service
-        else if (uri()->command == 'binlog') $this->maxwellBinlog();
-        else if (uri()->command == 'render') $this->maxwellRender();
+        else if (in($service = uri()->command, $serviceA)) $this->serve($service);
     }
 
     /**
@@ -341,7 +321,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     /**
      * Start maxwell mysql binlog listener server, which is a java-program
      */
-    protected function maxwellBinlog() {
+    protected function binlogService() {
 
         // Check mysql GRANTs are sufficient for maxwell mysql binlog listener server
         $this->_maxwellCheckPrivileges();
@@ -391,10 +371,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $this->led('binlog', getmypid());
 
         // Execute java command
-        $win = preg_match('~^WIN~', PHP_OS);
-        if (!$win) $params = str_replace('"', '\"', $params);
+        if (!WIN) $params = str_replace('"', '\"', $params);
         $cmd = "java $opts -cp $ps* com.zendesk.maxwell.Maxwell $params";
-        if (!$win) $cmd = 'bash -c "' . $cmd .'"';
+        if (!WIN) $cmd = 'bash -c "' . $cmd .'"';
         $err = `$cmd 2>&1`;
 
         // If execution reached this line it means java-process was terminated for some reason, so turn off binlog-led
@@ -407,7 +386,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     /**
      * Start render-server which is consuming database raw changes and sending them pre-rendered to the browser tabs
      */
-    protected function maxwellRender() {
+    protected function renderService() {
 
         // Define constant, indicating we're inside the maxwell php-process
         define('MAXWELL', true);

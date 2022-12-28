@@ -24,6 +24,12 @@ ini_set('display_errors', 'On');
 // variable is passed WITH 'REDIRECT_' prefix, which is not covered by engine
 if (!$_SERVER['STD'] && $_SERVER['REDIRECT_STD']) $_SERVER['STD'] = $_SERVER['REDIRECT_STD'];
 
+// Setup WIN constant, indicating whether we're on Windows
+define('WIN', preg_match('~^WIN~', PHP_OS));
+
+// Setup DEV constant, indicating whether we're on localhost
+define('DEV', preg_match('~local~', $_SERVER['HTTP_HOST']));
+
 // Setup $_SERVER['STD'] and $_SERVER['VDR'] as php constants, for being easier accessible
 define('STD', $_SERVER['STD']); define('VDR', '/' . $vdr = $_SERVER['VDR']);
 
