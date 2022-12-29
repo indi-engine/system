@@ -1419,7 +1419,7 @@ class Indi {
             if (func_num_args() > 1) {
 
                 // Get full path to ini-file
-                $ini = DOC . '/application/config.ini';
+                $ini = DOC . STD . '/application/config.ini';
 
                 // Get contents
                 $raw = file_get_contents($ini);
