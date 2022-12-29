@@ -221,7 +221,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $real = db()->query("SHOW GRANTS FOR '$user'")->col();
 
         // Unset privileges that are already granted
-        foreach ($real as $priv) if ($must[$priv]) unset($must[$priv]);
+        foreach ($real as $priv) if ($must[$priv = str_replace("'", "`", $priv)]) unset($must[$priv]);
 
         // If some of required privileges are not GRANTed so far
         if ($must) {
