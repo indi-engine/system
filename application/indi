@@ -136,7 +136,7 @@ if ($flag['d'] ?? 0) {
             if (WIN) {
                 echo `taskkill /T /F /PID $pid 2>&1`;
             } else {
-                echo `kill -9 $pid` . "Killed $pid" . PHP_EOL;
+                echo `./tkill $pid` . "Killed $pid" . PHP_EOL;
             }
 
             // Remove old tmp files where possible

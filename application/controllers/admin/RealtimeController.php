@@ -18,7 +18,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch($args = []) {
 
         // If it's special action
-        if (in(uri()->action, 'cleanup,opentab,closetab,maxwell')) {
+        if (in(uri()->action, 'cleanup,opentab,closetab,maxwell,example')) {
 
             // Call the desired action method
             $this->call(uri()->action, $args);
@@ -521,5 +521,21 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 'render' => getpid('realtime/maxwell/render'),
             ]
         ];
+    }
+
+    /**
+     * Example of how action execution can be piped into a separate background process
+     */
+    public function exampleAction() {
+
+        // Everything below this call will be executed in a separate background process
+        // you can check that by 'php indi'-command which will show the process is running
+        // as command 'php indi realtime/example --instance=$dbname'
+        $this->pipe();
+
+        // Make sure process will run at least 10 seconds
+        for ($i = 0; $i < 10; $i++) {
+            sleep(1);
+        }
     }
 }
