@@ -792,6 +792,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $where = [
             '`type` = "context"',
             '`entityId` = "' . $this->model()->id() . '"',
+            '`scope` != ""'
         ];
 
         // If $event is 'update'
