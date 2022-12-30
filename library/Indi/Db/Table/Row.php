@@ -1067,12 +1067,15 @@ class Indi_Db_Table_Row implements ArrayAccess
                             // Push current entry ID to the beginning of `entries` column of `realtime` entry
                             $entries = ar($realtimeR->entries); array_unshift($entries, $scope['pgupLast']);
 
-                            //
-                            $scope['pgupLast'] = db()->query('
+                            // Get offset
+                            $offset = $scope['rowsOnPage'] * ($scope['page'] - 1) - 1;
+
+                            // Get pgupLast
+                            $scope['pgupLast'] = $offset == -1 ? 0 : db()->query('
                                 SELECT `id` FROM `' . $this->_table . '` 
                                 WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
                                 ' . rif($order, 'ORDER BY $1') . ' 
-                                LIMIT ' . ($scope['rowsOnPage'] * ($scope['page'] - 1) - 1) . ', 1
+                                LIMIT ' . $offset . ', 1
                             ')->cell();
 
                         // Else if total number of entries is more than rowsOnPage
