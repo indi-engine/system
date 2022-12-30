@@ -18,7 +18,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
     public function preDispatch($args = []) {
 
         // If it's special action
-        if (in(uri()->action, 'cleanup,opentab,closetab,maxwell,example')) {
+        if (in(uri()->action, 'cleanup,opentab,closetab,maxwell,example,status')) {
 
             // Call the desired action method
             $this->call(uri()->action, $args);
@@ -34,6 +34,45 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
             // Call parent
             parent::preDispatch();
+        }
+    }
+
+    /**
+     * Check status
+     */
+    public function statusAction() {
+
+        // Processes that are required
+        $plan = ['closetab' => true];
+
+        // If maxwell is turned on append processes to should-be-running list
+        if (ini()->rabbitmq->maxwell) $plan += ['binlog' => false, 'render' => false];
+
+        // Processes that actually running
+        echo $fact = `php indi`;
+
+        // Processes that are not running
+        $fail = [];
+
+        // Foreach required process check if it's running, and if no - collect
+        foreach ($plan as $proc => $restart)
+            if (!preg_match('~' . $proc . '~', $fact))
+                $fail[$proc] = $restart;
+
+        // If failed processes found - log that
+        if ($fail) {
+
+            // Turn off maxwell in ini-file
+            if (isset($fail['binlog']) || isset($fail['render'])) ini('rabbitmq.maxwell', false);
+
+            // Prepare fail msg
+            $fail = 'Failed: ' . join(',', array_keys($fail));
+
+            // Log it
+            Indi::log('procstop', $fail);
+
+            // Print
+            echo $fail . PHP_EOL;
         }
     }
 

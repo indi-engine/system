@@ -2146,7 +2146,7 @@ class Indi {
         $msg .= '<br>' . print_r($data, true) . '<br>--------------------------------------<br><br>';
 
         // Mail
-        if ($mail && !DEV) {
+        if ($mail) {
 
             // If where was some input
             if ($input = file_get_contents('php://input')) {
