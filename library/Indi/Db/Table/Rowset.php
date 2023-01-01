@@ -929,7 +929,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
 
                 // Else if color is defined for column
-                else if (null !== ($color = $renderCfg[$columnI]['color'])) {
+                else if (null !== ($color = $renderCfg[$columnI]['color']) || $columnI == 'level') {
+
+                    // If color definition starts with color ':' - assume it's a foreight column name from where column can be picked
+                    if (preg_match('~^:(.+)$~', $color, $m)) $color = $r->foreign($columnI)->rgb($m[1]);
 
                     // If it's a numeric column
                     if ($typeA['numeric'][$columnI]) {

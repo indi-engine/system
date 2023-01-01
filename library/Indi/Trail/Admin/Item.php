@@ -801,6 +801,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             // Else get color from certain property of an external entry, specified for this column
             } else if ($gridR->colorField && $gridR->colorEntry) {
                 $colorA[$fieldId] = $gridR->foreign('colorEntry')->rgb($gridR->foreign('colorField')->alias);
+
+            // Else if only colorField is specified, but it is from the same entity as grid field's relation
+            } else if ($gridR->colorField && $gridR->foreign('colorField')->entityId == $gridR->foreign('fieldId')->relation) {
+                $colorA[$fieldId] = ':' . $gridR->foreign('colorField')->alias;
             }
 
             // Unset empty values
