@@ -442,6 +442,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Declare queue that we'll be working with
         mq()->queue_declare($qn);
 
+        // Clear queue
+        mq()->queue_purge($qn);
+
         // Declare exchange, for cases when it is not declared so far by maxwell daemon
         mq()->exchange_declare($en, 'direct', false, false, false);
 
