@@ -85,7 +85,13 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             } else {
                 return parent::save();
             }
-        } 
+        }
+
+        // Check whether it's an existing entry
+        $existing = $this->id;
+
+        // Standard save
+        $return = parent::save();
 
         // Get the current default value
         $defaultValue = $fieldR->entry
@@ -93,17 +99,17 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             : db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Default;
 
-        // If this is an existing enumset row
-        if ($this->id) {
+        // If this was an existing enumset row
+        if ($existing) {
 
             // Convert $defaultValue to an array, for handling case if column type is SET
             $defaultValue = explode(',', $defaultValue);
 
             // If original version of value - is a default value
-            if (in_array($this->_original['alias'], $defaultValue)) {
+            if (in_array($this->_affected['alias'], $defaultValue)) {
 
                 // Setup sql default value as modified version of value
-                $defaultValue[array_search($this->_original['alias'], $defaultValue)] = $this->alias;
+                $defaultValue[array_search($this->_affected['alias'], $defaultValue)] = $this->alias;
 
                 // If field's default value does not contain php expressions, setup $updateFieldDefaultValue flag
                 // to true, because in this case we need to update field default value bit later, too
@@ -114,10 +120,10 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $defaultValue = implode(',', $defaultValue);
 
             // Replace original value with modified value within list of possible values
-            $enumsetA[array_search($this->_original['alias'], $enumsetA)] = $this->alias;
+            $enumsetA[array_search($this->_affected['alias'], $enumsetA)] = $this->alias;
 
             // Temporarily append original value (to avoid 'Data truncated' mysql errors)
-            $enumsetA[] = $this->_original['alias'];
+            $enumsetA[] = $this->_affected['alias'];
 
         // Else if it is a new enumset row
         } else {
@@ -137,8 +143,8 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 '("' . im($enumsetA, '","') . '")', $defaultValue));
         }
 
-        // Deal with existing values
-        if ($this->id) {
+        // If it was existing enumset-entry - deal with existing values
+        if ($existing) {
 
             // If it's not a cfgField
             if (!$fieldR->entry) {
@@ -148,8 +154,8 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                     UPDATE `' . $table . '`
                     SET `' . $fieldR->alias . '` = TRIM(BOTH "," FROM REPLACE(
                         CONCAT(",", `' . $fieldR->alias . '`, ","),
-                        ",' . $this->_original['alias'] . ',",
-                        ",' . $this->_modified['alias'] . ',"
+                        ",' . $this->_affected['alias'] . ',",
+                        ",' . $this->alias . ',"
                     ))
                 ');
 
@@ -161,8 +167,8 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                     UPDATE `param`
                     SET `cfgValue` = TRIM(BOTH "," FROM REPLACE(
                         CONCAT(",", `cfgValue`, ","),
-                        ",' . $this->_original['alias'] . ',",
-                        ",' . $this->_modified['alias'] . ',"
+                        ",' . $this->_affected['alias'] . ',",
+                        ",' . $this->alias . ',"
                     ))
                     WHERE `cfgField` = "' . $fieldR->id . '"
                 ');
@@ -186,8 +192,8 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 LIMIT 1
             ');
 
-        // Standard save
-        return parent::save();
+        // Return
+        return $return;
     }
 
     /**

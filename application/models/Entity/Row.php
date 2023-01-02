@@ -104,115 +104,43 @@ class Entity_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Create/rename database table, rename upload folder if need
-     *
-     * @return int
+     * Run CREATE TABLE query
      */
-    public function save() {
+    public function onInsert() {
 
-        // Run checks
-        $this->mflush(true);
+        // Run the CREATE TABLE sql query
+        db()->query("CREATE TABLE IF NOT EXISTS `{$this->table}` (
+            `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY
+        ) DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=MyISAM");
 
-        // If this is a new entity
-        if (!$this->id) {
+        // Append new model metadata into the Indi_Db's registry
+        db((int) $this->id);
 
-            // Run the CREATE TABLE sql query
-            db()->query('CREATE TABLE IF NOT EXISTS `' . $this->table . '` (
-                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY
-            ) DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=MyISAM');
+        // Load that new model
+        m($this->id);
+    }
 
-        // Else if it is an existing entity, but it's database table name is to be modified
-        } else if ($this->_modified['table']) {
+    /**
+     * Apply table name change, if any
+     */
+    protected function _rename() {
 
-            // Run the RENAME TABLE sql query
-            db()->query('RENAME TABLE  `' . $this->_original['table'] . '` TO  `' . $this->_modified['table'] . '`');
+        // If db table name was not changed - do nothing
+        if (!isset($this->_affected['table'])) return; else $was = $this->_affected['table']; $now = $this->table;
 
-            // Get the original ordinary upload directory name
-            $old = DOC . STD . '/' . ini()->upload->path . '/' . $this->_original['table'] . '/';
+        // Run the RENAME TABLE sql query
+        db()->query("RENAME TABLE  `$was` TO  `$now`");
 
-            // If directory exists - rename it
-            if (is_dir($old)) {
+        // Get the templates for ordinary and CKFinder upload directory names
+        $tplA = [
+            DOC . STD . '/' . ini()->upload->path . '/%s/',
+            DOC . STD . '/' . ini()->upload->path . '/' . ini()->ckeditor->uploadPath . '/%s/'
+        ];
 
-                // Get the new directory name
-                $new = DOC . STD . '/' . ini()->upload->path . '/' . $this->_modified['table'] . '/';
-
-                // Do rename
-                rename($old, $new);
-            }
-
-            // Get the original CKFinder upload directory name
-            $old = m($this->id)->dir('name', true);
-
-            // If directory exists - rename it
-            if (is_dir($old)) {
-
-                // Get the new directory name
-                $new = DOC . STD . '/' . ini()->upload->path . '/' . ini()->ckeditor->uploadPath
-                    . '/' . $this->_modified['table'] . '/';
-
-                // Do rename
-                rename($old, $new);
-            }
-        }
-
-        // Backup modified data, because it will be emptied after call parent::save()
-        $modified = $this->_modified; $original = $this->_original;
-
-        // Standard save
-        $return = parent::save();
-
-        // Reload the model, that current entity row is representing
-        if (count($modified)) {
-
-            // If it was an existing entity - do a full model reload, else
-            if ($original['id']) $model = m($this->id)->reload(); else {
-
-                // Append new model metadata into the Indi_Db's registry
-                db((int) $this->id);
-
-                // Load that new model
-                $model = m($this->id);
-            }
-        }
-
-        // If `titleFieldId` property was modified
-        if (array_key_exists('titleFieldId', $modified)) {
-
-            // If, after modification, value `titleFieldId` property is pointing to a valid field
-            if ($titleFieldR = $model->titleField()) {
-
-                // If that field is a foreign key
-                if ($titleFieldR->storeRelationAbility != 'none') {
-
-                    // If current entity has no `title` field
-                    if (!m($this->id)->fields('title')) {
-
-                        // Create it
-                        $fieldR = m('Field')->new();
-                        $fieldR->entityId = $this->id;
-                        $fieldR->title = 'Auto title';
-                        $fieldR->alias = 'title';
-                        $fieldR->storeRelationAbility = 'none';
-                        $fieldR->columnTypeId = 1;
-                        $fieldR->elementId = 1;
-                        $fieldR->mode = 'hidden';
-                        $fieldR->save();
-                    }
-
-                    // Fetch all rows
-                    $rs = $model->all();
-
-                    // Setup foreign data, as it will be need in the process of rows titles updating
-                    $rs->foreign($titleFieldR->alias);
-
-                    // Update titles
-                    foreach ($rs as $r) $r->titleUpdate($titleFieldR);
-
-                } else $model->all()->titleUsagesUpdate();
-            } else $model->all()->titleUsagesUpdate();
-        }
-
-        return $return;
+        // Rename directories
+        foreach ($tplA as $tpl)
+            if (is_dir($old = sprintf($tpl, $was)))
+                rename($old, sprintf($tpl, $now));
     }
 
     /**
@@ -220,18 +148,65 @@ class Entity_Row extends Indi_Db_Table_Row {
      */
     public function onUpdate() {
 
+        // Apply table name change, if any
+        $this->_rename();
+
         // Reload model
         if (m($this->id, true)) m($this->id)->reload();
 
-        // Apply spaceScheme changes, if need
+        // Apply spaceScheme changes, if any
         $this->_spaceScheme();
 
-        // Apply fileGroupBy changes, if need
+        // Apply fileGroupBy changes, if any
         $this->_filesGroupBy();
+
+        // Reload the model, that current entity row is representing
+        if (count($this->_affected)) {
+
+            // If it was an existing entity - do a full model reload, else
+            $model = m($this->id)->reload();
+
+            // If `titleFieldId` property was modified
+            if (array_key_exists('titleFieldId', $this->_affected)) {
+
+                // If, after modification, value of `titleFieldId` property is pointing to a valid field
+                if ($titleFieldR = $model->titleField()) {
+
+                    // If that field is a foreign key
+                    if ($titleFieldR->storeRelationAbility != 'none') {
+
+                        // If current entity has no `title` field
+                        if (!m($this->id)->fields('title')) {
+
+                            // Create it
+                            $fieldR = m('Field')->new();
+                            $fieldR->entityId = $this->id;
+                            $fieldR->title = 'Auto title';
+                            $fieldR->alias = 'title';
+                            $fieldR->storeRelationAbility = 'none';
+                            $fieldR->columnTypeId = 1;
+                            $fieldR->elementId = 1;
+                            $fieldR->mode = 'hidden';
+                            $fieldR->save();
+                        }
+
+                        // Fetch all rows
+                        $rs = $model->all();
+
+                        // Setup foreign data, as it will be need in the process of rows titles updating
+                        $rs->foreign($titleFieldR->alias);
+
+                        // Update titles
+                        foreach ($rs as $r) $r->titleUpdate($titleFieldR);
+
+                    } else $model->all()->titleUsagesUpdate();
+                } else $model->all()->titleUsagesUpdate();
+            }
+        }
     }
 
     /**
-     * Apply spaceScheme changes, if need
+     * Apply spaceScheme changes, if any
      */
     protected function _spaceScheme() {
 
@@ -506,7 +481,7 @@ class Entity_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Apply filesGroupBy changes, if need
+     * Apply filesGroupBy changes, if any
      */
     protected function _filesGroupBy() {
 
