@@ -5470,6 +5470,85 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Check whether field had zero value
+     * Note: 'had' is only applicable if value was affected, so if not - current value is checked
+     *
+     * @param $field
+     * @return bool
+     */
+    public function fieldWasZero($field) {
+
+        // Get zero value
+        $zeroValue = $this->field($field)->zeroValue();
+
+        // If field was changed - get previous value, else get current value
+        $value = $this->affected($field) ? $this->affected($field, true) : $this->$field;
+
+        // Return
+        return $value == $zeroValue;
+    }
+
+    /**
+     * Check whether field had non-zero value
+     * Note: 'had' is only applicable if value was affected, so if not - current value is checked
+     *
+     * @param $field
+     * @return bool
+     */
+    public function fieldWasNonZero($field) {
+
+        // Get zero value
+        $zeroValue = $this->field($field)->zeroValue();
+
+        // If field was changed - get previous value, else get current value
+        $value = $this->affected($field) ? $this->affected($field, true) : $this->$field;
+
+        // Return
+        return $value != $zeroValue;
+    }
+
+    /**
+     * Check whether field has non-zero value, but was changed to zero value
+     *
+     * @param $field
+     * @return bool
+     */
+    public function fieldWasZeroed($field) {
+
+        // Get zero value
+        $zeroValue = $this->field($field)->zeroValue();
+
+        // Return
+        return $this->affected($field)
+            && $zeroValue != $this->affected($field, true)
+            && $zeroValue == $this->$field;
+    }
+
+    /**
+     * Check whether field has zero value, but was changed to non-zero value
+     *
+     * @param $field
+     * @return bool
+     */
+    public function fieldWasUnzeroed($field) {
+
+        // Get zero value
+        $zeroValue = $this->field($field)->zeroValue();
+
+        // Return
+        return $this->affected($field)
+            && $zeroValue == $this->affected($field, true)
+            && $zeroValue != $this->$field;
+    }
+
+    /**
+     * Check whether this entry was a new entry, e.g. it had no `id`-prop before the last save() call
+     */
+    public function wasNew() {
+        return $this->affected('id') && !$this->affected('id', true) && $this->id;
+    }
+
+    /**
      * Detect whether or not row's field currently has a zero-value
      *
      * @param $field

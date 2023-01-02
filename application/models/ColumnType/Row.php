@@ -89,4 +89,13 @@ class ColumnType_Row extends Indi_Db_Table_Row_Noeval {
         // Stringify and return $ctor
         return _var_export($ctor);
     }
+
+    /**
+     * Check whether it's an ENUM or SET type
+     *
+     * @return bool
+     */
+    public function isEnumset() {
+        return preg_match('/^ENUM|SET$/', $this->type);
+    }
 }
