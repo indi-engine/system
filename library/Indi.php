@@ -1425,7 +1425,7 @@ class Indi {
                 $raw = file_get_contents($ini);
 
                 // Get section and param we're going to change
-                list ($section, $param) = explode('.', $arg);
+                list ($section, $param) = explode('.', $arg, 2);
 
                 // New txt-value
                 $txt = $val;
@@ -1436,13 +1436,23 @@ class Indi {
                 else if ($txt === null)  $txt = 'null';
 
                 // Spoof value of that param in that section
-                $raw = preg_replace('~(\[' . $section . '\].*?' . $param . '\s*=\s*)(.*?)(\n)~s', '$1' . $txt . '$3', $raw);
+                $rex = '~(\[' . $section . '\].*?' . preg_quote($param, '~') . '[^\S\r\n]*=[^\S\r\n]*)(.*?)(\n)~s';
+                $raw = preg_replace($rex, '$1' . $txt . '$3', $raw);
 
                 // Write back to ini-file
                 file_put_contents($ini, $raw);
 
+                // Update in memory
+                $c = ini()->$section;
+                $keyA = explode('.', $param);
+                for ($i = 0; $i < count($keyA); $i++) {
+                    $key = $keyA[$i];
+                    if ($i == count($keyA) - 1) $c->$key = $val;
+                    else $c = $c->$key;
+                }
+
                 // Return value updated in memory
-                return Indi::store('ini')->$section->$param = $val;
+                return $val;
 
             // Return value
             } else return Indi::store('ini')->$arg;

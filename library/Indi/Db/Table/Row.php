@@ -1360,8 +1360,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Catch exception
             } catch (Exception $e) {
 
-                // Log error
-                ehandler(1, json_decode($e->getMessage())->error->message, __FILE__, __LINE__);
+                // Re-throw it to be catched on controller-level
+                throw $e;
 
                 // Exit
                 exit;

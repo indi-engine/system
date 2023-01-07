@@ -2929,6 +2929,52 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
+     * If google cloud translate API exception is catched on attempt to save - prompt for valid api key and try again
+     */
+    private function _save() {
+
+        // Try to save the row
+        try {
+
+            // Save the row
+            $this->row->save();
+
+        // Catch google translate api exception
+        } catch (Google\Cloud\Core\Exception\BadRequestException | Google\Cloud\Core\Exception\ServiceException $e) {
+
+            // Ini-prop name
+            $name = 'lang.gapi.key';
+
+            // Get message
+            $msg = 'Google Cloud Translate API response: ' . json_decode($e->getMessage())->error->message;
+
+            // Prompt for valid Google Cloud Translate API key
+            $prompt = $this->prompt($msg, [[
+                'xtype' => 'textfield',
+                'emptyText' => 'Please specify API key here..',
+                'width' => '100%',
+                'margin' => '5 0 0 0',
+                'name' => $name,
+                'allowBlank' => false
+            ]]);
+
+            // Check prompt data
+            jcheck([
+                $name => [
+                    'req' => true,
+                    'rex' => '~^[a-zA-Z0-9]+$~'
+                ]
+            ], $prompt);
+
+            // Write into ini-file
+            ini($name, $prompt[$name]);
+
+            // Re-try
+            $this->_save();
+        }
+    }
+
+    /**
      * Save form data
      *
      * @param bool $redirect
@@ -3004,8 +3050,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Flush 'zeroValue'-mismatches
         $this->row->mflush();*/
 
-        // Save the row
-        $this->row->save();
+        // If google cloud translate API exception is catched on attempt to save - prompt for valid api key and try again
+        $this->_save();
 
         // If current row has been just successfully created
         if ($updateAix && $this->row->id) {
@@ -3910,7 +3956,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::$answer[count(Indi::$answer)] = $answer;
 
         // Return prompt data
-        return json_decode(Indi::post('_prompt' . $answerIdx), true) + ['_meta' => $meta];
+        return json_decode(Indi::post('_prompt' . $answerIdx) ?: '[]', true) + ['_meta' => $meta];
     }
 
     /**
