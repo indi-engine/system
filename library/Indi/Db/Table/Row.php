@@ -5549,6 +5549,34 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Check whether $field was changed to given $value
+     *
+     * @param $field
+     * @param $value
+     * @return bool
+     */
+    public function fieldWasChangedTo($field, $value) {
+        return $this->affected($field) && $this->$field == $value;
+    }
+
+    /**
+     * Check whether $field was changed from one non-zero value to another non-zero value
+     *
+     * @param $field
+     * @return bool
+     */
+    public function fieldWasChangedToStillNonZero($field) {
+
+        // Get zero value
+        $zeroValue = $this->field($field)->zeroValue();
+
+        // Do check
+        return $this->affected($field)
+            && $zeroValue != $this->affected($field, true)
+            && $zeroValue != $this->$field;
+    }
+
+    /**
      * Detect whether or not row's field currently has a zero-value
      *
      * @param $field

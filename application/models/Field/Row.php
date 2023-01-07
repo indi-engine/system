@@ -128,6 +128,26 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
+     * @throws Exception
+     */
+    public function onBeforeSave() {
+
+        // Get the column type row
+        $columnTypeR = $this->foreign('columnTypeId');
+
+        // If column type is SET or ENUM
+        if ($columnTypeR->isEnumset()) $this->relation = 6;
+
+        // Setup `defaultValue` for current field, but only if it's type is not
+        // BLOB or TEXT, as these types do not support default value definition
+        if (!in($columnTypeR->type, 'BLOB,TEXT')) $this->_defaultValue($columnTypeR);
+
+        // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
+        // void values of all properties, that are certainly not used now, as field does not store foreign keys anymore
+        $this->_resetRelation($columnTypeR);
+    }
+
+    /**
      * After delete
      *
      * @return int|void
@@ -188,7 +208,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     protected function _renameUploadedFiles() {
 
         // If `alias` property was not changed - return
-        if (!$this->_modified['alias']) return;
+        if (!$this->affected('alias')) return;
 
         // Get the table
         $table = $this->foreign('entityId')->table;
@@ -200,13 +220,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!is_dir($dir)) return;
 
         // Get the array of uploaded files and their copies (if some of them are images)
-        $fileA = glob($dir . '[1-9]*_' . $this->_original['alias'] . '[,.]*');
+        $fileA = glob($dir . '[1-9]*_' . $this->_affected['alias'] . '[,.]*');
 
         // Delete files
         foreach ($fileA as $fileI) {
 
             // Determine a new name
-            $new = preg_replace('~(/[1-9][0-9]*_)' . $this->_original['alias'] . '([,\.])~', '$1' . $this->alias . '$2', $fileI);
+            $new = preg_replace('~(/[1-9][0-9]*_)' . $this->_affected['alias'] . '([,\.])~', '$1' . $this->alias . '$2', $fileI);
 
             // Rename
             rename($fileI, $new);
@@ -214,68 +234,59 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Save field
+     * Do schema changes and files maintenance, if need
      *
      * @return int
      */
-    public function save() {
+    protected function _schema() {
 
         // Declare the array of properties, who's modification leads to necessity of sql ALTER query to be executed
         $affect = ['entityId', 'alias', 'columnTypeId', 'defaultValue', 'storeRelationAbility'];
 
         // If field's control element was 'upload', but now it is not - set $deleteUploadedFiles to true
-        $uploadElementId = m('Element')->row('`alias` = "upload"')->id;
-        if ($this->_original['elementId'] == $uploadElementId && array_key_exists('elementId', $this->_modified))
-            $deleteUploadedFiles = true;
+        $uploadElementId = element('upload')->id;
+        if ($this->affected('elementId', true) == $uploadElementId)
+            $this->deleteFiles($this->_affected['alias'] ?: $this->alias);
 
-        // Detect if any of modified properties is/are within $affect array, and if no
-        if (!array_intersect($affect, array_keys($this->_modified))) {
-
-            // If $deleteUploadedFiles flag is set to true - call deleteUploadedFiles() method
-            if ($deleteUploadedFiles) $this->deleteUploadedFiles();
-
-            // Backup original data
-            $original = $this->_original;
-
-            // Standard save
-            $return = parent::save();
+        // Detect if any of affected properties are within $affect array, and if no
+        if (!array_intersect($affect, array_keys($this->_affected))) {
 
             // Reload the model, because field was deleted
             m($this->entityId)->reload();
 
             // Check if saving of current field should affect current entity's
             // `titleFieldId` property and affect all involved titles
-            $this->_titleFieldUpdate($original);
+            $this->_titleFieldUpdate($this->_affected + $this->_original);
 
             // Return
-            return $return;
+            return;
         }
 
-        // If `entityId` property was modified, and current field is an existing field
-        if ($this->id && $this->_modified['entityId']) {
+        // If `entityId` property was modified, and current field was an existing field
+        if (!$this->wasNew() && $this->affected('entityId', true)) {
 
             // Get names of tables, related to both original and modified entityIds
             list($wasTable, $table) = m('Entity')->all(
-                '`id` IN (' . $this->_original['entityId'] . ',' . $this->_modified['entityId'] . ')',
-                'FIND_IN_SET(`id`, "' . $this->_original['entityId'] . ',' . $this->_modified['entityId'] . '")'
+                '`id` IN (' . $this->_affected['entityId'] . ',' . $this->entityId . ')',
+                'FIND_IN_SET(`id`, "' . $this->_affected['entityId'] . ',' . $this->entityId . '")'
             )->column('table');
 
             // Get real table, as $table may contain VIEW-name rather that TABLE-name
             $table = m($table)->table(true);
 
             // Drop column from old table, if that column exists
-            if ($this->_original['columnTypeId'])
-                db()->query('ALTER TABLE `' . $wasTable . '` DROP COLUMN `' . $this->_original['alias'] .'`');
+            if ($this->fieldWasNonZero('columnTypeId'))
+                db()->query('ALTER TABLE `' . $wasTable . '` DROP COLUMN `' . ($this->_affected['alias'] ?: $this->alias) .'`');
 
-            // If field's control element was and still is 'upload' - set $deleteUploadedFiles flag to true.
-            if ($this->elementId == $uploadElementId && $this->_original['elementId'] == $uploadElementId)
-                $deleteUploadedFiles = true;
+            // If field's control element was and still is 'upload' - delete files
+            if ($this->elementId == $uploadElementId && !$this->affected('elementId'))
+                $this->deleteFiles($this->_affected['alias'] ?: $this->alias);
 
             // Reload the model, because field was deleted
-            m($this->_original['entityId'])->fields()->exclude($this->id);
+            m($this->_affected['entityId'])->fields()->exclude($this->id);
 
             // Get original entity row
-            $entityR = m('Entity')->row($this->_original['entityId']);
+            $entityR = m('Entity')->row($this->_affected['entityId']);
 
             // If current field was used as title-field within original entity
             if ($entityR->titleFieldId == $this->id) {
@@ -299,20 +310,20 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $columnTypeR = $this->foreign('columnTypeId');
 
             // If column type is SET or ENUM
-            if (preg_match('/^ENUM|SET$/', $columnTypeR->type))
+            if ($columnTypeR->isEnumset())
                 list($enumsetA, $enumsetAppendA) = $this->_setupEnumset($columnTypeR, $table);
 
             // Setup `defaultValue` for current field, but only if it's type is not
             // BLOB or TEXT, as these types do not support default value definition
-            if (!preg_match('/^BLOB|TEXT$/', $columnTypeR->type)) $this->_defaultValue($columnTypeR);
+            // if (!preg_match('/^BLOB|TEXT$/', $columnTypeR->type)) $this->_defaultValue($columnTypeR);
 
             // If field column type was ENUM or SET, but now it is not -
             // we should delete rows, related to current field, from `enumset` table
             $this->_clearEnumset($columnTypeR);
 
             // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
-            // void values of all properties, that are certainly not used now, as field does not store foreign keys no more
-            $this->_resetRelation($columnTypeR);
+            // void values of all properties, that are certainly not used now, as field does not store foreign keys anymore
+            //$this->_resetRelation($columnTypeR);
 
             // If store relation ability changed to  'many'
             // And if field had it's own column within database table, and still has
@@ -321,14 +332,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             //   for fields, that have storeRelationAbility = 'many'
             $this->_clear0($table);
 
-            // Call parent
-            $return = $this->callParent();
-
             // If earlier we detected some values, that should be inserted to `enumset` table - insert them
             $this->_enumsetAppend($enumsetAppendA);
 
             // Return
-            return $return;
+            return;
         }
 
         // We should add a new column in database table in 3 cases:
@@ -336,77 +344,62 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         //    columnTypeId property, and does not matter whether is had it before or not
         // 2. Field is new, and columnTypeId property is non-zero
         // 3. Field had no column, e.g columnTypeId property has zero-value, but now it is non-zero
-        if ($this->columnTypeId && ($this->_modified['entityId'] || !$this->id || !$this->_original['columnTypeId'])) {
+        if ($this->columnTypeId
+            && ($this->affected('entityId', true) || $this->wasNew() || $this->fieldWasZero('columnTypeId'))) {
 
             // Start building an ADD COLUMN query
             $sql[] = 'ALTER TABLE `' . $table . '` ADD COLUMN `' . $this->alias . '`';
 
         // Else if we are certainly not dealing with field throw from one
         // entity to another, and field had non-zero columnTypeId originally
-        } else if (!array_key_exists('entityId', $this->_modified) && $this->_original['columnTypeId']) {
+        } else if (!$this->affected('entityId') && $this->fieldWasNonZero('columnTypeId')) {
+
+            // Get original value of alias, or current if it wasn't affected
+            $alias = $this->_affected['alias'] ?: $this->alias;
 
             // If columnTypeId was non-zero, but now it is
-            if (array_key_exists('columnTypeId', $this->_modified) && !$this->_modified['columnTypeId']) {
+            if ($this->fieldWasZeroed('columnTypeId')) {
 
                 // Run a DROP COLUMN query
-                db()->query('ALTER TABLE `' . $table . '` DROP COLUMN `' . $this->_original['alias'] . '`');
+                db()->query("ALTER TABLE `$table` DROP COLUMN `$alias`");
 
                 // Delete rows from `enumset` table, that are related to current field
                 $this->clearEnumset();
-
-                // If $deleteUploadedFiles flag is set to true - call deleteUploadedFiles() method
-                if ($deleteUploadedFiles) $this->deleteUploadedFiles();
-
-                // Backup original data
-                $original = $this->_original;
-
-                // Standard save
-                $return = parent::save();
 
                 // Reload the model, because field was deleted
                 m($this->entityId)->reload();
 
                 // Check if saving of current field should affect current entity's
                 // `titleFieldId` property and affect all involved titles
-                $this->_titleFieldUpdate($original);
+                $this->_titleFieldUpdate($this->_affected + $this->_original);
 
                 // Return
-                return $return;
+                return;
 
             // Else if columnType was non-zero, and now it is either not changed, or changed but to also non-zero value
             } else
 
                 // Start building a CHANGE COLUMN query
-                $sql[] = 'ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $this->_original['alias'] . '` `' . $this->alias . '`';
+                $sql[] = "ALTER TABLE `$table` CHANGE COLUMN `$alias` `{$this->alias}`";
         }
 
         // If no query built - do a standard save
         if (!$sql) {
 
-            // If $deleteUploadedFiles flag is set to true - call deleteUploadedFiles() method
-            if ($deleteUploadedFiles) $this->deleteUploadedFiles();
-
-            // Else if `alias` property is modified, and current field's control element was and still is 'upload'
-            else if ($this->_modified['alias'] && $this->elementId == $uploadElementId && $this->_original['elementId'] == $uploadElementId)
-
-                // Rename uploaded files, for their names to be affected by change of current field's `alias` property
+            // If `alias` property was modified, and current field's control element was and still is 'upload'
+            // Rename uploaded files, for their names to be affected by change of current field's `alias` property
+            if ($this->affected('alias', true) && $this->elementId == $uploadElementId && !$this->affected('elementId'))
                 $this->_renameUploadedFiles();
-
-            // Backup original data
-            $original = $this->_original;
-
-            // Standard save
-            $return = parent::save();
 
             // Reload the model, because field info was changed
             m($this->entityId)->reload();
 
             // Check if saving of current field should affect current entity's
             // `titleFieldId` property and affect all involved titles
-            $this->_titleFieldUpdate($original);
+            $this->_titleFieldUpdate($this->_affected + $this->_original);
 
             // Return
-            return $return;
+            return;
         }
 
         // Get the column type row
@@ -416,7 +409,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $sql[] = $columnTypeR->type;
 
         // If column type is SET or ENUM
-        if (preg_match('/^ENUM|SET$/', $columnTypeR->type)) {
+        if ($columnTypeR->isEnumset()) {
 
             // Set $this->relation to 6, and get two enumset lists, that will be used further
             list($enumsetA, $enumsetAppendA) = $this->_setupEnumset($columnTypeR, $table);
@@ -426,10 +419,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Add the collation definition, if column type supports it
-        $collatedColumnTypeA = ['CHAR', 'VARCHAR', 'TEXT'];
-        foreach ($collatedColumnTypeA as $collatedColumnTypeI)
-            if (preg_match('/^' . $collatedColumnTypeI . '/', $columnTypeR->type))
-                $sql[] = 'CHARACTER SET utf8 COLLATE utf8_general_ci';
+        foreach (['CHAR', 'VARCHAR', 'TEXT'] as $collatedType)
+            if (preg_match('~^' . $collatedType . '~', $columnTypeR->type))
+                $sql[] = 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci';
 
         // Add the 'NOT NULL' expression
         $sql[] = 'NOT NULL';
@@ -459,8 +451,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // If we are creating move-column, e.g. this column will be used for ordering rows
         // Force it's values to be same as values of `id` column, for it to be possible to
         // move entries up/down once such a column was created
-        if (!$this->id && $columnTypeR->type == 'INT(11)' && $this->foreign('elementId')->alias == 'move')
-            db()->query('UPDATE `' . $table . '` SET `' . $this->alias . '` = `id`');
+        if ($this->wasNew() && $columnTypeR->type == 'INT(11)' && $this->foreign('elementId')->alias == 'move')
+            db()->query("UPDATE `$table` SET `{$this->alias}` = `id`");
 
         // If field column type was ENUM or SET, but now it is not -
         // we should delete rows, related to current field, from `enumset` table
@@ -468,7 +460,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
         // void values of all properties, that are certainly not used now, as field does not store foreign keys no more
-        $this->_resetRelation($columnTypeR);
+        //$this->_resetRelation($columnTypeR);
 
         // If store relation ability changed to  'many'
         // And if field had it's own column within database table, and still has
@@ -477,18 +469,12 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         //   for fields, that have storeRelationAbility = 'many'
         $this->_clear0($table);
 
-        // If $deleteUploadedFiles flag is set to true - call deleteUploadedFiles()
-        if ($deleteUploadedFiles) $this->deleteUploadedFiles();
-
-        // Remember original data before call parent::save(), as this data
-        // will be used bit later for proper column indexes adjustments
-        $original = $this->_original;
-
-        // Standard save
-        $return = parent::save();
-
         // If earlier we detected some values, that should be inserted to `enumset` table - insert them
         $this->_enumsetAppend($enumsetAppendA);
+
+        // Get original data before save() call, as this data
+        // will be used bit later for proper column indexes adjustments
+        $original = $this->_affected + $this->_original;
 
         // Setup MySQL indexes
         $this->_indexes($columnTypeR, $table, $original);
@@ -499,9 +485,18 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Check if saving of current field should affect current entity's
         // `titleFieldId` property and affect all involved titles
         $this->_titleFieldUpdate($original);
+    }
 
-        // Return
-        return $return;
+    /**
+     *
+     */
+    public function onSave() {
+
+        // Do schema changes and files maintenance, if need
+        $this->_schema();
+
+        // Handle positioning if _system['move'] is set
+        $this->_move();
     }
 
     /**
@@ -511,35 +506,37 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     private function _setupEnumset($columnTypeR, $table) {
 
-        // Get the column type row, representing field's column before type change (original column)
-        $curTypeR = coltype($this->_original['columnTypeId']);
+        // Get the column type row, representing field's column before type change,
+        // or field's current column, if no change was there
+        $wasTypeR = coltype($this->_affected['columnTypeId'] ?: $this->columnTypeId);
 
         // Get the existing enumset values
-        $enumsetA = $this->id ? $this->nested('enumset')->column('alias'): [];
+        $enumsetA = $this->wasNew() ? [] : $this->nested('enumset')->column('alias');
 
         // Get the array of default values
         $defaultValueA = preg_match(Indi::rex('php'), $this->defaultValue)
             ? ['']
             : explode(',', $this->defaultValue);
 
-        // Get the values, that should be added to the list of possible values
+        // If there are some values mentioned in defaultValue that are
+        // NOT in existing values get the values, that should be added to the list
         $enumsetAppendA = array_diff($defaultValueA, $enumsetA);
 
         // If we are converting BOOLEAN to ENUM|SET, ensure both 0 and 1 will be
         // 1. mentioned in ALTER TABLE query
         // 2. insterted into `enumset` table
-        if ($curTypeR->type == 'BOOLEAN') $enumsetAppendA = [I_NO => 0, I_YES => 1];
+        if ($wasTypeR->type == 'BOOLEAN') $enumsetAppendA = [I_NO => 0, I_YES => 1];
 
-        // Else
-        else if ($curTypeR->id && !in($curTypeR->type, 'ENUM,SET') && $columnTypeR->type == 'ENUM') {
+        // Else if it was non-ENUM/SET type but now it is ENUM
+        else if ($wasTypeR->id && !$wasTypeR->isEnumset() && $columnTypeR->type == 'ENUM') {
 
-            // Get values
+            // Get distinct list of existing values
             $valueA = db()->query($this->entry
                 ? 'SELECT DISTINCT `cfgValue` FROM `param` WHERE `cfgField` = "' . $this->id . '"'
-                : 'SELECT DISTINCT `' . $this->_original['alias'] . '` FROM `' . $table . '`'
+                : 'SELECT DISTINCT `' . ($this->_affected['alias'] ?: $this->alias) . '` FROM `' . $table . '`'
             )->col();
 
-            // Set default value
+            // Set default value to be the first from the list of distinct values
             if (!$this->defaultValue) $this->defaultValue = $valueA[0];
 
             // Build key-value pairs
@@ -566,9 +563,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @param $table
      */
     private function _clear0($table) {
-        if ($this->_modified['storeRelationAbility'] == 'many'
-            && $this->_original['columnTypeId'] && $this->_modified['columnTypeId']
-            && $table && !array_key_exists('entityId', $this->_modified)) db()->query('
+        if ($this->fieldWasChangedTo('storeRelationAbility', 'many')
+            && $this->fieldWasChangedToStillNonZero('columnTypeId')
+            && $table && !$this->affected('entityId')) db()->query('
             UPDATE `' . $table . '` SET `' . $this->alias . '` = SUBSTR(REPLACE(CONCAT(",", `' . $this->alias . '`), ",0", ""), 2)
         ');
     }
@@ -580,8 +577,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @param $columnTypeR
      */
     private function _clearEnumset($columnTypeR) {
-        if (!preg_match('/^ENUM|SET$/', $columnTypeR->type)
-            && preg_match('/^ENUM|SET$/', coltype($this->_original['columnTypeId'])->type))
+        if ($this->affected('columnTypeId')
+            && ($wasType = $this->affected('columnTypeId', true))
+            && ($wasType = coltype($wasType))
+            && $wasType->isEnumset()
+            && !$columnTypeR->isEnumset())
             $this->clearEnumset();
     }
 
@@ -593,18 +593,22 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @throws Exception
      */
     private function _resetRelation($columnTypeR) {
-        if (array_key_exists('storeRelationAbility', $this->_modified) && $this->_modified['storeRelationAbility'] == 'none') {
+        if ($this->_modified['storeRelationAbility'] == 'none') {
+
+            // Get element alias
+            $element = $this->foreign('elementId')->alias;
+
+            // Get string-element id
+            $string = element('string')->id;
 
             // If control element was radio or multicheck - set it as string
-            if (preg_match('/^radio|multicheck$/', $this->foreign('elementId')->alias))
-                $this->elementId = element('string')->id;
+            if (in($element, 'radio,multicheck')) $this->elementId = $string;
 
-            // Else if control element was combo, and column type is not BOOLEAN - set control element as string also
-            else if ($this->foreign('elementId')->alias == 'combo' && $columnTypeR->type != 'BOOLEAN')
-                $this->elementId = element('string')->id;
+            // Else if control element was combo, and column type is not BOOLEAN - set control element as string as well
+            else if ($element == 'combo' && $columnTypeR->type != 'BOOLEAN') $this->elementId = $string;
 
             // If column type was ENUM or SET - set it as VARCHAR(255)
-            if (preg_match('/^ENUM|SET$/', $columnTypeR->type)) $this->columnTypeId = coltype('VARCHAR(255)')->id;
+            if ($columnTypeR->isEnumset()) $this->columnTypeId = coltype('VARCHAR(255)')->id;
 
             // Setup `relation` as 0
             $this->relation = 0;
@@ -963,16 +967,16 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // If field's entityId was not changed, and field had and still has it's
         // own database table column, but that column type is going to be changed
-        if (!($this->_original['columnTypeId'] && $this->_modified['columnTypeId'] && !$this->_modified['entityId'])) return;
+        if (!($this->fieldWasChangedToStillNonZero('columnTypeId') && !$this->affected('entityId'))) return;
 
         // Get the column type row, representing field's column before type change (original column)
-        $curTypeR = m('ColumnType')->row($this->_original['columnTypeId']);
+        $curTypeR = m('ColumnType')->row($this->_affected['columnTypeId']);
 
         // Get the table name
         $tbl = $this->foreign('entityId')->table;
 
         // Get the field's column name
-        $col = $this->_original['alias'];
+        $col = $this->_affected['alias'] ?: $this->alias;
 
         // Define array of rex-names, related to their mysql data types
         $rex = [
@@ -1861,7 +1865,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Do positioning, if $this->_system['move'] is set
      */
-    public function onSave() {
+    protected function _move() {
 
         // If no _system['move'] defined - return
         if (!array_key_exists('move', $this->_system)) return;
