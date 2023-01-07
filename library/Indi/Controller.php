@@ -362,7 +362,7 @@ class Indi_Controller {
 
                 // Check $filterSearchFieldAlias
                 if (!preg_match('/^[a-zA-Z\-0-9_]+$/', $filterSearchFieldAlias)) continue;
-                
+
                 // Get a field row object, that is related to current filter field alias. We need to do it because there
                 // can be a case then filter field alias can be not the same as any field's alias - if filter is working
                 // in range-mode. This can only happen for filters, that are linked to fields, that have column types:
@@ -567,16 +567,39 @@ class Indi_Controller {
                         if ($filterR->multiSelect()) $multiSelect = true;
                     }
 
-                    // If $filterSearchFieldValue is a non-empty string, convert it to array
-                    if ((is_string($filterSearchFieldValue) || is_scalar($filterSearchFieldValue)) && strlen($filterSearchFieldValue))
-                        $filterSearchFieldValue = explode(',', $filterSearchFieldValue);
+                    // If further-foreign filter's field should be used
+                    if ($further) {
 
-                    // Fill that array
-                    foreach ($filterSearchFieldValue as $filterSearchFieldValueItem)
-                        $fisA[] = db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
+                        // Get WHERE clause to be run on table, that filter's field's relation points to
+                        if ($multiSelect) {
+                            $furtherWHERE = 'CONCAT(",", `' . $further . '`, ",") REGEXP ",(' . join('|', ar($filterSearchFieldValue)) .'),"';
+                        } else {
+                            $furtherWHERE = db()->sql('FIND_IN_SET(:s, `' . $further . '`)', $filterSearchFieldValue);
+                        }
 
-                    // Implode array of FIND_IN_SET clauses with AND, and enclose by round brackets
-                    $where[$found->alias] = '(' . implode(' ' . ($multiSelect ? 'OR' : 'AND') . ' ', $fisA) . ')';
+                        // Get ids
+                        $idA = db()->query(
+                            'SELECT `id` FROM `:p` WHERE ' . $furtherWHERE,
+                            m($found->entityId)->table()
+                        )->col();
+
+                        // Set up WHERE clause according to value of $multiSelect flag
+                        $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
+
+                    // Else
+                    } else {
+
+                        // If $filterSearchFieldValue is a non-empty string, convert it to array
+                        if ((is_string($filterSearchFieldValue) || is_scalar($filterSearchFieldValue)) && strlen($filterSearchFieldValue))
+                            $filterSearchFieldValue = explode(',', $filterSearchFieldValue);
+
+                        // Fill that array
+                        foreach ($filterSearchFieldValue as $filterSearchFieldValueItem)
+                            $fisA[] = db()->sql('FIND_IN_SET(:s, `' . $filterSearchFieldAlias . '`)', $filterSearchFieldValueItem);
+
+                        // Implode array of FIND_IN_SET clauses with AND, and enclose by round brackets
+                        $where[$found->alias] = '(' . implode(' ' . ($multiSelect ? 'OR' : 'AND') . ' ', $fisA) . ')';
+                    }
 
                     // Pick the current filter value and fieldId (if foreign table name is 'enumset')
                     // or foreign table name, to $excelA

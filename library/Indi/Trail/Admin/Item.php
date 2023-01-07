@@ -90,6 +90,10 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 // Prepend foreign field alias to further-foreign field alias
                 $fieldR_further->alias = $fieldR->alias . '_' . $fieldR_further->alias;
 
+                // Make sure filter field's storeRelationAbility rely on filter's multiSelect-prop
+                if ($fieldR_further->storeRelationAbility != 'none')
+                    $fieldR_further->storeRelationAbility = $filterR->multiSelect ? 'many' : 'one';
+
                 // Append to fields list
                 $this->fields->append($fieldR_further);
             }
