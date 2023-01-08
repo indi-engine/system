@@ -117,7 +117,10 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
 
         // Trim body
         $msg['body'] = usubstr($msg['body'], 350);
-    
+
+        // Destination definition shortcut
+        $to = [$this->roleId => array_column($rs, $field)];
+
         // Send web-socket messages
         Indi::ws([
             'type' => 'notice',
@@ -126,9 +129,20 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
             'noticeId' => $this->noticeId,
             'diff' => $diff,
             'row' => $this->row->id,
-            'to' => [$this->roleId => array_column($rs, $field)],
+            'to' => $to,
             'msg' => $msg
         ]);
+
+        // If http-hook is given
+        if ($diff == 1 && $this->http) {
+
+            // Trigger Indi.load(...) call
+            Indi::ws([
+                'type' => 'load',
+                'href' => str_replace('{id}', $this->row->id, $this->http),
+                'to' => $to
+            ]);
+        }
     }
 
     /**

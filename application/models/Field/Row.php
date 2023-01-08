@@ -136,7 +136,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $columnTypeR = $this->foreign('columnTypeId');
 
         // If column type is SET or ENUM
-        if ($columnTypeR->isEnumset()) $this->relation = 6;
+        if (in($columnTypeR->type, 'ENUM,SET')) $this->relation = 6;
 
         // Setup `defaultValue` for current field, but only if it's type is not
         // BLOB or TEXT, as these types do not support default value definition

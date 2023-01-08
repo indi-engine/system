@@ -9,7 +9,20 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'qtySql' => '`procID` != "0"',
             'tplIncBody' => 'Очередь задач возобновлена с PID: <?=$this->row->procID?>',
         ]);
-        noticeGetter('queueTask', 'started', 'dev', true);
+        noticeGetter('queueTask', 'resumed', 'dev', true);
+        field('noticeGetter', 'criteria')->delete();
+        field('noticeGetter', 'mail')->delete();
+        field('noticeGetter', 'http', [
+            'title' => 'HTTP-запрос',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'title',
+        ]);
+        grid('noticeGetters', 'http', ['move' => 'criteriaEvt', 'editor' => '1']);
+        noticeGetter('queueTask', 'failed', 'dev', ['http' => '/queueTask/run/id/{id}/gapikey/']);
+        section2action('realtime','restart')->delete();
+        section2action('realtime','form')->delete();
+        section2action('realtime','save')->delete();
         die('ok');
     }
     public function changelogAction() {

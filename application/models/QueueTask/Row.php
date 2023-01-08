@@ -68,6 +68,9 @@ class QueueTask_Row extends Indi_Db_Table_Row {
      */
     public function onUpdate() {
 
+        // Moved to noticeGetter-level
+        return;
+
         // If queueState-field was changed to 'error'
         if ($this->fieldWasChangedTo('queueState', 'error')) {
 
