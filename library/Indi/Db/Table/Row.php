@@ -639,8 +639,11 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($this->_modified as $prop => $value)
             if ($this->_language[$prop]) $this->_language[$prop][ini('lang')->admin] = $value;
 
-        // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
-        $this->_modified = $this->_mismatch = $this->_affected = [];
+        // Empty $this->_modified and $this->_mismatch arrays
+        $this->_modified = $this->_mismatch = [];
+
+        // Set up `_affected` prop, so it to contain affected field names as keys, and their previous values
+        $this->_affected = array_diff_assoc($original, $this->_original);
 
         // Provide a changelog recording, if configured
         $this->changeLog($original);
@@ -707,15 +710,15 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Merge $this->_original and $this->_modified arrays into $this->_original array
             $this->_original = (array) array_merge($this->_original, $this->_modified);
 
-            // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
-            $this->_modified = $this->_mismatch = $this->_affected = [];
+            // Empty $this->_modified and $this->_mismatch arrays
+            $this->_modified = $this->_mismatch = [];
+
+            // Set up `_affected` prop, so it to contain affected field names as keys, and their previous values
+            $this->_affected = array_diff_assoc($original, $this->_original);
 
             // Check if row (in it's current/modified state) matches each separate notification's criteria,
             // and compare results with the results of previous check, that was made before any modifications
             $this->_noticesStep2($original);
-
-            // Get the state of modified fields, that they were in at the moment before current row was saved
-            $this->_affected = array_diff_assoc($original, $this->_original);
         }
 
         // Trigger realtime updates to be rendered and delivered to subscribers
@@ -5306,10 +5309,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $cfg = $this->model()->changeLog();
 
         // Get the state of modified fields, that they were in at the moment before current row was saved
-        $affected = array_diff_assoc($original, $this->_original);
-
-        // Set up `_affected` prop, so it to contain affected field names as keys, and their previous values
-        $this->_affected = $affected;
+        $affected = $this->_affected;
 
         // If no changes should be logged with no exceptions - return
         if ($cfg['toggle'] != 'all' && !$cfg['except']) return;

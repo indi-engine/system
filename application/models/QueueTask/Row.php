@@ -62,4 +62,21 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         // Call parent
         $this->callParent();
     }
+
+    /**
+     * Make sure queue will be resumed after valid API key prompted and submitted
+     */
+    public function onUpdate() {
+
+        // If queueState-field was changed to 'error'
+        if ($this->fieldWasChangedTo('queueState', 'error')) {
+
+            // Make sure queue will be resumed after valid API key provided
+            Indi::ws([
+                'type' => 'load',
+                'to' => 'dev',
+                'href' => "/queueTask/run/id/{$this->id}/gapikey/"
+            ]);
+        }
+    }
 }

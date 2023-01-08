@@ -2275,11 +2275,33 @@ class Indi {
             // Get all channels
             $channelA = db()->query('SELECT `token` FROM `realtime` WHERE `type` = "channel"')->col();
 
+        // Else if destination is a string
+        } else if (is_string($data['to'])) {
+
+            // Else if destination is a channel id - it means we should deliver to certain channel
+            if (Indi::rexm('cid', $data['to'])) {
+
+                // Append destination to the list
+                $channelA [] = $data['to'];
+
+            // Else if destination is comma-separated list of role-aliases
+            } else if ($data['to']) {
+
+                // Get comma-separated roleIds
+                $roleIds = db()->query("SELECT `id` FROM `role` WHERE FIND_IN_SET(`alias`, '{$data['to']}')")->in();
+
+                // Get all channels
+                $channelA = db()->query("SELECT `token` FROM `realtime` WHERE `type` = 'channel' AND `roleId` IN ($roleIds)")->col();
+            }
+
         // Else if destination is an array
         } else if (is_array($data['to'])) {
 
             // Assume keys are roleIds and values are adminIds (or `true` which mean all adminIds) of that roleId
-            foreach ($data['to'] as $roleId => $adminIdA) if ($adminIdA) {
+            foreach ($data['to'] as $role => $adminIdA) if ($adminIdA) {
+
+                // Get roleId
+                if (Indi::rexm('int11', $role)) $roleId = $role; else $roleId = role($role)->id;
 
                 // Build WHERE clause
                 $where = ['`type` = "channel"', "`roleId` = '$roleId'"];
@@ -2289,9 +2311,7 @@ class Indi {
                 // Get destination/recepient channels
                 $channelA += db()->query("SELECT `id`, `token` FROM `realtime` WHERE $where")->pairs();
             }
-
-        // Else if destination is a channel id - it means we should deliver to certain channel
-        } else if (Indi::rexm('cid', $data['to'])) $channelA []= $data['to'];
+        }
 
         // Get queue name prefix
         $qn = qn('opentab--');

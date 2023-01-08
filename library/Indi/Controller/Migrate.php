@@ -1,5 +1,17 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function queueResumeAction() {
+        notice('queueTask', 'resumed', [
+            'title' => 'Очередь задач возобновлена',
+            'fraction' => 'system',
+            'event' => '$this->affected("procID", true)',
+            'roleId' => 'dev',
+            'qtySql' => '`procID` != "0"',
+            'tplIncBody' => 'Очередь задач возобновлена с PID: <?=$this->row->procID?>',
+        ]);
+        noticeGetter('queueTask', 'started', 'dev', true);
+        die('ok');
+    }
     public function changelogAction() {
         field('changeLog', 'changerId', ['alias' => 'adminId']);
         field('changeLog', 'key', ['alias' => 'entryId']);

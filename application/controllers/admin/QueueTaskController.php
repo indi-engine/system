@@ -6,11 +6,40 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
      */
     public function runAction() {
 
+        // If command is 'gapikey'
+        if (uri()->command == 'gapikey') {
+
+            // Setup ini-prop name
+            $name = 'lang.gapi.key';
+
+            // Prepare message
+            $msg = 'Google Cloud Translate API response: ' . t()->row->error;
+
+            // Prompt for valid Google Cloud Translate API key
+            $prompt = $this->prompt($msg, [[
+                'xtype' => 'textfield',
+                'emptyText' => 'Please specify API key here..',
+                'width' => '100%',
+                'margin' => '5 0 0 0',
+                'name' => $name
+            ]]);
+
+            // Check prompt data
+            jcheck([
+                $name => [
+                    'rex' => '~^[a-zA-Z0-9]+$~'
+                ]
+            ], $prompt);
+
+            // Write into ini-file
+            ini($name, $prompt[$name]);
+        }
+
         // Start queue as a background process
         Indi::cmd('queue', ['queueTaskId' => $this->row->id]);
 
-        // Flush msg saying that queue task started running
-        jflush(true, sprintf('Queue Task "%s" started running', $this->row->title));
+        // Flush success
+        jflush(true);
     }
 
     /**
