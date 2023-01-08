@@ -2566,7 +2566,7 @@ notice('queueTask', 'resumed', ['tplDecBody' => '']);
 notice('queueTask', 'resumed', ['tplDecSubj' => '']);
 notice('queueTask', 'resumed', ['tplEvtBody' => '']);
 notice('queueTask', 'resumed', ['tplEvtSubj' => '']);
-notice('queueTask', 'resumed', ['tplIncBody' => 'Queue task resumed with PID:<?=$this->row->procID?>']);
+notice('queueTask', 'resumed', ['tplIncBody' => 'Queue task resumed with PID: <?=$this->row->procID?>']);
 notice('queueTask', 'resumed', ['tplIncSubj' => '']);
 notice('queueTask', 'started', ['title' => 'Queue started']);
 notice('queueTask', 'started', ['tooltip' => '']);

@@ -378,7 +378,7 @@ CREATE TABLE `entity` (
   `spaceScheme` enum('none','date','datetime','date-time','date-timeId','date-dayQty','datetime-minuteQty','date-time-minuteQty','date-timeId-minuteQty','date-timespan') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `spaceFields` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `filesGroupBy` int NOT NULL DEFAULT '0',
-  `changeLogToggle` enum('none','all') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `changeLogToggle` enum('none','all') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `changeLogExcept` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `system` (`fraction`),
@@ -1746,13 +1746,14 @@ CREATE TABLE `notice` (
   FULLTEXT KEY `tplEvtSubj` (`tplEvtSubj`),
   FULLTEXT KEY `tplEvtBody` (`tplEvtBody`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `notice` */
 
 insert  into `notice`(`id`,`title`,`alias`,`fraction`,`entityId`,`event`,`roleId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`) values 
 (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}','failed','system',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','',''),
-(2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}','started','system',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','','');
+(2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}','started','system',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','',''),
+(3,'{\"en\":\"Queue resumed\",\"ru\":\"Очередь задач возобновлена\"}','resumed','system',314,'$this->affected(\"procID\", true)','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task resumed with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач возобновлена с PID: <?=$this->row->procID?>\"}','','','','');
 
 /*Table structure for table `noticeGetter` */
 
@@ -1783,13 +1784,14 @@ CREATE TABLE `noticeGetter` (
   KEY `mail` (`mail`),
   KEY `toggle` (`toggle`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `noticeGetter` */
 
 insert  into `noticeGetter`(`id`,`toggle`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`) values 
 (1,'y',1,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n'),
-(2,'y',2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n');
+(2,'y',2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n'),
+(3,'y',3,1,'event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','n','n','n','','n');
 
 /*Table structure for table `param` */
 
@@ -1959,7 +1961,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=4538 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4543 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
