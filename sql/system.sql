@@ -532,8 +532,6 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`,`boxIcon`,`boxColor
 (1044,2282,'{\"en\":\"Yes\",\"ru\":\"Да\"}','y',1044,'','120#00FF00','',''),
 (1045,2283,'{\"en\":\"No\",\"ru\":\"Нет\"}','n',1045,'','000#D3D3D3','',''),
 (1046,2283,'{\"en\":\"Yes\",\"ru\":\"Да\"}','y',1046,'','120#00FF00','',''),
-(1047,2285,'Нет','n',1047,'','000#D3D3D3','',''),
-(1048,2285,'Да','y',1048,'','120#00FF00','',''),
 (1049,2288,'{\"ru\":\"Январь\",\"en\":\"January\"}','01',1049,'','','',''),
 (1050,2288,'{\"ru\":\"Февраль\",\"en\":\"February\"}','02',1050,'','','',''),
 (1051,2288,'{\"ru\":\"Март\",\"en\":\"March\"}','03',1051,'','','',''),
@@ -722,7 +720,7 @@ CREATE TABLE `field` (
   KEY `entry` (`entry`),
   FULLTEXT KEY `tooltip` (`tooltip`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM AUTO_INCREMENT=2659 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2660 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `field` */
 
@@ -874,11 +872,10 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2278,310,0,'{\"ru\":\"Для увеличения\",\"en\":\"Separate - for increase\"}','criteriaInc','none',0,'','regular',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2279),
 (2279,310,0,'{\"ru\":\"Для уменьшения\",\"en\":\"Separate - for decrease\"}','criteriaDec','none',0,'','regular',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2280),
 (2280,310,0,'{\"ru\":\"Ауто титле\",\"en\":\"Auto title\"}','title','none',0,'','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2281),
-(2281,310,0,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','email','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2282),
-(2282,310,0,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','vk','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2283),
-(2283,310,0,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','sms','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2284),
-(2284,310,0,'{\"ru\":\"Критерий\",\"en\":\"Criterion\"}','criteria','none',0,'','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2285),
-(2285,310,0,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','mail','one',6,'','hidden',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','n',2316),
+(2281,310,0,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','email','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2283),
+(2282,310,0,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','vk','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2284),
+(2283,310,0,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','sms','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'n','y',2659),
+(2659,310,0,'{\"en\":\"HTTP hook\",\"ru\":\"HTTP-запрос\"}','http','none',0,'','regular',1,'',1,'','n',2282),
 (2286,311,0,'{\"ru\":\"Наименование\",\"en\":\"Name\"}','title','none',0,'','required',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2286),
 (2287,312,0,'{\"ru\":\"Год\",\"en\":\"Year\"}','yearId','one',311,'','required',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2287),
 (2288,312,0,'{\"ru\":\"Месяц\",\"en\":\"Month\"}','month','one',6,'','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'01','y',2288),
@@ -1234,7 +1231,7 @@ CREATE TABLE `grid` (
   FULLTEXT KEY `summaryText` (`summaryText`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `alterTitle` (`rename`)
-) ENGINE=MyISAM AUTO_INCREMENT=2839 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2840 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `grid` */
 
@@ -1307,9 +1304,9 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`further`,`gridId`,`toggle`,`move
 (2358,201,2250,0,2640,'y',2358,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','normal','','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"\",\"en\":\"\"}','1','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',13,39,'','n','',0,0),
 (2411,390,2275,0,0,'y',2412,'{\"ru\":\"Роль\",\"en\":\"Role\"}','normal','','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"\",\"en\":\"\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
 (2412,390,2277,0,0,'y',2413,'{\"ru\":\"Общий\",\"en\":\"Shared\"}','normal','','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"\",\"en\":\"\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
-(2413,390,2281,0,0,'y',2414,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','normal','','{\"ru\":\"Email\",\"en\":\"Email\"}','{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
-(2414,390,2282,0,0,'y',2415,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','normal','','{\"ru\":\"VK\",\"en\":\"VK\"}','{\"ru\":\"Дублирование во ВКонтакте\",\"en\":\"Duplication in VKontakte\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
-(2415,390,2283,0,0,'y',2462,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','normal','','{\"ru\":\"SMS\",\"en\":\"SMS\"}','{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
+(2413,390,2281,0,0,'y',2415,'{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication by email\"}','normal','','{\"ru\":\"Email\",\"en\":\"Email\"}','{\"ru\":\"Дублирование на почту\",\"en\":\"Duplication to mail\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
+(2414,390,2282,0,0,'y',2462,'{\"ru\":\"Дублирование в ВК\",\"en\":\"Duplication in VK\"}','normal','','{\"ru\":\"VK\",\"en\":\"VK\"}','{\"ru\":\"Дублирование во ВКонтакте\",\"en\":\"Duplication in VKontakte\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
+(2415,390,2283,0,0,'y',2839,'{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','normal','','{\"ru\":\"SMS\",\"en\":\"SMS\"}','{\"ru\":\"Дублирование по SMS\",\"en\":\"Duplication by SMS\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
 (2417,388,2306,0,0,'y',2417,'{\"ru\":\"Обязательное\",\"en\":\"Required\"}','normal','','{\"ru\":\"[ ! ]\",\"en\":\"[ ! ]\"}','{\"ru\":\"Обязательное\",\"en\":\"Required\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',0,0,'','n','',0,0),
 (2418,388,2307,0,0,'y',2418,'{\"ru\":\"Коннектор\",\"en\":\"Connector\"}','normal','','{\"ru\":\"\",\"en\":\"\"}','{\"ru\":\"\",\"en\":\"\"}','0','n',0,'none','{\"ru\":\"\",\"en\":\"\"}','all','',6,11,'','n','',0,0),
 (2791,11,2210,0,2784,'y',2791,'{\"en\":\"Cell editor\",\"ru\":\"Редактор\"}','normal','resources/images/icons/btn-icon-editor.png','','','0','n',0,'none','','all','',0,0,'','n','',0,0),
@@ -1541,7 +1538,8 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`further`,`gridId`,`toggle`,`move
 (2828,8,30,0,0,'y',2828,'{\"en\":\"Order\",\"ru\":\"Порядок\"}','normal','','','','0','n',0,'none','','all','',0,0,'','n','',0,0),
 (2833,12,2649,0,2831,'y',2833,'{\"en\":\"Box color\",\"ru\":\"Цвет бокса\"}','normal','resources/images/icons/box-color.png','','','1','y',0,'none','','all','',0,0,'','n','',0,0),
 (2834,12,2650,0,2831,'y',2834,'{\"en\":\"Text color\",\"ru\":\"Цвет текста\"}','normal','resources/images/icons/color-text.svg','','','1','y',0,'none','','all','',0,0,'','n','',0,0),
-(2835,12,377,0,0,'y',2835,'{\"en\":\"Order\",\"ru\":\"Порядок\"}','normal','','','','0','n',0,'none','','all','',0,0,'','n','',0,0);
+(2835,12,377,0,0,'y',2835,'{\"en\":\"Order\",\"ru\":\"Порядок\"}','normal','','','','0','n',0,'none','','all','',0,0,'','n','',0,0),
+(2839,390,2659,0,0,'y',2414,'{\"en\":\"HTTP hook\",\"ru\":\"HTTP-запрос\"}','normal','','','','1','n',0,'none','','all','',0,0,'','n','',0,0);
 
 /*Table structure for table `lang` */
 
@@ -1769,11 +1767,10 @@ CREATE TABLE `noticeGetter` (
   `criteriaInc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `criteriaDec` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `http` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `email` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `vk` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `sms` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
-  `criteria` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `mail` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
   KEY `noticeId` (`noticeId`),
   KEY `profileId` (`roleId`),
@@ -1781,17 +1778,16 @@ CREATE TABLE `noticeGetter` (
   KEY `email` (`email`),
   KEY `vk` (`vk`),
   KEY `sms` (`sms`),
-  KEY `mail` (`mail`),
   KEY `toggle` (`toggle`),
   FULLTEXT KEY `title` (`title`)
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `noticeGetter` */
 
-insert  into `noticeGetter`(`id`,`toggle`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`,`criteria`,`mail`) values 
-(1,'y',1,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n'),
-(2,'y',2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n','','n'),
-(3,'y',3,1,'event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','n','n','n','','n');
+insert  into `noticeGetter`(`id`,`toggle`,`noticeId`,`roleId`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`http`,`email`,`vk`,`sms`) values 
+(1,'y',1,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','/queueTask/run/id/{id}/gapikey/','n','n','n'),
+(2,'y',2,1,'event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','','n','n','n'),
+(3,'y',3,1,'event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','','n','n','n');
 
 /*Table structure for table `param` */
 
@@ -1961,7 +1957,7 @@ CREATE TABLE `realtime` (
   FULLTEXT KEY `scope` (`scope`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `entries` (`entries`)
-) ENGINE=MyISAM AUTO_INCREMENT=4543 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4549 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -2273,11 +2269,8 @@ insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`roleIds`,`fi
 (1601,394,1,'y','1','no','',1601,'{\"ru\":\"Список\",\"en\":\"List\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
 (1602,394,3,'y','1','no','',1602,'{\"ru\":\"Сохранить\",\"en\":\"Save\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
 (1603,387,43,'y','1','no','',1648,'{\"ru\":\"Вординги\",\"en\":\"Wordings\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
-(1609,396,2,'n','1','no','',1609,'{\"ru\":\"Детали\",\"en\":\"Details\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
 (1610,396,1,'y','1','no','',1610,'{\"ru\":\"Список\",\"en\":\"List\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
-(1611,396,3,'y','1','no','',1611,'{\"ru\":\"Сохранить\",\"en\":\"Save\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
 (1612,396,4,'y','1','no','',1612,'{\"ru\":\"Удалить\",\"en\":\"Delete\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
-(1613,396,44,'y','1','no','',1613,'{\"ru\":\"Перезапустить\",\"en\":\"Restart\"}','auto','y','{\"ru\":\"Перезагрузить websocket-сервер\",\"en\":\"Reload websocket server\"}','n'),
 (1614,10,36,'y','1','no','',1614,'{\"ru\":\"Экспорт\",\"en\":\"Export\"}','auto','y','{\"en\":\"Export as PHP-code\",\"ru\":\"Экспортировать как PHP-код\"}','n'),
 (1615,7,45,'y','1','no','',1615,'{\"ru\":\"Копировать\",\"en\":\"Copy\"}','auto','y','{\"ru\":\"\",\"en\":\"\"}','n'),
 (1617,14,20,'y','1','no','',1651,'{\"ru\":\"Авторизация\",\"en\":\"Authorization\"}','auto','y','{\"ru\":\"\",\"en\":\"Sign in on behalf of this user\"}','n'),
