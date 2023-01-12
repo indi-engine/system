@@ -253,7 +253,7 @@ class Grid_Row extends Indi_Db_Table_Row {
             SELECT `g`.`id`, `f`.`alias` 
             FROM `field` `f`, `grid` `g`
             WHERE 1 
-                AND `f`.`id` = IF(`g`.`further` != "0", `g`.`further`, `g`.`fieldId`)
+                AND `f`.`id` = IF(IFNULL(`g`.`further`, 0) != "0", `g`.`further`, `g`.`fieldId`)
                 AND :p  
             ORDER BY `g`.`move`
         ', $within = im($wfw, ' AND '))->pairs();

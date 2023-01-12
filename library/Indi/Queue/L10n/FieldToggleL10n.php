@@ -370,7 +370,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             'where' => $this->getFractionChunkWHERE($fraction, $fieldR->id)
         ])->save();
 
-        foreach (m('Consider')->all('"' . $fieldR->id . '" = IF(`foreign` = "0", `consider`, `foreign`)') as $considerR) {
+        foreach (m('Consider')->all('"' . $fieldR->id . '" = IF(IFNULL(`foreign`, 0) = "0", `consider`, `foreign`)') as $considerR) {
 
             // Skip foreign-key fields
             if ($considerR->foreign('fieldId')->storeRelationAbility != "none") continue;

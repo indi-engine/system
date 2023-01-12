@@ -54,7 +54,7 @@ class Lang_Row extends Indi_Db_Table_Row {
             WHERE 1
               AND `e`.`id` = `f`.`entityId`
               AND `f`.`l10n` = "y"
-              AND `f`.`relation` = "0"
+              AND IFNULL(`f`.`relation`, 0) = "0"
         ')->fetchAll();
 
         // If localized enumset-fields found, append new item in $fieldA
@@ -109,7 +109,7 @@ class Lang_Row extends Indi_Db_Table_Row {
             WHERE 1
               AND `e`.`id` = `f`.`entityId`
               AND `f`.`l10n` = "y"
-              AND `f`.`relation` = "0"
+              AND IFNULL(`f`.`relation`, 0) = "0"
         ')->fetchAll();
 
         // If localized enumset-fields found, append them in $fieldA
@@ -158,7 +158,7 @@ class Lang_Row extends Indi_Db_Table_Row {
             WHERE 1
               AND `e`.`id` = `f`.`entityId`
               AND `f`.`l10n` = "y"
-              AND `f`.`relation` = "0"
+              AND IFNULL(`f`.`relation`, 0) = "0"
         ')->fetchAll();
 
         // If localized enumset-fields found, append new item in $fieldA

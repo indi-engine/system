@@ -499,7 +499,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
 
                 // Collect dependencies
                 if ($_ = db()->query('
-                    SELECT IF(`foreign` = "0", `consider`, `foreign`) AS `consider` 
+                    SELECT IF(IFNULL(`foreign`, 0) = "0", `consider`, `foreign`) AS `consider` 
                     FROM `consider`
                     WHERE `fieldId` = "' . $item['fieldId'] . '"
                 ')->col()) $item['consider'] = $_;

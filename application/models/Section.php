@@ -42,7 +42,7 @@ class Section extends Indi_Db_Table {
         $tmpA = db()->query('
             SELECT `id`, `sectionId`, `title`, `alias`' . $_ . '
             FROM `section`
-            WHERE `sectionId` = "0" AND `toggle` = "y"
+            WHERE IFNULL(`sectionId`, 0) = "0" AND `toggle` = "y"
             ORDER BY `move`
         ')->fetchAll();
 

@@ -2281,7 +2281,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $level0ToggledOnSectionIdA = db()->query('
             SELECT `id`
             FROM `section`
-            WHERE `sectionId` = "0" AND `toggle` = "y"
+            WHERE IFNULL(`sectionId`, 0) = "0" AND `toggle` = "y"
         ')->col();
 
         // Get array of level 1 toggled 'On' sections ids.
@@ -2301,7 +2301,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $role2tableA = db()->query('
                 SELECT `e`.`table`, `p`.`id` AS `roleId`
                 FROM `entity` `e`, `role` `p`
-                WHERE `p`.`entityId` != "0"
+                WHERE IFNULL(`p`.`entityId`, 0) != "0"
                     AND `p`.`entityId` = `e`.`id`
                     AND `e`.`table` != "admin"
             ')->fetchAll();
@@ -2376,7 +2376,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                LEFT JOIN `section2action` `sa` ON (`sa`.`actionId` = `a`.`id` AND `sa`.`sectionId` = `s`.`id`)
             WHERE 1
                 AND `s`.`alias` = "' . $section . '"
-                AND `s`.`sectionId` != "0"
+                AND IFNULL(`s`.`sectionId`, 0) != "0"
         ')->fetch();
 
         // Set approriate error messages if:
@@ -2641,7 +2641,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If current model has a tree column, and it is not forced to be ignored - append special
         // clause to WHERE-clauses stack for summaries to be calculated only for top-level entries
         if (m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'])
-            $where['rootRowsOnly'] = '`' . m()->treeColumn() . '` = "0"';
+            $where['rootRowsOnly'] = 'IFNULL(`' . m()->treeColumn() . '`, 0) = "0"';
 
         // Append scope's WHERE clause to the stack
         if (strlen(t()->scope->WHERE)) $where[] = t()->scope->WHERE;
