@@ -105,6 +105,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
             if ($this->action->selectionRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
+            else $this->gridFields = m('Field')->createRowset();
 
             // Alter fields
             $originalDefaults = [];
