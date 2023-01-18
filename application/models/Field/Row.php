@@ -103,13 +103,6 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function onBeforeDelete() {
 
-        // Delete uploaded images or files as they were uploaded as values
-        // of this field if they were uploaded
-        $this->deleteFiles();
-
-        // Delete related enumset rows
-        db()->query('DELETE FROM `enumset` WHERE `fieldId` = "' . $this->id . '"');
-
         // If current field is used as a title-field for entity, it's relating too
         if ($this->id == $this->foreign('entityId')->titleFieldId) {
 
@@ -154,6 +147,12 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function onDelete() {
 
+        // Delete files that are values of this field, if uploaded
+        $this->deleteFiles();
+
+        // Delete related enumset rows
+        db()->query("DELETE FROM `enumset` WHERE `fieldId` = '{$this->_original['id']}'");
+
         // Delete db table associated column
         $this->deleteColumn();
 
@@ -178,25 +177,30 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function deleteFiles() {
 
-        // If current field has no column type, and field's control element is 'upload'
-		if (!$this->columnTypeId && m($this->_original['entityId'])
-            ->fields($this->_original['alias'])->foreign('elementId')->alias == 'upload') {
+        // If field has column in db table it means it's not an upload-field, so return
+        if ($this->columnTypeId) return;
 
-            // Get the table
-            $table = m($this->_original['entityId'])->table();
+        // Shortcuts
+        $entityId = $this->_affected['entityId'] ?? $this->_original['entityId'];
+        $alias    = $this->_affected['alias']    ?? $this->_original['alias'];
 
-            // Get the directory name
-            $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
+        // If it's not an upload-field - return
+		if ($this->foreign('elementId')->alias != 'upload') return;
 
-            // If directory does not exist - return
-            if (!is_dir($dir)) return;
+        // Get the table
+        $table = m($entityId)->table();
 
-            // Get the array of uploaded files and their copies (if some of them are images)
-            $fileA = glob($dir . '[0-9]*_' . $this->_original['alias'] . '[,.]*');
+        // Get the directory name
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $table . '/';
 
-            // Delete files
-            foreach ($fileA as $fileI) @unlink($fileI);
-		}
+        // If directory does not exist - return
+        if (!is_dir($dir)) return;
+
+        // Get the array of uploaded files and their copies (if some of them are images)
+        $fileA = glob($dir . '[0-9]*_' . $alias . '[,.]*');
+
+        // Delete files
+        foreach ($fileA as $fileI) @unlink($fileI);
 	}
 
     /**
@@ -246,7 +250,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // If field's control element was 'upload', but now it is not - set $deleteUploadedFiles to true
         $uploadElementId = element('upload')->id;
         if ($this->affected('elementId', true) == $uploadElementId)
-            $this->deleteFiles($this->_affected['alias'] ?: $this->alias);
+            $this->deleteFiles();
 
         // Detect if any of affected properties are within $affect array, and if no
         if (!array_intersect($affect, array_keys($this->_affected))) {
@@ -280,7 +284,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
             // If field's control element was and still is 'upload' - delete files
             if ($this->elementId == $uploadElementId && !$this->affected('elementId'))
-                $this->deleteFiles($this->_affected['alias'] ?: $this->alias);
+                $this->deleteFiles();
 
             // Reload the model, because field was deleted
             m($this->_affected['entityId'])->fields()->exclude($this->id);
@@ -1949,5 +1953,170 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             // Start queue in synchronous mode
             $queueTaskR->start();
         }
+    }
+
+    /**
+     * Check whether current field has an underlying db column
+     *
+     * @return bool
+     */
+    public function hasColumn() {
+
+        // If it's a cfgField - return false
+        if ($this->entry) return false;
+
+        // If field does not have columnTypeId - return false
+        if (!$this->columnTypeId) return false;
+
+        // Get model
+        $model = m($this->entityId);
+
+        // If no such field in the model anymore - return false
+        if (!$model->fields($this->alias)) return false;
+
+        // Get db table name
+        $table = $model->table();
+
+        // Check column exists
+        return !!db()->query("SHOW COLUMNS FROM `$table` LIKE '{$this->alias}'")->cell();
+    }
+
+    /**
+     * Get foreign key constraint name to be used on mysql-level
+     *
+     * @return string
+     */
+    protected function _ibfk() {
+        return m($this->entityId)->table() . '_ibfk_' . $this->alias;
+    }
+
+    /**
+     * Check if current field has foreign key constraint defined on mysql-level
+     *
+     * @return mixed
+     */
+    public function hasIbfk() {
+
+        // Get database name
+        $dn = ini()->db->name;
+
+        // Get constraint name
+        $cn = $this->_ibfk();
+
+        // Check constraint exists
+        return db()->query("
+          SELECT *
+          FROM `information_schema`.`REFERENTIAL_CONSTRAINTS`
+          WHERE `CONSTRAINT_SCHEMA` = '$dn' AND `CONSTRAINT_NAME` = '$cn'
+        ")->cell();
+    }
+
+    /**
+     * Add foreign key constraint if not defined on mysql-level
+     *
+     * @return bool
+     */
+    public function addIbfk() {
+
+        // If there is foreign key constraint already exists for this field - return true
+        if ($this->hasIbfk()) return true;
+
+        // If there is no underlying db column - return false
+        if (!$this->hasColumn()) return false;
+
+        // Get model, where current field is in
+        $model = m($this->entityId);
+
+        // Get table name
+        $table = $model->table();
+
+        // Get column name
+        $column = $this->alias;
+
+        // Get constraint name
+        $ibfk = $this->_ibfk();
+
+        // Get referenced table name
+        $referenced = $this->rel()->table();
+
+        // Make sure NULL is allowed and is a default value for that table column
+        db()->query("ALTER TABLE `$table` MODIFY `$column` INT DEFAULT NULL NULL");
+
+        // Convert 0-values to NULL if any
+        db()->query("UPDATE `$table` SET `$column` = NULL WHERE `$column` = '0'");
+
+        // Build query
+        $sql = "ALTER TABLE `$table` 
+          ADD CONSTRAINT `$ibfk` 
+          FOREIGN KEY (`$column`) REFERENCES `$referenced` (`id`) 
+          ON UPDATE CASCADE ON DELETE {$this->onDelete}";
+
+        // Run query
+        db()->query($sql);
+
+        // Update model's ibfk-info
+        $model->ibfk($column, $this->onDelete);
+
+        // Return
+        return true;
+    }
+
+    /**
+     * Drop foreign key constraint if defined on mysql-level
+     *
+     * @return bool
+     */
+    public function dropIbfk() {
+
+        // If there is no constraint foreign key exists for this field - return true
+        if (!$this->hasIbfk()) return true;
+
+        // If there is no underlying db column - return false
+        if (!$this->hasColumn()) return false;
+
+        // Get model, where current field is in
+        $model = m($this->entityId);
+
+        // Get table name
+        $table = $model->table();
+
+        // Get column name
+        $column = $this->alias;
+
+        // Get constraint name
+        $ibfk = $this->_ibfk();
+
+        // Make sure NULL is not allowed anymore and 0 is a default value for that table column
+        db()->query("ALTER TABLE `$table` MODIFY `$column` INT DEFAULT 0 NOT NULL");
+
+        // Convert NULL-values to 0 if any
+        db()->query("UPDATE `$table` SET `$column` = 0 WHERE ISNULL(`$column`)");
+
+        // Build query
+        $sql = "ALTER TABLE `$table` DROP FOREIGN KEY `$ibfk`";
+
+        // Run query
+        db()->query($sql);
+
+        // Update model's ibfk-info
+        $model->ibfk($column, null);
+
+        // Return
+        return true;
+    }
+
+    /**
+     * Build WHERE clause to be used for finding entries where $id is the value or is among the values of the current field
+     *
+     * @param $id
+     * @return string
+     */
+    public function usagesWHERE($id) {
+
+        // Prepare WHERE clase template
+        $where = $this->storeRelationAbility == 'many' ? "FIND_IN_SET('%s', `%s`)" : "'%s' = `%s`";
+
+        // Build WHERE clause to find usages
+        return sprintf($where, $id, $this->alias);
     }
 }

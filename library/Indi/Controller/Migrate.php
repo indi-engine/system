@@ -1,5 +1,11 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function innodbAction() {
+        foreach (m('entity')->all() as $entity) {
+            db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
+        }
+        die('ok');
+    }
     public function queueResumeAction() {
         notice('queueTask', 'resumed', [
             'title' => 'Очередь задач возобновлена',

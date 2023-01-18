@@ -2149,4 +2149,14 @@ class Indi_Db_Table
             return sprintf($ownerWHERE, $owner->id, $ownerField->alias);
         }
     }
+
+    /**
+     * Get/set values inside $this->_ibfk
+     */
+    public function ibfk() {
+        if (func_num_args() == 0) return $this->_ibfk;
+        else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)];
+        else if (func_get_arg(1) === null) unset($this->_ibfk[func_get_arg(0)]);
+        else return $this->_ibfk[func_get_arg(0)] = func_get_arg(1);
+    }
 }
