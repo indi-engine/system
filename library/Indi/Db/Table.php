@@ -59,6 +59,14 @@ class Indi_Db_Table
     protected $_filesGroupBy = 0;
 
     /**
+     * Store array of [foreignKeyField => ON DELETE RULE] pairs,
+     * that have foreign key constraints defined on mysql-level
+     *
+     * @var array
+     */
+    protected $_ibfk = [];
+
+    /**
      * Store array of fields, that current model consists from
      *
      * @var array
@@ -199,6 +207,9 @@ class Indi_Db_Table
 
         // Set fields
         $this->_fields = $config['fields'];
+
+        // Set array of [foreignKeyField => ON DELETE RULE] pairs
+        $this->_ibfk = $config['ibfk'];
 
         // Set notices
         if (isset($config['notices'])) $this->_notices = $config['notices'];
@@ -725,7 +736,7 @@ class Indi_Db_Table
         $tc = $this->_table . 'Id';
 
         // Construct sql query
-        $query = 'SELECT `id`, `' . $tc . '` FROM `' . $this->_table . '`';
+        $query = "SELECT `id`, IFNULL(`$tc`, 0) AS `$tc` FROM `{$this->_table}`";
 
         // If $where arg contains 'important' key - use it's value as WHERE clause to prevent
         // fetching whole tree. This can be useful when in case we need certain part of tree
@@ -1137,7 +1148,7 @@ class Indi_Db_Table
             // Prepare data for Indi_Db_Table_Row object construction
             $constructData = [
                 'table'    => $this->_table,
-                'original' => $data,
+                'original' => $this->ibfkNullTo0($data),
             ];
 
             // Release memory
@@ -1155,6 +1166,27 @@ class Indi_Db_Table
 
         // NULL return
         return null;
+    }
+
+    /**
+     * Covert nulls to 0 for columns having foreign key constraints defined at mysql-level.
+     * We do this due to that Indi Engine does not support nulls for foreign keys on both php- and js-level so far
+     *
+     * @param array $data
+     */
+    public function ibfkNullTo0($data) {
+
+        // Foreach prop having foreign key constraint
+        foreach ($this->_ibfk as $field => $DELETE_RULE)
+
+            // If it's value is null
+            if ($data[$field] === null)
+
+                // Convert to 0
+                $data[$field] = 0;
+
+        // Return
+        return $data;
     }
 
     /**
@@ -1440,7 +1472,21 @@ class Indi_Db_Table
                     $data[$fieldR->alias] = $fieldR->compiled('defaultValue');
 
                 // If $set flag is `true` - append value with related field alias to $set array
-                if ($set) $setA[] = db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+                if ($set) {
+
+                    // If mysql foreign key constraint is defined for this field and value is 0
+                    if (isset($this->_ibfk[$fieldR->alias]) && $data[$fieldR->alias] == 0) {
+
+                        // Set value to be NULL
+                        $setA []= db()->sql('`' . $fieldR->alias . '` = NULL');
+
+                    // Else
+                    } else {
+
+                        // Set value to be as is
+                        $setA []= db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+                    }
+                }
             }
         }
 
@@ -1490,7 +1536,18 @@ class Indi_Db_Table
             if (!array_key_exists($fieldR->alias, $data)) continue;
 
             // We append value with related field alias to $set array
-            $setA[] = db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+            // If mysql foreign key constraint is defined for this field and value is 0
+            if (isset($this->_ibfk[$fieldR->alias]) && $data[$fieldR->alias] == 0) {
+
+                // Set value to be NULL
+                $setA []= db()->sql('`' . $fieldR->alias . '` = NULL');
+
+            // Else
+            } else {
+
+                // Set value to be as is
+                $setA []= db()->sql('`' . $fieldR->alias . '` = :s', $data[$fieldR->alias]);
+            }
         }
 
         // Append comma-imploded items of $setA array to sql query

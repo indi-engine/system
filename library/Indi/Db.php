@@ -157,7 +157,7 @@ class Indi_Db {
                     self::$_instance->query('SET NAMES utf8');
                     self::$_instance->query('SET CHARACTER SET utf8');
 
-                    // Else if singleton instance was already created, but $arg agument is an entity id - setup $entityId variable
+                // Else if singleton instance was already created, but $arg agument is an entity id - setup $entityId variable
                 } else if (is_int($arg)) {
 
                     $entityId = $arg;
@@ -174,6 +174,14 @@ class Indi_Db {
                 self::$_preloadedA = [];
                 self::$_cfgValue   = ['default' => [], 'certain' => []];
             }
+
+            // Prepare ibfk data to be attached to model data
+            foreach (self::$_instance->query("
+                SELECT `c`.`TABLE_NAME`, SUBSTRING_INDEX(`c`.`CONSTRAINT_NAME`, 'ibfk_', -1) AS `field`, c.*
+                FROM `information_schema`.`REFERENTIAL_CONSTRAINTS` `c`
+                WHERE `CONSTRAINT_SCHEMA` = DATABASE()
+            ")->fetchAll(PDO::FETCH_GROUP) as $table => $fields)
+                $ibfk[$table] = array_column($fields, 'DELETE_RULE', 'field');
 
             // Get info about existing entities, or one certain entity, identified by id,
             // passed within value of 'model' key of $config argument
@@ -478,6 +486,7 @@ class Indi_Db {
                         'toggle' => $entityI['changeLogToggle'],
                         'except' => $entityI['changeLogExcept'],
                     ],
+                    'ibfk' => $ibfk[$entityI['table']] ?: [],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],

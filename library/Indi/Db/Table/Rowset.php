@@ -110,7 +110,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // Assing 'original' and 'table' properties
-                $rowConfig['original'] = $item; unset($item);
+                $rowConfig['original'] = $this->model()->ibfkNullTo0($item); unset($item);
                 $rowConfig['table'] = $this->_table;
 
                 // Use $rowConfig as an argument for row construction

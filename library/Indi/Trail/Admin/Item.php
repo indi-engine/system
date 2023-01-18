@@ -752,7 +752,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if (!m('grid')->fields('jumpSectionId')) return;
 
         // Collect jumps info
-        foreach ($this->grid->select(': !="0"', 'jumpSectionId') as $gridR)
+        foreach ($this->grid->select(': !== null', 'jumpSectionId')->select(': !="0"', 'jumpSectionId') as $gridR)
             $jumpA[$gridR->further ?: $gridR->fieldId]
                 = '/' . $gridR->foreign('jumpSectionId')->alias
                 . '/' . $gridR->foreign('jumpSectionActionId')->foreign('actionId')->alias
