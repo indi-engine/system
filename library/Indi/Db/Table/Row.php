@@ -1772,8 +1772,14 @@ class Indi_Db_Table_Row implements ArrayAccess
         // or row has dependent rowsets
         $this->deleteUsages();
 
+        // Temporarily disable foreign keys
+        db()->query('SET `foreign_key_checks` = 0');
+
         // Standard deletion
         $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
+
+        // Enable foreign keys back
+        db()->query('SET `foreign_key_checks` = 1');
 
         // Notify UI-users
         $this->realtime('delete');

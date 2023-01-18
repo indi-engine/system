@@ -111,7 +111,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         // Run the CREATE TABLE sql query
         db()->query("CREATE TABLE IF NOT EXISTS `{$this->table}` (
             `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY
-        ) DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB");
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB");
 
         // Append new model metadata into the Indi_Db's registry
         db((int) $this->id);

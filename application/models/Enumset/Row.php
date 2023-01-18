@@ -402,14 +402,25 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function onSave() {
 
-        // If no _system['move'] defined - return
-        if (!array_key_exists('move', $this->_system)) return;
+        // If _system['move'] is defined
+        if (array_key_exists('move', $this->_system)) {
 
-        // Get field, that current enumset should be moved after
-        $after = $this->_system['move']; unset($this->_system['move']);
+            // Get field, that current enumset should be moved after
+            $after = $this->_system['move']; unset($this->_system['move']);
 
-        // Position field for it to be after field, specified by $this->_system['move']
-        $this->position($after);
+            // Position field for it to be after field, specified by $this->_system['move']
+            $this->position($after);
+        }
+
+        // If alias was changed - reload the model
+        if ($this->affected('alias')) {
+
+            // Get field
+            $field = $this->foreign('fieldId');
+
+            // If it's not a cfgField - reload the model
+            if ($field->zero('entry')) m($field->entityId)->reload();
+        }
     }
 
     /**

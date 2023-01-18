@@ -1,9 +1,76 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function innodbAction() {
+        set_time_limit(0);
+
+        // Make all tables InnoDB
         foreach (m('entity')->all() as $entity) {
             db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
         }
+
+        // Add onDelete-field
+        field('field', 'onDelete', [
+            'title' => 'ON DELETE',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => '-',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '-',
+            'move' => 'filter',
+        ]);
+        enumset('field', 'onDelete', '-', ['title' => '', 'move' => '']);
+        enumset('field', 'onDelete', 'CASCADE', ['title' => 'CASCADE', 'move' => '-']);
+        enumset('field', 'onDelete', 'SET NULL', ['title' => 'SET NULL', 'move' => 'CASCADE']);
+        enumset('field', 'onDelete', 'RESTRICT', ['title' => 'RESTRICT', 'move' => 'RESTRICT']);
+        m('field')->reload();
+
+        // Add gridcols to fields sections
+        grid('fieldsAll', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
+        grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
+
+        // Setup CASCADE values for onDelete for all single-key non-config fields, pointing to neither enumset nor variable entity
+        db()->query('
+            UPDATE `field` 
+            SET `onDelete` = "CASCADE" 
+            WHERE 1
+              AND `storeRelationAbility` = "one" 
+              AND `relation` NOT IN (0, 6)
+              AND `entry` = "0"
+        ');
+
+        // Setup non-CASCADE values
+        field('alteredField', 'elementId', ['onDelete' => 'SET NULL']);
+        field('alteredField', 'jumpSectionId', ['onDelete' => 'SET NULL']);
+        field('alteredField', 'jumpSectionActionId', ['onDelete' => 'SET NULL']);
+        field('field', 'relation', ['onDelete' => 'RESTRICT']);
+        field('field', 'elementId', ['onDelete' => 'RESTRICT']);
+        field('field', 'columnTypeId', ['onDelete' => 'RESTRICT']);
+        field('section', 'parentSectionConnector', ['onDelete' => 'RESTRICT']);
+        field('section', 'defaultSortField', ['onDelete' => 'SET NULL']);
+        field('section', 'groupBy', ['onDelete' => 'SET NULL']);
+        field('section', 'tileField', ['onDelete' => 'SET NULL']);
+        field('section', 'tileThumb', ['onDelete' => 'SET NULL']);
+        field('section', 'colorField', ['onDelete' => 'SET NULL']);
+        field('section', 'colorFurther', ['onDelete' => 'SET NULL']);
+        field('role', 'entityId', ['onDelete' => 'RESTRICT']);
+        field('grid', 'jumpSectionId', ['onDelete' => 'SET NULL']);
+        field('grid', 'jumpSectionActionId', ['onDelete' => 'SET NULL']);
+        field('grid', 'colorField', ['onDelete' => 'SET NULL']);
+        field('entity', 'titleFieldId', ['onDelete' => 'SET NULL']);
+        field('entity', 'filesGroupBy', ['onDelete' => 'SET NULL']);
+
+        // Temporary change to 0 to allow ibfk to be added
+        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '0']);
+
+        // Add ibfk
+        foreach (m('field')->all("`onDelete` != '-'") as $field) {
+            d($field->foreign('entityId')->table . '.' . $field->alias);
+            $field->addIbfk();
+        }
+
+        // Change back to -1
+        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '-1']);
         die('ok');
     }
     public function queueResumeAction() {
