@@ -7638,4 +7638,22 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Return spoof ctor, containing only certain fields
         return $spoof;
     }
+
+    /**
+     * 'aoc' - means 'affected or current'
+     *
+     * If $prop was affected by the last inserrt/update - get affected (e.g. previous) value , else get current value
+     * If $aoc arg is given as false - current value is returned in any case
+     *
+     * @param $prop
+     * @param bool $aoc
+     * @return mixed
+     */
+    public function aoc($prop, $aoc = true) {
+        return $aoc
+            ? ($this->affected($prop)
+                ? $this->affected($prop, true)
+                : $this->$prop)
+            : $this->$prop;
+    }
 }

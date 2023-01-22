@@ -129,7 +129,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $columnTypeR = $this->foreign('columnTypeId');
 
         // If column type is SET or ENUM
-        if (in($columnTypeR->type, 'ENUM,SET')) $this->relation = 6;
+        if (in($columnTypeR->type, 'ENUM,SET')) $this->relation = m('enumset')->id();
 
         // Setup `defaultValue` for current field, but only if it's type is not
         // BLOB or TEXT, as these types do not support default value definition
@@ -152,6 +152,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Delete related enumset rows
         db()->query("DELETE FROM `enumset` WHERE `fieldId` = '{$this->_original['id']}'");
+
+        // Drop foreign key constraint
+        $this->dropIbfk();
 
         // Delete db table associated column
         $this->deleteColumn();
@@ -325,10 +328,6 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             // we should delete rows, related to current field, from `enumset` table
             $this->_clearEnumset($columnTypeR);
 
-            // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
-            // void values of all properties, that are certainly not used now, as field does not store foreign keys anymore
-            //$this->_resetRelation($columnTypeR);
-
             // If store relation ability changed to  'many'
             // And if field had it's own column within database table, and still has
             // And if all these changes are performed within the same entity
@@ -462,10 +461,6 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // we should delete rows, related to current field, from `enumset` table
         $this->_clearEnumset($columnTypeR);
 
-        // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
-        // void values of all properties, that are certainly not used now, as field does not store foreign keys no more
-        //$this->_resetRelation($columnTypeR);
-
         // If store relation ability changed to  'many'
         // And if field had it's own column within database table, and still has
         // And if all these changes are performed within the same entity
@@ -492,15 +487,24 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     *
+     * Do schema changes, if need
      */
     public function onSave() {
+
+        // Flag indicating whether at least one of props that ibfk constraint rely on - is affected
+        $_ibfkRelyOnAffected = $this->affected('entityId,entry,alias,storeRelationAbility,relation,onDelete,columnTypeId');
+
+        // If it's an existing column - drop old ibfk constraint, if need
+        if (!$this->wasNew() && $_ibfkRelyOnAffected) $this->dropIbfk();
 
         // Do schema changes and files maintenance, if need
         $this->_schema();
 
         // Handle positioning if _system['move'] is set
         $this->_move();
+
+        // If this is a newly created field, or exsiting but some ibfk-props are affected - (re)add ibfk, if need
+        if ($this->wasNew() || $_ibfkRelyOnAffected) $this->addIbfk();
     }
 
     /**
@@ -597,7 +601,12 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @throws Exception
      */
     private function _resetRelation($columnTypeR) {
-        if ($this->_modified['storeRelationAbility'] == 'none') {
+
+        // If storeRelationAbility-prop was not modified - return
+        if (!$storeRelationAbility = $this->_modified['storeRelationAbility']) return;
+
+        // If it was modified to 'none'
+        if ($storeRelationAbility == 'none') {
 
             // Get element alias
             $element = $this->foreign('elementId')->alias;
@@ -619,6 +628,15 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
             // Setup `filter` as an empty string
             $this->filter = '';
+
+            // Setup 'not-applicable' value for onDelete-prop
+            $this->onDelete = '-';
+
+        // Else if it was modified to some other value, which means it's single- or multi-value foreign key
+        } else {
+
+            // Set 'CASCADE' value for onDelete-prop
+            $this->onDelete = 'CASCADE';
         }
     }
 
@@ -1984,78 +2002,114 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Get foreign key constraint name to be used on mysql-level
      *
+     * @aoc bool If given as true - affected (e.g. previous) values are used where possible
+     *           to build the name of foreign key constraint
      * @return string
      */
-    protected function _ibfk() {
-        return m($this->entityId)->table() . '_ibfk_' . $this->alias;
+    protected function _ibfk($aoc = false) {
+
+        // Get entityId
+        $entityId = $this->aoc('entityId', $aoc);
+
+        // Get foreign key column name
+        $fkColumn = $this->aoc('alias', $aoc);
+
+        // Build and return foreign key constraint name
+        return m($entityId)->table() . '_ibfk_' . $fkColumn;
     }
 
     /**
-     * Check if current field has foreign key constraint defined on mysql-level
+     * Check whether foreign key constraint exists having given params
      *
-     * @return mixed
+     * @aoc bool If given as true - affected (e.g. previous) values are used where possible
+     *           to build the name of foreign key constraint to be checked for existence
+     * @return bool
      */
-    public function hasIbfk() {
+    public function hasIbfk($aoc = false) {
 
-        // Get database name
-        $dn = ini()->db->name;
+        // Build constraint name
+        $ibfkName = $this->_ibfk($aoc);
 
-        // Get constraint name
-        $cn = $this->_ibfk();
+        // Get delete rule
+        $deleteRule = $this->aoc('onDelete', $aoc);
 
-        // Check constraint exists
+        // Get ref entityId
+        $relation = $this->aoc('relation', $aoc);
+
+        // Get ref table name
+        $refTable = m($relation)->table();
+
+        // Get constraint name, if exists
+        // Here we can't append " AND `DELETE_RULE` = '$deleteRule'"
+        // as otherwise it causes 'Call to a member function cell() on int' error
+        // because query() returns 0 for some unknown reason
         return db()->query("
           SELECT *
           FROM `information_schema`.`REFERENTIAL_CONSTRAINTS`
-          WHERE `CONSTRAINT_SCHEMA` = '$dn' AND `CONSTRAINT_NAME` = '$cn'
-        ")->cell();
+          WHERE 1
+            AND `CONSTRAINT_SCHEMA` = DATABASE() 
+            AND `CONSTRAINT_NAME` = '$ibfkName' 
+            AND `REFERENCED_TABLE_NAME` = '$refTable'
+        ")->cell(8) == $deleteRule;
     }
 
     /**
-     * Add foreign key constraint if not defined on mysql-level
+     * Add foreign key constraint if need but not defined on mysql-level so far
      *
      * @return bool
      */
     public function addIbfk() {
 
-        // If there is foreign key constraint already exists for this field - return true
-        if ($this->hasIbfk()) return true;
+        // If it's not a foreign-key field, or is, but multi-value foreign-key field - return false
+        if ($this->storeRelationAbility != 'one') return false;
 
-        // If there is no underlying db column - return false
-        if (!$this->hasColumn()) return false;
+        // If it's a cfgField - return false
+        if ($this->entry) return false;
 
-        // Get model, where current field is in
+        // If it's a variable- or enumset-entity foreign key field - return false
+        if ($this->zero('relation') || $this->rel()->table() == 'enumset') return false;
+
+        // If field has zero columnTypeId, or non INT(11) - return false
+        if ($this->zero('columnTypeId') || coltype('INT(11)')->id != $this->columnTypeId) return false;
+
+        // Get model
         $model = m($this->entityId);
 
-        // Get table name
+        // Get table
         $table = $model->table();
 
-        // Get column name
-        $column = $this->alias;
+        // Get foreign key column name
+        $fkColumn = $this->alias;
 
         // Get constraint name
-        $ibfk = $this->_ibfk();
+        $ibfkName = $this->_ibfk();
 
-        // Get referenced table name
-        $referenced = $this->rel()->table();
+        // Get delete rule
+        $deleteRule = $this->onDelete;
+
+        // Get referenced table
+        $refTable = $this->rel()->table();
+
+        // If desired foreign key constraint already exists - return it's name
+        if ($this->hasIbfk()) return $ibfkName;
 
         // Make sure NULL is allowed and is a default value for that table column
-        db()->query("ALTER TABLE `$table` MODIFY `$column` INT DEFAULT NULL NULL");
+        db()->query("ALTER TABLE `$table` MODIFY `$fkColumn` INT DEFAULT NULL NULL");
 
         // Convert 0-values to NULL if any
-        db()->query("UPDATE `$table` SET `$column` = NULL WHERE `$column` = '0'");
+        db()->query("UPDATE `$table` SET `$fkColumn` = NULL WHERE `$fkColumn` = '0'");
 
         // Build query
         $sql = "ALTER TABLE `$table` 
-          ADD CONSTRAINT `$ibfk` 
-          FOREIGN KEY (`$column`) REFERENCES `$referenced` (`id`) 
-          ON UPDATE CASCADE ON DELETE {$this->onDelete}";
+          ADD CONSTRAINT `$ibfkName` 
+          FOREIGN KEY (`$fkColumn`) REFERENCES `$refTable` (`id`) 
+          ON UPDATE CASCADE ON DELETE $deleteRule";
 
         // Run query
         db()->query($sql);
 
         // Update model's ibfk-info
-        $model->ibfk($column, $this->onDelete);
+        $model->ibfk($fkColumn, $deleteRule);
 
         // Return
         return true;
@@ -2068,38 +2122,50 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function dropIbfk() {
 
-        // If there is no constraint foreign key exists for this field - return true
-        if (!$this->hasIbfk()) return true;
+        // If it was/is not a foreign-key field, or is, but multi-value foreign-key field - return false
+        if ($this->aoc('storeRelationAbility') != 'one') return false;
 
-        // If there is no underlying db column - return false
-        if (!$this->hasColumn()) return false;
+        // If it was/is a cfgField- return false
+        if ($this->aoc('entry')) return false;
 
-        // Get model, where current field is in
-        $model = m($this->entityId);
+        // If it was/is a variable- or enumset-entity foreign key field - return false
+        if (!$this->aoc('relation') || m($this->aoc('relation'))->table() == 'enumset') return false;
 
-        // Get table name
+        // If field had/has zero columnTypeId, or non INT(11) - return false
+        if (!$this->aoc('columnTypeId') || coltype('INT(11)')->id != $this->aoc('columnTypeId')) return false;
+
+        // Get model
+        $model = m($this->aoc('entityId'));
+
+        // Get table
         $table = $model->table();
 
-        // Get column name
-        $column = $this->alias;
+        // Get foreign key column name
+        $fkColumn = $this->aoc('alias');
 
         // Get constraint name
-        $ibfk = $this->_ibfk();
+        $ibfkName = $this->_ibfk(true);
 
-        // Make sure NULL is not allowed anymore and 0 is a default value for that table column
-        db()->query("ALTER TABLE `$table` MODIFY `$column` INT DEFAULT 0 NOT NULL");
+        // Get delete rule
+        $deleteRule = $this->aoc('onDelete');
 
-        // Convert NULL-values to 0 if any
-        db()->query("UPDATE `$table` SET `$column` = 0 WHERE ISNULL(`$column`)");
+        // Get referenced table
+        $refTable = m($this->aoc('relation'))->table();
 
-        // Build query
-        $sql = "ALTER TABLE `$table` DROP FOREIGN KEY `$ibfk`";
+        // If foreign key constraint does not already exist - return true
+        if (!$this->hasIbfk(true)) return true;
 
         // Run query
-        db()->query($sql);
+        db()->query("ALTER TABLE `$table` DROP FOREIGN KEY `$ibfkName`");
+
+        // Convert NULL-values to 0 if any
+        db()->query("UPDATE `$table` SET `$fkColumn` = 0 WHERE ISNULL(`$fkColumn`)");
+
+        // Make sure NULL is not allowed anymore and 0 is a default value for that table column
+        db()->query("ALTER TABLE `$table` MODIFY `$fkColumn` INT DEFAULT 0 NOT NULL");
 
         // Update model's ibfk-info
-        $model->ibfk($column, null);
+        $model->ibfk($fkColumn, null);
 
         // Return
         return true;
