@@ -151,7 +151,7 @@ class Lang_Row extends Indi_Db_Table_Row {
         // If `lang` entry is turned Off - do no translations for now
         if ($this->toggle == 'n') return;
 
-        // Get info about what entities have what localized fields
+        // Get info about which entities have which fields localized
         $fieldA = db()->query('
             SELECT `e`.`table`, `f`.`alias` AS `field`, "1" AS `where`
             FROM `entity` `e`, `field` `f`
@@ -189,18 +189,5 @@ class Lang_Row extends Indi_Db_Table_Row {
             // Update
             db()->query('UPDATE `:p` SET `:p` = :s WHERE `id` = :i', $info['table'], $info['field'], $json, $id);
         }
-    }
-
-    /**
-     * Prevent the last remaining (or currently used) `lang` entry from being deleted
-     */
-    public function onBeforeDelete() {
-
-        // If current entry is the last remaining `lang` entry - flush error
-        if (db()->query('SELECT COUNT(*) FROM `lang`')->cell() == 1)
-            jflush(false, sprintf(I_LANG_LAST, m('Lang')->title()));
-
-        // If current entry is a translation, that is currently used - flush error
-        if ($this->alias == ini('lang')->admin) jflush(false, I_LANG_CURR);
     }
 }

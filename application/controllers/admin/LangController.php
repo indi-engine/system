@@ -501,4 +501,22 @@ class Admin_LangController extends Indi_Controller_Admin {
         // Return prompt data
         return $prompt + ['_fraction' => array_column($fractionA, 'title', 'alias')];
     }
+
+    /**
+     * Prevent deletion of last language or current language
+     *
+     * @return array|void
+     */
+    public function deleteAction() {
+
+        // If current entry is the last remaining `lang` entry - flush error
+        if (db()->query('SELECT COUNT(*) FROM `lang`')->cell() == 1)
+            jflush(false, sprintf(I_LANG_LAST, m('Lang')->title()));
+
+        // If current entry is a translation, that is currently used - flush error
+        if (t()->row->alias == ini('lang')->admin) jflush(false, I_LANG_CURR);
+
+        // Call parent
+        parent::deleteAction();
+    }
 }

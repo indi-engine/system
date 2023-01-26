@@ -97,30 +97,6 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Do preliminary things before field deletion
-     *
-     * @throws Exception
-     */
-    public function onBeforeDelete() {
-
-        // If current field is used as a title-field for entity, it's relating too
-        if ($this->id == $this->foreign('entityId')->titleFieldId) {
-
-            // Set titleFieldId to 0 and save the entity, to prevent full
-            // entity deletion in the process of usages deletion
-            $this->foreign('entityId')->titleFieldId = 0;
-            $this->foreign('entityId')->save();
-        }
-
-        // Prevent deletion of `section` entries, having current `field` entry's id  as the value of one of below fields
-        $propA = ar('defaultSortField,parentSectionConnector,groupBy,tileField,colorField,colorFurther');
-        foreach (m('section')->all('"' . $this->id . '" IN (`' . join('`,`', $propA) . '`)') as $sectionR) {
-            foreach ($propA as $prop) if ($sectionR->$prop == $this->id) $sectionR->zero($prop, true);
-            $sectionR->save();
-        }
-    }
-
-    /**
      * @throws Exception
      */
     public function onBeforeSave() {

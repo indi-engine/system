@@ -4,13 +4,10 @@ class Resize_Row extends Indi_Db_Table_Row {
     /**
      * Delete all of resized copies and clear usages from `section`.`tileThumb`
      */
-    public function onBeforeDelete() {
+    public function onDelete() {
 
 		// Delete copies of images, that have copy-name equal to $this->alias
 		$this->deleteCopies();
-
-		// Prevent deletion of `section` entries having current `resize` entry's id specified as the value of `tileThumb`-prop
-		m('section')->all('`tileThumb` = "' . $this->id .  '"')->set('tileThumb', 0)->save();
 	}
 
     /**
