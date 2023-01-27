@@ -67,6 +67,27 @@ class Indi_Db_Table
     protected $_ibfk = [];
 
     /**
+     * Foreign keys pointing from any entities to this entity, grouped by their onDelete-rule
+     *
+     * Example: let's assume this entity is a `country`
+     *
+     * Array (
+     *   [CASCADE] => Array (
+             [123] => Array (
+     *           [table] => 'city'
+     *           [column] => 'countryId'
+     *           [multi] => false
+     *       )
+     *   ),
+     *   [SET NULL] => ...
+     *   [RESTRICT] => ...
+     *
+     *  In the example above 123 is the id of the `field`-entry for `city`.`coutnryId`
+     * @var array
+     */
+    protected $_refs = [];
+
+    /**
      * Store array of fields, that current model consists from
      *
      * @var array
@@ -210,6 +231,9 @@ class Indi_Db_Table
 
         // Set array of [foreignKeyField => ON DELETE RULE] pairs
         $this->_ibfk = $config['ibfk'];
+
+        // Set array references
+        $this->_refs = $config['refs'];
 
         // Set notices
         if (isset($config['notices'])) $this->_notices = $config['notices'];
@@ -2158,5 +2182,152 @@ class Indi_Db_Table
         else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)];
         else if (func_get_arg(1) === null) unset($this->_ibfk[func_get_arg(0)]);
         else return $this->_ibfk[func_get_arg(0)] = func_get_arg(1);
+    }
+
+    /**
+     * Check whether there is at least 1 mention of any of $values in $column
+     *
+     * @param string $column
+     * @param int|string|array $values
+     * @return bool
+     */
+    public function hasUsages($column, $values) {
+
+        // If no such field found - return false
+        if (!$field = $this->fields($column)) return false;
+
+        // If there is no underlying db table column anymore - return false
+        if (!$field->hasColumn()) return false;
+
+        // Prepare WHERE clause for finding usages
+        $usagesWHERE = $field->usagesWHERE($values);
+
+        // Return true if there is at least 1 mention found
+        return !!db()->query("SELECT `id` FROM `{$this->_table}` WHERE $usagesWHERE LIMIT 1")->cell();
+    }
+
+    /**
+     * Get ids-array of all entries where any of $values are mentioned in $column
+     *
+     * @param string $column
+     * @param int|string|array $values
+     * @return array
+     */
+    public function getUsages($column, $values) {
+
+        // If no such field found - return false
+        if (!$field = $this->fields($column)) return false;
+
+        // If there is no underlying db table column anymore - return false
+        if (!$field->hasColumn()) return false;
+
+        // Prepare WHERE clause for finding usages
+        $usagesWHERE = $field->usagesWHERE($values);
+
+        // Return array of ids of records where any of $values mentioned in $column
+        return db()->query("SELECT `id` FROM `{$this->_table}` WHERE $usagesWHERE")->col();
+    }
+
+    /**
+     * Check whether deletion of rows identified by $rowIds - is restricted due to
+     * onDelete=RESTRICT rule defined on direct or indirect references
+     *
+     * @param array|int|string $rowIds
+     * @return bool
+     * @throws Exception
+     */
+    public function isDeletionRESTRICTed($rowIds) {
+
+        // If there are reference-fields having onDelete=RESTRICT
+        if ($this->_refs['RESTRICT']) {
+
+            // Foreach of that kind of reference-fields
+            foreach ($this->_refs['RESTRICT'] as $ref) {
+
+                // If there is at least 1 usage found by that reference
+                if (m($ref['table'])->hasUsages($ref['column'], $rowIds)) {
+
+                    // Return true
+                    return true;
+                }
+            }
+        }
+
+        // If we reached this line, it means there are either no references configured
+        // as restricted to delete, or there are, but no entries exist so far in referenced tables
+        // But, we need to go deeper and check indirect references having onDelete=RESTRICT as we might
+        // have those indirectly, e.g behind direct ones having onDelete=CASCADE
+        if ($this->_refs['CASCADE']) {
+
+            // Foreach of that kind of reference-fields
+            foreach ($this->_refs['CASCADE'] as &$ref) {
+
+                // If there are usages found by that reference
+                if ($ref['ids'] = m($ref['table'])->getUsages($ref['column'], $rowIds)) {
+
+                    // If any of those usages have their own direct or deeper usages that are restricted to delete
+                    if (m($ref['table'])->isDeletionRESTRICTed($ref['ids'])) {
+
+                        // Unset ids
+                        unset($ref['ids']);
+
+                        // Return true
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // If we reached this line, it means there are no usages restricted to delete
+        return false;
+    }
+
+    /**
+     * This method is expected to be called after $this->isDeletionRESTRICTed(), and this
+     * means execution should be at the step where we are sure that deletion is NOT restricted
+     * and for each ref having CASCADE as onDelete-rule we do already have ids fetched, so we rely on that
+     *
+     * @param $rowIds
+     */
+    public function doDeletionCASCADEandSETNULL($rowIds) {
+
+        // Foreach ref group
+        foreach ($this->_refs as $rule => $refs) if (in($rule, ['CASCADE','SET NULL'])) {
+
+            // Foreach ref
+            foreach ($refs as $ref) {
+
+                // Get ref model
+                $model = m($ref['table']);
+
+                // If $rule is 'CASCADE'
+                if ($rule == 'CASCADE') {
+
+                    // If there are usages ids found by that ref
+                    if ($ids = im($ref['ids'])) {
+
+                        // Fetch usages by those ids by 500 entries per once
+                        $model->batch(fn($child) => $child->delete(), "`id` IN ($ids)");
+                    }
+
+                // Else if $rule is 'SET NULL'
+                } else {
+
+                    // Fetch usages by 500 entries per once
+                    $model->batch(function($child) use ($ref) {
+
+                        // Remove usage from child entry
+                        $ref['multi']
+                            ? $child->drop($ref['column'], $this->id)
+                            : $child->set($ref['column'], 0);
+
+                        // Save child entry
+                        $child->save();
+
+                    // Invoke WHERE clause for finding usages
+                    }, $model->fields($ref['column'])->usagesWHERE($this->id));
+                }
+            }
+        }
     }
 }

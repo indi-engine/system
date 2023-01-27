@@ -48,4 +48,13 @@ class Indi_Db_PDOStatement extends PDOStatement {
     public function all($style = null) {
         return $this->fetchAll($style);
     }
+
+    /**
+     * Shortcut to fetchAll(PDO::FETCH_GROUP)
+     *
+     * @return array
+     */
+    public function groups() {
+        return $this->fetchAll(PDO::FETCH_GROUP);
+    }
 }

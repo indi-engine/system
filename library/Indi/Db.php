@@ -247,6 +247,14 @@ class Indi_Db {
                 // Collect localized fields
                 if ($fieldI['storeRelationAbility'] == 'none' && in($fieldI['l10n'], 'y,qn'))
                     self::$_l10nA[$_[$fieldI['entityId']]][$fieldI['id']] = $fieldI['alias'];
+
+                // Collect reference fields
+                if ($fieldI['relation'] && $_[$fieldI['relation']] != 'enumset' && !$fieldI['entry'] && $fieldI['onDelete'] != '-')
+                    $refs[ $_[$fieldI['relation']] ][ $fieldI['onDelete'] ][ $fieldI['id'] ] = [
+                        'table' => $_[$fieldI['entityId']],
+                        'column' => $fieldI['alias'],
+                        'multi' => $fieldI['storeRelationAbility'] == 'many'
+                    ];
             }
 
             // Unset tmp variable
@@ -487,6 +495,7 @@ class Indi_Db {
                         'except' => $entityI['changeLogExcept'],
                     ],
                     'ibfk' => $ibfk[$entityI['table']] ?: [],
+                    'refs' => $refs[$entityI['table']] ?: [],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],

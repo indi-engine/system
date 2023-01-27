@@ -2150,15 +2150,35 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Build WHERE clause to be used for finding entries where $id is the value or is among the values of the current field
      *
-     * @param $id
+     * @param $ids
      * @return string
      */
-    public function usagesWHERE($id) {
+    public function usagesWHERE($ids) {
 
-        // Prepare WHERE clase template
-        $where = $this->storeRelationAbility == 'many' ? "FIND_IN_SET('%s', `%s`)" : "'%s' = `%s`";
+        // If $ids is array
+        if (is_array($ids)) {
 
-        // Build WHERE clause to find usages
-        return sprintf($where, $id, $this->alias);
+            // Prepare WHERE clause template
+            $where = $this->storeRelationAbility == 'many'
+                ? "CONCAT(',', `%s`, ',') REGEXP ',(%s),'"
+                : "`%s` IN (%s)";
+
+            // Concat ids by '|' or ',' depending on whether it's a multi- or single-value foreign key field
+            $ids = im($ids, $this->storeRelationAbility == 'many' ? '|' : ',');
+
+            // Build WHERE clause to find usages
+            return sprintf($where, $this->alias, $ids);
+
+        // Else
+        } else {
+
+            // Prepare WHERE clause template
+            $where = $this->storeRelationAbility == 'many'
+                ? "FIND_IN_SET('%s', `%s`)"
+                : "'%s' = `%s`";
+
+            // Build WHERE clause to find usages
+            return sprintf($where, $ids, $this->alias);
+        }
     }
 }
