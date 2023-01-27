@@ -2213,7 +2213,7 @@ class Indi_Db_Table
      * @param int|string|array $values
      * @return array
      */
-    public function getUsages($column, $values) {
+    public function getUsages($column, $values, $format = 'col') {
 
         // If no such field found - return false
         if (!$field = $this->fields($column)) return false;
@@ -2224,8 +2224,11 @@ class Indi_Db_Table
         // Prepare WHERE clause for finding usages
         $usagesWHERE = $field->usagesWHERE($values);
 
+        // Prepare expr to be added to SELECT clause to fetch key => value pairs, if need
+        $flag = rif($format == 'pairs', ', 1');
+
         // Return array of ids of records where any of $values mentioned in $column
-        return db()->query("SELECT `id` FROM `{$this->_table}` WHERE $usagesWHERE")->col();
+        return db()->query("SELECT `id` $flag FROM `{$this->_table}` WHERE $usagesWHERE")->$format();
     }
 
     /**
@@ -2263,16 +2266,22 @@ class Indi_Db_Table
             foreach ($this->_refs['CASCADE'] as &$ref) {
 
                 // If there are usages found by that reference
-                if ($ref['ids'] = m($ref['table'])->getUsages($ref['column'], $rowIds)) {
+                if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs')) {
 
                     // If any of those usages have their own direct or deeper usages that are restricted to delete
-                    if (m($ref['table'])->isDeletionRESTRICTed($ref['ids'])) {
-
-                        // Unset ids
-                        unset($ref['ids']);
+                    if (m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
 
                         // Return true
                         return true;
+
+                    // Else
+                    } else {
+
+                        // Declare ids to be array, if not declared so far
+                        $ref['ids'] = $ref['ids'] ?? [];
+
+                        // Append $refIds to the list
+                        $ref['ids'] += $refIds;
                     }
                 }
             }
@@ -2292,10 +2301,10 @@ class Indi_Db_Table
     public function doDeletionCASCADEandSETNULL($rowIds) {
 
         // Foreach ref group
-        foreach ($this->_refs as $rule => $refs) if (in($rule, ['CASCADE','SET NULL'])) {
+        foreach ($this->_refs as $rule => &$refs) if (in($rule, ['CASCADE', 'SET NULL'])) {
 
             // Foreach ref
-            foreach ($refs as $ref) {
+            foreach ($refs as $fieldId => &$ref) {
 
                 // Get ref model
                 $model = m($ref['table']);
@@ -2303,31 +2312,58 @@ class Indi_Db_Table
                 // If $rule is 'CASCADE'
                 if ($rule == 'CASCADE') {
 
+                    // If we have previously set skip-flag for this ref-field, it means
+                    // we should not go deeper for deletion of same-table child-entries here,
+                    // because we have already collected $ids of all-levels child-entries to be deleted
+                    // and such a deletion will be done at most upper possible level of nesting
+                    if ($ref['skip']) continue;
+
                     // If there are usages ids found by that ref
-                    if ($ids = im($ref['ids'])) {
+                    if ($ids = im(array_keys($ref['ids'] ?? []))) {
+
+                        // If it's a tree-like entity, setup a skip-flag, which we'll use to prevent endless sequence of calls:
+                        // 1. Indi_Db_Table_Row->delete()
+                        // 2. Indi_Db_Table_Row->doDeletionCASCADEandSETNULL()
+                        // 3. Indi_Db_Table->doDeletionCASCADEandSETNULL()
+                        // 4. Indi_Db_Table->batch()
+                        // 5. Indi_Db_Table->{closure}()
+                        // 1. Indi_Db_Table_Row->delete()
+                        if ($ref['table'] == $this->_table) $ref['skip'] = true;
 
                         // Fetch usages by those ids by 500 entries per once
-                        $model->batch(fn($child) => $child->delete(), "`id` IN ($ids)");
+                        $model->batch(fn($child) => $child->system('skipDeletionRESTRICTedCheck', true)->delete(), "`id` IN ($ids)");
                     }
+
+                    // Unset ids and skip from ref
+                    unset($ref['ids'], $ref['skip']);
 
                 // Else if $rule is 'SET NULL'
                 } else {
 
                     // Fetch usages by 500 entries per once
-                    $model->batch(function($child) use ($ref) {
+                    $model->batch(function($child) use ($ref, $rowIds) {
 
                         // Remove usage from child entry
                         $ref['multi']
-                            ? $child->drop($ref['column'], $this->id)
+                            ? $child->drop($ref['column'], $rowIds)
                             : $child->set($ref['column'], 0);
 
                         // Save child entry
                         $child->save();
 
                     // Invoke WHERE clause for finding usages
-                    }, $model->fields($ref['column'])->usagesWHERE($this->id));
+                    }, $model->fields($ref['column'])->usagesWHERE($rowIds));
                 }
             }
         }
+    }
+
+    /**
+     * Get ref-fields, grouped by their onDelete-rule
+     *
+     * @return array|mixed
+     */
+    public function refs() {
+        return $this->_refs;
     }
 }

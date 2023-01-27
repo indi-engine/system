@@ -1754,32 +1754,52 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
+     * Check whether deletion of this entry is restricted due to
+     * onDelete=RESTRICT rule defined on direct or indirect references
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function isDeletionRESTRICTed() {
+        return $this->model()->isDeletionRESTRICTed($this->id);
+    }
+
+    /**
+     * This method is expected to be called after $this->isDeletionRESTRICTed(), and this
+     * means execution should be at the step where we are sure that deletion is NOT restricted
+     * and for each ref having CASCADE as onDelete-rule we do already have ids fetched, so we rely on that
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function doDeletionCASCADEandSETNULL() {
+        return $this->model()->doDeletionCASCADEandSETNULL($this->id);
+    }
+
+    /**
      * Fully deletion - including attached files and foreign key usages, if will be found
      *
      * @return int Number of deleted rows (1|0)
      */
     public function delete() {
 
+        // If deletion of this entry is restricted = return false
+        if (!$this->_system['skipDeletionRESTRICTedCheck'] && $this->isDeletionRESTRICTed()) return false;
+
+        // Apply CASCASE and SET NULL rules for usages
+        $this->doDeletionCASCADEandSETNULL();
+
         // Do some custom things before action deletion
         $this->onBeforeDelete();
+
+        // Standard deletion with temporary turn off foreign keys on mysql-level
+        db()->query('SET `foreign_key_checks` = 0');
+        $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
+        db()->query('SET `foreign_key_checks` = 1');
 
         // Check if row (in it's current state) matches each separate notification's criteria,
         // and remember the results separately for each notification, attached to current row's entity
         $this->_noticesStep1('delete');
-
-        // Delete other rows of entities, that have fields, related to entity of current row
-        // This function also covers other situations, such as if entity of current row has a tree structure,
-        // or row has dependent rowsets
-        $this->deleteUsages();
-
-        // Temporarily disable foreign keys
-        db()->query('SET `foreign_key_checks` = 0');
-
-        // Standard deletion
-        $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
-
-        // Enable foreign keys back
-        db()->query('SET `foreign_key_checks` = 1');
 
         // Notify UI-users
         $this->realtime('delete');
@@ -2810,55 +2830,6 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Save
         $this->save();
-    }
-
-    /**
-     * Delete all usages of current row
-     */
-    public function deleteUsages() {
-
-        // Declare entities array
-        $entities = [];
-
-        // Get all fields in whole database, which are containing keys related to this entity
-        $fieldRs = m('Field')->all('`relation` = "' . $this->model()->id() . '"');
-        foreach ($fieldRs as $fieldR) $entities[$fieldR->entityId]['fields'][] = $fieldR;
-
-        // Get auxiliary deletion info within each entity
-        foreach ($entities as $eid => $data) {
-
-            // Load model
-            $model = m($eid);
-
-            // Foreach field within current model
-            foreach ($data['fields'] as $field) {
-                // We should check that column - which will be used in WHERE clause for retrieving a dependent rowset -
-                // still exists. We need to perform this check because this column may have already been deleted, if
-                // it was dependent of other column that was deleted.
-                if ($model->fields($field->alias) && $field->columnTypeId && db()->query(
-                    'SHOW COLUMNS FROM `' . $model->table(). '` LIKE "' . $field->alias . '"'
-                )->cell()) {
-
-                    // We delete rows there $this->id in at least one field, which ->storeRelationAbility = 'one'
-                    if ($field->storeRelationAbility == 'one') {
-
-                        $model->all('`' . $field->alias . '` = "' . $this->id . '"')->delete();
-
-                    // If storeRelationAbility = 'many', we do not delete rows, but we delete
-                    // mentions of $this->id from comma-separated sets of keys
-                    } else if ($field->storeRelationAbility == 'many') {
-                        $rs = $model->all('FIND_IN_SET(' . $this->id . ', `' . $field->alias . '`)');
-                        foreach ($rs as $r) {
-                            $set = explode(',', $r->{$field->alias});
-                            $found = array_search($this->id, $set);
-                            if ($found !== false) unset($set[$found]);
-                            $r->{$field->alias} = implode(',', $set);
-                            $r->save(true);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
