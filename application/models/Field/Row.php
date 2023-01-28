@@ -647,8 +647,12 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Else if it was modified to some other value, which means it's single- or multi-value foreign key
         } else {
 
-            // Set 'CASCADE' value for onDelete-prop
-            $this->onDelete = 'CASCADE';
+            // Setup onDelete-rule accordingly
+            $this->onDelete = $columnTypeR->isEnumset()
+                ? 'RESTRICT'
+                : ($storeRelationAbility == 'many'
+                    ? 'SET NULL'
+                    : 'CASCADE');
         }
     }
 

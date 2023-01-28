@@ -39,6 +39,25 @@ class Indi_Controller_Migrate extends Indi_Controller {
               AND `entry` = "0"
         ');
 
+        // Setup SET NULL values for onDelete for all multi-value non-config fields, pointing to neither enumset nor variable entity
+        db()->query('
+            UPDATE `field` 
+            SET `onDelete` = "SET NULL" 
+            WHERE 1
+              AND `storeRelationAbility` = "many" 
+              AND `relation` NOT IN (0, 6)
+              AND `entry` = "0"
+        ');
+
+        // Setup RESTRICT values for onDelete for all non-config fields, pointing to enumset entity
+        db()->query('
+            UPDATE `field` 
+            SET `onDelete` = "RESTRICT" 
+            WHERE 1
+              AND `relation` = 6
+              AND `entry` = "0"
+        ');
+
         // Setup non-CASCADE values
         field('alteredField', 'elementId', ['onDelete' => 'SET NULL']);
         field('alteredField', 'jumpSectionId', ['onDelete' => 'SET NULL']);
