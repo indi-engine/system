@@ -1783,8 +1783,21 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function delete() {
 
-        // If deletion of this entry is restricted = return false
-        if (!$this->_system['skipDeletionRESTRICTedCheck'] && $this->isDeletionRESTRICTed()) return false;
+        // If deletion of this entry is restricted - throw Indi_Db_DeleteException
+        if (!$this->_system['skipDeletionRESTRICTedCheck']
+            && $ref = $this->isDeletionRESTRICTed()) {
+
+            // Prepare msg
+            $msg = sprintf(I_ONDELETE_RESTRICT,
+                m($ref['table'])->fields($ref['column'])->title,
+                m($ref['table'])->title(),
+                $ref['table'],
+                $ref['column']
+            );
+
+            // Throw exception
+            throw new Indi_Db_DeleteException($msg);
+        }
 
         // Apply CASCASE and SET NULL rules for usages
         $this->doDeletionCASCADEandSETNULL();

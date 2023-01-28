@@ -590,18 +590,28 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Array of deleted ids
         $deleted = [];
 
-        // For each row
-        foreach ($toBeDeletedRs as $toBeDeletedR) if ($deleted []= (int) $toBeDeletedR->delete()) {
+        // Try to delete
+        try {
 
-            // Get the page of results, that we were at
-            $wasPage = t()->scope->page;
+            // For each row
+            foreach ($toBeDeletedRs as $toBeDeletedR) if ($deleted []= (int) $toBeDeletedR->delete()) {
 
-            // Decrement row index. This line, and one line below - are required to provide an ability to shift
-            // the selection within rowset (grid, tile, etc) panel, after current row deletion
-            uri()->aix -= 1;
+                // Get the page of results, that we were at
+                $wasPage = t()->scope->page;
 
-            // Apply new index
-            $this->setScopeRow();
+                // Decrement row index. This line, and one line below - are required to provide an ability to shift
+                // the selection within rowset (grid, tile, etc) panel, after current row deletion
+                uri()->aix -= 1;
+
+                // Apply new index
+                $this->setScopeRow();
+            }
+
+        // Catch DeleteException
+        } catch (Indi_Db_DeleteException $e) {
+
+            // "Cannot delete or update a parent row: a foreign key constraint fails (`custom`.`queueitem`, CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queuechunk` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)"
+            jflush(false, $e->getMessage());
         }
 
         // Do post delete maintenance

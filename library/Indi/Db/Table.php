@@ -2236,7 +2236,7 @@ class Indi_Db_Table
      * onDelete=RESTRICT rule defined on direct or indirect references
      *
      * @param array|int|string $rowIds
-     * @return bool
+     * @return bool|array
      * @throws Exception
      */
     public function isDeletionRESTRICTed($rowIds) {
@@ -2251,7 +2251,7 @@ class Indi_Db_Table
                 if (m($ref['table'])->hasUsages($ref['column'], $rowIds)) {
 
                     // Return true
-                    return true;
+                    return $ref;
                 }
             }
         }
@@ -2269,10 +2269,10 @@ class Indi_Db_Table
                 if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs')) {
 
                     // If any of those usages have their own direct or deeper usages that are restricted to delete
-                    if (m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
+                    if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
 
-                        // Return true
-                        return true;
+                        // Return info
+                        return $info;
 
                     // Else
                     } else {

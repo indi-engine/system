@@ -734,21 +734,42 @@ class Indi_Db {
         // Else
         } else {
 
-            // Get the native mysql error message
-            $errstr = array_pop(self::$_pdo->errorInfo());
+            // Get error info
+            list ($SQLSTATE, $driverCode, $errstr) = self::$_pdo->errorInfo();
 
-            // Prepend the sql query
-            $errstr = $sql . ' - ' . $errstr;
+            // If it's a foreign key constraint error saying "Cannot delete or update a parent row: ..."
+            if (preg_match('~^DELETE FROM~', trim($sql)) && $driverCode === 1451) {
 
-            // Remove the useless shit
-            $errstr = str_replace('; check the manual that corresponds to your MySQL server version for the right syntax to use', '', $errstr);
-            $errstr = preg_replace('/at line [0-9]+/', '', $errstr);
+                // Cannot delete or update a parent row: a foreign key constraint fails (`custom`.`queueitem`, CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queuechunk` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)
+                preg_match('~CONSTRAINT `(?<table>.*?)_ibfk_(?<column>.*?)`~', $errstr, $ref);
 
-            // Set error code
-            $errcode = 0;
+                // Prepare msg
+                $msg = sprintf(I_ONDELETE_RESTRICT,
+                    m($ref['table'])->fields($ref['column'])->title,
+                    m($ref['table'])->title(),
+                    $ref['table'],
+                    $ref['column']
+                );
 
-            // Get line and file
-            extract(array_pop(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1)));
+                // Throw DeleteException
+                throw new Indi_Db_DeleteException($msg);
+
+            // Else
+            } else {
+
+                // Prepend the sql query
+                $errstr = $sql . ' - ' . $errstr;
+
+                // Remove the useless shit
+                $errstr = str_replace('; check the manual that corresponds to your MySQL server version for the right syntax to use', '', $errstr);
+                $errstr = preg_replace('/at line [0-9]+/', '', $errstr);
+
+                // Set error code
+                $errcode = 0;
+
+                // Get line and file
+                extract(array_pop(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1)));
+            }
         }
 
         // Flush an error
