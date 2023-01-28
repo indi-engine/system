@@ -2331,14 +2331,23 @@ class Indi_Db_Table
                         if ($ref['table'] == $this->_table) $ref['skip'] = true;
 
                         // Fetch usages by those ids by 500 entries per once
-                        $model->batch(fn($child) => $child->system('skipDeletionRESTRICTedCheck', true)->delete(), "`id` IN ($ids)");
+                        $model->batch(function($child, &$deduct) {
+
+                            // Delete child
+                            $child->system('skipDeletionRESTRICTedCheck', true)->delete();
+
+                            // Setup $deduct flag to true
+                            $deduct = true;
+
+                        //
+                        },"`id` IN ($ids)");
                     }
 
                     // Unset ids and skip from ref
                     unset($ref['ids'], $ref['skip']);
 
-                // Else if $rule is 'SET NULL'
-                } else {
+                // Else if $rule is 'SET NULL' and ref-field is not a ENUM-field
+                } else if ($model->fields($fieldId)->foreign('columnTypeId')->type != 'ENUM') {
 
                     // Fetch usages by 500 entries per once
                     $model->batch(function($child) use ($ref, $rowIds) {
@@ -2363,7 +2372,12 @@ class Indi_Db_Table
      *
      * @return array|mixed
      */
-    public function refs() {
+    public function refs($arg1 = null) {
+
+        // If $arg1 is an array - spoof $this->_refs with it
+        if (is_array($arg1)) $this->_refs = $arg1;
+
+        // Return refs
         return $this->_refs;
     }
 }

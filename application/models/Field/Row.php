@@ -117,6 +117,42 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
+     * Setup skip-flag for enumset-ref to make sure nested
+     * enumset-records won't be deleted via doDeletionCASCADEandSETNULL
+     * as we do that in another way.
+     *
+     * Skip-flag removed after parent::delete() call
+     *
+     * @return int|void
+     */
+    public function delete() {
+
+        // Get `enumset`.`fieldId` field
+        $ref = m('enumset')->fields('fieldId');
+
+        // Get current refs
+        $refs = $this->model()->refs();
+
+        // Setup skip-flag for enumset-ref
+        $refs[$ref->onDelete][$ref->id]['skip'] = true;
+
+        // Spoof refs
+        $this->model()->refs($refs);
+
+        // Call parent
+        $return = parent::delete();
+
+        // Unset skip-flag
+        unset($refs[$ref->onDelete][$ref->id]['skip']);
+
+        // Restore refs back
+        $this->model()->refs($refs);
+
+        // Return
+        return $return;
+    }
+
+    /**
      * After delete
      *
      * @return int|void
@@ -2167,7 +2203,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $ids = im($ids, $this->storeRelationAbility == 'many' ? '|' : ',');
 
             // Build WHERE clause to find usages
-            return sprintf($where, $this->alias, $ids);
+            $where = sprintf($where, $this->alias, $ids);
 
         // Else
         } else {
@@ -2178,7 +2214,25 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 : "'%s' = `%s`";
 
             // Build WHERE clause to find usages
-            return sprintf($where, $ids, $this->alias);
+            $where = sprintf($where, $ids, $this->alias);
         }
+
+        // If this is a ENUM-column, the following may happen:
+        // 1. We have `enumCol` ENUM('val1', 'val2')
+        // 2. We have two rows in the table, having 'val1' for 1st row and 'val2' for 2nd
+        // 3. We drop 'val2' from column definition, so it become `enumCol` ENUM('val1')
+        // 4. We see that the value of `enumCol` in 2nd row became empty
+        // 5. We do SELECT * FROM `thatTable` WHERE `enumCol` = "anyRandomValueIncludingEmptyStringExcept_val1"
+        // 6. We get row2 in the result set, despite we should NOT
+        // 7. `enumCol` != "" does hot help, but prepending with BINARY - does
+        //    we have to use that workaround because otherwise usagesWHERE clause
+        //    is matching row that should not be matched, so hasUsages() and getUsages() return wrong results
+        if ($this->foreign('columnTypeId')->type == 'ENUM')
+
+            // Append additional `BINARY <column>` != '' clause
+            $where .= sprintf(' AND BINARY `%s` != ""', $this->alias);
+
+        // Return WHERE clause for finding usages
+        return $where;
     }
 }

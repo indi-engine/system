@@ -197,6 +197,78 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
+     * Setup temporary temporary ref-data to be used to find usages of $this->value
+     * within column that $this->foreign('fieldId') is a wrapper for, as this ref-data
+     * is expected by isDeletionRESTRICTed() and doDeletionCASCADEandSETNULL method calls
+     *
+     * @return array|bool
+     * @throws Exception
+     */
+    public function isDeletionRESTRICTed() {
+
+        // Setup temporary ref-info
+        $this->_ref(true);
+
+        // Call model
+        $return = $this->model()->isDeletionRESTRICTed($this->alias);
+
+        // Call parent
+        return $return;
+    }
+
+    /**
+     * Unset temporary ref-data to be used to find usages of $this->value
+     * within column that $this->foreign('fieldId') is a wrapper for, as this ref-data
+     * was expected by isDeletionRESTRICTed() and doDeletionCASCADEandSETNULL method calls,
+     * and is not needed anymore after those calls are made
+     *
+     * @return mixed|void
+     * @throws Exception
+     */
+    public function doDeletionCASCADEandSETNULL() {
+
+        // Call model
+        $return = $this->model()->doDeletionCASCADEandSETNULL($this->alias);
+
+        // Clear temporary ref-info
+        $this->_ref(false);
+
+        // Return
+        return $return;
+    }
+
+    /**
+     * Setup/unset temporary ref-data to be used to find usages of $this->value
+     * within column that $this->foreign('fieldId') is a wrapper for
+     *
+     * @param $on
+     * @throws Exception
+     */
+    private function _ref($on) {
+
+        // If ref should be temporarily turned on
+        if ($on) {
+
+            // Get field
+            $field = $this->foreign('fieldId');
+
+            // Prepare ref
+            $ref['table']    = $field->foreign('entityId')->table;
+            $ref['column']   = $field->alias;
+            $ref['multi']    = $field->storeRelationAbility == 'many';
+
+            // Set refs
+            $this->model()->refs([$field->onDelete => [$ref]]);
+
+        // Else
+        } else {
+
+            // Clear refs
+            $this->model()->refs([]);
+        }
+    }
+
+    /**
      * Delete
      *
      * @return int
@@ -204,11 +276,26 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function delete() {
 
-        // Get the field row
+        // Get the existing possible values
+        $enumsetA = $this->foreign('fieldId')->nested('enumset', ['order' => 'move'])->column('alias');
+
+        // If current row is the last enumset row, related to current field - throw an error message
+        if (count($enumsetA) == 1) throw new Indi_Db_DeleteException(sprintf(I_ENUMSET_ERROR_VALUE_LAST, $this->title));
+
+        // Standard save
+        return parent::delete();
+    }
+
+    public function onDelete() {
+
+        // Get field
         $fieldR = $this->foreign('fieldId');
 
-        // Get the existing possible values
-        $enumsetA = $fieldR->nested('enumset', ['order' => 'move'])->column('alias');
+        // Get the possible values, that
+        $enumsetA = $fieldR->nested('enumset')->column('alias');
+
+        // Get the field row
+        $fieldR = $this->foreign('fieldId');
 
         // Get the database table name
         $table = $fieldR->foreign('entityId')->table;
@@ -218,9 +305,6 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             ? $fieldR->defaultValue
             : db()->query('SHOW COLUMNS FROM `' . $table . '` LIKE "' . $fieldR->alias . '"')
                 ->fetch(PDO::FETCH_OBJ)->Default;
-
-        // If current row is the last enumset row, related to current field - throw an error message
-        if (count($enumsetA) == 1) iexit(sprintf(I_ENUMSET_ERROR_VALUE_LAST, $this->alias));
 
         // Remove current item from the list of possible values
         unset($enumsetA[array_search($this->alias, $enumsetA)]);
@@ -266,17 +350,6 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 WHERE `id` = "' . $fieldR->id . '"
                 LIMIT 1
             ');
-
-        // Standard save
-        return parent::delete();
-    }
-
-    /**
-     * This method is redefined here to prevent parent's method from being called,
-     * because `enumset` entries have their own special usage behaviour
-     */
-    public function deleteForeignKeysUsages() {
-
     }
 
     /**

@@ -854,7 +854,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         }
                     } else if ($typeA['enumset'][$columnI]) {
                         if ($typeA['foreign']['single'][$columnI]['title']) {
-                            $data[$pointer]['_render'][$columnI] = !$further || $entry ? $entry->foreign($further ?: $columnI)->styled() : '';
+                            $data[$pointer]['_render'][$columnI] = !$further || $entry
+                                ? ($entry->foreign($further ?: $columnI)
+                                    ? $entry->foreign($further ?: $columnI)->styled()
+                                    : '')
+                                : '';
                         }
                     }
                 }
