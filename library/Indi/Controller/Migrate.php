@@ -58,6 +58,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
               AND `entry` = "0"
         ');
 
+        // Setup onDelete-rule for multi-entity foreign key fields
+        db()->query('UPDATE `field` SET `onDelete` = "SET NULL" WHERE `storeRelationAbility` = "many" AND `relation` = 0');
+        db()->query('UPDATE `field` SET `onDelete` = "CASCADE"  WHERE `storeRelationAbility` = "one" AND `relation` = 0');
+        field('realtime', 'entries', ['onDelete' => '-']);
+
         // Setup non-CASCADE values
         field('alteredField', 'elementId', ['onDelete' => 'SET NULL']);
         field('alteredField', 'jumpSectionId', ['onDelete' => 'SET NULL']);

@@ -44,6 +44,13 @@ class Indi_Db {
     protected static $_l10nA = [];
 
     /**
+     * Multi-entity reference fields info, grouped by onDelete-rule
+     *
+     * @var array
+     */
+    protected static $_multiRefA = [];
+
+    /**
      * Array of *_Row instances preloaded by m('ModelName')->preload(true) call
      * Those instances are grouped by entity table name and are used as a return value for
      * $row->foreign('foreignKeyName'), $rowset->foreign('foreignKeyName') and $schedule->distinct() calls
@@ -248,7 +255,7 @@ class Indi_Db {
                 if ($fieldI['storeRelationAbility'] == 'none' && in($fieldI['l10n'], 'y,qn'))
                     self::$_l10nA[$_[$fieldI['entityId']]][$fieldI['id']] = $fieldI['alias'];
 
-                // Collect reference fields
+                // Collect normal reference fields
                 if ($fieldI['relation'] && $_[$fieldI['relation']] != 'enumset' && !$fieldI['entry'] && $fieldI['onDelete'] != '-')
                     $refs[ $_[$fieldI['relation']] ][ $fieldI['onDelete'] ][ $fieldI['id'] ] = [
                         'table' => $_[$fieldI['entityId']],
@@ -257,8 +264,38 @@ class Indi_Db {
                     ];
             }
 
-            // Unset tmp variable
-            unset($_);
+            // Get multi-entity reference fields info, grouped by onDelete-rule
+            $_multiRefA = db()->query("
+                SELECT 
+                  `f`.`onDelete` AS `rule`, 
+                  `c`.`fieldId`, 
+                  `e`.`table`,
+                  `f`.`storeRelationAbility`,     
+                  `cf`.`alias`   AS `entity`, 
+                  `f`.`alias`    AS `column`,
+                  CONCAT(`fe`.`table`, '.', `ff`.`alias`) AS `foreign`
+                FROM `field` `f`, `entity` `e`, `field` `cf`,`consider` `c`
+                  LEFT JOIN `field`  `ff` ON `ff`.`id` = `c`.`foreign`
+                  LEFT JOIN `entity` `fe` ON `ff`.`entityId` = `fe`.`id`
+                WHERE `f`.`storeRelationAbility` != 'none'
+                  AND ISNULL(`f`.`relation`)
+                  AND `f`.`id` = `c`.`fieldId`
+                  AND `c`.`entityId` = `e`.`id`
+                  AND `cf`.`id` = `c`.`consider`
+                ORDER BY `e`.`table`
+            ")->groups();
+
+            // Foreach group of multi-entity reference-fields - re-organize
+            // so that each field to be a accessible by fieldId within a group
+            foreach ($_multiRefA as $rule => $refA)
+                foreach ($refA as $ref)
+                    self::$_multiRefA[$rule][ $ref['fieldId'] ] = [
+                        'table'   => $ref['table'],
+                        'multi'   => $ref['storeRelationAbility'] == 'many',
+                        'entity'  => $ref['entity'],
+                        'column'  => $ref['column'],
+                        'foreign' => $ref['foreign'],
+                    ];
 
             // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
@@ -440,6 +477,13 @@ class Indi_Db {
 
                 // Append current field data to $eFieldA array
                 if (!$fieldI['original']['entry']) {
+
+                    // Foreach prop having foreign key constraint - replace null with 0
+                    foreach ($ibfk['field'] ?? [] as $field => $DELETE_RULE)
+                        if ($fieldI['original'][$field] === null)
+                            $fieldI['original'][$field] = 0;
+
+                    // Prepare data for Field_Rowset instantiation
                     $eFieldA[$fieldI['original']['entityId']]['rows'][] = new Field_Row($fieldI);
                     $eFieldA[$fieldI['original']['entityId']]['aliases'][$fieldI['original']['id']] = $fieldI['original']['alias'];
                     $eFieldA[$fieldI['original']['entityId']]['ids'][$fieldI['original']['id']] = $fieldI['original']['id'];
@@ -447,7 +491,7 @@ class Indi_Db {
             }
 
             // Release memory
-            unset($fieldA, $iElementA, $iColumnTypeA, $fEnumsetA, $ePossibleElementParamA, $fParamA);
+            unset($_, $fieldA, $iElementA, $iColumnTypeA, $fEnumsetA, $ePossibleElementParamA, $fParamA);
 
             // If we are here for model reload - drop all metadata for that model
             if ($entityId) {
@@ -977,5 +1021,14 @@ class Indi_Db {
      */
     public function quote($value) {
         return $this->getPDO()->quote($value);
+    }
+
+    /**
+     * Get multi-entity reference fields
+     *
+     * @return array
+     */
+    public function multiRefs($rule = null) {
+        return $rule ? self::$_multiRefA[$rule] : self::$_multiRefA;
     }
 }

@@ -1328,13 +1328,21 @@ class Indi_Db_Table_Row implements ArrayAccess
             try {
 
                 // Foreach target language - make api call to google passing source values
-                foreach (ar($targets) as $target) $resultByLang[$target] = array_combine(
-                        array_keys($batch),
-                        array_column($gapi->translateBatch(array_values($batch), [
+                foreach (ar($targets) as $target) {
+
+                    // If valid gapi key cannot be obtained at the moment
+                    // Use source lang values for testing purposes
+                    // Else get translations from google
+                    $result = ini('lang')->gapi->off
+                        ? array_values($batch)
+                        : array_column($gapi->translateBatch(array_values($batch), [
                             'source' => ini('lang')->admin,
                             'target' => $target,
-                        ]), 'text')
-                    );
+                        ]), 'text');
+
+                    // Combine source and target translations
+                    $resultByLang[$target] = array_combine(array_keys($batch), $result);
+                }
 
                 // For each of localized modified fields
                 foreach ($mlfA as $mlfI) {

@@ -2188,15 +2188,17 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     }
 
     /**
-     * Build WHERE clause to be used for finding entries where $id is the value or is among the values of the current field
+     * Build WHERE clause to be used for finding mentions of all or any of $values in this field
+     * $entityId arg is applicable and required in case if this field is a multi-entity foreign key field
      *
-     * @param $ids
+     * @param int|array $values
+     * @param int|null $entityId
      * @return string
      */
-    public function usagesWHERE($ids) {
+    public function usagesWHERE($values, $entityId = null) {
 
         // If $ids is array
-        if (is_array($ids)) {
+        if (is_array($values)) {
 
             // Prepare WHERE clause template
             $where = $this->storeRelationAbility == 'many'
@@ -2204,10 +2206,10 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 : "`%s` IN (%s)";
 
             // Concat ids by '|' or ',' depending on whether it's a multi- or single-value foreign key field
-            $ids = im($ids, $this->storeRelationAbility == 'many' ? '|' : ',');
+            $values = im($values, $this->storeRelationAbility == 'many' ? '|' : ',');
 
             // Build WHERE clause to find usages
-            $where = sprintf($where, $this->alias, $ids);
+            $where = sprintf($where, $this->alias, $values);
 
         // Else
         } else {
@@ -2218,7 +2220,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 : "'%s' = `%s`";
 
             // Build WHERE clause to find usages
-            $where = sprintf($where, $ids, $this->alias);
+            $where = sprintf($where, $values, $this->alias);
         }
 
         // If this is a ENUM-column, the following may happen:
@@ -2235,6 +2237,34 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
             // Append additional `BINARY <column>` != '' clause
             $where .= sprintf(' AND BINARY `%s` != ""', $this->alias);
+
+        // If it's a multi-entity foreign key field
+        // we should prepend additional column match clause
+        // which is pointing to the right entity
+        if ($this->storeRelationAbility != 'none' && $this->zero('relation')) {
+
+            // Get ref
+            $ref = db()->multiRefs($this->onDelete)[$this->id];
+
+            // If column named as $ref['entity'] in $table does not really contain ids of `entity`-records
+            if ($ref['foreign']) {
+
+                // Get table and column which does
+                list ($table, $column) = explode('.', $ref['foreign']);
+
+                // Get ids applicable for use in WHERE clause
+                $ids = db()->query("SELECT `id` FROM `$table` WHERE `$column` = '$entityId'")->in();
+
+                // Build WHERE clause using those $ids instead of $entityId
+                $where = "`{$ref['entity']}` IN ($ids) AND " . $where;
+
+            // Else
+            } else {
+
+                // Build WHERE clause using $entityId
+                $where = "`{$ref['entity']}` = $entityId AND " . $where;
+            }
+        }
 
         // Return WHERE clause for finding usages
         return $where;

@@ -2186,12 +2186,15 @@ class Indi_Db_Table
 
     /**
      * Check whether there is at least 1 mention of any of $values in $column
+     * $entityId arg is applicable and required in case if entity's field,
+     * identified by $column - is a multi-entity foreign key field
      *
      * @param string $column
      * @param int|string|array $values
+     * @param int|null $entityId
      * @return bool
      */
-    public function hasUsages($column, $values) {
+    public function hasUsages($column, $values, $entityId = null) {
 
         // If no such field found - return false
         if (!$field = $this->fields($column)) return false;
@@ -2200,7 +2203,7 @@ class Indi_Db_Table
         if (!$field->hasColumn()) return false;
 
         // Prepare WHERE clause for finding usages
-        $usagesWHERE = $field->usagesWHERE($values);
+        $usagesWHERE = $field->usagesWHERE($values, $entityId);
 
         // Return true if there is at least 1 mention found
         return !!db()->query("SELECT `id` FROM `{$this->_table}` WHERE $usagesWHERE LIMIT 1")->cell();
@@ -2208,12 +2211,14 @@ class Indi_Db_Table
 
     /**
      * Get ids-array of all entries where any of $values are mentioned in $column
+     * $entityId arg is applicable and required in case if entity's field,
+     * identified by $column - is a multi-entity foreign key field
      *
      * @param string $column
      * @param int|string|array $values
      * @return array
      */
-    public function getUsages($column, $values, $format = 'col') {
+    public function getUsages($column, $values, $format = 'col', $entityId = null) {
 
         // If no such field found - return false
         if (!$field = $this->fields($column)) return false;
@@ -2222,7 +2227,7 @@ class Indi_Db_Table
         if (!$field->hasColumn()) return false;
 
         // Prepare WHERE clause for finding usages
-        $usagesWHERE = $field->usagesWHERE($values);
+        $usagesWHERE = $field->usagesWHERE($values, $entityId);
 
         // Prepare expr to be added to SELECT clause to fetch key => value pairs, if need
         $flag = rif($format == 'pairs', ', 1');
@@ -2241,18 +2246,25 @@ class Indi_Db_Table
      */
     public function isDeletionRESTRICTed($rowIds) {
 
-        // If there are reference-fields having onDelete=RESTRICT
-        if ($this->_refs['RESTRICT']) {
+        // Foreach single-entity reference-fields having onDelete=RESTRICT
+        foreach ($this->_refs['RESTRICT'] ?? [] as $ref) {
 
-            // Foreach of that kind of reference-fields
-            foreach ($this->_refs['RESTRICT'] as $ref) {
+            // If there is at least 1 usage found by that reference
+            if (m($ref['table'])->hasUsages($ref['column'], $rowIds)) {
 
-                // If there is at least 1 usage found by that reference
-                if (m($ref['table'])->hasUsages($ref['column'], $rowIds)) {
+                // Return true
+                return $ref;
+            }
+        }
 
-                    // Return true
-                    return $ref;
-                }
+        // Foreach of multi-entity reference-fields having onDelete=RESTRICT
+        foreach (db()->multiRefs('RESTRICT') ?? [] as $ref) {
+
+            // If there is at least 1 usage found by that reference
+            if (m($ref['table'])->hasUsages($ref['column'], $rowIds, $this->_id)) {
+
+                // Return true
+                return $ref;
             }
         }
 
@@ -2260,29 +2272,54 @@ class Indi_Db_Table
         // as restricted to delete, or there are, but no entries exist so far in referenced tables
         // But, we need to go deeper and check indirect references having onDelete=RESTRICT as we might
         // have those indirectly, e.g behind direct ones having onDelete=CASCADE
-        if ($this->_refs['CASCADE']) {
+        //
+        // Foreach single-entity reference-fields having onDelete=CASCADE
+        foreach ($this->_refs['CASCADE'] ?? [] as $fieldId => $ref) {
 
-            // Foreach of that kind of reference-fields
-            foreach ($this->_refs['CASCADE'] as &$ref) {
+            // If there are usages found by that reference
+            if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs')) {
 
-                // If there are usages found by that reference
-                if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs')) {
+                // If any of those usages have their own direct or deeper usages that are restricted to delete
+                if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
 
-                    // If any of those usages have their own direct or deeper usages that are restricted to delete
-                    if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
+                    // Return info
+                    return $info;
 
-                        // Return info
-                        return $info;
+                // Else
+                } else {
 
-                    // Else
-                    } else {
+                    // Declare ids to be array, if not declared so far
+                    $this->_refs['CASCADE'][$fieldId]['ids'] = $this->_refs['CASCADE'][$fieldId]['ids'] ?? [];
 
-                        // Declare ids to be array, if not declared so far
-                        $ref['ids'] = $ref['ids'] ?? [];
+                    // Append $refIds to the list
+                    $this->_refs['CASCADE'][$fieldId]['ids'] += $refIds;
+                }
+            }
+        }
 
-                        // Append $refIds to the list
-                        $ref['ids'] += $refIds;
-                    }
+        // Foreach of multi-entity reference-fields having onDelete=CASCADE
+        foreach (db()->multiRefs('CASCADE') ?? [] as $fieldId => $ref) {
+
+            // If there are usages found by that reference
+            if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs', $this->_id)) {
+
+                // If any of those usages have their own direct or deeper usages that are restricted to delete
+                if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
+
+                    // Return info
+                    return $info;
+
+                // Else
+                } else {
+
+                    // Create temporary ref
+                    $this->_refs['CASCADE'][$fieldId] = $this->_refs['CASCADE'][$fieldId] ?? $ref;
+
+                    // Declare ids to be array, if not declared so far
+                    $this->_refs['CASCADE'][$fieldId]['ids'] = $this->_refs['CASCADE'][$fieldId]['ids'] ?? [];
+
+                    // Append $refIds to the list
+                    $this->_refs['CASCADE'][$fieldId]['ids'] += $refIds;
                 }
             }
         }
@@ -2299,6 +2336,13 @@ class Indi_Db_Table
      * @param $rowIds
      */
     public function doDeletionCASCADEandSETNULL($rowIds) {
+
+        // Foreach of multi-entity reference-fields having onDelete='SET NULL'
+        foreach (db()->multiRefs('SET NULL') ?? [] as $fieldId => $ref) {
+
+            // Create temporary model-level ref
+            $this->_refs['SET NULL'][$fieldId] = $ref;
+        }
 
         // Foreach ref group
         foreach ($this->_refs as $rule => &$refs) if (in($rule, ['CASCADE', 'SET NULL'])) {
@@ -2361,9 +2405,16 @@ class Indi_Db_Table
                         $child->save();
 
                     // Invoke WHERE clause for finding usages
-                    }, $model->fields($ref['column'])->usagesWHERE($rowIds));
+                    }, $model->fields($ref['column'])->usagesWHERE($rowIds, $this->_id));
                 }
+
+                // If entity-prop is set, it means it's a multi-entity reference-field
+                // and this means we should unset it, as it was set up temporary within $this model's context
+                if ($ref['entity'] ?? 0) unset($this->_refs[$rule][$fieldId]);
             }
+
+            // If rule's refs group is empty - unset it
+            if (isset($this->_refs[$rule]) && !count($this->_refs[$rule])) unset($this->_refs[$rule]);
         }
     }
 
