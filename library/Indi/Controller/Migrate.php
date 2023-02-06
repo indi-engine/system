@@ -29,23 +29,23 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('fieldsAll', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
         grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
 
-        // Setup CASCADE values for onDelete for all single-key non-config fields, pointing to neither enumset nor variable entity
+        // Setup CASCADE values for onDelete for all single-value non-config non-enumset foreign key fields
         db()->query('
             UPDATE `field` 
             SET `onDelete` = "CASCADE" 
             WHERE 1
               AND `storeRelationAbility` = "one" 
-              AND `relation` NOT IN (0, 6)
+              AND `relation` != "6"
               AND `entry` = "0"
         ');
 
-        // Setup SET NULL values for onDelete for all multi-value non-config fields, pointing to neither enumset nor variable entity
+        // Setup SET NULL values for onDelete for all multi-value non-config non-enumset foreign key fields
         db()->query('
             UPDATE `field` 
             SET `onDelete` = "SET NULL" 
             WHERE 1
               AND `storeRelationAbility` = "many" 
-              AND `relation` NOT IN (0, 6)
+              AND `relation` != "6"
               AND `entry` = "0"
         ');
 
@@ -54,14 +54,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             UPDATE `field` 
             SET `onDelete` = "RESTRICT" 
             WHERE 1
-              AND `relation` = 6
+              AND `relation` = "6"
               AND `entry` = "0"
         ');
-
-        // Setup onDelete-rule for multi-entity foreign key fields
-        db()->query('UPDATE `field` SET `onDelete` = "SET NULL" WHERE `storeRelationAbility` = "many" AND `relation` = 0');
-        db()->query('UPDATE `field` SET `onDelete` = "CASCADE"  WHERE `storeRelationAbility` = "one" AND `relation` = 0');
-        field('realtime', 'entries', ['onDelete' => '-']);
 
         // Setup non-CASCADE values
         field('alteredField', 'elementId', ['onDelete' => 'SET NULL']);
@@ -95,6 +90,31 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         // Change back to -1
         consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '-1']);
+
+        // Create whichEntities cfgField to be able to specify the list of entities, that multi-entity foreign key fields can point to
+        cfgField('element', 'combo', 'whichEntities', [
+            'title' => 'Какие сущности',
+            'storeRelationAbility' => 'many',
+            'relation' => 'entity',
+            'onDelete' => 'SET NULL',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'filterOwner',
+        ]);
+
+        // Setup whichEntities-param for all multi-entity foreign key fields we have
+        param('field', 'entry', 'whichEntities', ['cfgValue' => m('element')->id()]);
+        // Mind changelog
+        if ($entityIdsHavingChangeLogToggledOn = m('entity')
+            ->all('`changeLogToggle` = "all" OR `changeLogExcept` != ""')
+            ->col('id', ','))
+            param('changeLog', 'entryId', 'whichEntities', ['cfgValue' => $entityIdsHavingChangeLogToggledOn]);
+        param('changeLog', 'adminId', 'whichEntities', ['cfgValue' => im(Indi_Db::role())]);
+        param('realtime', 'adminId', 'whichEntities', ['cfgValue' => im(Indi_Db::role())]);
+        if ($colorFieldIds = db()->query('SELECT DISTINCT `colorField` FROM `grid` WHERE NOT ISNULL(`colorField`)')->in())
+            if ($entityIds = db()->query("SELECT DISTINCT `entityId` FROM `field` WHERE `entry` = '0' AND `id` IN ($colorFieldIds)")->in())
+                param('grid', 'colorEntry', 'whichEntities', ['cfgValue' => $entityIds]);
+
         die('ok');
     }
     public function queueResumeAction() {

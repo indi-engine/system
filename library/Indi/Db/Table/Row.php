@@ -1831,9 +1831,6 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Delete all files/folder uploaded/created while using CKFinder
         $this->deleteCKFinderFiles();
 
-        // Delete all `changeLog` entries, related to current entry
-        $this->deleteChangeLog();
-
         // Do some custom things
         $this->onDelete();
 

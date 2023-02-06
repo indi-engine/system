@@ -26,11 +26,14 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
 
         // Prepare field for spoofing `cfgValue` field
         $gen = $row->foreign('cfgField')->set([
-            'filter' => '`entityId` = "' . $row->foreign('fieldId')->relation . '"',
             'entityId' => t()->section->entityId,
             'alias' => 'cfgValue',
             'title' => t()->fields->field('cfgValue')->title
         ]);
+
+        // If combo data will contain fields list - make sure certain fields to be there only
+        if ($gen->relation == m('field')->id())
+            $gen->set('filter', '`entityId` = "' . $row->foreign('fieldId')->relation . '"');
 
         // Spoof `cfgValue` field
         t()->fields->exclude('cfgValue', 'alias')->append($gen);
@@ -51,15 +54,15 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
      */
     public function adjustExistingRowAccess(Indi_Db_Table_Row $row) {
 
-        //
-        if (!$row->cfgField) return;
-
         // Prepare field for spoofing `cfgValue` field
         $gen = $row->foreign('cfgField')->set([
-            'filter' => '`entityId` = "' . $row->foreign('fieldId')->relation . '"',
             'entityId' => t()->section->entityId,
             'alias' => 'cfgValue'
         ]);
+
+        // If combo data will contain fields list - make sure certain fields to be there only
+        if ($gen->relation == m('field')->id())
+            $gen->set('filter', '`entityId` = "' . $row->foreign('fieldId')->relation . '"');
 
         //
         if (uri()->action == 'form') $gen->title = t()->fields->field('cfgValue')->title;
@@ -67,7 +70,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         // Spoof `cfgValue` field
         t()->fields->exclude('cfgValue', 'alias')->append($gen);
 
-        //
+        // Disable cfgField-field, but keep displayed in form
         $this->appendDisabledField('cfgField', true);
     }
 }

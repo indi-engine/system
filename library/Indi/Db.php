@@ -210,7 +210,7 @@ class Indi_Db {
                       IF(`entityId`,`entityId`,11) AS `entityId`
                     FROM `' . $roleTable . '`
                     GROUP BY `entityId`
-                ')->fetchAll(PDO::FETCH_KEY_PAIR);
+                ')->pairs();
             }
 
             // Fix tablename case, if need
@@ -263,39 +263,6 @@ class Indi_Db {
                         'multi' => $fieldI['storeRelationAbility'] == 'many'
                     ];
             }
-
-            // Get multi-entity reference fields info, grouped by onDelete-rule
-            $_multiRefA = db()->query("
-                SELECT 
-                  `f`.`onDelete` AS `rule`, 
-                  `c`.`fieldId`, 
-                  `e`.`table`,
-                  `f`.`storeRelationAbility`,     
-                  `cf`.`alias`   AS `entity`, 
-                  `f`.`alias`    AS `column`,
-                  CONCAT(`fe`.`table`, '.', `ff`.`alias`) AS `foreign`
-                FROM `field` `f`, `entity` `e`, `field` `cf`,`consider` `c`
-                  LEFT JOIN `field`  `ff` ON `ff`.`id` = `c`.`foreign`
-                  LEFT JOIN `entity` `fe` ON `ff`.`entityId` = `fe`.`id`
-                WHERE `f`.`storeRelationAbility` != 'none'
-                  AND ISNULL(`f`.`relation`)
-                  AND `f`.`id` = `c`.`fieldId`
-                  AND `c`.`entityId` = `e`.`id`
-                  AND `cf`.`id` = `c`.`consider`
-                ORDER BY `e`.`table`
-            ")->groups();
-
-            // Foreach group of multi-entity reference-fields - re-organize
-            // so that each field to be a accessible by fieldId within a group
-            foreach ($_multiRefA as $rule => $refA)
-                foreach ($refA as $ref)
-                    self::$_multiRefA[$rule][ $ref['fieldId'] ] = [
-                        'table'   => $ref['table'],
-                        'multi'   => $ref['storeRelationAbility'] == 'many',
-                        'entity'  => $ref['entity'],
-                        'column'  => $ref['column'],
-                        'foreign' => $ref['foreign'],
-                    ];
 
             // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
@@ -489,6 +456,40 @@ class Indi_Db {
                     $eFieldA[$fieldI['original']['entityId']]['ids'][$fieldI['original']['id']] = $fieldI['original']['id'];
                 }
             }
+
+            // Get multi-entity reference fields info, grouped by onDelete-rule
+            $_multiRefA = db()->query("
+                SELECT 
+                  `f`.`onDelete` AS `rule`, 
+                  `c`.`fieldId`, 
+                  `e`.`table`,
+                  `f`.`storeRelationAbility`,     
+                  `cf`.`alias`   AS `entity`, 
+                  `f`.`alias`    AS `column`,
+                  CONCAT(`fe`.`table`, '.', `ff`.`alias`) AS `foreign`
+                FROM `field` `f`, `entity` `e`, `field` `cf`,`consider` `c`
+                  LEFT JOIN `field`  `ff` ON `ff`.`id` = `c`.`foreign`
+                  LEFT JOIN `entity` `fe` ON `ff`.`entityId` = `fe`.`id`
+                WHERE `f`.`storeRelationAbility` != 'none'
+                  AND ISNULL(`f`.`relation`)
+                  AND `f`.`id` = `c`.`fieldId`
+                  AND `c`.`entityId` = `e`.`id`
+                  AND `cf`.`id` = `c`.`consider`
+                ORDER BY `e`.`table`
+            ")->groups();
+
+            // Foreach group of multi-entity reference-fields - re-organize
+            // so that each field to be a accessible by fieldId within a group
+            foreach ($_multiRefA as $rule => $refA)
+                foreach ($refA as $ref)
+                    self::$_multiRefA[$rule][ $ref['fieldId'] ] = [
+                        'table'   => $ref['table'],
+                        'multi'   => $ref['storeRelationAbility'] == 'many',
+                        'entity'  => $ref['entity'],
+                        'expect'  => self::$_cfgValue['certain']['field'][ $ref['fieldId'] ]['whichEntities'],
+                        'column'  => $ref['column'],
+                        'foreign' => $ref['foreign'],
+                    ];
 
             // Release memory
             unset($_, $fieldA, $iElementA, $iColumnTypeA, $fEnumsetA, $ePossibleElementParamA, $fParamA);

@@ -2260,11 +2260,15 @@ class Indi_Db_Table
         // Foreach of multi-entity reference-fields having onDelete=RESTRICT
         foreach (db()->multiRefs('RESTRICT') ?? [] as $ref) {
 
-            // If there is at least 1 usage found by that reference
-            if (m($ref['table'])->hasUsages($ref['column'], $rowIds, $this->_id)) {
+            // If current entity is expected to be mentioned in iterated multi-entity reference field
+            if (in($this->id(), $ref['expect'])) {
 
-                // Return true
-                return $ref;
+                // If there is at least 1 usage found by that reference
+                if (m($ref['table'])->hasUsages($ref['column'], $rowIds, $this->id())) {
+
+                    // Return true
+                    return $ref;
+                }
             }
         }
 
@@ -2300,26 +2304,30 @@ class Indi_Db_Table
         // Foreach of multi-entity reference-fields having onDelete=CASCADE
         foreach (db()->multiRefs('CASCADE') ?? [] as $fieldId => $ref) {
 
-            // If there are usages found by that reference
-            if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs', $this->_id)) {
+            // If current entity is expected to be mentioned in iterated multi-entity reference field
+            if (in($this->id(), $ref['expect'])) {
 
-                // If any of those usages have their own direct or deeper usages that are restricted to delete
-                if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
+                // If there are usages found by that reference
+                if ($refIds = m($ref['table'])->getUsages($ref['column'], $rowIds, 'pairs', $this->id())) {
 
-                    // Return info
-                    return $info;
+                    // If any of those usages have their own direct or deeper usages that are restricted to delete
+                    if ($info = m($ref['table'])->isDeletionRESTRICTed(array_keys($refIds))) {
 
-                // Else
-                } else {
+                        // Return info
+                        return $info;
 
-                    // Create temporary ref
-                    $this->_refs['CASCADE'][$fieldId] = $this->_refs['CASCADE'][$fieldId] ?? $ref;
+                        // Else
+                    } else {
 
-                    // Declare ids to be array, if not declared so far
-                    $this->_refs['CASCADE'][$fieldId]['ids'] = $this->_refs['CASCADE'][$fieldId]['ids'] ?? [];
+                        // Create temporary ref
+                        $this->_refs['CASCADE'][$fieldId] = $this->_refs['CASCADE'][$fieldId] ?? $ref;
 
-                    // Append $refIds to the list
-                    $this->_refs['CASCADE'][$fieldId]['ids'] += $refIds;
+                        // Declare ids to be array, if not declared so far
+                        $this->_refs['CASCADE'][$fieldId]['ids'] = $this->_refs['CASCADE'][$fieldId]['ids'] ?? [];
+
+                        // Append $refIds to the list
+                        $this->_refs['CASCADE'][$fieldId]['ids'] += $refIds;
+                    }
                 }
             }
         }
@@ -2340,8 +2348,12 @@ class Indi_Db_Table
         // Foreach of multi-entity reference-fields having onDelete='SET NULL'
         foreach (db()->multiRefs('SET NULL') ?? [] as $fieldId => $ref) {
 
-            // Create temporary model-level ref
-            $this->_refs['SET NULL'][$fieldId] = $ref;
+            // If current entity is expected to be mentioned in iterated multi-entity reference field
+            if (in($this->id(), $ref['expect'])) {
+
+                // Create temporary model-level ref
+                $this->_refs['SET NULL'][$fieldId] = $ref;
+            }
         }
 
         // Foreach ref group
