@@ -458,7 +458,7 @@ class Indi_Db {
             }
 
             // Get multi-entity reference fields info, grouped by onDelete-rule
-            $_multiRefA = db()->query("
+            $_multiRefA = $ibfk ? db()->query("
                 SELECT 
                   `f`.`onDelete` AS `rule`, 
                   `c`.`fieldId`, 
@@ -476,7 +476,7 @@ class Indi_Db {
                   AND `c`.`entityId` = `e`.`id`
                   AND `cf`.`id` = `c`.`consider`
                 ORDER BY `e`.`table`
-            ")->groups();
+            ")->groups() : [];
 
             // Foreach group of multi-entity reference-fields - re-organize
             // so that each field to be a accessible by fieldId within a group

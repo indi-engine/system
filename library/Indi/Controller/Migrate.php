@@ -4,8 +4,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
         set_time_limit(0);
 
         // Make all tables InnoDB
-        foreach (m('entity')->all() as $entity) {
-            db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
+        if (uri()->command == 'engine') {
+            foreach (m('entity')->all() as $entity) {
+                db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
+            }
+            die('engine only');
         }
 
         // Add onDelete-field
