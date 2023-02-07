@@ -22,15 +22,14 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => '-',
             'move' => 'filter',
         ]);
-        enumset('field', 'onDelete', '-', ['title' => '', 'move' => '']);
-        enumset('field', 'onDelete', 'CASCADE', ['title' => 'CASCADE', 'move' => '-']);
-        enumset('field', 'onDelete', 'SET NULL', ['title' => 'SET NULL', 'move' => 'CASCADE']);
-        enumset('field', 'onDelete', 'RESTRICT', ['title' => 'RESTRICT', 'move' => 'RESTRICT']);
-        m('field')->reload();
+        enumset('field', 'onDelete', '-', ['title' => '-', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('field', 'onDelete', 'CASCADE', ['title' => 'CASCADE', 'move' => '-', 'boxIcon' => 'resources/images/icons/ondelete-cascade.png']);
+        enumset('field', 'onDelete', 'SET NULL', ['title' => 'SET NULL', 'move' => 'CASCADE', 'boxIcon' => 'resources/images/icons/ondelete-setnull.png']);
+        enumset('field', 'onDelete', 'RESTRICT', ['title' => 'RESTRICT', 'move' => 'SET NULL', 'boxIcon' => 'resources/images/icons/ondelete-restrict.png']);        m('field')->reload();
 
         // Add gridcols to fields sections
-        grid('fieldsAll', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
-        grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1']);
+        grid('fieldsAll', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1', 'icon' => 'resources/images/icons/ondelete.png']);
+        grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'editor' => '1', 'icon' => 'resources/images/icons/ondelete.png']);
 
         // Setup CASCADE values for onDelete for all single-value non-config non-enumset foreign key fields
         db()->query('

@@ -615,7 +615,23 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     private function _resetRelation($columnTypeR) {
 
         // If storeRelationAbility-prop was not modified - return
-        if (!$storeRelationAbility = $this->_modified['storeRelationAbility']) return;
+        if (!$storeRelationAbility = $this->_modified['storeRelationAbility']) {
+
+            // If it's not a foreign key field, or is but a cfgField - set onDelete to be '-'
+            if ($this->storeRelationAbility == 'none' || $this->entry) $this->onDelete = '-';
+
+            // Else if it's a non-cfgField and is a foreign-key but onDelete-value is '-'
+            else if ($this->onDelete == '-')
+
+                // Set valid value
+                $this->onDelete = $columnTypeR->isEnumset()
+                    ? 'RESTRICT'
+                    : ($storeRelationAbility == 'many'
+                        ? 'SET NULL'
+                        : 'CASCADE');
+            
+            return;
+        }
 
         // If it was modified to 'none'
         if ($storeRelationAbility == 'none') {

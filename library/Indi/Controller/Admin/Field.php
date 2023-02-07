@@ -15,6 +15,9 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         // Disable `l10n` field
         $this->appendDisabledField('l10n', true);
 
+        // Disable `entry` field, as it's not applicable here
+        $this->appendDisabledField('entry');
+
         // Default form action
         parent::formAction();
     }
