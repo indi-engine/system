@@ -690,22 +690,21 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function maxwell($event) {
 
-        // Backup original
-        $original = $this->_original;
-
-        // Check if row (in it's original state) matches each separate notification's criteria,
-        // and remember the results separately for each notification, attached to current row's entity
-        $this->_noticesStep1($event);
-
-        // If $event is 'delete'
+        // If event is 'delete'
         if ($event == 'delete') {
 
-            // Force false to be the result of all matches each separate notification's criteria,
-            // and compare results with the results of previous check, that was made before any modifications
-            $this->_noticesStep2();
+            // Do system things
+            $this->_afterDelete();
 
-        // Else if $event if 'insert' or 'update'
+        // Else
         } else {
+
+            // Backup original
+            $original = $this->_original;
+
+            // Check if row (in it's original state) matches each separate notification's criteria,
+            // and remember the results separately for each notification, attached to current row's entity
+            $this->_noticesStep1($event);
 
             // Merge $this->_original and $this->_modified arrays into $this->_original array
             $this->_original = (array) array_merge($this->_original, $this->_modified);
@@ -719,10 +718,10 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Check if row (in it's current/modified state) matches each separate notification's criteria,
             // and compare results with the results of previous check, that was made before any modifications
             $this->_noticesStep2($original);
-        }
 
-        // Trigger realtime updates to be rendered and delivered to subscribers
-        $this->realtime($event);
+            // Trigger realtime updates to be rendered and delivered to subscribers
+            $this->realtime($event);
+        }
     }
 
     /**
@@ -1807,16 +1806,40 @@ class Indi_Db_Table_Row implements ArrayAccess
             throw new Indi_Db_DeleteException($msg);
         }
 
+        // Do some custom things before deletion
+        $this->onBeforeDelete();
+
         // Apply CASCASE and SET NULL rules for usages
         $this->doDeletionCASCADEandSETNULL();
 
-        // Do some custom things before action deletion
-        $this->onBeforeDelete();
-
         // Standard deletion with temporary turn off foreign keys on mysql-level
+        // We do that way because CASCADE-deletion events are handled by MySQL
+        // InnoDB storage engine internally and not logged into binlog, so cannot be captured by Maxwell
         db()->query('SET `foreign_key_checks` = 0');
         $return = $this->model()->delete('`id` = "' . $this->_original['id'] . '"');
         db()->query('SET `foreign_key_checks` = 1');
+
+        // Unset `id` prop
+        $this->id = null;
+
+        // Do some custom things after deletion
+        $this->onDelete();
+
+        // Do some system things after deletion, if maxwell is turned off,
+        // as otherwise this method will be called inside $this->>maxwell()
+        if (!ini()->rabbitmq->maxwell) $this->_afterDelete();
+
+        // Return
+        return $return;
+    }
+
+    /**
+     * System things to be triggered after entry was deleted from table,
+     * which can be done asyncronously
+     *
+     * @throws Exception
+     */
+    protected function _afterDelete() {
 
         // Check if row (in it's current state) matches each separate notification's criteria,
         // and remember the results separately for each notification, attached to current row's entity
@@ -1831,9 +1854,6 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Delete all files/folder uploaded/created while using CKFinder
         $this->deleteCKFinderFiles();
 
-        // Do some custom things
-        $this->onDelete();
-
         // Unset `id` prop
         $this->id = null;
 
@@ -1843,9 +1863,6 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Trigger dependent counters / summaries to be updated
         $this->_inQtySum('delete');
-
-        // Return
-        return $return;
     }
 
     /**
