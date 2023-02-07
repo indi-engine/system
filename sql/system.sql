@@ -706,10 +706,10 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`,`boxIcon`,`boxColor
 (1270,2642,'{\"en\":\"Yes, for certain owner roles\",\"ru\":\"Да, для некоторых ролей\"}','certain',1270,'resources/images/icons/filter-key-blue.png','','',''),
 (1271,2657,'{\"en\":\"No\",\"ru\":\"Нет\"}','none',1271,'','','',''),
 (1272,2657,'{\"ru\":\"Да\",\"en\":\"Yes\"}','all',1272,'','','',''),
-(1273,2660,'','-',1273,'','','',''),
-(1274,2660,'CASCADE','CASCADE',1274,'','','',''),
-(1275,2660,'SET NULL','SET NULL',1275,'','','',''),
-(1276,2660,'RESTRICT','RESTRICT',1276,'','','','');
+(1273,2660,'-','-',1273,'','000#FFFFFF','',''),
+(1274,2660,'CASCADE','CASCADE',1274,'resources/images/icons/ondelete-cascade.png','','',''),
+(1275,2660,'SET NULL','SET NULL',1275,'resources/images/icons/ondelete-setnull.png','','',''),
+(1276,2660,'RESTRICT','RESTRICT',1276,'resources/images/icons/ondelete-restrict.png','','','');
 
 /*Table structure for table `field` */
 
@@ -724,7 +724,7 @@ CREATE TABLE `field` (
   `storeRelationAbility` enum('none','many','one') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `relation` int DEFAULT NULL,
   `filter` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `onDelete` enum('-','CASCADE','SET NULL','RESTRICT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '-',
+  `onDelete` enum('-','CASCADE','SET NULL','RESTRICT') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '-',
   `mode` enum('regular','required','readonly','hidden') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'regular',
   `elementId` int DEFAULT NULL,
   `tooltip` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1580,8 +1580,8 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`further`,`gridId`,`toggle`,`move
 (2834,12,2650,NULL,2831,'y',2834,'{\"en\":\"Text color\",\"ru\":\"Цвет текста\"}','normal','resources/images/icons/color-text.svg','','','1','y',0,'none','','all','',NULL,NULL,'','n','',NULL,0),
 (2835,12,377,NULL,NULL,'y',2835,'{\"en\":\"Order\",\"ru\":\"Порядок\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0),
 (2839,390,2659,NULL,NULL,'y',2414,'{\"en\":\"HTTP hook\",\"ru\":\"HTTP-запрос\"}','normal','','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0),
-(2840,391,2660,NULL,2619,'y',2840,'{\"en\":\"ON DELETE\",\"ru\":\"ON DELETE\"}','normal','','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0),
-(2841,6,2660,NULL,2611,'y',2841,'{\"en\":\"ON DELETE\",\"ru\":\"ON DELETE\"}','normal','','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0);
+(2840,391,2660,NULL,2619,'y',2840,'{\"en\":\"ON DELETE\",\"ru\":\"ON DELETE\"}','normal','resources/images/icons/ondelete.png','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0),
+(2841,6,2660,NULL,2611,'y',2841,'{\"en\":\"ON DELETE\",\"ru\":\"ON DELETE\"}','normal','resources/images/icons/ondelete.png','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0);
 
 /*Table structure for table `lang` */
 
@@ -2017,7 +2017,7 @@ CREATE TABLE `realtime` (
   CONSTRAINT `realtime_ibfk_realtimeId` FOREIGN KEY (`realtimeId`) REFERENCES `realtime` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4561 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4574 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
