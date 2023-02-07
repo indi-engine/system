@@ -59,6 +59,24 @@ class Indi_Db_Table
     protected $_filesGroupBy = 0;
 
     /**
+     * If set to true, child entries will be deleted by InnoDB internally,
+     * so that those won't be bin-logged and therefore not captured by Maxwell
+     * replication client, and this means onBeforeDelete(), onDelete() and _afterDelete()
+     * methods will NOT be called and such children deletion won't be reflected in UI
+     * in the realtime manner. Also, only native ON DELETE = 'SET NULL' / 'CASCADE' rule will be
+     * respected, and non-native (e.g. enumset- and multi-entity) references will be NOT.
+     *
+     * This flag is intended for cases when the above implications ARE NOT a problem,
+     * e.g. there are only references indentical to mysql native ones, and onBeforeDelete() and onDelete()
+     * methods are empty and no fileupload fields, and if so, the deletion would be much performant then
+     *
+     * Currently this flag is set to true for queueTask-entity
+     *
+     * @var
+     */
+    protected $_nativeCascade = false;
+
+    /**
      * Store array of [foreignKeyField => ON DELETE RULE] pairs,
      * that have foreign key constraints defined on mysql-level
      *
@@ -2442,5 +2460,14 @@ class Indi_Db_Table
 
         // Return refs
         return $this->_refs;
+    }
+
+    /**
+     * Get value of nativeCascade-flag
+     *
+     * @return bool
+     */
+    public function nativeCascade() {
+        return $this->_nativeCascade;
     }
 }
