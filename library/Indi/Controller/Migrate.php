@@ -3,13 +3,17 @@ class Indi_Controller_Migrate extends Indi_Controller {
     public function innodbAction() {
         set_time_limit(0);
 
+        Indi::iflush(true);
+
         // Make all tables InnoDB
         if (uri()->command == 'engine') {
             foreach (m('entity')->all() as $entity) {
                 db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
+                d($entity->table . ' done');
             }
             die('engine only');
         }
+
 
         // Add onDelete-field
         $fieldR = field('field', 'onDelete', [
