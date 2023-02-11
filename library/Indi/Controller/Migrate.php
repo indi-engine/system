@@ -75,6 +75,13 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('field', 'elementId', ['onDelete' => 'RESTRICT']);
         field('field', 'columnTypeId', ['onDelete' => 'RESTRICT']);
         field('section', 'parentSectionConnector', ['onDelete' => 'RESTRICT']);
+
+        foreach ($sortById = m('section')->all('`defaultSortField` = "-1"') as $section)
+            $section->set('defaultSortField', 0)->save();
+
+        foreach ($connectorById = m('consider')->all('`connector` = "-1"') as $consider)
+            $consider->set('connector', 0)->save();
+
         field('section', 'defaultSortField', ['onDelete' => 'SET NULL']);
         field('section', 'groupBy', ['onDelete' => 'SET NULL']);
         field('section', 'tileField', ['onDelete' => 'SET NULL']);
@@ -88,17 +95,14 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('entity', 'titleFieldId', ['onDelete' => 'SET NULL']);
         field('entity', 'filesGroupBy', ['onDelete' => 'SET NULL']);
 
-        // Temporary change to 0 to allow ibfk to be added
-        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '0']);
 
         // Add ibfk
         foreach (m('field')->all("`onDelete` != '-'") as $field) {
             d($field->foreign('entityId')->table . '.' . $field->alias);
             $field->addIbfk();
         }
-
-        // Change back to -1
-        consider('section2action', 'filterOwnerRoleIds', 'roleIds', ['required' => 'y', 'connector' => '-1']);
+        foreach ($sortById as $section) $section->set('defaultSortField', -1)->save();
+        foreach ($connectorById as $consider) $consider->set('connector', -1)->save();
 
         // Create whichEntities cfgField to be able to specify the list of entities, that multi-entity foreign key fields can point to
         cfgField('element', 'combo', 'whichEntities', [

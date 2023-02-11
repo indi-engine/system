@@ -111,4 +111,28 @@ class Section extends Indi_Db_Table {
         // Return menu data
         return $menu;
     }
+
+    /**
+     * Temporary disable foreign key checks if defaultSortField is -1, which is used to point to `id`-column,
+     * because `id`-columns does not have corresponding entries in `field`-table
+     *
+     * @param array $data
+     * @param string $where
+     * @return int|void
+     * @throws Exception
+     */
+    public function update(array $data, $where = '') {
+
+        // Temporarily disable foreign keys
+        if ($data['defaultSortField'] == -1) db()->query('SET `foreign_key_checks` = 0');
+
+        // Call parent
+        $return = parent::update($data, $where);
+
+        // Enable foreign keys back
+        if ($data['defaultSortField'] == -1) db()->query('SET `foreign_key_checks` = 1');
+
+        // Return
+        return $return;
+    }
 }
