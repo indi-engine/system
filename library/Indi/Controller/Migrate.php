@@ -10,8 +10,12 @@ class Indi_Controller_Migrate extends Indi_Controller {
             foreach (m('entity')->all() as $entity) {
                 $table = $entity->table;
                 if (!m($table)->isVIEW()) {
-                    db()->query("ALTER TABLE `$table` ENGINE = InnoDB");
-                    d($table . ' done');
+                    if (db()->query("SHOW TABLE STATUS WHERE Name = '$table'")->fetch()['Engine'] == 'InnoDB') {
+                        d($table . ' already InnoDB');                        
+                    } else {
+                        db()->query("ALTER TABLE `$table` ENGINE = InnoDB");
+                        d($table . ' done');                        
+                    }
                 } else {
                     d($table . ' is VIEW');
                 }
