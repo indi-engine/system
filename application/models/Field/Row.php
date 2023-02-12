@@ -1778,7 +1778,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Shortcuts
         $table = $this->foreign('entityId')->table;
-        $entry = $this->foreign('entry')->alias ?: $this->entry;
+        $entry = $this->entry ? $this->foreign('entry')->alias : $this->entry;
 
         // Build `field` entry creation line
         $lineA[] = $this->entry
@@ -2107,6 +2107,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Get model
         $model = m($this->entityId);
 
+        // If is VIEW - return
+        if ($model->isVIEW()) return false;
+
         // Get table
         $table = $model->table();
 
@@ -2121,6 +2124,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Get referenced table
         $refTable = $this->rel()->table();
+
+        // If ref-table is VIEW - return false
+        if (m($refTable)->isVIEW()) return false;
 
         // If desired foreign key constraint already exists - return it's name
         if ($this->hasIbfk()) return $ibfkName;
@@ -2169,6 +2175,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Get model
         $model = m($this->aoc('entityId'));
 
+        // If is VIEW - return
+        if ($model->isVIEW()) return false;
+
         // Get table
         $table = $model->table();
 
@@ -2178,11 +2187,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Get constraint name
         $ibfkName = $this->_ibfk(true);
 
-        // Get delete rule
-        $deleteRule = $this->aoc('onDelete');
-
         // Get referenced table
         $refTable = m($this->aoc('relation'))->table();
+
+        // If ref-table is VIEW - return false
+        if (m($refTable)->isVIEW()) return false;
 
         // If foreign key constraint does not already exist - return true
         if (!$this->hasIbfk(true)) return true;

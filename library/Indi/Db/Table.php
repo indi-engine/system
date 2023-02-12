@@ -1153,6 +1153,22 @@ class Indi_Db_Table
     }
 
     /**
+     * Check whether this entity is based on VIEW rather that TABLE
+     *
+     * @return bool
+     */
+    public function isVIEW() {
+
+        // Database name
+        $dn = ini()->db->name;
+
+        // Check whether it's a mysql VIEW
+        return !!db()->query("
+            SHOW FULL TABLES IN `$dn` WHERE `TABLE_TYPE` LIKE 'view' AND `Tables_in_$dn` LIKE '{$this->_table}'
+        ")->cell();
+    }
+
+    /**
      * Fetches one row in an object of type Indi_Db_Table_Row,
      * or returns null if no row matches the specified criteria.
      *

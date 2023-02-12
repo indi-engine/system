@@ -8,8 +8,13 @@ class Indi_Controller_Migrate extends Indi_Controller {
         // Make all tables InnoDB
         if (uri()->command == 'engine') {
             foreach (m('entity')->all() as $entity) {
-                db()->query("ALTER TABLE `{$entity->table}` ENGINE = InnoDB");
-                d($entity->table . ' done');
+                $table = $entity->table;
+                if (!m($table)->isVIEW()) {
+                    db()->query("ALTER TABLE `$table` ENGINE = InnoDB");
+                    d($table . ' done');
+                } else {
+                    d($table . ' is VIEW');
+                }
             }
             die('engine only');
         }
@@ -98,8 +103,13 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         // Add ibfk
         foreach (m('field')->all("`onDelete` != '-'") as $field) {
-            d($field->foreign('entityId')->table . '.' . $field->alias);
-            $field->addIbfk();
+            $table = $field->foreign('entityId')->table;
+            if (m($table)->isVIEW()) {
+                d($table . '.' . $field->alias . ' - VIEW');
+            } else {
+                d($table . '.' . $field->alias);
+                $field->addIbfk();
+            }
         }
         foreach ($sortById as $section) $section->set('defaultSortField', -1)->save();
         foreach ($connectorById as $consider) $consider->set('connector', -1)->save();
