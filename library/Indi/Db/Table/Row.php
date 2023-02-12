@@ -1873,24 +1873,6 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
-     * Delete all `changeLog` entries, related to current entry
-     */
-    public function deleteChangeLog() {
-
-        // If `id` prop is null/zero/false/empty - return
-        if (!$this->id) return;
-
-        // If `ChangeLog` model does not exist - return
-        if (!$changeLogM = m('changeLog', true)) return;
-
-        // Find and delete related `changeLog` entries
-        $changeLogM->all([
-            '`entityId` = "' . $this->model()->id() . '"',
-            '`entryId` = "' . $this->id . '"'
-        ])->delete();
-    }
-
-    /**
      * Get the data for use in all control element, that deal with foreign keys
      *
      * @param $field

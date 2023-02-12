@@ -142,6 +142,11 @@ class Indi_Controller_Migrate extends Indi_Controller {
             if ($entityIds = db()->query("SELECT DISTINCT `entityId` FROM `field` WHERE `entry` = '0' AND `id` IN ($colorFieldIds)")->in())
                 param('grid', 'colorEntry', 'whichEntities', ['cfgValue' => $entityIds]);
 
+        field('entity', 'titleFieldId', ['filter' => '`entityId` = "<?=$this->id?>" AND IFNULL(`columnTypeId`, 0) != "0"']);
+        field('changeLog', 'fieldId', ['filter' => 'IFNULL(`columnTypeId`, 0) != "0"']);
+        field('section', 'groupBy', ['filter' => 'IFNULL(`columnTypeId`, 0) != "0"']);
+        field('notice', 'sectionId', ['filter' => 'FIND_IN_SET(`sectionId`, "<?=m(\'section\')->all(\'IFNULL(`sectionId`, 0) = "0"\')->column(\'id\', true)?>")']);
+        field('consider', 'consider', ['filter' => '`id` != "<?=$this->fieldId?>" AND IFNULL(`columnTypeId`, 0) != "0"']);
         die('ok');
     }
     public function queueResumeAction() {
