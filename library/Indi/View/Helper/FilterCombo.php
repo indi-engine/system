@@ -116,21 +116,21 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
 
                 // Get connector consistent values
                 $connector_in = db()->query('
-                  SELECT DISTINCT `' . $connector->alias . '`
+                  SELECT DISTINCT IFNULL(`' . $connector->alias . '`, 0)
                   FROM `' . $tbl . '`' .
                   (strlen($sw) ? 'WHERE ' . $sw : '')
                 )->col();
 
                 // Get the distinct list of possibilities
                 $in = db()->query('
-                  SELECT DISTINCT `'. $field->original('alias') . '`
+                  SELECT DISTINCT IFNULL(`'. $field->original('alias') . '`, 0)
                   FROM `' . $connector->rel()->table() .'`
                   WHERE `id` IN (0' . rif(im($connector_in), ',$1') . ')'
                 )->col();
 
             // Else get the distinct list of possibilities using usual approach
             } else $in = db()->query('
-              SELECT DISTINCT `'. $alias . '` FROM `' . $this->distinctFrom($alias, $tbl) .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
+              SELECT DISTINCT IFNULL(`'. $alias . '`, 0) FROM `' . $this->distinctFrom($alias, $tbl) .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
             )->col();
 
             // Setup $m flag/shortcut, indicating whether field is really multi-key,

@@ -657,7 +657,7 @@ class Indi_Controller {
 
             // Append part of WHERE clause, that will be involved in the process of fetching filter combo data
             $where[] = '`id` IN (' . (($in = db()->query('
-                SELECT DISTINCT `'. $for . '` FROM `' . $tbl .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
+                SELECT DISTINCT IFNULL(`'. $for . '`, 0) FROM `' . $tbl .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
             )->col()) ? trim(implode(',', $in), ',') : 0) . ')';
         }
 
