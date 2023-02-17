@@ -832,7 +832,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2132,10,0,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move','none',NULL,'','-','regular',4,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2319),
 (2159,9,0,'{\"ru\":\"Статус\",\"en\":\"Toggle\"}','toggle','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'y','y',2165),
 (2161,171,0,'{\"ru\":\"Режим\",\"en\":\"Mode\"}','mode','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'inherit','y',2385),
-(2163,2,0,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title field\"}','titleFieldId','one',5,'`entityId` = \"<?=$this->id?>\" AND `columnTypeId` != \"0\"','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2163),
+(2163,2,0,'{\"ru\":\"Заголовочное поле\",\"en\":\"Title field\"}','titleFieldId','one',5,'`entityId` = \"<?=$this->id?>\" AND IFNULL(`columnTypeId`, 0) != \"0\"','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2163),
 (2164,8,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title','none',NULL,'','-','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2214),
 (2165,9,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title','none',NULL,'','-','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2200),
 (2166,91,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title','none',NULL,'','-','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2166),
@@ -854,7 +854,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2207,171,0,'{\"en\":\"Roles\",\"ru\":\"Роли\"}','accessRoles','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'all','y',2207),
 (2209,8,0,'{\"ru\":\"Переименовать\",\"en\":\"Rename\"}','rename','none',NULL,'','-','regular',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2642),
 (2210,9,0,'{\"ru\":\"Редактор\",\"en\":\"Cell editor\"}','editor','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'0','y',2313),
-(2211,3,0,'{\"ru\":\"Группировка\",\"en\":\"Group by\"}','groupBy','one',5,'','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2426),
+(2211,3,0,'{\"ru\":\"Группировка\",\"en\":\"Group by\"}','groupBy','one',5,'IFNULL(`columnTypeId`, 0) != \"0\"','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2426),
 (2212,8,0,'{\"ru\":\"Южная панель\",\"en\":\"South panel display mode\"}','south','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"South panel display mode\"}',10,'auto','y',2639),
 (2213,3,0,'{\"ru\":\"Режим подгрузки\",\"en\":\"Loading mode\"}','rowsetSeparate','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'auto','y',2303),
 (2214,8,0,'{\"ru\":\"Автосайз окна\",\"en\":\"Autosize windows\"}','fitWindow','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'y','y',2641),
@@ -867,7 +867,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2244,2,0,'{\"ru\":\"Комплект календарных полей\",\"en\":\"Set of calendar fields\"}','spaceFields','many',5,'`entityId` = \"<?=$this->id?>\"','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2244),
 (2245,308,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId','one',2,'','CASCADE','hidden',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2245),
 (2246,308,0,'{\"ru\":\"Поле\",\"en\":\"Field\"}','fieldId','one',5,'','CASCADE','readonly',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2246),
-(2247,308,0,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','consider','one',5,'`id` != \"<?=$this->fieldId?>\" AND `columnTypeId` != \"0\"','CASCADE','required',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2247),
+(2247,308,0,'{\"ru\":\"От какого поля зависит\",\"en\":\"Depends on\"}','consider','one',5,'`id` != \"<?=$this->fieldId?>\" AND IFNULL(`columnTypeId`, 0) != \"0\"','CASCADE','required',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2247),
 (2248,308,0,'{\"ru\":\"Поле по ключу\",\"en\":\"Further field\"}','foreign','one',5,'','CASCADE','regular',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2248),
 (2249,308,0,'{\"ru\":\"Auto title\",\"en\":\"Auto title\"}','title','none',NULL,'','-','hidden',1,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2249),
 (2250,171,0,'{\"ru\":\"Кроме\",\"en\":\"Except\"}','accessExcept','many',10,'','SET NULL','regular',7,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2250),
@@ -881,7 +881,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2259,309,0,'{\"ru\":\"Счетчик\",\"en\":\"Counter\"}','qty','none',NULL,'','-','regular',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2261),
 (2260,309,0,'{\"ru\":\"Отображение \\/ SQL\",\"en\":\"Calculation \\/ SQL\"}','qtySql','none',NULL,'','-','required',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2262),
 (2261,309,0,'{\"ru\":\"Направление изменения\",\"en\":\"Direction of change\"}','qtyDiffRelyOn','one',6,'','RESTRICT','regular',23,'{\"ru\":\"\",\"en\":\"\"}',10,'event','y',2263),
-(2262,309,0,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId','many',3,'','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2264),
+(2262,309,0,'{\"ru\":\"Пункты меню\",\"en\":\"Menu items\"}','sectionId','many',3,'FIND_IN_SET(`sectionId`, \"<?=m(\'section\')->all(\'IFNULL(`sectionId`, 0) = \"0\"\')->column(\'id\', true)?>\")','SET NULL','regular',23,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2264),
 (2263,309,0,'{\"ru\":\"Цвет фона\",\"en\":\"Background color\"}','bg','none',NULL,'','-','regular',11,'{\"ru\":\"\",\"en\":\"\"}',13,'195#008dbc','n',2265),
 (2264,309,0,'{\"ru\":\"Цвет текста\",\"en\":\"Foreground color\"}','fg','none',NULL,'','-','regular',11,'{\"ru\":\"\",\"en\":\"\"}',13,'000#ffffff','n',2266),
 (2265,309,0,'{\"ru\":\"Подсказка\",\"en\":\"Tooltip\"}','tooltip','none',NULL,'','-','regular',6,'{\"ru\":\"\",\"en\":\"\"}',4,'','y',2267),
@@ -910,7 +910,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`storeRelationAbili
 (2290,312,0,'{\"ru\":\"Порядок\",\"en\":\"Order\"}','move','none',NULL,'','-','regular',4,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2290),
 (2291,313,0,'{\"ru\":\"Сущность\",\"en\":\"Entity\"}','entityId','one',2,'','CASCADE','readonly',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2291),
 (2292,313,0,'{\"en\":\"Entry\",\"ru\":\"Запись\"}','entryId','one',NULL,'','CASCADE','readonly',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2292),
-(2293,313,0,'{\"ru\":\"Что изменено\",\"en\":\"What&#39;s changed\"}','fieldId','one',5,'`columnTypeId` != \"0\"','CASCADE','readonly',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2293),
+(2293,313,0,'{\"ru\":\"Что изменено\",\"en\":\"What&#39;s changed\"}','fieldId','one',5,'IFNULL(`columnTypeId`, 0) != \"0\"','CASCADE','readonly',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2293),
 (2294,313,0,'{\"ru\":\"Было\",\"en\":\"It was\"}','was','none',NULL,'','-','readonly',13,'{\"ru\":\"\",\"en\":\"\"}',4,'','n',2294),
 (2295,313,0,'{\"ru\":\"Стало\",\"en\":\"Has become\"}','now','none',NULL,'','-','readonly',13,'{\"ru\":\"\",\"en\":\"\"}',4,'','n',2295),
 (2296,313,0,'{\"ru\":\"Когда\",\"en\":\"When\"}','datetime','none',NULL,'','-','readonly',19,'{\"ru\":\"\",\"en\":\"\"}',9,'0000-00-00 00:00:00','n',2296),
@@ -1910,7 +1910,7 @@ CREATE TABLE `queueChunk` (
   FULLTEXT KEY `where` (`where`),
   CONSTRAINT `queueChunk_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueChunk_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15802 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15796 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueChunk` */
 
@@ -1934,7 +1934,7 @@ CREATE TABLE `queueItem` (
   FULLTEXT KEY `result` (`result`),
   CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueItem_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=208831 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=208828 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
 
@@ -1973,7 +1973,7 @@ CREATE TABLE `queueTask` (
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `stageState` (`stageState`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=InnoDB AUTO_INCREMENT=655 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=654 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueTask` */
 
@@ -2017,7 +2017,7 @@ CREATE TABLE `realtime` (
   CONSTRAINT `realtime_ibfk_realtimeId` FOREIGN KEY (`realtimeId`) REFERENCES `realtime` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4583 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4567 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
