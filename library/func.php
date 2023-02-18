@@ -903,6 +903,9 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
         header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
     }
 
+    // If success-flag is true - commit db changes, if any
+    if ($flush['success']) db()->commit();
+
     // If $die arg is an url - do not flush data
     if (!$redir) {
 
@@ -1938,7 +1941,7 @@ function grid($section, $field, $ctor = false) {
         }
 
         // Mind `further` field
-        if ($further) $w []= '`further` = "' . $fieldR->rel()->fields($further)->id . '"';
+        if ($further) $w []= 'IFNULL(`further`, 0) = "' . $fieldR->rel()->fields($further)->id . '"';
 
     // Else involve $field arg into WHERE clause
     } else $w []= '`alias` = "' . $field . '"';
@@ -2458,7 +2461,7 @@ function filter($section, $field, $ctor = false) {
     }
 
     // Mind `further` field
-    $w []= '`further` = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
+    $w []= 'IFNULL(`further`, 0) = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `filter` entry
     $filterR = m('Filter')->row($w);

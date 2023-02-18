@@ -1717,7 +1717,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Apend additional part to WHERE clause, in case if current entity - is a tree-like entity
             if ($this->model()->treeColumn())
-                $where['treeColumn'] = '`' . $this->model()->treeColumn() . '` = "' . $this->{$this->model()->treeColumn()} . '"';
+                $where['treeColumn'] = 'IFNULL(`' . $this->model()->treeColumn() . '`, 0) = "' . $this->{$this->model()->treeColumn()} . '"';
 
             // Append groupBy-part of WHERE clause, for cases when moving should be made among
             // sibling entries, having value of $groupBy prop equal tos current entry's $groupBy prop

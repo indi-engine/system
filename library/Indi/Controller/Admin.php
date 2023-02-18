@@ -466,7 +466,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     WHERE 1 
                       AND `id` IN (' . im($idA) . ') 
                       AND `group` = "' . $_['indiId']->group . '" 
-                      AND `gridId` = "' . $_['indiId']->gridId . '"
+                      AND IFNULL(`gridId`, 0) = "' . $_['indiId']->gridId . '"
                     ORDER BY `move`
                 ')->col();
 
