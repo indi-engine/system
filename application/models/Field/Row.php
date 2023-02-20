@@ -1441,12 +1441,24 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     // Else
                     } else {
 
+                        // Table name shortcut
+                        $table = m($this->entityId)->table();
+
+                        // Start building WHERE clause
+                        $where = is_array($where) ? implode(' AND ', $where) : $where;
+
+                        // If this field is a foreign key having mysql constraint defined at mysql-level
+                        if ($this->relation && m($this->entityId)->ibfk($this->alias)) {
+
+                            // Append 'AND NOT ISNULL(...)' clause
+                            $where = rif($where, '$1 AND ') . 'NOT ISNULL(`' . $this->alias . '`)';
+                        }
+
+                        // Prepend with WHERE keyword, if not empty
+                        $where = rif($where, 'WHERE $1');
+
                         // Get the possible foreign keys
-                        $setA = db()->query('
-                            SELECT DISTINCT `' . $this->alias . '` AS `id`
-                            FROM `' . m($this->entityId)->table() . '`
-                            ' . ($where ? 'WHERE ' . (is_array($where) ? implode(' AND ', $where) : $where) : '') . '
-                        ')->col();
+                        $setA = db()->query("SELECT DISTINCT `{$this->alias}` AS `id` FROM `$table` $where")->col();
 
                         // If at least one key was found
                         if (count($setA)) {
