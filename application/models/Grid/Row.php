@@ -105,10 +105,12 @@ class Grid_Row extends Indi_Db_Table_Row {
                 else if ($prop == 'jumpSectionActionId') $value = $this->foreign($prop)->foreign('actionId')->alias;
 
                 // Else if it's one of fields for color definition
-                else if ($prop == 'colorField') $value = join('.', [
-                    $this->foreign($prop)->foreign('entityId')->table,
-                    $this->foreign($prop)->alias
-                ]);
+                else if ($prop == 'colorField') {
+                    $value = $this->foreign($prop) ? join('.', [
+                        $this->foreign($prop)->foreign('entityId')->table,
+                        $this->foreign($prop)->alias
+                    ]) : '';
+                }
                 else if ($prop == 'colorEntry') $value = $this->foreign($prop)->alias ?: $this->foreign($prop)->id;
 
                 // Export roles
