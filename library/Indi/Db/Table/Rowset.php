@@ -614,6 +614,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             'numeric' => [],
         ];
 
+        // Shortcut to span-element id
+        $span = element('span')->id;
+
         // Get fields
         $fieldRs = $this->model()->fields(im(ar($fields)), 'rowset');
 
@@ -698,8 +701,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     ($_ = $gridFieldR->relation) && ($_ = m($_)) && ($_ = $_->titleField()) && $_->param('shade')
                 ))) $typeA['shade'][$gridFieldR->alias] = $gridFieldR->param();                
 
-            // Append current grid field alias to $columnA array
-            $columnA[] = $gridFieldR->alias;
+            // Make sure span-columns won't be in $columnA array
+            if ($gridFieldR->elementId != $span) $columnA[] = $gridFieldR->alias;
         }
 
         // Set up $titleProp variable as an indicator of that titleColumn is within grid fields
@@ -745,32 +748,28 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $value = $entry->{$further = $m[2]};
                 }
 
-                // If field column type is regular, e.g no foreign keys, no prices, no dates, etc. - we do no changes
-                if (isset($typeA['other'][$columnI]) || isset($typeA['string'][$columnI])) $data[$pointer][$columnI] = $value;
+                // Get value as is
+                $data[$pointer][$columnI] = $value;
 
                 // If field column type is 'decimal', we right pad column value by certain precision length
                 // so if current row's price is '30.5' - we convert it to '30.50'
                 if (isset($typeA['price'][$columnI]))
-                    $data[$pointer][$columnI] = count($parts = explode('.', $value))
-                        ? $parts[0] . '.' . str_pad($parts[1], $typeA['price'][$columnI], '0', STR_PAD_RIGHT)
-                        : $data[$pointer][$columnI] . str_pad('.', $typeA['price'][$columnI] + 1, '0', STR_PAD_RIGHT);
+                    $data[$pointer]['_render'][$columnI] = number_format($value, 2, '.', ' ');
 
                 // If field column type is 'boolean', we replace actual value with localized 'Yes' or 'No' strings
-                if (isset($typeA['boolean'][$columnI])) $data[$pointer][$columnI] = $value ? I_YES : I_NO;
+                if (isset($typeA['boolean'][$columnI])) $data[$pointer]['_render'][$columnI] = $value ? I_YES : I_NO;
 
                 // If field column type is a single foreign key, we use title of related foreign row
-                if (isset($typeA['foreign']['single'][$columnI]['title']) && $entry) $data[$pointer][$columnI] = $entry->foreign($further ?: $columnI)
-                    ->{is_string($title = $typeA['foreign']['single'][$columnI]['title']) ? $title : 'title'};
+                if (isset($typeA['foreign']['single'][$columnI]['title']) && $entry)
+                    $data[$pointer]['_render'][$columnI] = $entry->foreign($further ?: $columnI)
+                        ->{is_string($title = $typeA['foreign']['single'][$columnI]['title']) ? $title : 'title'};
 
                 // If field column type is a multiple foreign key, we use comma-separated titles of related foreign rows
                 if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry) {
-                    $data[$pointer][$columnI] = [];
+                    $titleCol = is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title';
                     foreach ($entry->foreign($further ?: $columnI) as $m) {
-                        $titleCol = is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title';
-                        $data[$pointer][$columnI][$m->id] = $m->$titleCol;
-                        if ($_ = $renderCfg[$columnI]['jump']) $data[$pointer]['_render'][$columnI][$m->id] = $m->$titleCol;
+                        $data[$pointer]['_render'][$columnI][$m->id] = $m->$titleCol;
                     }
-                    $data[$pointer][$columnI] = join(', ', $data[$pointer][$columnI]);
                 }
 
                 // If field column type is 'date' we adjust it's format if need. If date is '0000-00-00' we set it
@@ -779,7 +778,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     && $typeA['date'][$columnI]['displayFormat']
                     && preg_match(Indi::rex('date'), $value))
 
-                    $data[$pointer][$columnI] = $value == '0000-00-00'
+                    $data[$pointer]['_render'][$columnI] = $value == '0000-00-00'
                         ? ''
                         : date($typeA['date'][$columnI]['displayFormat'], strtotime($value));
 
@@ -789,7 +788,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     && $typeA['time'][$columnI]['displayFormat']
                     && preg_match(Indi::rex('time'), $value))
 
-                    $data[$pointer][$columnI] = $value == '00:00:00'
+                    $data[$pointer]['_render'][$columnI] = $value == '00:00:00'
                         ? ''
                         : date($typeA['time'][$columnI]['displayFormat'], strtotime($value));
 
@@ -803,7 +802,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     if (!$typeA['datetime'][$columnI]['displayTimeFormat'])
                         $typeA['datetime'][$columnI]['displayTimeFormat'] = 'H:i:s';
 
-                    $data[$pointer][$columnI] = $value == '0000-00-00 00:00:00'
+                    $data[$pointer]['_render'][$columnI] = $value == '0000-00-00 00:00:00'
                         ? '' : ldate($typeA['datetime'][$columnI]['displayDateFormat'] . ' ' .
                             $typeA['datetime'][$columnI]['displayTimeFormat'], strtotime($value),
                             $typeA['datetime'][$columnI]['when']);
@@ -813,7 +812,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // '<a href="/url/for/file/download/">DOCX » 1.25mb</a>'
                 if (isset($typeA['upload'][$columnI])) {
                     $file = $entry->file($columnI);
-                    $data[$pointer][$columnI] = $file->link;
+                    $data[$pointer]['_render'][$columnI] = $file->link;
                     $data[$pointer]['_upload'][$columnI]['type'] = $file->type;
                 }
 
@@ -839,9 +838,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])) {
 
                     // Process color boxes
-                    if (preg_match(Indi::rex('hrgb'), $value, $color)) {
-                        $data[$pointer]['_render'][$columnI] = '<span class="i-color-box" style="background: #'
-                            . $color[1] . ';"></span>';
+                    /*if (preg_match(Indi::rex('hrgb'), $value, $color)) {
+                        $data[$pointer]['_render'][$columnI] = '<span class="i-color-box" style="background: #' . $color[1] . ';"></span>';
                     } else if (preg_match('~<.*?box.*?>~', $data[$pointer][$columnI]) && !in($this->table(), 'enumset,changeLog')) {
                         if (preg_match('/background:\s*url\(/', $data[$pointer][$columnI])) {
                             if ($this->model()->fields($columnI)->relation == 6) {
@@ -852,7 +850,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         } else {
                             $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
                         }
-                    } else if ($typeA['enumset'][$columnI]) {
+                    } else*/ if ($typeA['enumset'][$columnI]) {
                         if ($typeA['foreign']['single'][$columnI]['title']) {
                             $data[$pointer]['_render'][$columnI] = !$further || $entry
                                 ? ($entry->foreign($further ?: $columnI)
@@ -864,13 +862,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // If field should be shaded - prevent actual value from being assigned
-                if (isset($typeA['shade'][$columnI])) if ($value) $data[$pointer][$columnI] = I_PRIVATE_DATA;
-
-                // Include the original foreign keys data
-                if (isset($typeA['foreign']['single'][$columnI]['title'])
-                    || isset($typeA['foreign']['multiple'][$columnI]['title'])
-                    || isset($typeA['boolean'][$columnI]))
-                    $data[$pointer]['$keys'][$columnI] = $value;
+                if (isset($typeA['shade'][$columnI]))
+                    if ($value) $data[$pointer][$columnI] = I_PRIVATE_DATA;
 
                 // Set _render to be empty if no value
                 if (isset($typeA['foreign']['single'][$columnI]['title']) && !isset($typeA['enumset'][$columnI]) && !$value)
@@ -879,10 +872,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Provide icon overflow feature, so that if a text-column
                 if ($_ = $renderCfg[$columnI]['icon']) {
                     if ($value != $this->model()->fields($columnI)->defaultValue || !$value) {
+                        $tpl = '<img src="' . $_ . '" class="i-cell-img">$1';
                         if ($typeA['string'][$columnI]) {
-                            $data[$pointer]['_render'][$columnI] = rif($value, '<img src="' . $_ . '" class="i-cell-img">$1');
+                            $data[$pointer]['_render'][$columnI] = rif($value, $tpl);
                         } else if ($typeA['foreign']['single'][$columnI] && !$typeA['enumset'][$columnI]) {
-                            $data[$pointer]['_render'][$columnI] = rif($data[$pointer][$columnI], '<img src="' . $_ . '" class="i-cell-img">$1');
+                            $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI], $tpl);
                         }
                     }
                 }
@@ -910,26 +904,34 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                             // Get id to be used as replacement for '{id}'
                             if ($typeA['foreign']['single'][$columnI]) {
-                                $id = $data[$pointer]['$keys'][$columnI];
+                                $id = $data[$pointer][$columnI];
                             } else {
                                 $id = $data[$pointer]['id'];
                             }
 
                             // Wrap cell contents into a <span jump="someuri">
-                            $wrap = $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI];
+                            $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
                             $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
                             $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
                         }
                     }
+                } else if (is_array($data[$pointer]['_render'][$columnI])) {
+                    // Join values by comma
+                    $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
                 }
 
                 // Provide icon overflow feature for columns representing multiple foreign key fields
-                if ($_ = $renderCfg[$columnI]['icon'])
+                if ($src = $renderCfg[$columnI]['icon'])
                     if ($typeA['foreign']['multiple'][$columnI] && !$typeA['enumset'][$columnI])
-                        $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI], '<img src="' . $_ . '" class="i-cell-img">$1');
+                        $data[$pointer]['_render'][$columnI] = rif(
+                            $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI],
+                            '<img src="' . $src . '" class="i-cell-img">$1');
+
+                // Make sure numeric values to be have really numeric type
+                if ($typeA['numeric'][$columnI]) $data[$pointer][$columnI] = (float) $data[$pointer][$columnI];
 
                 // If column is numeric and value is 0 - apply lightgray color
-                if ($typeA['numeric'][$columnI] && !(float) $data[$pointer][$columnI])
+                if ($typeA['numeric'][$columnI] && !$data[$pointer][$columnI])
                     $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
 
                 // Else if color is defined for column

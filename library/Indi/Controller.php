@@ -1322,6 +1322,9 @@ class Indi_Controller {
             // Shortcut to color definition
             $color = &$colorA[$prop];
 
+            // Shortcut to what is going to be shown in cell
+            $cell = $item['_render'][$prop] ?? $item[$prop];
+
             // If it's array
             if (is_array($jump)) {
 
@@ -1336,19 +1339,22 @@ class Indi_Controller {
                         . '>' . rif(!$dest['ibox'], $dest['text']) . '</span>';
 
                 // Render
-                $item['_render'][$prop] = wrap($item[$prop], '<span title="$1">', $over) . rif(im($spanA, ', '), ' $1');
+                $item['_render'][$prop] = wrap($cell, '<span title="$1">', $over) . rif(im($spanA, ', '), ' $1');
 
             // Else use just as jump-attribute
-            } else $item['_render'][$prop] = wrap($item[$prop], '<span' . rif($over, ' title="$1"') . ' jump="' . $jump . '">');
+            } else $item['_render'][$prop] = wrap($cell, '<span' . rif($over, ' title="$1"') . ' jump="' . $jump . '">');
 
         // 
         } else if ($overA) foreach ($overA as $prop => &$over) {
+
+            // Shortcut to what is going to be shown in cell
+            $cell = $item['_render'][$prop] ?? $item[$prop];
 
             // Shortcut to color definition
             $color = &$colorA[$prop];
             
             // Use just as title attribute
-            $item['_render'][$prop] = wrap($item[$prop], '<span' . rif($color, ' style="color: $1;"') . rif($over, ' title="$1"') . '>');
+            $item['_render'][$prop] = wrap($cell, '<span' . rif($color, ' style="color: $1;"') . rif($over, ' title="$1"') . '>');
         }
 
         // Unset

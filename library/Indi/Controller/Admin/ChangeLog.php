@@ -104,7 +104,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
             unset($data[$i]['entryId'], $data[$i]['entityId'], $data[$i]['adminId'], $data[$i]['roleId']);
 
             // Shade private data
-            if ($shade[$data[$i]['$keys']['fieldId']]) {
+            if ($shade[$data[$i]['fieldId']]) {
                 if ($data[$i]['was']) $data[$i]['was'] = I_PRIVATE_DATA;
                 if ($data[$i]['now']) $data[$i]['now'] = I_PRIVATE_DATA;
             }

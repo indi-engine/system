@@ -49,7 +49,7 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
      * @param $row
      */
     public function adjustGridDataItem(&$item, Indi_Db_Table_Row $row) {
-        if ($item['$keys']['queueState'] == 'error')
+        if ($item['queueState'] == 'error')
             $item['_render']['queueState']
                 = preg_replace('~color=red~', '$0 title="' . $row->attr('error') . '"', $item['queueState']);
     }

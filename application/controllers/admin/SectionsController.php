@@ -149,11 +149,11 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function adjustGridDataItem(&$item) {
 
         // Add icon for `defaultSortField` prop
-        if ($item['$keys']['defaultSortField']
+        if ($item['defaultSortField']
             && $info = Indi::rexm('~<span (.*?)( title="(.*?)"|)></span>(.*)$~', $item['_render']['defaultSortDirection'])) {
 
             // If defaultSortField is -1 - assume it's ID-column
-            if ($item['$keys']['defaultSortField'] == -1) $item['defaultSortField'] = 'ID';
+            if ($item['defaultSortField'] == -1) $item['_render']['defaultSortField'] = 'ID';
 
             // Setup jump
             $item['_system']['jump']['defaultSortField'] = [[
@@ -204,7 +204,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             }
 
             // If it's a system-fraction
-            if ($item['$keys']['fraction'] == 'system') {
+            if ($item['fraction'] == 'system') {
 
                 // If system app js is not yet set up - do it
                 if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
@@ -222,7 +222,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             }
 
             // Get js-controller file name
-            $js = DOC . STD . $dir[$item['$keys']['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+            $js = DOC . STD . $dir[$item['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
             // If js-controller file exists
             if (file_exists($js) && !$item['_system']['js-class']) {
