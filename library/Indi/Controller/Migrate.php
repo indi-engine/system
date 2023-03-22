@@ -23,7 +23,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'formToggle',
         ]);
-        param('grid', 'formMoreGridIds', 'groupBy', ['cfgValue' => '2764']);
+        param('grid', 'formMoreGridIds', 'groupBy', ['cfgValue' => field('grid', 'group')->id]);
         consider('grid', 'formMoreGridIds', 'sectionId', ['required' => 'y']);
         field('grid', 'formNotHideFieldIds', [
             'title' => 'Не скрывать поля',

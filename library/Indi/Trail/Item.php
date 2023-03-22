@@ -215,9 +215,6 @@ class Indi_Trail_Item {
             // If it's a row-action
             if ($this->action->selectionRequired == 'y') {
 
-                // Turn off locking
-                $this->grid->set(['group' => 'normal']);
-
                 // Turn off cell editor for enumset-fields having box(Icon|Color) defined
                 foreach ($this->grid as $gridR)
                     if (is_array($gridR->editor))
