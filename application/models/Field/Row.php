@@ -1451,7 +1451,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                         if ($this->relation && m($this->entityId)->ibfk($this->alias)) {
 
                             // Append 'AND NOT ISNULL(...)' clause
-                            $where = rif($where, '$1 AND ') . 'NOT ISNULL(`' . $this->alias . '`)';
+                            $where = rif($where, '($1) AND ') . 'NOT ISNULL(`' . $this->alias . '`)';
                         }
 
                         // Prepend with WHERE keyword, if not empty
