@@ -731,7 +731,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $scope
      * @return mixed
      */
-    protected function _toRealtimeGridData($fieldIds, $scope, $langId = 0) {
+    public function toRealtimeGridData($fieldIds, $scope, $langId = 0) {
 
         // If $langId arg is given
         if ($langId) {
@@ -743,24 +743,27 @@ class Indi_Db_Table_Row implements ArrayAccess
             ini()->lang->admin = lang($langId);
         }
 
+        // Convert scope to array, if need
+        if (is_object($scope)) $scope = (array) $scope;
+
         // Get aliases of affected fields involved by context
         $dataColumns = []; $renderCfg = ['_system' => []];
         foreach (ar($fieldIds) as $fieldId)
             if ($field = $this->field($fieldId)->alias) {
                 $dataColumns[] = $field;
-                if ($icon = $scope->icon->$fieldId) $renderCfg[$field]['icon'] = $icon;
-                if ($jump = $scope->jump->$fieldId) $renderCfg[$field]['jump'] = $jump;
-                if (null !== ($color = $scope->color->$fieldId)) $renderCfg[$field]['color'] = $color;
-                if ($field == $scope->colorField) $renderCfg['_system'] += [
-                    'colorField' => $scope->colorField,
-                    'colorFurther' => $scope->colorFurther
+                if ($icon = $scope['icon'][$fieldId]) $renderCfg[$field]['icon'] = $icon;
+                if ($jump = $scope['jump'][$fieldId]) $renderCfg[$field]['jump'] = $jump;
+                if (null !== ($color = $scope['color'][$fieldId])) $renderCfg[$field]['color'] = $color;
+                if ($field == $scope['colorField']) $renderCfg['_system'] += [
+                    'colorField' => $scope['colorField'],
+                    'colorFurther' => $scope['colorFurther']
                 ];
             }
 
         // If scope's filterOwner is non-false
         if ($scope->filterOwner) {
             $renderCfg['_system']['owner'] = [
-                'field' => $scope->filterOwner,
+                'field' => $scope['filterOwner'],
                 'role' => $realtimeR->roleId,
                 'id' => $realtimeR->adminId,
             ];
@@ -835,10 +838,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 ];
 
                 // Json-decode scope data
-                $scope = json_decode($realtimeR->scope);
+                $scope = json_decode($realtimeR->scope, true);
 
                 // If at least one of affected fields stand behind of a grid column, having `rowReqIfAffected` = 'y'
-                if (array_intersect($fieldIdA_affected, ar($scope->rowReqIfAffected))) {
+                if (array_intersect($fieldIdA_affected, ar($scope['rowReqIfAffected']))) {
 
                     // It means that such column's cell content IS INVOLVED in the process
                     // of rendering content for at least one other column's cell within same grid,
@@ -853,7 +856,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
-                    $data = [$this->_toRealtimeGridData($fieldIds, $scope, $realtimeR->langId)];
+                    $data = [$this->toRealtimeGridData($fieldIds, $scope, $realtimeR->langId)];
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
@@ -1007,7 +1010,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                     // Render json-data equal to as if separate request would be made
-                    $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
+                    $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
                 }
 
             // Else if $event is 'insert'
@@ -1149,7 +1152,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                         // Render json-data equal to as if separate request would be made
-                        $byChannel[$channel][$context]['rendered'] = $entry->_toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
+                        $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
                     }
                 }
             }
@@ -5129,13 +5132,29 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param Indi_Db_Table_Rowset $source
      */
-    public function nestDescedants(Indi_Db_Table_Rowset $source) {
+    public function nestDescedants(Indi_Db_Table_Rowset $source, $collectProp = 'id') {
+
+        // Collect [idValue => propValue] pair for current record
+        $collected[$this->id] = $this->$collectProp;
+
+        // Get nested records
+        $nested = $source->select($this->id, $this->model()->treeColumn());
 
         // Find and attach direct descedants of current row to $this->_nested property
-        $this->nested($this->_table, $source->select($this->id, $this->model()->treeColumn()));
+        $this->nested($this->_table, $nested);
 
         // Do quite the same for each direct descedant
-        foreach ($this->nested($this->_table) as $nestedR) $nestedR->nestDescedants($source);
+        foreach ($this->nested($this->_table) as $nestedR) {
+
+            // Collect [idValue => propValue] for nested records
+            $collected[$nestedR->id] = $nestedR->$collectProp;
+
+            // Merge collected
+            $collected += $nestedR->nestDescedants($source, $collectProp);
+        }
+
+        // Return colected pairs
+        return $collected;
     }
 
     /**

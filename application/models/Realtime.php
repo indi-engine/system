@@ -72,7 +72,7 @@ class Realtime extends Indi_Db_Table {
 
         // Get involved fields
         $fields = t()->row
-            ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+            ? t()->fields->select('regular,required,readonly', 'mode')->column('id', ',')
             : t()->gridFields->select(': > 0')->column('id', ',');
 
         // Create `realtime` entry of `type` = "context"
@@ -86,6 +86,37 @@ class Realtime extends Indi_Db_Table {
             'title' => t(true)->toString(),
             'mode' => t()->action->selectionRequired == 'y' ? 'row' : 'rowset'
         ] + $data);
+
+        // If it's a row-action
+        if (t()->action->selectionRequired == 'y') {
+
+            // Scope params
+            $scope = [
+                'hash' => t()->section->primaryHash,
+                'rowsOnPage' => t()->section->rowsOnPage,
+                'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
+                'icon' => t()->icons(),
+                'jump' => t()->jumps(),
+                'color' => t()->scope->color,
+                'filterOwner' => t()->filterOwner('section'),
+            ];
+
+            // Row color definition
+            if (t()->section->colorField) $scope += [
+                'colorField' => t()->section->foreign('colorField')->alias,
+                'colorFurther' => t()->section->foreign('colorFurther')->alias
+            ];
+
+            // Apply to content-record
+            $realtimeR_context->set([
+                'entries' => t()->row->id,
+                'fields'  => im(array_keys(
+                    array_flip(ar($realtimeR_context->fields))
+                    + t()->gridChunks()['gridChunksInvolvedFieldIds']
+                )),
+                'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
+            ]);
+        }
 
         // Save it
         $realtimeR_context->save();

@@ -145,10 +145,12 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
 
                         // Foreach target language - make api call to google passing source values
                         foreach (ar($targets) as $target)
-                            $resultByLang[$target] = array_column($gapi->translateBatch($values, [
-                                'source' => $source,
-                                'target' => $target,
-                            ]), 'text');
+                            $resultByLang[$target] = ini('lang')->gapi->off
+                                ? $values
+                                : array_column($gapi->translateBatch($values, [
+                                    'source' => $source,
+                                    'target' => $target,
+                                ]), 'text');
 
                     // Catch exception
                     } catch (Exception $e) {

@@ -34,6 +34,7 @@ field('grid', 'summaryType')->toggleL10n('qy', $lang, false);
 field('grid', 'summaryText')->toggleL10n('qy', $lang, false);
 field('grid', 'accessRoles')->toggleL10n('qy', $lang, false);
 field('grid', 'colorBreak')->toggleL10n('qy', $lang, false);
+field('grid', 'formToggle')->toggleL10n('qy', $lang, false);
 field('lang', 'toggle')->toggleL10n('qy', $lang, false);
 field('lang', 'state')->toggleL10n('qy', $lang, false);
 field('lang', 'adminSystemUi')->toggleL10n('qy', $lang, false);

@@ -3148,8 +3148,11 @@ class Indi_Controller_Admin extends Indi_Controller {
         // which should be anyway prepared to appear in ExtJS grid panel
         $dataColumns = $phantom ? t()->gridFields->column('alias') : $this->affected4grid();
 
+        // Get grid data render config
+        $renderCfg = t()->renderCfg();
+
         // Wrap data entry in an array, process it by $this->adjustGridData(), and uwrap back
-        $data = [$this->row->toGridData($dataColumns)];
+        $data = [$this->row->toGridData($dataColumns, $renderCfg)];
         $this->adjustGridData($data);
 
         // Adjust grid each data item
@@ -4089,7 +4092,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if ($_ = Realtime::context()) $_->set([
             'entries' => $this->rowset->column('id', ','),
             'fields' => t()->row
-                ? t()->fields->select('readonly,ordinary', 'mode')->column('id', ',')
+                ? t()->fields->select('readonly,regular', 'mode')->column('id', ',')
                 : t()->gridFields->select(': > 0')->column('id', ','),
             'scope' => json_encode($scope, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ])->save();

@@ -751,10 +751,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Get value as is
                 $data[$pointer][$columnI] = $value;
 
-                // If field column type is 'decimal', we right pad column value by certain precision length
+                // If field column type is 'price', we right pad column value by certain precision length
                 // so if current row's price is '30.5' - we convert it to '30.50'
                 if (isset($typeA['price'][$columnI]))
-                    $data[$pointer]['_render'][$columnI] = number_format($value, 2, '.', ' ');
+                    $data[$pointer]['_render'][$columnI] = number_format($value, $typeA['price'][$columnI], '.', ' ');
 
                 // If field column type is 'boolean', we replace actual value with localized 'Yes' or 'No' strings
                 if (isset($typeA['boolean'][$columnI])) $data[$pointer]['_render'][$columnI] = $value ? I_YES : I_NO;

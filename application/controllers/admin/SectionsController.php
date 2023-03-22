@@ -190,10 +190,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $php = 'Admin_' . ucfirst($item['alias']) . 'Controller';
 
             // If php-controller file exists for this section
-            if (class_exists($php)) {
-
-                // Setup flag
-                $item['_system']['php-class'] = true;
+            if ($item['_system']['php-class'] = class_exists($php)) {
 
                 // Get parent class
                 $parent = get_parent_class($php);
@@ -210,10 +207,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
 
                 // If js-controller file exists
-                if (preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
-
-                    // Setup flag
-                    $item['_system']['js-class'] = true;
+                if ($item['_system']['js-class']
+                    = preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
 
                     // If parent class is not as per `extendsJs` prop - setup error
                     if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
@@ -225,10 +220,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $js = DOC . STD . $dir[$item['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
             // If js-controller file exists
-            if (file_exists($js) && !$item['_system']['js-class']) {
+            if (!$item['_system']['js-class'] && $item['_system']['js-class'] = file_exists($js)) {
 
-                // Setup flag
-                $item['_system']['js-class'] = true;
 
                 // If js-controller file is empty - setup error
                 if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';

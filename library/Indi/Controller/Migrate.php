@@ -1,5 +1,56 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function gridChunkAction(){
+        field('grid', 'form', ['title' => 'В форме', 'elementId' => 'span', 'move' => 'colorEntry']);
+        field('grid', 'formToggle', [
+            'title' => 'Отображать',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'form',
+        ]);
+        enumset('grid', 'formToggle', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('grid', 'formToggle', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/show-in-form.png']);
+        field('grid', 'formMoreGridIds', [
+            'title' => 'Добавить еще столбцы',
+            'storeRelationAbility' => 'many',
+            'relation' => 'grid',
+            'onDelete' => 'SET NULL',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'formToggle',
+        ]);
+        param('grid', 'formMoreGridIds', 'groupBy', ['cfgValue' => '2764']);
+        consider('grid', 'formMoreGridIds', 'sectionId', ['required' => 'y']);
+        field('grid', 'formNotHideFieldIds', [
+            'title' => 'Не скрывать поля',
+            'storeRelationAbility' => 'many',
+            'relation' => 'field',
+            'onDelete' => 'SET NULL',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'formMoreGridIds',
+        ]);
+        consider('grid', 'formNotHideFieldIds', 'sectionId', ['foreign' => 'entityId', 'required' => 'y']);
+        grid('grid', 'form', ['gridId' => 'features', 'move' => 'rowReqIfAffected']);
+        grid('grid', 'formToggle', ['gridId' => 'form', 'move' => '', 'icon' => 'resources/images/icons/show-in-form.png']);
+        grid('grid', 'formMoreGridIds', [
+            'gridId' => 'form',
+            'move' => 'formToggle',
+            'icon' => 'resources/images/icons/join2.png',
+            'editor' => '1',
+        ]);
+        grid('grid', 'formNotHideFieldIds', [
+            'gridId' => 'form',
+            'move' => 'formMoreGridIds',
+            'icon' => 'resources/images/icons/field/required.png',
+            'editor' => '1',
+        ]);
+        die('ok');
+    }
     public function innodbAction() {
         set_time_limit(0);
 

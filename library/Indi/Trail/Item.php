@@ -123,6 +123,7 @@ class Indi_Trail_Item {
     public function toArray() {
         $array = [];
         if ($this->section) {
+            if ($this->action->selectionRequired == 'y') $this->section->rownumberer = false;
             $array['section'] = $this->section->toArray();
             if ($this->section->defaultSortField)
                 $array['section']['defaultSortFieldAlias']
@@ -198,6 +199,9 @@ class Indi_Trail_Item {
             // Foreach grid column
             foreach (t()->grid as $r) {
 
+                // Turn on cell editor for grid chunk columns
+                if ($this->action->selectionRequired == 'y') $r->editor = 1;
+
                 // If editor is turned off - skip
                 if (!$r->editor || $r->editor == 'enumNoCycle') continue;
 
@@ -206,6 +210,24 @@ class Indi_Trail_Item {
 
                 // Pick store
                 $r->editor = ['store' => $blank->combo($r->fieldId, true)];
+            }
+
+            // If it's a row-action
+            if ($this->action->selectionRequired == 'y') {
+
+                // Turn off locking
+                $this->grid->set(['group' => 'normal']);
+
+                // Turn off cell editor for enumset-fields having box(Icon|Color) defined
+                foreach ($this->grid as $gridR)
+                    if (is_array($gridR->editor))
+                        foreach ($gridR->editor['store']['data'] as $option)
+                            if ($option['system']['boxColor'] || $option['system']['boxIcon'])
+                                if (!$gridR->editor = 0)
+                                    break;
+
+                // Prepare grid chunks setup data
+                $array += $this->gridChunks();
             }
 
             // Convert to nesting tree and then to array
@@ -228,6 +250,53 @@ class Indi_Trail_Item {
         $array['data'] = $this->data;
         $array['level'] = $this->level;
         return $array;
+    }
+
+    /**
+     * Prepare grid chunks setup data
+     *
+     * @return array
+     */
+    public function gridChunks() {
+
+        // Chunks info
+        $info = [
+            'gridChunksDontHideFieldIds' => [],
+            'gridChunksInvolvedFieldIds' => [],
+            'gridChunks'                 => [],
+            'gridChunksSharedRow'        => Indi_Trail_Admin::$controller->affected(true)
+        ];
+
+        // Foreach grid column having formToggle-prop turned on
+        foreach ($this->grid->select('y', 'formToggle') as $gridR) {
+
+            // Collect ids if fields, what should be still visible in formpanel despite duplicated as grid cells
+            foreach (ar($gridR->formNotHideFieldIds) as $fieldId)
+                $info['gridChunksDontHideFieldIds'][$fieldId] = true;
+
+            // Create Grid_Rowset instance containing this one grid column only
+            $gridChunk = m('grid')->createRowset(['rows' => [$_ = clone $gridR]]);
+
+            // If more cols should be added - do add
+            if ($more = $_->foreign('formMoreGridIds')) $gridChunk->merge($more);
+
+            // Nest descedants and get involved fields' ids
+            foreach ($gridChunk as $column)
+                $info['gridChunksInvolvedFieldIds']
+                    += $column->nestDescedants($this->grid, 'fieldId');
+
+            // Convert to a format, applicable for use as arg for gridColumnADeep() on client-side
+            $info['gridChunks'] []= $gridChunk->toArray(true);
+        }
+
+        // Make sure this prop to be a javascript object rather than array
+        if (!$info['gridChunksDontHideFieldIds']) $info['gridChunksDontHideFieldIds'] = new stdClass();
+
+        // Flip that array so that field ids will be the keys, for easier use in javascript "if (field.id in gridChunksInvolvedFieldIds)"
+        $info['gridChunksInvolvedFieldIds'] = array_flip($info['gridChunksInvolvedFieldIds']);
+
+        // Return chunks info
+        return $info;
     }
 
     /**
