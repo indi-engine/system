@@ -2,6 +2,14 @@
 class Indi_Uri_Base {
 
     /**
+     * Environment things are stored here under href-keys
+     *
+     * @see response()
+     * @var array
+     */
+    public static $stack = [];
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -142,6 +150,43 @@ class Indi_Uri_Base {
 
         // Dispatch
         $controller->dispatch($args);
+    }
+
+    /**
+     * Make sub-request and get sub-response
+     *
+     * @param $uri
+     */
+    public function response($uri) {
+
+        // Backup current uri's environment things
+        self::$stack[$_SERVER['REQUEST_URI']] = [
+            'uri' => Indi::registry('uri'),
+            'trail' => [
+                'instance' => Indi::registry('trail'),
+                'items' => Indi_Trail_Admin::$items,
+                'controller' => Indi_Trail_Admin::$controller,
+            ]
+        ];
+
+        // Dispatch sub-request and get sub-response
+        ob_start(); $this->dispatch($uri); $out = ob_get_clean();
+
+        // Get prev environment key
+        $prev = array_key_last(self::$stack);
+
+        // Restore prev enviromnent
+        $_SERVER['REQUEST_URI'] = $prev;
+        Indi::registry('uri',           self::$stack[$prev]['uri']);
+        Indi::registry('trail',         self::$stack[$prev]['trail']['instance']);
+        Indi_Trail_Admin::$items =      self::$stack[$prev]['trail']['items'];
+        Indi_Trail_Admin::$controller = self::$stack[$prev]['trail']['controller'];
+
+        // Unset from stack as now it is the current environment again
+        unset(self::$stack[$prev]);
+
+        // Return sub-response
+        return $out;
     }
 
     /**

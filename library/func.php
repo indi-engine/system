@@ -1115,11 +1115,11 @@ function iexit($msg = null) {
     // Send all DELETE queries to an special email address, for debugging
     Indi::mailDELETE();
 
-    // Close websocket-client connection
-    Indi::ws(false);
-
-    // Exit
-    exit($msg);
+    // If Indi_Uri::$stack prop is not empty, it means we're going to flush response
+    // for a sub-request initiated uri()->response($href) call so here we just
+    // print that without execution termination, expecting the printed output
+    // to be captured and used as return value by response() method mentioned above
+    if (Indi_Uri::$stack) echo $msg; else exit($msg);
 }
 
 /**

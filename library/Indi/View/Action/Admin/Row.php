@@ -55,7 +55,7 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
             . '/ph/' . uri('ph') . '/aix/' . uri('aix') . '/';
 
         // Get the response
-        $out = Indi::lwget($url);
+        $out = uri()->response($url);
 
         // Delimiter for error detection within $out
         $split = '</error>';
