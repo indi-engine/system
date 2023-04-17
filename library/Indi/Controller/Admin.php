@@ -2,6 +2,13 @@
 class Indi_Controller_Admin extends Indi_Controller {
 
     /**
+     * Declare trait usage
+     */
+    use Indi_Controller_Admin_Trait_Grid;
+    use Indi_Controller_Admin_Trait_Tile;
+    use Indi_Controller_Admin_Trait_Plan;
+
+    /**
      * Flag for set up whether rowset data should be fetched ONLY
      * as a result of a separate http request
      *
@@ -111,14 +118,18 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If we are in some section, mean not in just '/admin/', but at least in '/admin/somesection/'
         if (t(true) && t()->model) {
 
-            // Adjust trail
-            $this->adjustTrail();
-
             // Edit ui, if need
             $this->uiedit();
 
+            // Adjust trail
+            $this->adjustTrail();
+
+            // Call panel-specific adjustTrail method
+            $this->callPanel('adjustTrail', false);
+
             // If tileField defined for current section - change type of view
-            if (t()->section->tileField) $this->actionCfg['view']['index'] = 'tile';
+                 if (t()->section->tileToggle == 'y') $this->actionCfg['view']['index'] = 'tile';
+            else if (t()->section->planToggle == 'y') $this->actionCfg['view']['index'] = 'calendar';
 
             // Adjust action mode and view config.
             $this->adjustActionCfg();
@@ -2995,6 +3006,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Demo mode
         Indi::demo();
 
+        // Call panel-specific preSaveAction-method
+        $this->callPanel('preSaveAction', false);
+
         // If 'ref' or 'cell' uri-param given
         if (($ref = uri()->ref) || $cell = uri()->cell) {
 
@@ -4131,5 +4145,75 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Flush success if realtime is turned Off, else flush failure
             jflush(!ini('rabbitmq')->enabled);
         }
+    }
+
+    /**
+     * Adjust grid data depending on panel type
+     */
+    public function adjustGridData(&$data) {
+        return $this->callPanel();
+    }
+
+    /**
+     * Adjust grid data *_Row instances depending on panel type
+     */
+    public function adjustGridDataRowset() {
+        return $this->callPanel();
+    }
+
+    /**
+     * Set ORDER clause depending panel type
+     *
+     * @param $finalWHERE
+     * @param string $json
+     * @return string
+     */
+    public function finalORDER($finalWHERE = '', $json = '') {
+        return $this->callPanel();
+    }
+
+    /**
+     * Set filters WHERE depending on panel type
+     *
+     * @param string $FROM
+     * @param string $filter
+     * @return array|mixed
+     */
+    public function filtersWHERE($FROM = '', $filter = '') {
+        return $this->callPanel();
+    }
+
+    /**
+     * Call panel-specific method, or parent one otherwise
+     *
+     * @param string $function
+     * @param bool $elseParent
+     * @return mixed
+     */
+    public function callPanel($function = '', $elseParent = true) {
+
+        // Get call info from backtrace
+        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+
+        // Method name
+        $method = $function ?: $call['function'];
+
+        // If panel-specific method defined in corresponding panel-trait
+        if (method_exists($call['class'], $panelMethod = t()->section->panel . '_' . $method))
+
+            // Prepare current class's panel-specific $method expr
+            $method = $call['class'] . '::' . $panelMethod;
+
+        // Else if $elseParent flag is true - prepare parent class's $method expr
+        else if ($elseParent) $method = get_parent_class($call['class']) . '::' . $method;
+
+        // Else return
+        else return null;
+
+        // Prepare args
+        $args = func_num_args() ? func_get_args() : $call['args'];
+
+        // Make the call
+        return call_user_func_array([$this, $method], $args);
     }
 }

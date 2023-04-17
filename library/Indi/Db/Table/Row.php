@@ -4842,6 +4842,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Remove meta info for current file-upload field
                 unset ($this->_files[$field]);
 
+                // Call hook
+                $this->onUpload($field, false);
+
             // If url was detected in $_POST data under key, assotiated with file-upload field
             } else if (preg_match(Indi::rex('url'), $meta)) {
 

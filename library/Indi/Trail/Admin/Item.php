@@ -24,6 +24,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         foreach ($dataTypeA as $dataTypeI) $config[$dataTypeI] = $sectionR->$dataTypeI();
         $this->section = m('Section')->createRow($config);
 
+        // Set panel type
+        foreach (['grid', 'plan', 'tile'] as $panel)
+            if ($this->section->{$panel . 'Toggle'} == 'y')
+                $this->section->panel = $panel;
+
         // Setup index
         $this->level = $level;
 

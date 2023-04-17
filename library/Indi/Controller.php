@@ -816,8 +816,17 @@ class Indi_Controller {
         // Get call info from backtrace
         $call = array_pop(array_slice(debug_backtrace(), 1, 1));
 
+        // If it's a panel-specific function - trim panel type from function name
+        $func = preg_replace('~^(plan|tile|grid)_~', '', $call['function']);
+
+        // Prepare method name
+        $method = get_parent_class($call['class']) . '::' .  $func;
+
+        // Prepare args
+        $args = func_num_args() ? func_get_args() : $call['args'];
+
         // Make the call
-        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+        return call_user_func_array([$this, $method], $args);
     }
     
     /**
