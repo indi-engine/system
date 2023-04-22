@@ -136,7 +136,7 @@ class Indi_Uri_Base {
 
             // If section was found, and it has non-empty `extends` property - set $controllerParentClass as the value
             // of that property, or set it as 'Project_Controller_Admin'
-            $controllerParentClass = $sectionR->extendsPhp ?: $sectionR->extends ?: 'Project_Controller_Admin';
+            $controllerParentClass = $sectionR->extendsPhp ?: 'Project_Controller_Admin';
 
             // If such controller parent class does not exist - set it as 'Indi_Controller_Admin' by default
             if (!class_exists($controllerParentClass)) $controllerParentClass = 'Indi_Controller_Admin';
