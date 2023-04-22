@@ -3,15 +3,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
     public function panelsAction(){
         Indi::iflush(true);
         set_time_limit(0);
-        field('section', 'rowset', [
-            'title' => 'Панель',
-            'mode' => 'hidden',
-            'elementId' => 'span',
-            'move' => 'features',
-        ]);
+        field('section', 'rowset', ['title' => 'Панель', 'mode' => 'hidden', 'elementId' => 'span', 'move' => 'features']);
         field('section', 'grid', ['title' => 'Грид', 'elementId' => 'span', 'move' => 'rowset']);
         field('section', 'gridToggle', [
-            'title' => 'Включить',
+            'title' => 'Статус',
             'storeRelationAbility' => 'one',
             'relation' => 'enumset',
             'onDelete' => 'RESTRICT',
@@ -20,13 +15,12 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => 'y',
             'move' => 'grid',
         ]);
-        enumset('section', 'gridToggle', 'y', ['title' => 'Да', 'move' => '', 'boxIcon' => 'resources/images/icons/field/required.png']);
-        enumset('section', 'gridToggle', 'n', ['title' => 'Нет', 'move' => 'y', 'boxColor' => '000#ffffff']);
+        enumset('section', 'gridToggle', 'y', ['title' => 'Включен', 'move' => '', 'boxIcon' => 'resources/images/icons/grid-2.png']);
+        enumset('section', 'gridToggle', 'n', ['title' => 'Выключен', 'move' => 'y', 'boxColor' => '000#FFFFFF']);
         field('section', 'groupBy', ['move' => 'gridToggle']);
-        field('section', 'multiSelect', ['move' => 'groupBy']);
-        field('section', 'plan', ['title' => 'Календарь', 'elementId' => 'span', 'move' => 'multiSelect']);
+        field('section', 'plan', ['title' => 'Календарь', 'elementId' => 'span', 'move' => 'groupBy']);
         field('section', 'planToggle', [
-            'title' => 'Включен',
+            'title' => 'Статус',
             'storeRelationAbility' => 'one',
             'relation' => 'enumset',
             'onDelete' => 'RESTRICT',
@@ -35,62 +29,24 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => 'n',
             'move' => 'plan',
         ]);
-        enumset('section', 'planToggle', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#ffffff']);
-        enumset('section', 'planToggle', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/field/required.png']);
-        field('section', 'planMonth', [
-            'title' => 'Месяц',
-            'storeRelationAbility' => 'one',
+        enumset('section', 'planToggle', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('section', 'planToggle', 'y', ['title' => 'Включен', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-calendar.png']);
+        field('section', 'planTypes', [
+            'title' => 'Типы',
+            'storeRelationAbility' => 'many',
             'relation' => 'enumset',
             'onDelete' => 'RESTRICT',
             'elementId' => 'combo',
-            'columnTypeId' => 'ENUM',
-            'defaultValue' => 'n',
+            'columnTypeId' => 'SET',
+            'defaultValue' => 'month,week,day',
             'move' => 'planToggle',
         ]);
-        enumset('section', 'planMonth', 'n', [
-            'title' => 'Нет',
-            'move' => '',
-            'boxColor' => '000#FFFFFF',
-            'cssStyle' => 'background: transparent;',
-        ]);
-        enumset('section', 'planMonth', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-month.png']);
-        field('section', 'planWeek', [
-            'title' => 'Неделя',
-            'storeRelationAbility' => 'one',
-            'relation' => 'enumset',
-            'onDelete' => 'RESTRICT',
-            'elementId' => 'combo',
-            'columnTypeId' => 'ENUM',
-            'defaultValue' => 'n',
-            'move' => 'planMonth',
-        ]);
-        enumset('section', 'planWeek', 'n', [
-            'title' => 'Нет',
-            'move' => '',
-            'boxColor' => '000#FFFFFF',
-            'cssStyle' => 'background: transparent;',
-        ]);
-        enumset('section', 'planWeek', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-week.png']);
-        field('section', 'planDay', [
-            'title' => 'День',
-            'storeRelationAbility' => 'one',
-            'relation' => 'enumset',
-            'onDelete' => 'RESTRICT',
-            'elementId' => 'combo',
-            'columnTypeId' => 'ENUM',
-            'defaultValue' => 'n',
-            'move' => 'planWeek',
-        ]);
-        enumset('section', 'planDay', 'n', [
-            'title' => 'Нет',
-            'move' => '',
-            'boxColor' => '000#FFFFFF',
-            'cssStyle' => 'background: transparent;',
-        ]);
-        enumset('section', 'planDay', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-day.png']);
-        field('section', 'tile', ['title' => 'Плитка', 'elementId' => 'span', 'move' => 'multiSelect']);
+        enumset('section', 'planTypes', 'month', ['title' => 'Месяц', 'move' => '', 'boxIcon' => 'resources/images/icons/plan-month.png']);
+        enumset('section', 'planTypes', 'week', ['title' => 'Неделя', 'move' => 'month', 'boxIcon' => 'resources/images/icons/plan-week.png']);
+        enumset('section', 'planTypes', 'day', ['title' => 'День', 'move' => 'week', 'boxIcon' => 'resources/images/icons/plan-day.png']);
+        field('section', 'tile', ['title' => 'Галерея', 'elementId' => 'span', 'move' => 'planTypes']);
         field('section', 'tileToggle', [
-            'title' => 'Включена',
+            'title' => 'Статус',
             'storeRelationAbility' => 'one',
             'relation' => 'enumset',
             'onDelete' => 'RESTRICT',
@@ -99,61 +55,39 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => 'n',
             'move' => 'tile',
         ]);
-        enumset('section', 'tileToggle', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#ffffff']);
-        enumset('section', 'tileToggle', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/field/required.png']);
+        enumset('section', 'tileToggle', 'n', ['title' => 'Выключена', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('section', 'tileToggle', 'y', ['title' => 'Включена', 'move' => 'n', 'boxIcon' => 'resources/images/icons/icon-image.png']);
         field('section', 'tileField', ['move' => 'tileToggle']);
         field('section', 'tileThumb', ['move' => 'tileField']);
+        field('section', 'other', [
+            'title' => 'Другая',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'tileThumb',
+        ]);
+
         grid('sections', 'rowset', ['move' => '']);
         grid('sections', 'grid', ['gridId' => 'rowset', 'move' => '']);
-        grid('sections', 'gridToggle', ['gridId' => 'grid', 'move' => '', 'icon' => 'resources/images/icons/field/required.png']);
-        grid('sections', 'groupBy', [
-            'gridId' => 'grid',
-            'move' => 'gridToggle',
-            'icon' => 'resources/images/icons/group.png',
-            'editor' => '1',
-            'jumpSectionId' => 'fields',
-            'jumpSectionActionId' => 'form',
+        grid('sections', 'gridToggle', ['gridId' => 'grid', 'move' => '', 'icon' => 'resources/images/icons/grid-2.png']);
+        grid('sections', 'groupBy', ['move' => 'gridToggle', 'gridId' => 'grid']);
+        grid('sections', 'other', ['gridId' => 'rowset', 'move' => 'grid']);
+        grid('sections', 'planToggle', [
+            'gridId' => 'other',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-calendar.png',
+            'rename' => 'Календарь',
         ]);
-        grid('sections', 'multiSelect', ['gridId' => 'grid', 'move' => 'groupBy', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
-        grid('sections', 'tile', ['gridId' => 'rowset', 'move' => 'grid']);
-        grid('sections', 'tileToggle', ['gridId' => 'tile', 'move' => '', 'icon' => 'resources/images/icons/field/required.png']);
-        grid('sections', 'tileField', ['gridId' => 'tile', 'move' => 'tileToggle', 'icon' => 'resources/images/icons/icon-image.png', 'toggle' => 'y']);
-        grid('sections', 'tileThumb', ['gridId' => 'tile', 'move' => 'tileField', 'icon' => 'resources/images/icons/fit.png', 'toggle' => 'y']);
-        grid('sections', 'plan', ['gridId' => 'rowset', 'move' => 'tile']);
-        grid('sections', 'planToggle', ['gridId' => 'plan', 'move' => '', 'icon' => 'resources/images/icons/field/required.png']);
-        grid('sections', 'planDay', ['gridId' => 'plan', 'move' => 'planToggle', 'icon' => 'resources/images/icons/plan-day.png']);
-        grid('sections', 'planWeek', ['gridId' => 'plan', 'move' => 'planDay', 'icon' => 'resources/images/icons/plan-week.png']);
-        grid('sections', 'planMonth', ['gridId' => 'plan', 'move' => 'planWeek', 'icon' => 'resources/images/icons/plan-month.png']);
-        field('section', 'tile', ['move' => 'multiSelect']);
-        field('section', 'tileToggle', ['move' => 'tile']);
-        field('section', 'tileField', ['move' => 'tileToggle']);
-        field('section', 'tileThumb', ['move' => 'tileField']);
-        field('section', 'plan', ['move' => 'tileThumb']);
-        field('section', 'planToggle', ['move' => 'plan']);
-        field('section', 'planDay', ['move' => 'planToggle']);
-        field('section', 'planWeek', ['move' => 'planDay']);
-        field('section', 'planMonth', ['move' => 'planWeek']);
-
-
-        /*$icon = 'resources/images/icons/btn-icon-confirm-blue-4.png';
-        $icon = 'resources/images/icons/btn-icon-confirm-green-1.png';
-        $icon = 'resources/images/icons/btn-icon-confirm.png';
-        $icon = 'resources/images/icons/enabled-1.png';
-        $icon = 'resources/images/icons/btn-icon-create-allow.png';
-        $icon = 'resources/images/icons/table-col.png';
-        $icon = 'resources/images/icons/panel-11.png';
-        $icon = 'resources/images/icons/field/required.png';
-        grid('sections', 'gridToggle', ['icon' => $icon]);
-        grid('sections', 'planToggle', ['icon' => $icon]);
-        grid('sections', 'tileToggle', ['icon' => $icon]);
-        enumset('section', 'gridToggle', 'y', ['boxIcon' => $icon]);
-        enumset('section', 'planToggle', 'y', ['boxIcon' => $icon]);
-        enumset('section', 'tileToggle', 'y', ['boxIcon' => $icon]);
-
-        $icon = '';'resources/images/icons/panel-5.png'; $color = '#ffffff'; $style = '';'background: transparent;';
-        enumset('section', 'gridToggle', 'n', ['boxIcon' => $icon, 'boxColor' => $color, 'cssStyle' => $style]);
-        enumset('section', 'planToggle', 'n', ['boxIcon' => $icon, 'boxColor' => $color, 'cssStyle' => $style]);
-        enumset('section', 'tileToggle', 'n', ['boxIcon' => $icon, 'boxColor' => $color, 'cssStyle' => $style]);*/
+        grid('sections', 'tileToggle', [
+            'gridId' => 'other',
+            'move' => 'planToggle',
+            'icon' => 'resources/images/icons/icon-image.png',
+            'rename' => 'Галерея',
+        ]);
+        grid('sections', 'tileField')->delete();
+        grid('sections', 'tileThumb')->delete();
+        enumset('section', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        grid('sections', 'multiSelect', ['move' => 'groupBy', 'gridId' => 'grid']);
+        field('section', 'multiSelect', ['move' => 'groupBy']);
         die('ok');
     }
     public function gridChunkAction(){
