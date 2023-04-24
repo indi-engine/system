@@ -969,6 +969,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             $data[$pointer]['_system']['title'] = $titleProp ? $data[$pointer][$titleProp] : $r->title();
 
             // If color field is defined - get color and apply to record data
+            $data[$pointer]['_system']['style'] = '';
             if ($colorField)
                 if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField))
                     $data[$pointer]['_system']['style'] = 'color: ' . $color . ';';

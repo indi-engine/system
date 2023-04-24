@@ -214,7 +214,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         if ($this->fieldIsZeroed('colorField')) $this->zero('colorFurther', true);
 
         // Clear tileThumb-field, which depends on tileField-field
-        if ($this->fieldIsZeroed('tileField'))  $this->zero('tileThumb', true);
+        if ($this->fieldIsZeroed('tileField')) $this->zero('tileThumb', true);
 
         // Clear value for `expandRoles` prop, if need
         if (in($this->expand, 'all,none')) $this->expandRoles = '';
@@ -223,6 +223,25 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         foreach (ar('extendsPhp,extendsJs') as $prop)
             if ($this->isModified($prop) && !$this->$prop)
                 $this->$prop = $this->field($prop)->defaultValue;
+
+        // Foreach panel-prop and it's reasonable limit of records to be fetched
+        foreach ($panelA = [
+            'gridToggle' =>   25,
+            'planToggle' => 1000,
+            'tileToggle' =>   25
+        ] as $enabled => $limit)
+
+            // If such panel was enabled
+            if ($this->modified($enabled) === 'y') {
+
+                // Update limit
+                $this->rowsOnPage = $limit;
+
+                // Disable other panel-props
+                foreach ($panelA as $disable => $unused)
+                    if ($disable !== $enabled)
+                        $this->set([$disable => 'n']);
+            }
     }
 
     /**

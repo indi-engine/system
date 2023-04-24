@@ -1295,7 +1295,7 @@ class Indi_Controller {
                     $class = 'other';
 
                     // Set holder to contain file extension (e.g. 'TXT')
-                    $holder = array_shift(explode(' ', strip_tags($item[$field])));
+                    $holder = array_shift(explode(' ', strip_tags($item['_render'][$field])));
 
                 // Else
                 } else {
@@ -1309,7 +1309,7 @@ class Indi_Controller {
             }
 
             // Append title-attr for download-link
-            $link = str_replace('href', 'title="' . I_FORM_UPLOAD_SAVETOHDD . '" href', $item[$field]);
+            $link = str_replace('href', 'title="' . I_FORM_UPLOAD_SAVETOHDD . '" href', $item['_render'][$field]);
 
             // Append params into '_system' prop
             $item['_system'] += compact('image', 'thumb', 'class', 'holder', 'link');

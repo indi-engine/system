@@ -144,6 +144,15 @@ class Entity_Row extends Indi_Db_Table_Row {
     }
 
     /**
+     * Clear spaceFields if spaceScheme is now 'none'
+     */
+    public function onBeforeSave() {
+
+        // If `spaceScheme` became non-'none' - clear spaceFields-prop
+        if ($this->modified('spaceScheme') === 'none') $this->zero('spaceFields', true);
+    }
+
+    /**
      * Check changes and do things if need
      */
     public function onUpdate() {
