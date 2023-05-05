@@ -731,17 +731,13 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $scope
      * @return mixed
      */
-    public function toRealtimeGridData($fieldIds, $scope, $langId = 0) {
+    public function toRealtimeGridData($fieldIds, $scope, $langId, $roleId, $adminId) {
 
-        // If $langId arg is given
-        if ($langId) {
+        // Backup current language
+        $backup = ini()->lang->admin;
 
-            // Backup current language
-            $backup = ini()->lang->admin;
-
-            // Spoof current language
-            ini()->lang->admin = lang($langId);
-        }
+        // Spoof current language
+        ini()->lang->admin = lang($langId);
 
         // Convert scope to array, if need
         if (is_object($scope)) $scope = (array) $scope;
@@ -754,18 +750,20 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if ($icon = $scope['icon'][$fieldId]) $renderCfg[$field]['icon'] = $icon;
                 if ($jump = $scope['jump'][$fieldId]) $renderCfg[$field]['jump'] = $jump;
                 if (null !== ($color = $scope['color'][$fieldId])) $renderCfg[$field]['color'] = $color;
-                if ($field == $scope['colorField']) $renderCfg['_system'] += [
-                    'colorField' => $scope['colorField'],
-                    'colorFurther' => $scope['colorFurther']
-                ];
             }
 
+        // Prepare row color config
+        foreach (ar('colorField,colorFurther') as $prop)
+            if ($scope[$prop])
+                $renderCfg['_system'][$prop]
+                    = $scope[$prop];
+
         // If scope's filterOwner is non-false
-        if ($scope->filterOwner) {
+        if ($scope['filterOwner']) {
             $renderCfg['_system']['owner'] = [
                 'field' => $scope['filterOwner'],
-                'role' => $realtimeR->roleId,
-                'id' => $realtimeR->adminId,
+                'role' => $roleId,
+                'id' => $adminId,
             ];
         }
 
@@ -773,7 +771,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $data = $this->toGridData($dataColumns, $renderCfg);
 
         // Restore current language
-        if ($langId) ini('lang')->admin = $backup;
+        ini('lang')->admin = $backup;
 
         // Return
         return $data;
@@ -856,7 +854,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $fieldIds = array_intersect($fieldIdA_affected, ar($realtimeR->fields));
 
                     // Prepare grid data, however with no adjustments that could be applied at section/controller-level
-                    $data = [$this->toRealtimeGridData($fieldIds, $scope, $realtimeR->langId)];
+                    $data = [$this->toRealtimeGridData($fieldIds, $scope, $realtimeR->langId, $realtimeR->roleId, $realtimeR->adminId)];
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
@@ -1010,7 +1008,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                     // Render json-data equal to as if separate request would be made
-                    $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
+                    $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId, $realtimeR->roleId, $realtimeR->adminId);
                 }
 
             // Else if $event is 'insert'
@@ -1152,7 +1150,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $entry = $entry == $this->id ? $this : $this->model()->row($entry);
 
                         // Render json-data equal to as if separate request would be made
-                        $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId);
+                        $byChannel[$channel][$context]['rendered'] = $entry->toRealtimeGridData($realtimeR->fields, $scope, $realtimeR->langId, $realtimeR->roleId, $realtimeR->adminId);
                     }
                 }
             }
@@ -3396,8 +3394,17 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Build list of allowed tags, using tags, passed with $allowedTags arg and default tags
         $allowedS = im(array_unique(array_merge(ar('font,span,br'), ar(strtolower($allowedTags)))));
 
+        // Prepare placeholder for '<=', as it's incorrectly evaluated by strip_tags()
+        $placeholder = 'less_or_equal' . grs();
+
+        // Replace '<=' with placeholders
+        $html = str_replace('<=', $placeholder, $html);
+
         // Strip all tags, except tags, mentioned in $tags argument
         $html = strip_tags($html, '<' . preg_replace('/,/', '><', $allowedS) . '>');
+
+        // Replace placeholders back to '<='
+        $html = str_replace($placeholder, '<=', $html);
 
         // Strip event attributes, and return the result
         return self::safeAttrs($html);
