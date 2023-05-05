@@ -70,6 +70,16 @@ class Indi_Controller_Admin_Calendar extends Indi_Controller_Admin {
         // If grouping is turned On - setup kanban cfg
         if ($fieldId_kanban = t()->section->groupBy) {
 
+            // Get kanban field's dependencies
+            $considerRs = m()->fields($fieldId_kanban)->nested('consider')->select('y', 'required');
+
+            // For required of them
+            foreach ($considerRs as $considerR)
+                if ($cField = $considerR->foreign('consider'))
+                    if ($rel = m($cField->relation))
+                        if ($rel->table() == admin()->table())
+                            t()->filtersSharedRow->{$cField->alias} = admin()->id;
+
             // Get combo data
             $combo = t()->filtersSharedRow->combo($fieldId_kanban);
 
