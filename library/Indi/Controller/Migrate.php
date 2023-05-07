@@ -15,7 +15,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => 'y',
             'move' => 'grid',
         ]);
-        enumset('section', 'gridToggle', 'y', ['title' => 'Включен', 'move' => '', 'boxIcon' => 'resources/images/icons/grid-2.png']);
+        enumset('section', 'gridToggle', 'y', ['title' => 'Включен', 'move' => '', 'boxIcon' => 'resources/images/icons/grid.png']);
         enumset('section', 'gridToggle', 'n', ['title' => 'Выключен', 'move' => 'y', 'boxColor' => '000#FFFFFF']);
         field('section', 'groupBy', ['move' => 'gridToggle']);
         field('section', 'plan', ['title' => 'Календарь', 'elementId' => 'span', 'move' => 'groupBy']);
@@ -68,7 +68,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         grid('sections', 'rowset', ['move' => '']);
         grid('sections', 'grid', ['gridId' => 'rowset', 'move' => '']);
-        grid('sections', 'gridToggle', ['gridId' => 'grid', 'move' => '', 'icon' => 'resources/images/icons/grid-2.png']);
+        grid('sections', 'gridToggle', ['gridId' => 'grid', 'move' => '', 'icon' => 'resources/images/icons/grid.png']);
         grid('sections', 'groupBy', ['move' => 'gridToggle', 'gridId' => 'grid']);
         grid('sections', 'other', ['gridId' => 'rowset', 'move' => 'grid']);
         grid('sections', 'planToggle', [
