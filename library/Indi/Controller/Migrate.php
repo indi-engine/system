@@ -3,7 +3,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
     public function panelsAction(){
         Indi::iflush(true);
         set_time_limit(0);
-        field('section', 'rowset', ['title' => 'Панель', 'mode' => 'hidden', 'elementId' => 'span', 'move' => 'features']);
+        field('section', 'rowset', ['title' => 'Панели', 'mode' => 'hidden', 'elementId' => 'span', 'move' => 'features']);
         field('section', 'grid', ['title' => 'Грид', 'elementId' => 'span', 'move' => 'rowset']);
         field('section', 'gridToggle', [
             'title' => 'Статус',
@@ -60,7 +60,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('section', 'tileField', ['move' => 'tileToggle']);
         field('section', 'tileThumb', ['move' => 'tileField']);
         field('section', 'other', [
-            'title' => 'Другая',
+            'title' => 'Другие',
             'mode' => 'hidden',
             'elementId' => 'span',
             'move' => 'tileThumb',
@@ -86,7 +86,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('sections', 'tileField')->delete();
         grid('sections', 'tileThumb')->delete();
         enumset('section', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
-        grid('sections', 'multiSelect', ['move' => 'groupBy', 'gridId' => 'grid']);
+        grid('sections', 'multiSelect', ['move' => 'display', 'gridId' => 'features']);
         field('section', 'multiSelect', ['move' => 'groupBy']);
         die('ok');
     }
