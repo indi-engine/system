@@ -24,11 +24,6 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         foreach ($dataTypeA as $dataTypeI) $config[$dataTypeI] = $sectionR->$dataTypeI();
         $this->section = m('Section')->createRow($config);
 
-        // Set panel type
-        foreach (['grid', 'plan', 'tile'] as $panel)
-            if ($this->section->{$panel . 'Toggle'} == 'y')
-                $this->section->panel = $panel;
-
         // Setup index
         $this->level = $level;
 
@@ -386,6 +381,13 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             admin(),
             [$this->section->id => $this->scope->primary]
         )[$this->section->id] ?? [];
+
+        //
+        $panelA = [];
+        if ($this->section->gridToggle === 'y') $panelA []= ['alias' => 'grid', 'title' => 'Грид'];
+        if ($this->section->planToggle === 'y') $panelA []= ['alias' => 'plan', 'title' => 'Календарь'];
+        if ($this->section->tileToggle === 'y') $panelA []= ['alias' => 'tile', 'title' => 'Галерея'];
+        $array['section']['panels'] = $panelA;
 
         // Setup pressed-prop
         foreach ($array['notices'] as &$notice) $notice['pressed'] = $notice['id'] == Indi::get()->notice;

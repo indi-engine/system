@@ -127,9 +127,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Call panel-specific adjustTrail method
             $this->callPanel('adjustTrail', false);
 
-            // If tileField defined for current section - change type of view
-                 if (t()->section->tileToggle == 'y') $this->actionCfg['view']['index'] = 'tile';
-            else if (t()->section->planToggle == 'y') $this->actionCfg['view']['index'] = 'calendar';
+            // Change view type
+                 if (t()->section->panel == 'tile') $this->actionCfg['view']['index'] = 'tile';
+            else if (t()->section->panel == 'plan') $this->actionCfg['view']['index'] = 'calendar';
 
             // Adjust action mode and view config.
             $this->adjustActionCfg();

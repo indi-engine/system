@@ -292,6 +292,9 @@ trait Indi_Controller_Admin_Trait_Plan {
         // certain space-fields with values according to clicked timestamp ('since' uri-param)
         // or according to selected datetime-range (both 'since' and 'until' uri-params)
         $this->applySpace();
+
+        // Increase limit to 1000
+        t()->section->rowsOnPage = 1000;
     }
 
     /**
