@@ -257,7 +257,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ','),
                             'filterOwner' => t()->filterOwner('section'),
-                            'groupBy' => t()->section->foreign('groupBy')->alias
+                            'groupBy' => t()->section->foreign('groupBy')->alias,
+                            'panel' => t()->section->panel
                         ];
 
                         // Backward compatibility

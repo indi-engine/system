@@ -2379,4 +2379,88 @@ class Indi {
         // Re-add, but now we're sure it's last
         $parents[$parentId] = true;
     }
+
+    /**
+     * Get colors to be used in plan-panel, e.g. {xtype: 'calendarpanel'}
+     *
+     * @param $baseColor
+     * @return array
+     */
+    public static function planItemColors($baseColor) {
+
+        // If $baseColor is a color in format #rrggbb
+        if (Indi::rexm('rgb', $baseColor)) $hex = ltrim($baseColor, '#');
+
+        // Else $baseColor is a name of one of html-colors
+        else if (Indi::$colorNameA[$baseColor]) $hex = Indi::$colorNameA[$baseColor];
+
+        // Get components
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        // Darker version
+        $color = sprintf('rgb(%d, %d, %d)', $r - 50, $g - 50, $b - 50);
+
+        // Bit less than quarter-transparent version
+        $background = $hex ? sprintf('rgba(%d, %d, %d, 0.2)', $r, $g, $b) : '';
+
+        // Bit less than half-transparent version
+        $backgroundSelected = $hex ? sprintf('rgba(%d, %d, %d, 0.4)', $r, $g, $b) : '';
+
+        // Build versions
+        return [
+            'color' => $color,
+            'border-color' => $baseColor,
+            'background-color' => $background,
+            'background-color-selected' => $backgroundSelected
+        ];
+    }
+
+    /**
+     * Get colors to be used in tile-panel
+     *
+     * @param $baseColor
+     * @return array
+     */
+    public static function tileItemColors($baseColor) {
+        return self::planItemColors($baseColor);
+    }
+
+    /**
+     * Get colors to be used in grid-panel
+     *
+     * @param $baseColor
+     * @return array
+     */
+    public static function gridItemColors($baseColor) {
+        return ['color' => $baseColor];
+    }
+
+    /**
+     * Prepare value for rowset item inline style
+     *
+     * @param $panel
+     * @param $color
+     * @return string
+     */
+    public static function rowsetItemStyle($panel, $color) {
+
+        // Style props
+        $style = [];
+
+        // Get colors
+        $colors = Indi::{$panel . 'ItemColors'}($color);
+
+        // Setup prefix to indicate props are css variables, if need
+        $cssVariablePrefix = $panel == 'plan' ? '--' : '';
+
+        // Apply inline as css-variables
+        foreach ($colors as $prop => $value)
+            if ($value)
+                $style []= $cssVariablePrefix . "$prop: $value;";
+
+        // Return as inline style
+        return join(' ', $style);
+    }
 }

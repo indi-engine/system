@@ -63,36 +63,14 @@ trait Indi_Controller_Admin_Trait_Plan {
         // Prepare colors
         foreach ($info['major']['colors'] as $option => $color) {
 
-            // If $color is a color in format #rrggbb
-            if (Indi::rexm('rgb', $color)) $hex = $color;
-
-            // Else $color is a name of one of html-colors
-            else if (Indi::$colorNameA[$color]) $hex = Indi::$colorNameA[$color];
-
-            // Convert red, green and blue values from hex to decimals
-            $background = ($hex = preg_replace('/^#/', '', $hex))
-                ? sprintf('rgba(%d, %d, %d, 0.2)', hexdec(substr($hex, 0, 2)),
-                    hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))) : '';
-
-            // Background color for selected events
-            $backgroundSelected = ($hex = preg_replace('/^#/', '', $hex))
-                ? sprintf('rgba(%d, %d, %d, 0.4)', hexdec(substr($hex, 0, 2)),
-                    hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))) : '';
-
-            // Build css
-            $css = [
-                'color' => sprintf('rgb(%d, %d, %d)', hexdec(substr($hex, 0, 2)) - 50,
-                    hexdec(substr($hex, 2, 2)) - 50, hexdec(substr($hex, 4, 2)) - 50),
-                'border-color' => $color,
-                'background-color' => $background,
-                'background-color-selected' => $backgroundSelected
-            ];
+            // Get colors
+            $colors = Indi::planItemColors($color);
 
             // Adjust it for custom needs
-            $this->adjustColorsCss($option, $color, $css);
+            $this->adjustColorsCss($option, $color, $colors);
 
             // Assign css
-            $info['major']['colors'][$option] = $css;
+            $info['major']['colors'][$option] = $colors;
         }
 
         // Assign colors info into $this->colors, and return it
@@ -298,12 +276,16 @@ trait Indi_Controller_Admin_Trait_Plan {
             // Get combo data
             $combo = t()->filtersSharedRow->combo($fieldId_kanban);
 
-            // Setup kanban props
-            t()->section->kanban = [
-                'prop' => $combo['name'],
-                'values' => $combo['store']['ids'],
-                'titles' => array_column($combo['store']['data'], 'title')
-            ];
+            // If at least one possible kanban value exist
+            if ($combo['store']['ids']) {
+
+                // Setup kanban props
+                t()->section->kanban = [
+                    'prop' => $combo['name'],
+                    'values' => $combo['store']['ids'],
+                    'titles' => array_column($combo['store']['data'], 'title')
+                ];
+            }
         }
 
         // Check whether 'since' uri-param is given, and if yes - prefill current entry's

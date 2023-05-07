@@ -971,8 +971,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // If color field is defined - get color and apply to record data
             $data[$pointer]['_system']['style'] = '';
             if ($colorField)
-                if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField))
-                    $data[$pointer]['_system']['style'] = 'color: ' . $color . ';';
+                if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField)) {
+                    $data[$pointer]['_system']['style'] = Indi::rowsetItemStyle($renderCfg['_system']['panel'], $color);
+                }
 
             // Setup _system owner flag
             if ($owner = $renderCfg['_system']['owner']) {
