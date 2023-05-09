@@ -121,6 +121,9 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Edit ui, if need
             $this->uiedit();
 
+            // Set panel type: explicitly given or scope's one or default (section-specific or system)
+            t()->setPanelType();
+
             // Adjust trail
             $this->adjustTrail();
 

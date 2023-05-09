@@ -175,34 +175,6 @@ class Indi_Trail_Admin {
 
         // Adjust disabled fields
         self::$controller->adjustDisabledFields();
-
-        // Set panel type
-        $this->setPanelType();
-    }
-
-    /**
-     * Set panel type
-     */
-    public function setPanelType() {
-
-        // Get list of allowed panels for this section
-        $allowedA = [];
-        foreach (['grid', 'plan', 'tile'] as $panel)
-            if (self::item()->section->{$panel . 'Toggle'} == 'y')
-                $allowedA []= $panel;
-
-        // Default panel
-        self::item()->section->panel = 'grid';
-
-        // Set panel type base on $_GET['panel'], if given
-        if ($given = Indi::get()->panel)
-            foreach ($allowedA as $allowed)
-                if ($given == $allowed)
-                    self::item()->section->panel = $given;
-
-        // If still no set - use first allowed
-        if (!self::item()->section->panel)
-            self::item()->section->panel = $allowed[0];
     }
 
     /**

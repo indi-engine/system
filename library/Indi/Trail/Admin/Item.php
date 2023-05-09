@@ -421,6 +421,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
         }
 
+        // Add aspect ratio for tileThumn, if possible
+        if ($this->section->tileThumb)
+            $array['section']['tileThumbRatio']
+                = $this->section->foreign('tileThumb')->ratio();
+
         // Return
         return $array;
     }
@@ -746,7 +751,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         if ($this->scope->groupBy) $renderCfg['_system']['groupBy'] = $this->scope->groupBy;
 
         // Add panel to into $renderCfg
-        $renderCfg['_system']['panel'] = $this->scope->panel;
+        $renderCfg['_system']['panel'] = $this->scope->panel ?? $this->section->panel;
 
         // Return render config
         return $renderCfg ?? [];
@@ -865,5 +870,40 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         return $filterOwner
             ? $this->model->ownerField($owner)->alias
             : false;
+    }
+
+    /**
+     * Set panel type
+     */
+    public function setPanelType() {
+
+        // Get list of allowed panels for this section
+        $enabled = [];
+        foreach (['grid', 'plan', 'tile'] as $panel)
+            if ($this->section->{$panel . 'Toggle'} == 'y')
+                $enabled []= $panel;
+
+        // At first, check whether panel is an explicitly specified in $_GET['panel']
+        if ($panel = Indi::get()->panel)
+            if (in_array($panel, $enabled))
+                $this->section->panel = $panel;
+
+        // If no - try to get from scope
+        if (!$this->section->panel)
+            if ($sectionScopeA = $_SESSION['indi']['admin'][$this->section->alias] ?? 0)
+                if ($sectionScope = array_values($sectionScopeA)[0] ?? 0)
+                    if ($panel = $sectionScope['actionrowset']['panel'] ?? 0)
+                        if (in_array($panel, $enabled))
+                            $this->section->panel = $panel;
+
+        // If no - try use section's default
+        if (!$this->section->panel)
+            if ($panel = substr($this->section->rowsetDefault, 0, 4))
+                if (in_array($panel, $enabled))
+                    $this->section->panel = $panel;
+
+        // If still no set - use first allowed
+        if (!$this->section->panel)
+            $this->section->panel = $enabled[0];
     }
 }

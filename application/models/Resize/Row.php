@@ -168,4 +168,14 @@ class Resize_Row extends Indi_Db_Table_Row {
         // Stringify and return $ctor
         return _var_export($ctor);
     }
+
+    /**
+     * Get aspect ratio for between `width` and `height` props, if both are given
+     * or return 1 otherwise
+     *
+     * @return float|int
+     */
+    public function ratio() {
+        return $this->width && $this->height ? $this->width / $this->height : 1;
+    }
 }
