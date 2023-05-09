@@ -186,6 +186,22 @@ class Indi_Queue_L10n extends Indi_Queue {
                     // Build WHERE clause
                     if ($where) $queueChunkR->where = im($where, ' AND ');
 
+                // Else if it's resize.note field
+                } else if ($fieldR_having_l10nY->foreign('entityId')->table == 'resize') {
+
+                    // Get fraction
+                    $fraction = explode('_', get_class($this));
+                    $fraction = preg_replace('~Export$~', '', array_pop($fraction));
+                    $fraction = lcfirst($fraction);
+
+                    // Build WHERE clause
+                    $ids = [];
+                    foreach (m('resize')->all() as $resizeR)
+                        if ($resizeR->fraction() === $fraction)
+                            $ids []= $resizeR->id;
+
+                    $queueChunkR->where = sprintf('FIND_IN_SET(`id`, "%s")', im($ids));
+
                 //
                 } else {
 

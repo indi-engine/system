@@ -478,7 +478,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             $item = ['queueChunkId' => $r->id, 'location' => $r->location];
 
             // If it's a enumset-item
-            if (in($r->location, 'enumset:title,resize:note')) {
+            if ($r->location === 'enumset:title') {
 
                 // Get `fieldId` from WHERE clause
                 $item['fieldId'] = Indi::rexm('~^`fieldId` = "([0-9]+)"$~', $r->where, 1);
