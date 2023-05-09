@@ -92,6 +92,7 @@ field('section', 'rowsetSeparate')->toggleL10n('qy', $lang, false);
 field('section', 'defaultSortDirection')->toggleL10n('qy', $lang, false);
 field('section', 'rownumberer')->toggleL10n('qy', $lang, false);
 field('section', 'showID')->toggleL10n('qy', $lang, false);
+field('section', 'rowsetDefault')->toggleL10n('qy', $lang, false);
 field('section', 'help')->toggleL10n('qy', $lang, false);
 field('section', 'gridToggle')->toggleL10n('qy', $lang, false);
 field('section', 'multiSelect')->toggleL10n('qy', $lang, false);

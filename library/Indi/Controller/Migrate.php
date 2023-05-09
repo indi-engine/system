@@ -88,6 +88,22 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('section', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
         grid('sections', 'multiSelect', ['move' => 'display', 'gridId' => 'features']);
         field('section', 'multiSelect', ['move' => 'groupBy']);
+        field('section', 'rowsetDefault', [
+            'title' => 'Панель по умолчанию',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'grid',
+            'move' => 'showID',
+        ]);
+        enumset('section', 'rowsetDefault', 'grid', ['title' => 'Грид', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('section', 'rowsetDefault', 'planMonth', ['title' => 'Календарь - месяц', 'move' => 'grid', 'boxIcon' => 'resources/images/icons/plan-month.png']);
+        enumset('section', 'rowsetDefault', 'planWeek', ['title' => 'Календарь - неделя', 'move' => 'planMonth', 'boxIcon' => 'resources/images/icons/plan-week.png']);
+        enumset('section', 'rowsetDefault', 'planDay', ['title' => 'Календарь - день', 'move' => 'planWeek', 'boxIcon' => 'resources/images/icons/plan-day.png']);
+        enumset('section', 'rowsetDefault', 'tile', ['title' => 'Галерея', 'move' => 'planDay', 'boxIcon' => 'resources/images/icons/icon-image.png']);
+        grid('sections', 'rowsetDefault', ['gridId' => 'rowset', 'move' => 'other', 'icon' => 'resources/images/icons/rowset-default.png']);
         die('ok');
     }
     public function gridChunkAction(){
