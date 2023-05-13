@@ -425,4 +425,109 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             }
         }
     }
+
+    public function onBeforeCellSave($cell, $value) {
+
+        // If something is NOT going to be turned on - return
+        if ($value !== 'y') return;
+
+        // If tile-panel is going to be enabled
+        if ($cell === 'tileToggle') {
+
+            // If tileField is already defined for current section - return
+            // as this field is the minimum required for tile-panel to be enabled
+            //if (t()->row->tileField) return;
+
+            // Get panel title
+            $panel = t()->fields('tile')->title;
+
+            // Make tileField-prop to be required
+            t()->fields('tileField')->mode = 'required';
+
+            // Get shared config
+            $shared = ['labelWidth' => 120, 'width' => 400];
+
+            // Prompt data
+            $prompt = $this->prompt("Для активации панели $panel требуется как минимум указать:", [
+                $shared + t()->row->combo('tileField'),
+                $shared + t()->row->combo('tileThumb'),
+            ]);
+
+            // Check that data
+            jcheck([
+                'tileField' => [
+                    'req' => true,
+                    'rex' => 'int11',
+                    'fis' => m()->fields()->select(element('upload')->id, 'elementId')->fis(),
+                ],
+                'tileThumb' => [
+                    'rex' => 'int11',
+                    'key' => 'resize'
+                ],
+            ], $prompt);
+
+            // Apply tile-props to the section
+            t()->row->set([
+                'tileField' => $prompt['tileField'],
+                'tileThumb' => $prompt['tileThumb']
+            ])->save();
+        }
+
+        // If plan-panel is going to be enabled
+        if ($cell == 'planToggle') {
+
+            // Shortcut to entity
+            $entityR = t()->row->foreign('entityId');
+
+            // If spaceScheme- and spaceFields-prop are already defined for the entity
+            // linked to current section - return, as those are the minimum required for plan-panel to be enabled
+            //if ($entityR->spaceScheme !== 'none' && $entityR->spaceFields) return;
+
+            // Get panel title
+            $panel = t()->fields('plan')->title;
+
+            // Get shared config
+            $shared = ['labelWidth' => 230, 'width' => 500, 'allowBlank' => 0];
+
+            // Prompt for plan-panel config
+            $prompt = $this->prompt("Для активации панели $panel требуется как минимум указать:", [
+                $shared + $entityR->combo('spaceScheme'),
+                $shared + $entityR->combo('spaceFields'),
+                $shared + t()->row->combo('planTypes')
+            ]);
+
+            // Check prompt data
+            $_ = jcheck([
+                'spaceScheme' => [
+                    'req' => true,
+                    'dis' => 'none',
+                    'fis' => m('entity')->fields('spaceScheme')->nested('enumset')->fis('alias'),
+                ],
+                'spaceFields' => [
+                    'req' => true,
+                    'rex' => 'int11list',
+                    'key' => 'field*'
+                ],
+                'planTypes' => [
+                    'req' => true,
+                    'fis' => m('section')->fields('planTypes')->nested('enumset')->fis('alias'),
+                ]
+            ], $prompt);
+
+            //
+            msg('Применение параметров..');
+
+            // Apply space-props to the section's underlying entity
+            $entityR->set([
+                'spaceScheme' => $prompt['spaceScheme'],
+                'spaceFields' => $prompt['spaceFields']
+            ])->save();
+
+            //
+            msg('Применение параметров завершено');
+
+            // Set plan types to be further saved
+            t()->row->set('planTypes', $prompt['planTypes']);
+        }
+    }
 }

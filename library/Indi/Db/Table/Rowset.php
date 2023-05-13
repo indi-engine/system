@@ -1585,6 +1585,18 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     }
 
     /**
+     * Get list of comma-separated values of the given $column-prop
+     * for all records within current rowset. This can be used with FIND_IN_SET
+     *
+     * @param string $column
+     * @param false $unique
+     * @return array
+     */
+    public function fis($column = 'id', $unique = false) {
+        return $this->column($column, ',', $unique);
+    }
+
+    /**
      * Get value of a single column within curent rowset, as array
      *
      * @param string $column

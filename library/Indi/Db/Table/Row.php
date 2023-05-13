@@ -767,6 +767,9 @@ class Indi_Db_Table_Row implements ArrayAccess
             ];
         }
 
+        // Add panel type
+        $renderCfg['_system']['panel'] = $scope['panel'];
+
         // Render
         $data = $this->toGridData($dataColumns, $renderCfg);
 
@@ -7356,7 +7359,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $item = Indi_View_Helper_Admin_FormCombo::detectColor([
                     'title' => ($_tc = $fieldR->param('titleColumn'))
                         ? $selectedR->$_tc
-                        : $selectedR->title()
+                        : $selectedR->title(),
+                    'boxColor'  => $selectedR->boxColor,
+                    'boxIcon'   => $selectedR->boxIcon,
+                    'textColor' => $selectedR->textColor,
                 ]);
                 $item['id'] = $selectedR->$keyProperty;
                 $view['subTplData']['selected']['items'][] = $item;
@@ -7371,17 +7377,20 @@ class Indi_Db_Table_Row implements ArrayAccess
             'fieldLabel' => $fieldR->title,
             'name' => $fieldR->alias,
             'value' => $selectedValue,
-            'width' => '100%',
-            'margin' => 5,
             'field' => [
                 'id' => $fieldR->id,
                 'storeRelationAbility' => $fieldR->storeRelationAbility,
                 'alias' => $fieldR->alias,
                 'relation' => $fieldR->relation,
-                'params' => $params
+                'params' => $params,
+                '_nested' => [
+                    'consider' => $fieldR->nested('consider')->toArray(true)
+                ]
             ],
             'allowBlank' => $fieldR->mode == 'regular',
-            ] + $view;
+            ] + $view + [
+                'fetchUrl' => str_replace('/save/', '/form/', explode('?', URI)[0])
+            ];
 
         // Return it
         return $view;

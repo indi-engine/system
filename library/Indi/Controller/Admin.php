@@ -2977,8 +2977,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $prompt = $this->prompt($msg, [[
                 'xtype' => 'textfield',
                 'emptyText' => 'Please specify API key here..',
-                'width' => '100%',
-                'margin' => '5 0 0 0',
+                'width' => 200,
                 'name' => $name,
                 'allowBlank' => false
             ]]);

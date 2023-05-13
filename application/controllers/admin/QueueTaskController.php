@@ -19,8 +19,7 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
             $prompt = $this->prompt($msg, [[
                 'xtype' => 'textfield',
                 'emptyText' => 'Please specify API key here..',
-                'width' => '100%',
-                'margin' => '5 0 0 0',
+                'width' => 250,
                 'name' => $name
             ]]);
 

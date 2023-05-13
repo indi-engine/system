@@ -174,7 +174,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If `tileField` is non-zero, and there is no such grid column yet - append
         if ($sectionR->tileField && !$this->grid->gb($sectionR->tileField, 'fieldId'))
-            $this->grid->append(['fieldId' => $sectionR->tileField]);
+            $this->grid->append(['fieldId' => $sectionR->tileField, 'toggle' => 'h']);
 
         // Build and assign `gridFields` prop
         $this->gridFields = m('Field')->createRowset();
