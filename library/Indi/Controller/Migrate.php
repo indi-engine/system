@@ -166,6 +166,15 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'rename' => 'Пакетный режим по умолчанию',
         ]);
         grid('sectionActions', 'multiSelect', ['gridId' => 'mode', 'move' => 'multiSelect', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        section2action('sectionActions','delete', ['multiSelect' => '1']);
+        section2action('grid','delete', ['multiSelect' => '1']);
+        section2action('alteredFields','delete', ['multiSelect' => '1']);
+        section2action('filter','delete', ['multiSelect' => '1']);
+        section2action('fields','delete', ['multiSelect' => '1']);
+        section2action('lang','export', ['multiSelect' => '0']);
+        section2action('fieldsAll','delete', ['multiSelect' => '1']);
+        section2action('queueTask','delete', ['multiSelect' => '1']);
+        section2action('realtime','delete', ['roleIds' => 'dev', 'move' => 'index', 'multiSelect' => '1']);
         die('ok');
     }
     public function gridChunkAction(){

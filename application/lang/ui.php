@@ -1,7 +1,8 @@
 <?php
 field('action', 'title')->toggleL10n('qy', $lang, false);
-field('action', 'selectionRequired')->toggleL10n('qy', $lang, false);
 field('action', 'fraction')->toggleL10n('qy', $lang, false);
+field('action', 'selectionRequired')->toggleL10n('qy', $lang, false);
+field('action', 'multiSelect')->toggleL10n('qy', $lang, false);
 field('action', 'display')->toggleL10n('qy', $lang, false);
 field('action', 'toggle')->toggleL10n('qy', $lang, false);
 field('admin', 'title')->toggleL10n('qy', $lang, false);
@@ -101,6 +102,7 @@ field('section', 'planTypes')->toggleL10n('qy', $lang, false);
 field('section', 'tileToggle')->toggleL10n('qy', $lang, false);
 field('section2action', 'toggle')->toggleL10n('qy', $lang, false);
 field('section2action', 'filterOwner')->toggleL10n('qy', $lang, false);
+field('section2action', 'multiSelect')->toggleL10n('qy', $lang, false);
 field('section2action', 'south')->toggleL10n('qy', $lang, false);
 field('section2action', 'fitWindow')->toggleL10n('qy', $lang, false);
 field('section2action', 'l10n')->toggleL10n('qy', $lang, false);
