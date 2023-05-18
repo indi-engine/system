@@ -47,7 +47,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         // If $within arg is not given - move grid column within the section it belongs to
         $within = im([
             '`sectionId` = "' . $this->sectionId . '"',
-            '`gridId` = "' . $this->gridId . '"',
+            'IFNULL(`gridId`, 0) = "' . $this->gridId . '"',
             '`group` = "' . $this->group . '"'
         ], ' AND ');
 
@@ -248,7 +248,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         // Build within-fields WHERE clause
         $wfw = [];
         foreach (ar($withinFields) as $withinField)
-            $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+            $wfw []= 'IFNULL(`' . $withinField . '`, 0) = "' . $this->$withinField . '"';
 
         // Get ordered fields aliases
         $fieldA_alias = db()->query('

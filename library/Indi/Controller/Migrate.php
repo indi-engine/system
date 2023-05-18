@@ -110,6 +110,62 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'tileToggle',
             'rename' => 'Типы календаря',
         ]);
+        field('action', 'multiSelect', [
+            'title' => 'Режим работы с пакетным выделением записей',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'radio',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '0',
+            'move' => 'selectionRequired',
+        ]);
+        enumset('action', 'multiSelect', '0', ['title' => 'Нет, должна быть выбрана только одна запись', 'boxColor' => '000#FFFFFF']);
+        enumset('action', 'multiSelect', '1', ['title' => 'Да, может быть выбрано несколько записей', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        field('action', 'fraction', ['move' => 'alias']);
+        grid('actions', 'multiSelect', ['move' => 'selectionRequired', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        grid('actions', 'title', ['move' => '']);
+        grid('actions', 'toggle', ['move' => 'title']);
+        grid('actions', 'fraction', ['move' => 'toggle']);
+        grid('actions', 'alias', ['move' => 'fraction']);
+        grid('actions', 'icon', ['move' => 'alias']);
+        grid('actions', 'selectionRequired', ['move' => 'icon']);
+        grid('actions', 'multiSelect', ['move' => 'selectionRequired']);
+        grid('actions', 'display', ['move' => 'multiSelect']);
+        action('up', ['multiSelect' => '1']);
+        action('down', ['multiSelect' => '1']);
+        action('toggle', ['multiSelect' => '1']);
+        action('export', ['multiSelect' => '1']);
+        action('copy', ['multiSelect' => '1']);
+        filter('actions', 'multiSelect', true);
+
+        field('section2action', 'multiSelect', [
+            'title' => 'Изменить пакетный режим',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'radio',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'inherit',
+            'move' => 'features',
+        ]);
+        enumset('section2action', 'multiSelect', 'inherit', ['title' => 'Нет, использовать пакетный режим по умолчанию', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('section2action', 'multiSelect', '0', ['title' => 'Да, выключить для этого раздела', 'move' => 'inherit', 'boxIcon' => 'resources/images/icons/btn-icon-single-select.png']);
+        enumset('section2action', 'multiSelect', '1', ['title' => 'Да, включить для этого раздела', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        field('section2action', 'mode', [
+            'title' => 'Режим',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'props',
+        ]);
+        grid('sectionActions', 'mode', ['gridId' => 'features', 'move' => 'view', 'tooltip' => 'Пакетный режим - режим работы<br>при пакетном выделении записей']);
+        grid('sectionActions', 'actionId', 'multiSelect', [
+            'gridId' => 'mode',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-multi-select.png',
+            'rename' => 'Пакетный режим по умолчанию',
+        ]);
+        grid('sectionActions', 'multiSelect', ['gridId' => 'mode', 'move' => 'multiSelect', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
         die('ok');
     }
     public function gridChunkAction(){

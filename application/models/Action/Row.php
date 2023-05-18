@@ -79,4 +79,12 @@ class Action_Row extends Indi_Db_Table_Row {
         // Return icon-prop as is
         return $this->icon;
     }
+
+    /**
+     * Make sure `multiSelect` is set to 0  if `selectionRequired` is 'n',
+     * as `multiSelect` is not applicable in such case
+     */
+    public function onBeforeSave() {
+        if ($this->selectionRequired === 'n') $this->multiSelect = 0;
+    }
 }

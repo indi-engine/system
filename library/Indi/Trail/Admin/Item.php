@@ -44,6 +44,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 : '';
             $actionI['indi'] = ['ui' => 'section2action', 'id' => $section2actionR->id];
             $actionI['l10n'] = $section2actionR->l10n;
+            if ($section2actionR->multiSelect !== 'inherit') {
+                $actionI['multiSelect'] = $section2actionR->multiSelect;
+            }
             $actionR = m('Action')->new($actionI);
             $this->actions->append($actionR);
         }
