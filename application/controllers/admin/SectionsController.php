@@ -448,7 +448,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $shared = ['labelWidth' => 120, 'width' => 400];
 
             // Prompt data
-            $prompt = $this->prompt("Для активации панели $panel требуется как минимум указать:", [
+            $prompt = $this->prompt(__(I_SECTION_ROWSET_MIN_CONF, $panel), [
                 $shared + t()->row->combo('tileField'),
                 $shared + t()->row->combo('tileThumb'),
             ]);
@@ -490,7 +490,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $shared = ['labelWidth' => 230, 'width' => 500, 'allowBlank' => 0];
 
             // Prompt for plan-panel config
-            $prompt = $this->prompt("Для активации панели $panel требуется как минимум указать:", [
+            $prompt = $this->prompt(__(I_SECTION_ROWSET_MIN_CONF, $panel), [
                 $shared + $entityR->combo('spaceScheme'),
                 $shared + $entityR->combo('spaceFields'),
                 $shared + t()->row->combo('planTypes')
@@ -514,17 +514,25 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 ]
             ], $prompt);
 
-            //
-            msg('Применение параметров..');
-
             // Apply space-props to the section's underlying entity
             $entityR->set([
                 'spaceScheme' => $prompt['spaceScheme'],
                 'spaceFields' => $prompt['spaceFields']
-            ])->save();
+            ]);
 
-            //
-            msg('Применение параметров завершено');
+            // If space-fields are modified
+            if ($entityR->isModified('spaceScheme,spaceFields')) {
+
+                // Show side msg saying params are being applied
+                msg(I_SECTION_CONF_SETUP);
+
+                // Apply those
+                $entityR->save();
+            }
+
+            // Show side msg saying params were successfully applied
+            if ($entityR->affected('spaceScheme,spaceFields'))
+                msg(I_SECTION_CONF_SETUP_DONE);
 
             // Set plan types to be further saved
             t()->row->set('planTypes', $prompt['planTypes']);

@@ -304,3 +304,8 @@ define('I_L10N_TOGGLE_FIELD_LANG_KEPT', 'Select language to be kept for field "%
 define('I_GRID_COLOR_BREAK_INCOMPAT', 'This feature is only applicable for numeric columns');
 define('I_REALTIME_CONTEXT_AUTODELETE_ONLY', 'Entries of type Context can\'t be manually deleted');
 define('I_ONDELETE_RESTRICT', 'Deletion is restricted due to ON DELETE RESTRICT rule configured for field "%s" in entity "%s" (`%s`.`%s`), as at least 1 record from that entity has a value in that field, which is direct or cascade reference to the record you want to delete');
+
+define('I_LANG_WORD_DETECT_ONLY', 'Do preliminary check?');
+define('I_SECTION_ROWSET_MIN_CONF', 'For activation of panel %s please specify the following minimum config:');
+define('I_SECTION_CONF_SETUP', 'Config is being applied..');
+define('I_SECTION_CONF_SETUP_DONE', 'Config has been successfully applied');

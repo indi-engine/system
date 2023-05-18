@@ -133,21 +133,26 @@ class Admin_LangController extends Indi_Controller_Admin {
     }
 
     /**
-     * Detect wordings and replace them with constants
+     * Detect wordings within source code files, and add corresponding constants to the constant-file
+     * for selected language. Optionally, those wordings can be replaced with their constants within source code files
      */
     public function wordingsAction() {
 
-        //
-        $answer = $this->confirm('Сначала проверить?', 'YESNOCANCEL');
+        // If $answer is 'no'  - wordings will be replaced with their constants within source code files
+        $answer = $this->confirm(I_LANG_WORD_DETECT_ONLY, 'YESNOCANCEL');
 
-        //
-        if ($answer == 'cancel') jflush(true);
+        // todo: make prompt asking for fraction
+        $repoDirA = [
+            'system' => VDR . '/system',
+            //'public' => VDR . '/public',
+            //'custom' => ''
+        ];
 
         // Foreach fraction
-        foreach ([''] as $fraction) {
+        foreach ($repoDirA as $fraction => $repoDir) {
 
             // Create dir, containing l10n-constants files, for current fraction if not yet exists
-            if (!is_dir($_ = DOC . STD . $fraction . '/application/lang/admin/')) mkdir($_, true, 777);
+            if (!is_dir($_ = DOC . STD . $repoDir . '/application/lang/admin/')) mkdir($_, true, 777);
 
             // Where will be current language used for building file name
             $out =  $_ . t()->row->alias . '.php';
@@ -158,7 +163,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             // Both both php ans js wordings
             foreach ([
                  'php' => [
-                     'dir' => ['application/controllers/admin', 'application/models', 'library/Project'],
+                     'dir' => ['application/controllers/admin', 'application/models', 'library/Project', 'library/Indi'],
                      'rex' => ['~(__\()(\s*)\'(.*?)\'~']
                  ],
                  'js'  => [
@@ -168,7 +173,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                          '~(wait|alert|update)(\(\s*)\'(.*[a-zA-Zа-яА-Я]+.*?)\'~u',
                      ]
                  ]
-             ] as $type => $cfg) {
+             ] as $ext => $cfg) {
 
                 // Collect raw contents
                 foreach ($cfg['dir'] as $dir) {
@@ -177,17 +182,17 @@ class Admin_LangController extends Indi_Controller_Admin {
                     $pref['dir'] = 'I_'; foreach(explode('/', $dir) as $level) $pref['dir'] .= strtoupper(substr($level, 0, 1));
 
                     // Absolute fraction path
-                    $abs = DOC . STD . $fraction . '/' . $dir;
+                    $abs = DOC . STD . $repoDir . '/' . $dir;
 
                     // Foreach file in dir
-                    foreach (scandirr($abs) as $file) {
+                    foreach (scandirr($abs) as $sourceCodeFile) {
 
                         // Skip tmp file
-                        if (pathinfo($file, PATHINFO_EXTENSION) != $type) continue;
+                        if (pathinfo($sourceCodeFile, PATHINFO_EXTENSION) != $ext) continue;
 
                         // Mind subdirs
                         $pref['sub'] = '';
-                        foreach(explode('/', str_replace($abs, '', str_replace('\\', '/', pathinfo($file, PATHINFO_DIRNAME)))) as $level)
+                        foreach(explode('/', str_replace($abs, '', str_replace('\\', '/', pathinfo($sourceCodeFile, PATHINFO_DIRNAME)))) as $level)
                             foreach (preg_split('/(?=[A-Z])/', $level) as $word) {
                                 $first = strtoupper(substr($word, 0, 1));
                                 $last = strtoupper(substr($word, -1, 1));
@@ -202,7 +207,7 @@ class Admin_LangController extends Indi_Controller_Admin {
 
                         // Build constant-name prefix, pointing to file
                         $pref['file'] = '';
-                        foreach (preg_split('/(?=[A-Z])/', pathinfo($file, PATHINFO_FILENAME)) as $word) {
+                        foreach (preg_split('/(?=[A-Z])/', pathinfo($sourceCodeFile, PATHINFO_FILENAME)) as $word) {
                             if ($word == 'Row') $pref['file'] .= 'R'; else if ($word != 'Controller') {
                                 $first = strtoupper(substr($word, 0, 1));
                                 $last = strtoupper(substr($word, -1, 1));
@@ -220,7 +225,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                         unset($pref['file'], $pref['sub']);
 
                         // Get raw contents
-                        $raw = file_get_contents($file);
+                        $raw = file_get_contents($sourceCodeFile);
 
                         // Get wordings
                         $fidx = 0;
@@ -235,7 +240,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                             $chunkA = preg_split($rex, $raw);
 
                             //
-                            $raw  = preg_replace_callback($rex, function(&$m) use (&$fidx, &$pref, &$lineA, $const, &$methodA, $chunkA, $type) {
+                            $raw  = preg_replace_callback($rex, function(&$m) use (&$fidx, &$pref, &$lineA, $const, &$methodA, $chunkA, $ext) {
 
                                 // Try to detect method name
                                 if (preg_match_all('~public function ([a-zA-Z0-9_]+)~', $chunkA[$fidx], $__)) {
@@ -268,21 +273,21 @@ class Admin_LangController extends Indi_Controller_Admin {
                                 $lineA []= sprintf('define(\'%s\', \'%s\');', $const, $m[3]);
 
                                 // Spoof wording by constant usage
-                                if ($type == 'php') return $m[1] . $m[2] . $const;
-                                else if ($type == 'js') return $m[1] . $m[2] . 'Indi.lang.' . $const;
+                                if ($ext == 'php') return $m[1] . $m[2] . $const;
+                                else if ($ext == 'js') return $m[1] . $m[2] . 'Indi.lang.' . $const;
 
                                 //
                             }, $raw);
                         }
 
                         //
-                        $tmp = $answer == 'yes'; $put = $file . rif($tmp, '_');
+                        $tmpFile = $answer == 'yes'; $put = $sourceCodeFile . rif($tmpFile, '_');
 
-                        // Replace wordings with constants in source file
+                        // Replace [wordings => constants] within source code file
                         file_put_contents($put, $raw);
 
                         // Remove tmp file
-                        if (!$tmp && file_exists($file . '_')) unlink($file . '_');
+                        if (!$tmpFile && file_exists($sourceCodeFile . '_')) unlink($sourceCodeFile . '_');
                     }
                 }
             }
