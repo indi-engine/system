@@ -309,3 +309,4 @@ define('I_LANG_WORD_DETECT_ONLY', 'Do preliminary check?');
 define('I_SECTION_ROWSET_MIN_CONF', 'For activation of panel %s please specify the following minimum config:');
 define('I_SECTION_CONF_SETUP', 'Config is being applied..');
 define('I_SECTION_CONF_SETUP_DONE', 'Config has been successfully applied');
+define('I_NOTICE_HIDE_ALL', 'Hide all');

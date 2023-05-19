@@ -309,3 +309,4 @@ define('I_LANG_WORD_DETECT_ONLY', 'Сначала проверить?');
 define('I_SECTION_ROWSET_MIN_CONF', 'Для активации панели %s требуется как минимум указать:');
 define('I_SECTION_CONF_SETUP', 'Применение параметров..');
 define('I_SECTION_CONF_SETUP_DONE', 'Применение параметров завершено');
+define('I_NOTICE_HIDE_ALL', 'Скрыть все');
