@@ -74,7 +74,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('sections', 'planToggle', [
             'gridId' => 'other',
             'move' => '',
-            'icon' => 'resources/images/icons/btn-icon-calendar.png',
+            'icon' => 'resources/images/icons/plan-day.png',
             'rename' => 'Календарь',
         ]);
         grid('sections', 'tileToggle', [
@@ -175,6 +175,42 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section2action('fieldsAll','delete', ['multiSelect' => '1']);
         section2action('queueTask','delete', ['multiSelect' => '1']);
         section2action('realtime','delete', ['roleIds' => 'dev', 'move' => 'index', 'multiSelect' => '1']);
+        field('grid', 'panels', ['title' => 'Статус в панелях', 'elementId' => 'span', 'move' => 'gridId']);
+        field('grid', 'toggle', ['title' => 'Грид', 'elementId' => 'radio']);
+        field('grid', 'togglePlan', [
+            'title' => 'Календарь',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'toggle',
+        ]);
+        enumset('grid', 'togglePlan', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('grid', 'togglePlan', 'y', ['title' => 'Включен', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-day.png']);
+        field('grid', 'toggleTile', [
+            'title' => 'Галерея',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'togglePlan',
+        ]);
+        enumset('grid', 'toggleTile', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('grid', 'toggleTile', 'y', ['title' => 'Включен', 'move' => 'n', 'boxIcon' => 'resources/images/icons/icon-image.png']);
+        grid('grid', 'panels', [
+            'gridId' => 'properties',
+            'move' => '',
+            'rename' => 'Статус',
+            'tooltip' => 'Статус в панелях',
+        ]);
+        grid('grid', 'toggle', ['gridId' => 'panels', 'move' => '', 'icon' => 'resources/images/icons/grid.png']);
+        grid('grid', 'togglePlan', ['gridId' => 'panels', 'move' => 'toggle', 'icon' => 'resources/images/icons/plan-day.png']);
+        grid('grid', 'toggleTile', ['gridId' => 'panels', 'move' => 'togglePlan', 'icon' => 'resources/images/icons/icon-image.png']);
+        enumset('section', 'planToggle', 'y', ['title' => 'Yes', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-day.png']);
         die('ok');
     }
     public function gridChunkAction(){

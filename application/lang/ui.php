@@ -28,6 +28,8 @@ field('filter', 'toggle')->toggleL10n('qy', $lang, false);
 field('filter', 'tooltip')->toggleL10n('qy', $lang, false);
 field('filter', 'accessRoles')->toggleL10n('qy', $lang, false);
 field('grid', 'toggle')->toggleL10n('qy', $lang, false);
+field('grid', 'togglePlan')->toggleL10n('qy', $lang, false);
+field('grid', 'toggleTile')->toggleL10n('qy', $lang, false);
 field('grid', 'group')->toggleL10n('qy', $lang, false);
 field('grid', 'editor')->toggleL10n('qy', $lang, false);
 field('grid', 'rowReqIfAffected')->toggleL10n('qy', $lang, false);
