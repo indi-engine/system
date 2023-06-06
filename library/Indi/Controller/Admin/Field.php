@@ -37,7 +37,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         $prompt = $this->prompt(I_SELECT_PLEASE . ' ' . $title, [$combo]);
 
         // Save new mode
-        foreach ($this->selected as $selected) $selected->set(['mode' => $prompt['mode']])->save();
+        foreach (t()->rows as $selected) $selected->set(['mode' => $prompt['mode']])->save();
 
         // Flush success
         jflush(true);

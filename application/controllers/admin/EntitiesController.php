@@ -126,22 +126,23 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function toggleAction() {
 
-        // Get current entity's table name
-        $table = t()->row->table;
+        // Foreach selected entity
+        foreach (t()->rows as $row) {
 
-        // Create field
-        field($table, 'toggle', [
-            'title' => I_ENT_TOGGLE,
-            'columnTypeId' => 'ENUM',
-            'elementId' => 'combo',
-            'defaultValue' => 'y',
-            'relation' => 'enumset',
-            'storeRelationAbility' => 'one',
-        ]);
+            // Create field
+            field($row->table, 'toggle', [
+                'title' => I_ENT_TOGGLE,
+                'columnTypeId' => 'ENUM',
+                'elementId' => 'combo',
+                'defaultValue' => 'y',
+                'relation' => 'enumset',
+                'storeRelationAbility' => 'one',
+            ]);
 
-        // Create enum option
-        enumset($table, 'toggle', 'y', ['title' => I_ENT_TOGGLE_Y, 'boxColor' => 'lime', 'move' => '']);
-        enumset($table, 'toggle', 'n', ['title' => I_ENT_TOGGLE_N, 'boxColor' => 'red' , 'move' => 'y']);
+            // Create enum option
+            enumset($row->table, 'toggle', 'y', ['title' => I_ENT_TOGGLE_Y, 'boxColor' => 'lime', 'move' => '']);
+            enumset($row->table, 'toggle', 'n', ['title' => I_ENT_TOGGLE_N, 'boxColor' => 'red' , 'move' => 'y']);
+        }
 
         // Flush success
         jflush(true, 'OK');

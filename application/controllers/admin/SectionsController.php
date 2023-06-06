@@ -265,7 +265,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     public function copyAction() {
 
         // Get selected entries ids
-        $sectionId_disabled = $this->selected->column('id');
+        $sectionId_disabled = t()->rows->column('id');
 
         // If prompt has no answer yet
         if (!Indi::get('answer')) {
@@ -299,7 +299,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $sectionId_parent = $_['sectionId']->id;
 
             // For each section to be copied
-            foreach ($this->selected as $r) {
+            foreach (t()->rows as $r) {
 
                 // Prepare data
                 $config = $r->toArray();

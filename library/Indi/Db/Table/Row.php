@@ -2835,10 +2835,19 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function toggle() {
 
         // If `toggle` column exists
-        if ($this->model()->fields('toggle')) {
+        if ($field = $this->model()->fields('toggle')) {
 
-            // Do the toggle
-            $this->toggle = $this->toggle == 'y' ? 'n' : 'y';
+            // Get values
+            $values = $field->nested('enumset')->column('alias');
+
+            // Append first item to be the last item
+            $values []= $values[0];
+
+            // Get index of current value
+            $index = array_search($this->toggle, $values);
+
+            // Setup next value
+            $this->toggle = $values[$index + 1];
             $this->save();
 
             // Else throw exception

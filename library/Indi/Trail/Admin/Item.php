@@ -7,6 +7,14 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     public $view;
 
     /**
+     * Rowset, containing Indi_Db_Table_Row instances according to current selection.
+     * Those instances are collected by `ids`, given by uri()->id and Indi::post()->others
+     *
+     * @var array|Indi_Db_Table_Rowset
+     */
+    public $rows = [];
+
+    /**
      * Set up all internal properties
      *
      * @param $sectionR
@@ -105,6 +113,32 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             foreach ($this->actions as $actionR)
                 if ($actionR->alias == uri('action'))
                     $this->action = $actionR;
+
+            // $this->section->panel prop appears after this call
+            $this->setPanelType();
+
+            // If it's an rowset-action
+            if ($this->action->selectionRequired === 'n') {
+
+                // Get toggle-prop name
+                $prop = [
+                    'grid' => 'toggle',
+                    'tile' => 'toggleTile',
+                    'plan' => 'togglePlan'
+                ][$this->section->panel];
+
+                // Get space fields' ids
+                $spaceFields = m('entity')->row($this->section->entityId)->spaceFields;
+
+                // Collect cols to be excluded
+                foreach ($sectionR->nested('grid') as $gridR)
+                    if ($gridR->$prop === 'n')
+                        if ($prop !== 'togglePlan' || !in($gridR->fieldId, $spaceFields))
+                            $excludeA []= $gridR->id;
+
+                // Exclude unneeded cols
+                $sectionR->nested('grid')->exclude($excludeA);
+            }
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
             $this->gridFields($sectionR);

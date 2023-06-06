@@ -215,20 +215,18 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
     /**
      * Collect tokens of entries to be deleted
-     *
-     * @param Indi_Db_Table_Rowset $toBeDeletedRs
      */
-    public function preDelete(Indi_Db_Table_Rowset $toBeDeletedRs) {
+    public function preDelete() {
 
         // Collect tokens
         foreach ($this->deleted as $type => &$tokenA)
-            $tokenA = $toBeDeletedRs->select($type, 'type')->col('token');
+            $tokenA = t()->rows->select($type, 'type')->col('token');
 
         // Send msg saying it's not possible to delete context-entries manually
         if (count($this->deleted['context'])) msg(I_REALTIME_CONTEXT_AUTODELETE_ONLY, false);
 
         // Exclude entries having type=context, as they should not be deleted directly
-        $toBeDeletedRs->exclude('context', 'type');
+        t()->rows->exclude('context', 'type');
     }
 
     /**
@@ -236,7 +234,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
      *
      * @param $deleted
      */
-    public function postDelete() {
+    public function postDelete($deleted) {
         foreach ($this->deleted as $type => $tokenA)
             foreach ($tokenA as $token)
                 if ($type == 'channel') Indi::ws(['type' => 'F5', 'to' => $token]);

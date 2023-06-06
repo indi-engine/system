@@ -150,8 +150,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'features',
         ]);
         enumset('section2action', 'multiSelect', 'inherit', ['title' => 'Нет, использовать пакетный режим по умолчанию', 'move' => '', 'boxColor' => '000#FFFFFF']);
-        enumset('section2action', 'multiSelect', '0', ['title' => 'Да, выключить для этого раздела', 'move' => 'inherit', 'boxIcon' => 'resources/images/icons/btn-icon-single-select.png']);
-        enumset('section2action', 'multiSelect', '1', ['title' => 'Да, включить для этого раздела', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        enumset('section2action', 'multiSelect', '1', ['title' => 'Да, включить для этого раздела', 'move' => 'inherit', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        enumset('section2action', 'multiSelect', '0', ['title' => 'Да, выключить для этого раздела', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-single-select.png']);
         field('section2action', 'mode', [
             'title' => 'Режим',
             'mode' => 'hidden',
@@ -200,7 +200,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'togglePlan',
         ]);
         enumset('grid', 'toggleTile', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
-        enumset('grid', 'toggleTile', 'y', ['title' => 'Включен', 'move' => 'n', 'boxIcon' => 'resources/images/icons/icon-image.png']);
+        enumset('grid', 'toggleTile', 'y', ['title' => 'Текст под картинкой', 'move' => 'n', 'boxIcon' => 'resources/images/icons/tile-bottom-lines.png']);
+        enumset('grid', 'toggleTile', 'boxes', ['title' => 'Бокс под картинкой', 'move' => 'y', 'boxIcon' => 'resources/images/icons/tile-bottom-boxes.png']);
+        enumset('grid', 'toggleTile', 'right', ['title' => 'Бокс справа', 'move' => 'boxes', 'boxIcon' => 'resources/images/icons/tile-right-boxes.png']);
         grid('grid', 'panels', [
             'gridId' => 'properties',
             'move' => '',
@@ -211,6 +213,28 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('grid', 'togglePlan', ['gridId' => 'panels', 'move' => 'toggle', 'icon' => 'resources/images/icons/plan-day.png']);
         grid('grid', 'toggleTile', ['gridId' => 'panels', 'move' => 'togglePlan', 'icon' => 'resources/images/icons/icon-image.png']);
         enumset('section', 'planToggle', 'y', ['title' => 'Yes', 'move' => 'n', 'boxIcon' => 'resources/images/icons/plan-day.png']);
+        action('form', ['multiSelect' => '1']);
+        enumset('grid', 'toggle', 'y', ['boxIcon' => 'resources/images/icons/grid.png', 'boxColor' => '', 'cssStyle' => '']);
+        enumset('grid', 'toggle', 'n', ['boxIcon' => '', 'boxColor' => '000#FFFFFF', 'cssStyle' => '']);
+        enumset('grid', 'toggle', 'h', ['boxIcon' => 'resources/images/icons/grid-gray.png', 'boxColor' => '', 'cssStyle' => '']);
+        enumset('grid', 'toggle', 'e', ['boxIcon' => 'resources/images/icons/grid-rowbody.png', 'boxColor' => '', 'cssStyle' => '']);
+        enumset('grid', 'toggle', 'y', ['move' => '']);
+        enumset('grid', 'toggle', 'h', ['move' => 'y']);
+        enumset('grid', 'toggle', 'e', ['move' => 'h']);
+        enumset('grid', 'toggle', 'n', ['move' => 'e']);
+        field('action', 'hasView', [
+            'title' => 'Есть окно',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'radio',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'icon',
+        ]);
+        enumset('action', 'hasView', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('action', 'hasView', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/window.png']);
+        grid('actions', 'hasView', ['move' => 'icon', 'icon' => 'resources/images/icons/window.png']);
         die('ok');
     }
     public function gridChunkAction(){

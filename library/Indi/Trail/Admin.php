@@ -90,18 +90,29 @@ class Indi_Trail_Admin {
         ]);
 
         // Build WHERE clause, responsible for respecting access rules, and same for `grid`, `filter` and `alteredField` entries
-        $_accessWHERE = m('Filter')->fields('accessRoles') || true ? '(' . im([
+        $_accessWHERE = '(' . im([
             '(`accessRoles` = "all"  AND NOT FIND_IN_SET("' . admin()->roleId . '", `accessExcept`))',
             '(`accessRoles` = "none" AND     FIND_IN_SET("' . admin()->roleId . '", `accessExcept`))',
-        ], ' OR ') . ')' : 'TRUE';
+        ], ' OR ') . ')';
 
         // Build final WHERE clause, responsible for fetching grid columns, grid filters and altered fields
-        $_nestedWHERE = ['`sectionId` = "' . $routeA[0] . '"', '`toggle` != "n"', $_accessWHERE];
+        $_nestedWHERE = [
+            'sectionId' => '`sectionId` = "' . $routeA[0] . '"',
+            'toggle' => '`toggle` != "n"',
+            'access' => $_accessWHERE
+        ];
 
         // Fetch grid columns, grid filters and altered fields
-        $sectionRs->nested('grid',         ['where' => $_nestedWHERE, 'order' => '`group` = "locked" DESC, `move`']);
         $sectionRs->nested('filter',       ['where' => $_nestedWHERE, 'order' => 'move']);
         $sectionRs->nested('alteredField', ['where' => $_nestedWHERE]);
+
+        // Bit more complicated WHERE clause for grid
+        $_nestedWHERE['toggle'] = '(' . join('OR', [
+            $_nestedWHERE['toggle'],
+            '`togglePlan` != "n"',
+            '`toggleTile` != "n"',
+        ]) . ')';
+        $sectionRs->nested('grid',         ['where' => $_nestedWHERE, 'order' => '`group` = "locked" DESC, `move`']);
 
         // Setup initial set of properties
         foreach ($sectionRs as $sectionR)

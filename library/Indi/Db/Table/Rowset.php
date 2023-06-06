@@ -2039,4 +2039,19 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Return rowset itself
         return $this;
     }
+
+    /**
+     * Call *_Row->toggle() for each *_Row instance within current rowset
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function toggle() {
+
+        // Call toggle() on each row within current rowset
+        foreach ($this as $row) $row->toggle();
+
+        // Return rowset itself
+        return $this;
+    }
 }

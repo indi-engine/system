@@ -5,6 +5,7 @@ field('action', 'selectionRequired')->toggleL10n('qy', $lang, false);
 field('action', 'multiSelect')->toggleL10n('qy', $lang, false);
 field('action', 'display')->toggleL10n('qy', $lang, false);
 field('action', 'toggle')->toggleL10n('qy', $lang, false);
+field('action', 'hasView')->toggleL10n('qy', $lang, false);
 field('admin', 'title')->toggleL10n('qy', $lang, false);
 field('admin', 'toggle')->toggleL10n('qy', $lang, false);
 field('admin', 'demo')->toggleL10n('qy', $lang, false);

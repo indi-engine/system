@@ -119,29 +119,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         // Demo mode
         Indi::demo();
 
-        // Declare array of ids of entries, that should be moved, and push main entry's id as first item
-        $toBeRevertedIdA[] = $this->row->id;
-
-        // If 'others' param exists in $_POST, and it's not empty
-        if ($otherIdA = ar(Indi::post()->others)) {
-
-            // Unset unallowed values
-            foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
-
-            // If $otherIdA array is still not empty append it's item into $toBeRevertedIdA array
-            if ($otherIdA) $toBeRevertedIdA = array_merge($toBeRevertedIdA, $otherIdA);
-        }
-
-        // Fetch rows that should be moved
-        $toBeRevertedRs = m()->all([
-            '`id` IN (' . im($toBeRevertedIdA) . ')', t()->scope->WHERE
-        ]);
-
         // For each row
-        foreach ($toBeRevertedRs as $toBeRevertedR) $toBeRevertedR->revert();
-
-        // Apply new index
-        $this->setScopeRow(false, null, $toBeRevertedRs->column('id'));
+        foreach (t()->rows as $row) $row->revert();
 
         // Flush success
         jflush(true, 'OK');

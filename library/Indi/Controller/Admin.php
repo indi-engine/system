@@ -31,14 +31,6 @@ class Indi_Controller_Admin extends Indi_Controller {
     protected $_isNestedSeparate = false;
 
     /**
-     * Rowset, containing Indi_Db_Table_Row instances according to current selection.
-     * Those instances are collected by `ids`, given by uri()->id and Indi::post()->others
-     *
-     * @var Indi_Db_Table_Rowset|array
-     */
-    public $selected = [];
-
-    /**
      * Array of section ids, starting from current section and up to the top.
      *
      * @var array
@@ -309,38 +301,62 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Else if where is some another action
             } else {
 
-                // Array of selected entries initially contain only $this->row->id
-                if ($this->row->id) $idA[] = $this->row->id; else $idA = [];
+                // Get rowset containing selected rows
+                t()->rows = $this->getSelectedAsRowset();
 
-                // If 'others' param exists in $_POST, and it's not empty
-                if ($otherIdA = ar(Indi::post()->others)) {
+                // If current action has view and we'vejust entered batch-mode
+                if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other) {
 
-                    // Unset invalid values
-                    foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
+                    // Shortcut for current row id
+                    $id = t()->row->id;
+                    $aix = uri()->aix;
 
-                    // If $otherIdA array is still not empty append it's item into $idA array
-                    if ($otherIdA) $idA = array_merge($idA, $otherIdA);
+                    // Append uris for other row ids
+                    foreach (t()->rows as $idx => $row) {
+
+                        // Get aix
+                        $_aix = $row->system('index') + 1;
+
+                        // Get uri
+                        $uri = str_replace("/id/{$id}/", "/id/{$row->id}"  . "/other/1/", $_SERVER['REQUEST_URI']);
+                        $uri = str_replace("/aix/{$aix}", "/aix/{$_aix}", $uri);
+                        $uri = str_replace("/admin/", "/", $uri);
+
+                        $out = uri()->response($uri);
+                        if (preg_match('~\}\{~', $out)) {
+                            $out = explode('}{', $out)[0] . '}';
+                        }
+
+                        // Trigger Indi.load(...) call with predefined responseText-prop
+                        Indi::ws([
+                            'type' => 'load',
+                            'href' => $uri,
+                            'resp' => $out,
+                            'to' => CID,
+                            'batch' => [
+                                'index' => $idx,
+                                'total' => t()->rows->count()
+                            ]
+                        ]);
+                    }
+
+                    // Flush success
+                    jflush(true);
                 }
 
-                // Fetch selected rows
-                $this->selected = $idA
-                    ? m()->all(['`id` IN (' . im($idA) . ')', t()->scope->WHERE], t()->scope->ORDER)
-                    : m()->createRowset();
-
-                // Prepare scope params
-                $applyA = ['hash' => uri()->ph, 'aix' => uri()->aix, 'lastIds' => $this->selected->column('id')];
-
-                // Append 'toggledSave' scope-param
-                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
-
-                // Apply prepared scope params
-                t()->scope->apply($applyA);
+                // Apply scope params
+                t()->scope->apply([
+                    'hash' => uri()->ph,
+                    'aix' => uri()->aix,
+                    'lastIds' => t()->rows->column('id'),
+                    'toggledSave' => !!Indi::get()->stopAutosave
+                ]);
 
                 // If we are here for just check of row availability, do it
                 if (uri()->check) jflush(true, $this->checkRowIsInScope());
 
                 // Set last accessed rows
-                $this->setScopeRow(false, null, $this->selected->column('id'));
+                $this->setScopeRow(false, null, t()->rows->column('id'));
 
                 // If channel detected
                 if (!ini()->rabbitmq->enabled) Realtime::session()->save();
@@ -362,6 +378,48 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
             }
         }
+    }
+
+    /**
+     * Get rows identified by uri()->id and Indi::post()->others as *_Rowset instance
+     *
+     * @return Indi_Db_Table_Rowset
+     */
+    public function getSelectedAsRowset() : Indi_Db_Table_Rowset {
+
+        // Pairs of [index => id] to be fetched
+        $idA = [];
+
+        // Append [index => $this->row->id] pairs
+        if ($this->row->id)
+            $idA[Indi::rexm('int11', $aix = uri()->aix)
+                ? $aix - 1
+                : 0
+            ] = $this->row->id;
+
+        // Append others, if any
+        if ($otherIdA = Indi::post()->others)
+            foreach ($otherIdA as $index => $id)
+                if (Indi::rexm('int11', $id) && Indi::rexm('int11', $index))
+                    $idA[$index] = $id;
+
+        // Sort by indexes
+        ksort($idA, SORT_NUMERIC); $in = im($idA);
+
+        // Fetch selected rows in correct order
+        $rowset = $idA
+            ? m()->all(["`id` IN ($in)", t()->scope->WHERE], "FIND_IN_SET(`id`, '$in')")
+            : m()->createRowset();
+
+        // Get indexes
+        $indexByIdA = array_flip($idA);
+
+        // Apply index
+        foreach ($rowset as $row)
+            $row->system('index', $indexByIdA[$row->id]);
+
+        // Return
+        return $rowset;
     }
 
     /**
@@ -521,55 +579,46 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function move($direction) {
 
-        // Get the scope of rows to move within
-        $within = t()->scope->WHERE;
+        // Get grouping field
+        $groupBy = t()->section->groupBy ? t()->section->foreign('groupBy')->alias : '';
 
         // Get shift, 1 by default
         $shift = (int) Indi::post('shift') ?: 1;
 
-        // Declare array of ids of entries, that should be moved, and push main entry's id as first item
-        $toBeMovedIdA[] = $this->row->id;
+        // Get the scope of rows to move within
+        $within = t()->scope->WHERE;
 
-        // If 'others' param exists in $_POST, and it's not empty
-        if ($otherIdA = ar(Indi::post()->others)) {
+        // Get tree-column, if exists
+        $tree = m()->treeColumn();
 
-            // Unset unallowed values
-            foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
+        // If $direction is 'down' - reverse selected rows, so that
+        // the one which is at the most bottom of selection is moved at first
+        if ($direction === 'down') t()->rows->reverse();
 
-            // If $otherIdA array is still not empty append it's item into $toBeMovedIdA array
-            if ($otherIdA) $toBeMovedIdA = array_merge($toBeMovedIdA, $otherIdA);
-        }
-
-        // Fetch rows that should be moved
-        $toBeMovedRs = m()->all(
-            ['`id` IN (' . im($toBeMovedIdA) . ')', t()->scope->WHERE],
-            '`move` ' . ($direction == 'up' ? 'ASC' : 'DESC')
-        );
-
-        // Get grouping field
-        $groupBy = t()->section->groupBy ? t()->section->foreign('groupBy')->alias : '';
-
-        // For each row
-        for ($i = 0; $i < $shift; $i++)
-            foreach ($toBeMovedRs as $toBeMovedR)
-                if (!$toBeMovedR->move($direction, $within, $groupBy)) break;
+        // Move each row $shift times towards given $direction
+        foreach (t()->rows as $row)
+            for ($i = 0; $i < $shift; $i++)
+                if (!$row->move($direction, $within, $groupBy) && !$tree)
+                    break 2;
 
         // Get the page of results, that we were at
         $wasPage = t()->scope->page;
 
         // If current model has a tree-column, detect new row index by a special algorithm
-        if (m()->treeColumn()) uri()->aix = m()->detectOffset(
-            t()->scope->WHERE, t()->scope->ORDER, $toBeMovedRs->at(0)->id);
-
         // Else just shift current row index by inc/dec-rementing
-        else uri()->aix += ($direction == 'up' ? -1 : 1) * $shift;
+        uri()->aix = m()->treeColumn()
+            ? m()->detectOffset(t()->scope->WHERE, t()->scope->ORDER, t()->rows->at(0)->id)
+            : uri()->aix + ($direction == 'up' ? -1 : 1) * $shift;
 
         // Apply new index
-        $this->setScopeRow(false, null, $toBeMovedRs->column('id'));
+        $this->setScopeRow(false, null, t()->rows->column('id'));
+
+        // Get the page of results, that we are at
+        $nowPage = t()->scope->page;
 
         // Flush json response, containing new page index, in case if now row
         // index change is noticeable enough for rowset current page was shifted
-        jflush(true, $wasPage != ($nowPage = t()->scope->page) ? ['page' => $nowPage] : []);
+        jflush(true, $wasPage != $nowPage ? ['page' => $nowPage] : []);
     }
 
     /**
@@ -579,28 +628,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         
         // Demo mode
         Indi::demo();
-        
-        // Declare array of ids of entries, that should be deleted, and push main entry's id as first item
-        $toBeDeletedIdA[] = $this->row->id;
-
-        // If 'others' param exists in $_POST, and it's not empty
-        if ($otherIdA = ar(Indi::post()->others)) {
-
-            // Unset unallowed values
-            foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
-
-            // If $otherIdA array is still not empty append it's item into $toBeMovedIdA array
-            if ($otherIdA) $toBeDeletedIdA = array_merge($toBeDeletedIdA, $otherIdA);
-        }
-
-        // Fetch rows that should be moved
-        $toBeDeletedRs = m()->all(
-            ['`id` IN (' . im($toBeDeletedIdA) . ')', t()->scope->WHERE],
-            t()->scope->ORDER
-        );
 
         // Do pre delete maintenance
-        $this->preDelete($toBeDeletedRs);
+        $this->preDelete();
 
         // Array of deleted ids
         $deleted = [];
@@ -609,7 +639,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         try {
 
             // For each row
-            foreach ($toBeDeletedRs as $toBeDeletedR) if ($deleted []= (int) $toBeDeletedR->delete()) {
+            foreach (t()->rows as $row) if ($deleted []= (int) $row->delete()) {
 
                 // Get the page of results, that we were at
                 $wasPage = t()->scope->page;
@@ -625,7 +655,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Catch DeleteException
         } catch (Indi_Db_DeleteException $e) {
 
-            // "Cannot delete or update a parent row: a foreign key constraint fails (`custom`.`queueitem`, CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queuechunk` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)"
+            // "Cannot delete or update a parent row: a foreign key constraint fails
+            // (`custom`.`queueitem`, CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY
+            // (`queueChunkId`) REFERENCES `queuechunk` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)"
             jflush(false, $e->getMessage());
         }
 
@@ -2865,62 +2897,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         Indi::demo();
 
         // Toggle
-        t()->row->toggle();
+        t()->rows->toggle();
 
-        // If 'others' param exists in $_POST, and it's not empty
-        if ($otherIdA = ar(Indi::post()->others)) {
-
-            // Unset unallowed values
-            foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
-
-            // If $otherIdA array is not empty
-            if ($otherIdA) {
-
-                // Fetch rows
-                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
-
-                // For each row
-                foreach ($otherRs as $otherR) $otherR->toggle();
-
-                // Prepare array of selected rows ids
-                $scopeRowIdA = $otherIdA; array_unshift($scopeRowIdA, t()->row->id);
-
-                // Apply those
-                $this->setScopeRow(false, null, $scopeRowIdA);
-            }
-        }
-
-        // Redirect
-        $this->redirect();
-    }
-
-    /**
-     * Mark-for-delete current row, and redirect back
-     */
-    public function m4dAction() {
-
-        // Toggle
-        t()->row->m4d();
-
-        // If 'others' param exists in $_POST, and it's not empty
-        if ($otherIdA = ar(Indi::post()->others)) {
-
-            // Unset unallowed values
-            foreach ($otherIdA as $i => $otherIdI) if (!(int) $otherIdI) unset($otherIdA[$i]);
-
-            // If $otherIdA array is not empty
-            if ($otherIdA) {
-
-                // Fetch rows
-                $otherRs = m()->all(['`id` IN (' . im($otherIdA) . ')', t()->scope->WHERE]);
-
-                // For each row
-                foreach ($otherRs as $otherR) $otherR->m4d();
-            }
-        }
-
-        // Redirect
-        $this->redirect();
+        // Flush success
+        jflush(true);
     }
 
     /**
