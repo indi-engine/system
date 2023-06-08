@@ -662,8 +662,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             // Get modes and views config for actions
             $actionCfg = Indi_Trail_Admin::$controller->actionCfg;
 
+            // Set action mode (e.g. 'row' or 'rowset')
+            $actionMode = $this->action->selectionRequired === 'y' ? 'row' : 'rowset';
+
             // Detect mode (rowset or row) and save into trail
-            if ($mode = ucfirst($actionCfg['mode'][$action])) {
+            if ($mode = ucfirst($actionMode)) {
                 $actionParentClass .= '_' . $mode;
                 $this->action->mode = $mode;
             }

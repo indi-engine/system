@@ -11,6 +11,5 @@ class Indi_Controller_Admin_Dashboard extends Indi_Controller_Admin_Myprofile {
      */
     public function adjustActionCfg() {
         $this->actionCfg['view']['dashboard'] = 'form';
-        $this->actionCfg['mode']['dashboard'] = 'row';
     }
 }

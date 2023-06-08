@@ -2405,6 +2405,9 @@ class Indi {
         // Bit less than quarter-transparent version
         $background = $hex ? sprintf('rgba(%d, %d, %d, 0.2)', $r, $g, $b) : '';
 
+        // Bit less than quarter-transparent version
+        $backgroundHover = sprintf('rgb(%d, %d, %d)', $r + 200, $g + 200, $b + 200);
+
         // Bit less than half-transparent version
         $backgroundSelected = $hex ? sprintf('rgba(%d, %d, %d, 0.4)', $r, $g, $b) : '';
 
@@ -2413,6 +2416,7 @@ class Indi {
             'color' => $color,
             'border-color' => $baseColor,
             'background-color' => $background,
+            'background-color-hover' => $backgroundHover,
             'background-color-selected' => $backgroundSelected
         ];
     }

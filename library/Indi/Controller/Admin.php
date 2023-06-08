@@ -38,20 +38,11 @@ class Indi_Controller_Admin extends Indi_Controller {
     private $_routeA = [];
 
     /**
-     * Modes and views for typical actions. Can be adjusted with adjustActionCfg() method
+     * Views for typical actions. Can be adjusted with adjustActionCfg() method
      *
      * @var array
      */
     public $actionCfg = [
-        'mode' => [
-            'index' => 'rowset',
-            'form' => 'row',
-            'up' => 'row',
-            'down' => 'row',
-            'toggle' => 'row',
-            'print' => 'row',
-            'call' => 'row'
-        ],
         'view' => [
             'index' => 'grid',
             'form' => 'form',
@@ -124,7 +115,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Change view type
                  if (t()->section->panel == 'tile') $this->actionCfg['view']['index'] = 'tile';
-            else if (t()->section->panel == 'plan') $this->actionCfg['view']['index'] = 'calendar';
+            else if (t()->section->panel == 'plan') $this->actionCfg['view']['index'] = 'plan';
 
             // Adjust action mode and view config.
             $this->adjustActionCfg();
@@ -322,13 +313,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $uri = str_replace("/aix/{$aix}", "/aix/{$_aix}", $uri);
                         $uri = str_replace("/admin/", "/", $uri);
 
+                        // Prepare output
                         $out = uri()->response($uri);
-                        if (preg_match('~\}\{~', $out)) {
+                        if (preg_match('~\}\{~', $out))
                             $out = explode('}{', $out)[0] . '}';
-                        }
 
-                        // Trigger Indi.load(...) call with predefined responseText-prop
-                        Indi::ws([
+                        // Prepare stomp msg
+                        $msg = [
                             'type' => 'load',
                             'href' => $uri,
                             'resp' => $out,
@@ -337,11 +328,18 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 'index' => $idx,
                                 'total' => t()->rows->count()
                             ]
-                        ]);
+                        ];
+
+                        // Trigger Indi.load(...) call with predefined responseText-prop
+                        if (ini()->rabbitmq->enabled) {
+                            Indi::ws($msg);
+                        } else {
+                            $stomp []= $msg;
+                        }
                     }
 
                     // Flush success
-                    jflush(true);
+                    jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
                 }
 
                 // Apply scope params
