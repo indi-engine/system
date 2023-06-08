@@ -201,8 +201,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         enumset('grid', 'toggleTile', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('grid', 'toggleTile', 'y', ['title' => 'Текст под картинкой', 'move' => 'n', 'boxIcon' => 'resources/images/icons/tile-bottom-lines.png']);
-        enumset('grid', 'toggleTile', 'boxes', ['title' => 'Бокс под картинкой', 'move' => 'y', 'boxIcon' => 'resources/images/icons/tile-bottom-boxes.png']);
-        enumset('grid', 'toggleTile', 'right', ['title' => 'Бокс справа', 'move' => 'boxes', 'boxIcon' => 'resources/images/icons/tile-right-boxes.png']);
+        enumset('grid', 'toggleTile', 'bottomBoxes', ['title' => 'Бокс под картинкой', 'move' => 'y', 'boxIcon' => 'resources/images/icons/tile-bottom-boxes.png']);
+        enumset('grid', 'toggleTile', 'rightBoxes', ['title' => 'Бокс справа', 'move' => 'bottomBoxes', 'boxIcon' => 'resources/images/icons/tile-right-boxes.png']);
         grid('grid', 'panels', [
             'gridId' => 'properties',
             'move' => '',
