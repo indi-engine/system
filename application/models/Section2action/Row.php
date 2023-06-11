@@ -238,6 +238,30 @@ class Section2action_Row extends Indi_Db_Table_Row {
     }
 
     /**
+     * Make sure correct value for l10n-field is set depending on whether action has view or not
+     *
+     * @throws Exception
+     */
+    public function onBeforeInsert() {
+        $this->l10n = $this->foreign('actionId')->hasView === 'y' ? 'n' : 'na';
+    }
+
+    /**
+     * Make sure correct value for l10n-field is set depending on whether action has view or not
+     *
+     * @throws Exception
+     */
+    public function onBeforeUpdate() {
+        if ($this->foreign('actionId')->hasView === 'y') {
+            if ($this->l10n === 'na') {
+                $this->l10n = 'n';
+            }
+        } else {
+            $this->l10n = 'na';
+        }
+    }
+
+    /**
      * Adjust value of filterOwner-prop in case if filterOwnerRoleIds-prop is changed
      */
     public function onBeforeSave() {

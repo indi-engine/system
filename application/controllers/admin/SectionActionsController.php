@@ -25,6 +25,10 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         // If we're going to create queue task for turning selected language either On or Off
         if (in($value, 'qy,qn')) {
 
+            // If template file not exists - there is nothing to be translated
+            if ($file = $this->templateRequired())
+                jflush(false, "Template file missing: $file");
+
             // Ask whether we want to turn l10n On/Off,
             // or want to arrange value of `l10n` for it to match real situation.
             if ('no' == $this->confirm(__(
@@ -106,5 +110,45 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
         // Auto-start queue as a background process
         Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+    }
+
+    /**
+     * Check whether there is template php-file exists for the action in the section,
+     * that current record is representing, because if no - there is nothing to be translated
+     * This used in onBeforeCellSave() for l10n-field, because turning on localization for actions
+     * is applicable only if action is aimed to display rendered template
+     *
+     * @return false|string
+     * @throws Exception
+     */
+    public function templateRequired() {
+
+        // PHP-view files for sections of fraction:
+        // - 'system' - will be created in VDR . '/system',
+        // - 'public'                   in VDR . '/public',
+        // - 'custom'                   in ''
+        $repoDirA = [
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
+        ];
+
+        // Get fraction that current record belongs to
+        $fraction = t()->row->foreign('sectionId')->fraction;
+
+        // If current section has a fraction, that is (for some reason) not in the list of known types
+        if (!in($fraction, array_keys($repoDirA)))
+
+            // Flush an error
+            jflush(false, 'Can\'t detect the alias of repository, associated with a fraction of the chosen action\'s section');
+
+        // Build the dir name, that controller's js-file should be created in
+        $template = DOC . STD . $repoDirA[$fraction]
+            . '/application/views/admin/'
+            . t()->row->foreign('sectionId')->alias . '/'
+            . t()->row->foreign('actionId')->alias . '.php';
+
+        // If view file is not yet exists - return it's name
+        return is_file($template) ? false : substr($template, strlen(DOC . STD) + 1);
     }
 }

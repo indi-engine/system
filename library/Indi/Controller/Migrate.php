@@ -235,6 +235,18 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('action', 'hasView', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('action', 'hasView', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/window.png']);
         grid('actions', 'hasView', ['move' => 'icon', 'icon' => 'resources/images/icons/window.png']);
+        grid('sectionActions', 'actionId', 'hasView', ['gridId' => 'win', 'move' => '', 'icon' => 'resources/images/icons/window.png']);
+        enumset('section2action', 'l10n', 'na', ['title' => 'Не применимо', 'move' => 'qn', 'boxColor' => '000#FFFFFF']);
+        db()->query("
+            UPDATE `section2action` `sa`, `action` `a` 
+            SET `sa`.`fitWindow` = 'n', `sa`.`south` = 'no', `sa`.`l10n` = 'na'
+            WHERE `sa`.`actionId` = `a`.`id` AND `a`.`hasView` = 'n'
+        ");
+        enumset('section2action', 'l10n', 'na', ['title' => 'Не применимо', 'move' => 'n', 'boxColor' => '000#FFFFFF']);
+        grid('sectionActions', 'actionId', 'hasView', ['gridId' => 'win', 'move' => '', 'icon' => 'resources/images/icons/window.png']);
+        param('section2action', 'actionId', 'optionAttrs', ['cfgValue' => '3636']);
+        enumset('section2action', 'multiSelect', 'separate', ['title' => 'Да, включить, но делать запрос для каждой записи', 'move' => '0', 'boxIcon' => 'resources/images/icons/select-queue.png']);
+
         die('ok');
     }
     public function gridChunkAction(){
