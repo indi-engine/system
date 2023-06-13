@@ -647,7 +647,7 @@ class Indi_View {
                 $store    = $this->_helper;
                 break;
         }
-        if (!isset($store[$name])) {
+        if (!isset($store[$name]) || $type === 'helper') {
             $class = $this->getPluginLoader($type)->load($name, $throwExceptions);
             if (!$class) return $class;
             $store[$name] = new $class();
