@@ -66,7 +66,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'move' => 'tileThumb',
         ]);
 
-        grid('sections', 'rowset', ['move' => '']);
+        grid('sections', 'rowset', ['move' => 'features']);
         grid('sections', 'grid', ['gridId' => 'rowset', 'move' => '']);
         grid('sections', 'gridToggle', ['gridId' => 'grid', 'move' => '', 'icon' => 'resources/images/icons/grid.png']);
         grid('sections', 'groupBy', ['move' => 'gridToggle', 'gridId' => 'grid']);
@@ -166,6 +166,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'rename' => 'Пакетный режим по умолчанию',
         ]);
         grid('sectionActions', 'multiSelect', ['gridId' => 'mode', 'move' => 'multiSelect', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        enumset('section2action', 'l10n', 'na', ['title' => 'Не применимо', 'move' => 'qn', 'boxColor' => '000#FFFFFF']);
         section2action('sectionActions','delete', ['multiSelect' => '1']);
         section2action('grid','delete', ['multiSelect' => '1']);
         section2action('alteredFields','delete', ['multiSelect' => '1']);
@@ -234,9 +235,21 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         enumset('action', 'hasView', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('action', 'hasView', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/window.png']);
+        action('index', ['hasView' => 'y']);
+        action('form', ['hasView' => 'y']);
+        action('start', ['hasView' => 'y']);
+        action('print', ['hasView' => 'y']);
+        action('receipt', ['hasView' => 'y']);
+        action('form', ['multiSelect' => '1']);
+        action('up', ['multiSelect' => '1']);
+        action('down', ['multiSelect' => '1']);
+        action('toggle', ['multiSelect' => '1']);
+        action('export', ['multiSelect' => '1']);
+        action('copy', ['multiSelect' => '1']);
+        filter('actions', 'display')->delete();
+        filter('actions', 'hasView', true);
         grid('actions', 'hasView', ['move' => 'icon', 'icon' => 'resources/images/icons/window.png']);
         grid('sectionActions', 'actionId', 'hasView', ['gridId' => 'win', 'move' => '', 'icon' => 'resources/images/icons/window.png']);
-        enumset('section2action', 'l10n', 'na', ['title' => 'Не применимо', 'move' => 'qn', 'boxColor' => '000#FFFFFF']);
         db()->query("
             UPDATE `section2action` `sa`, `action` `a` 
             SET `sa`.`fitWindow` = 'n', `sa`.`south` = 'no', `sa`.`l10n` = 'na'
@@ -246,7 +259,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('sectionActions', 'actionId', 'hasView', ['gridId' => 'win', 'move' => '', 'icon' => 'resources/images/icons/window.png']);
         param('section2action', 'actionId', 'optionAttrs', ['cfgValue' => '3636']);
         enumset('section2action', 'multiSelect', 'separate', ['title' => 'Да, включить, но делать запрос для каждой записи', 'move' => '0', 'boxIcon' => 'resources/images/icons/select-queue.png']);
-
+        action('index', ['icon' => 'resources/images/icons/grid.png']);
         die('ok');
     }
     public function gridChunkAction(){
