@@ -719,7 +719,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Calculate new page number, so when user will return to grid panel - an appropriate page
             // will be displayed, and last accessed row will be within it
-            $modified['page'] = ceil($modified['aix']/t((int) $upper)->section->rowsOnPage);
+            $modified['page'] = min(1, ceil($modified['aix']/t((int) $upper)->section->rowsOnPage));
         }
 
         // Remember all scope params in $_SESSION under a hash
