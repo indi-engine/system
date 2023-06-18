@@ -1327,7 +1327,7 @@ class Indi_Db_Table
         }
 
         // Prepare and send updates to subscribers
-        $row->maxwell($event['type']);
+        $row->maxwell($event['type'], $event['xid']);
     }
 
     /**

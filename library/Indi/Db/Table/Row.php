@@ -687,14 +687,17 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Method to trigger all things to be processed on data change event, captured by maxwell daemon
      *
      * @param $event
+     * @param int $queryID Identifier of a query that caused data changes.
+     *        For example all binlog events saying some record was deleted will have identical $queryID
+     *        in case if they were affected by single query like DELETE FROM `someTable` WHERE `xx` = "yy"
      */
-    public function maxwell($event) {
+    public function maxwell($event, $queryID = 0) {
 
         // If event is 'delete'
         if ($event == 'delete') {
 
             // Do system things
-            $this->_afterDelete();
+            $this->_afterDelete($queryID);
 
         // Else
         } else {
@@ -785,7 +788,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * that are representing browser tabs having grids where current entry
      * and old values of it's affected fields are displayed
      */
-    public function realtime($event = 'update') {
+    public function realtime($event = 'update', $queryID = 0) {
 
         // If rabbitmq is not enabled
         if (!ini()->rabbitmq->enabled) return;
@@ -869,6 +872,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Get scope
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
 
+                // If $queryID is 0, or is changed - reset $scope['overpage']
+                if (!$queryID || $scope['queryID'] != $queryID) {
+                    $scope['queryID'] = $queryID;
+                    unset($scope['overpage']);
+                }
+
                 // If scope's tree-flag is true
                 if ($scope['tree']) {
 
@@ -884,25 +893,78 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Else build ORDER clause using ordinary approach
                 } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
 
+                // Get offset
+                $offset = $scope['rowsOnPage'] * $scope['page'];
+
                 // Build usable WHERE clause
                 $where = rif($scope['WHERE'], 'WHERE $1');
 
                 // Build usable ORDER BY clause
                 $order = rif($order, 'ORDER BY $1');
 
-                // Build usable LIMIT clause
-                $limit = 'LIMIT ' . ($scope['rowsOnPage'] * $scope['page'] - 1) . ', 1';
-
                 // If deleted entry is on current page
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    if ($scope['page'] * $scope['rowsOnPage'] < $scope['found']) {
+                    if ($scope['found'] > $offset) {
+
+                        // Get id of current page's last record
+                        $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
+
+                        // Prepare WHERE and OFFSET clauses for fetching next page's first record
+                        $pgdn1stWHERE = [];
+                        if ($scope['WHERE'])     $pgdn1stWHERE []= $scope['WHERE'];
+                        if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ({$realtimeR->entries})";
+                        $pgdn1stWHERE = rif(join(' AND ', $pgdn1stWHERE), 'WHERE $1');
+
+                        // Prepare OFFSET clause for current page's first record
+                        $pg1stOFFSET = $scope['rowsOnPage'] * ($scope['page'] - 1);
+
+                        // Detect ID of entry that will be shifted from next page's first to current page's last:
+                        //
+                        // If current page's last record is still exist, it means that even in case of batch-deletion
+                        // such a deletion was either not intended to reach that record, or was but has not yet reached that
+                        // record so far, so that we can rely on that record while calculating, so to say, 'next' record
+                        // which is the next page's first record to be added to the list of current page's records
+                        if ($last
+                            && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
+                            && !in($last, $scope['overpage'])) {
+
+                            // Get next record after $last
+                            $next = db()
+                                ->query("SELECT `id` FROM `{$this->_table}` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1")
+                                ->cell();
+
+                            // Unset overpage ids
+                            unset($scope['overpage']);
+
+                        // Else it means deletion reached all records up to current page's ones inclusively,
+                        // and maybe even further ones, so the only thing we can do is just to pick first among
+                        // remaining records called overpage-records
+                        } else {
+
+                            // If count of overpage-records does not exceed so far the limit of to be shown on page
+                            if (count($scope['overpage'] ?: []) < $scope['rowsOnPage']) {
+
+                                // Make sure previously fetched overpage-records are skipped while fetching next one
+                                if ($scope['overpage'])
+                                    $where = rif($where, "$1 AND ", "WHERE ")
+                                        . '`id` NOT IN (' . im($scope['overpage']) . ')';
+
+                                // Fetch record
+                                $next = db()->query("SELECT `id` FROM `{$this->_table}` $where $order LIMIT 1")->cell();
+
+                                // Append it's id to scope's overpage-array
+                                $scope['overpage'] []= (int) $next;
+
+                            // If limit reached - do nothing
+                            } else {
+                                $next = false;
+                            }
+                        }
 
                         // Detect ID of entry that will be shifted from next page's first to current page's last
-                        $byChannel[$channel][$context]['deleted'] = (int) db()->query("
-                            SELECT `id` FROM `{$this->_table}` $where $order $limit
-                        ")->cell();
+                        $byChannel[$channel][$context]['deleted'] = (int) $next;
 
                         // If such entry exists - push it's id to context's entries ids list
                         if ($byChannel[$channel][$context]['deleted'])
@@ -962,12 +1024,59 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $realtimeR->drop('entries', $first);
 
                         // If there is at least 1 next page exists
-                        if ($scope['page'] * $scope['rowsOnPage'] < $scope['found']) {
+                        if ($scope['found'] > $offset) {
 
-                            // Detect ID of entry that will be shifted from next page's first to current page's last
-                            $byChannel[$channel][$context]['deleted'] = (int) db()->query("
-                                SELECT `id` FROM `{$this->_table}` $where $order $limit
-                            ")->cell();
+                            // Detect ID of entry that will be shifted from next page's first to current page's last:
+                            //
+                            // If current page's last record is still exist, it means that even in case of batch-deletion
+                            // such a deletion was either not intended to reach that record, or was but has not yet reached that
+                            // record so far, so that we can rely on that record while calculating, so to say, 'next' record
+                            // which is the next page's first record to be added to the list of current page's records
+                            if ($last
+                                && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
+                                && !in($last, $scope['overpage'])) {
+
+                                // Set @found mysql variable
+                                db()->query('SET @found := 0');
+
+                                // Get next record after $last
+                                $next = db()->query("
+                                    SELECT `id` 
+                                    FROM `{$this->_table}`
+                                    HAVING (@found := IF (`id` = '$last', 1, IF(@found, @found + 1, @found))) = 2
+                                    $order
+                                ")->cell();
+
+                                // Unset overpage ids
+                                unset($scope['overpage']);
+
+                            // Else it means deletion reached all records up to current page's ones inclusively,
+                            // and maybe even further ones, so the only thing we can do is just to pick first among
+                            // remaining records called overpage-records
+                            } else {
+
+                                // If count of overpage-records does not exceed so far the limit of to be shown on page
+                                if (count($scope['overpage'] ?: []) < $scope['rowsOnPage'] * $scope['page']) {
+
+                                    // Make sure previously fetched overpage-records are skipped while fetching next one
+                                    if ($scope['overpage'])
+                                        $where = rif($where, "$1 AND ", "WHERE ")
+                                            . '`id` NOT IN (' . im($scope['overpage']) . ')';
+
+                                    // Fetch record
+                                    $next = db()->query("SELECT `id` FROM `{$this->_table}` $where $order LIMIT 1")->cell();
+
+                                    // Append it's id to scope's overpage-array
+                                    $scope['overpage'] []= (int) $next;
+
+                                // If limit reached - do nothing
+                                } else {
+                                    $next = false;
+                                }
+                            }
+
+                            // Apply to ws-message
+                            $byChannel[$channel][$context]['deleted'] = $next;
 
                             // If such entry exists - push it's id to context's entries ids list
                             if ($byChannel[$channel][$context]['deleted'])
@@ -1005,7 +1114,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
-                if ($entry = $byChannel[$channel][$context]['deleted'] && is_numeric($entry) && !$scope['rowReqIfAffected']) {
+                if (($entry = $byChannel[$channel][$context]['deleted']) && is_numeric($entry) && !$scope['rowReqIfAffected']) {
 
                     // Get it's actual *_Row instance
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
@@ -1851,16 +1960,18 @@ class Indi_Db_Table_Row implements ArrayAccess
      * System things to be triggered after entry was deleted from table,
      * which can be done asyncronously
      *
+     * @param int $queryID Is greater than 0 only in case if maxwell daemon is On,
+     *                     so we're inside realtime/render process and processing binlog-events
      * @throws Exception
      */
-    protected function _afterDelete() {
+    protected function _afterDelete($queryID = 0) {
 
         // Check if row (in it's current state) matches each separate notification's criteria,
         // and remember the results separately for each notification, attached to current row's entity
         $this->_noticesStep1('delete');
 
         // Notify UI-users
-        $this->realtime('delete');
+        $this->realtime('delete', $queryID);
 
         // Delete all files (images, etc) that have been attached to row
         $this->deleteFiles();

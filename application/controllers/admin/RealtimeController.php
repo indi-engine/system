@@ -227,14 +227,22 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Exclude entries having type=context, as they should not be deleted directly
         t()->rows->exclude('context', 'type');
+
+        // Begin transaction
+        db()->begin();
     }
 
     /**
-     * Reload browser tabs, if corresponding channel-entries were deleted
+     * Reload browser tabs on corresponding channels deletion
      *
      * @param $deleted
      */
     public function postDelete($deleted) {
+
+        // Commit transaction
+        db()->commit();
+
+        // Reload browser tabs, if corresponding channel-entries were deleted
         foreach ($this->deleted as $type => $tokenA)
             foreach ($tokenA as $token)
                 if ($type == 'channel') Indi::ws(['type' => 'F5', 'to' => $token]);
@@ -384,7 +392,13 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             'producer' => 'rabbitmq',
             'rabbitmq_exchange_type' => 'direct',
             'rabbitmq_routing_key_template' => '%db%',
-            'recapture_schema' => 'true'
+            'recapture_schema' => 'true',
+            'replay' => 'true',
+            'output_commit_info' => 'true',
+
+            //'output_binlog_position' => 'true',
+            //'output_xoffset' => 'true',
+            //'output_row_query' => 'true',
         ];
 
         // Prepare params string
