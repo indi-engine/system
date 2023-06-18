@@ -959,7 +959,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                             // If limit reached - do nothing
                             } else {
-                                $next = false;
+                                $next = 0;
                             }
                         }
 
@@ -1071,7 +1071,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                                 // If limit reached - do nothing
                                 } else {
-                                    $next = false;
+                                    $next = 0;
                                 }
                             }
 
