@@ -1922,29 +1922,25 @@ function grid($section, $field, $ctor = false) {
     $sectionId = $sectionR->id;
     $fieldR = field($sectionR->foreign('entityId')->table, $field);
     $fieldId = $fieldR->id ?: 0;
-    if (!$fieldId) $alias = $field;
 
     // Build WHERE clause
-    $w = ['`sectionId` = "' . $sectionId . '"'];
+    $w = ['`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"'];
 
     // If $field arg points to existing `field` entry
     if ($fieldId) {
 
-        // Append to WHERE clause
-        $w []= '`fieldId` = "' . $fieldId . '"';
-
         // Detect $further
         if (func_num_args() > 3) {
-            $further = $ctor; $ctor = func_get_arg(3);
+            $further = $ctor;
+            $ctor = func_get_arg(3);
         } else if (func_num_args() == 3 && is_string($ctor)) {
-            $further = $ctor; $ctor = false;
+            $further = $ctor;
+            $ctor = false;
         }
 
         // Mind `further` field
-        if ($further) $w []= 'IFNULL(`further`, 0) = "' . $fieldR->rel()->fields($further)->id . '"';
-
-    // Else involve $field arg into WHERE clause
-    } else $w []= '`alias` = "' . $field . '"';
+        if ($further) $w [] = 'IFNULL(`further`, 0) = "' . $fieldR->rel()->fields($further)->id . '"';
+    }
 
     // Try to find `grid` entry
     $gridR = m('Grid')->row($w);
