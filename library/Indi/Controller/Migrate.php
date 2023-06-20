@@ -83,8 +83,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'icon' => 'resources/images/icons/icon-image.png',
             'rename' => 'Галерея',
         ]);
-        grid('sections', 'tileField')->delete();
-        grid('sections', 'tileThumb')->delete();
+        if ($_ = grid('sections', 'tileField')) $_->delete();
+        if ($_ = grid('sections', 'tileThumb')) $_->delete();
         enumset('section', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
         grid('sections', 'multiSelect', ['move' => 'display', 'gridId' => 'features']);
         field('section', 'multiSelect', ['move' => 'groupBy']);

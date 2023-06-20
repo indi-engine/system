@@ -13,7 +13,7 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // Provide ability for some grid col props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = section($value)->id;
+            if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = $value ? section($value)->id : 0;
             else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
@@ -102,7 +102,9 @@ class Grid_Row extends Indi_Db_Table_Row {
 
                 // Else if it's one of fields for jump destination definition
                 else if ($prop == 'jumpSectionId')       $value = $this->foreign($prop)->alias;
-                else if ($prop == 'jumpSectionActionId') $value = $this->foreign($prop)->foreign('actionId')->alias;
+                else if ($prop == 'jumpSectionActionId') $value = $this->$prop
+                    ? $this->foreign($prop)->foreign('actionId')->alias
+                    : '';
 
                 // Else if it's one of fields for color definition
                 else if ($prop == 'colorField') {
