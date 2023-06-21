@@ -261,6 +261,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('section2action', 'multiSelect', 'separate', ['title' => 'Да, включить, но делать запрос для каждой записи', 'move' => '0', 'boxIcon' => 'resources/images/icons/select-queue.png']);
         action('index', ['icon' => 'resources/images/icons/grid.png']);
         section('queueTask', ['defaultSortField' => '-1', 'showID' => 'y']);
+        enumset('section2action', 'south', 'no', ['boxColor' => '000#FFFFFF']);
         die('ok');
     }
     public function gridChunkAction(){

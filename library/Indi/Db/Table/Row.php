@@ -771,7 +771,12 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Add panel type
-        $renderCfg['_system']['panel'] = $scope['panel'];
+        $renderCfg['_system']['panel'] = $scope['panel'] ?: 'grid';
+
+        // DEBUG
+        if (!$scope['panel']) {
+            Indi::log('no-scope-panel', ['scope' => $scope, 'renderCfg' => $renderCfg], false);
+        }
 
         // Render
         $data = $this->toGridData($dataColumns, $renderCfg);
