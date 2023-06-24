@@ -3133,7 +3133,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function affected($phantom = false) {
 
         // Wrap row in a rowset, process it by $this->adjustGridDataRowset(), and unwrap back
-        $this->rowset = m()->createRowset(['rows' => [$this->row]]);
+        $this->rowset = m()->createRowset(['rows' => [t()->row ?? m()->new()]]);
         $this->adjustGridDataRowset();
         $this->row = $this->rowset->at(0);
 
