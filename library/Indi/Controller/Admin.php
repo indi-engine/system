@@ -3764,11 +3764,17 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Call patent
         if (t()->grid)
-            foreach ($fieldRs as $fieldR)
-                t()->grid->append(array_merge([
-                    'fieldId' => $fieldR->id,
-                    'gridId' => 0
-                ], $ctor));
+            foreach ($fieldRs as $fieldR) {
+
+                // Prepare original data
+                $original = $ctor + ['fieldId' => $fieldR->id, 'gridId' => 0];
+
+                // Create grid
+                $gridR = m('grid')->createRow(['original' => $original]);
+
+                // Append
+                t()->grid->append($gridR);
+            }
 
         // Return
         return $fieldRs;

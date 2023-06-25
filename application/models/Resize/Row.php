@@ -15,14 +15,20 @@ class Resize_Row extends Indi_Db_Table_Row {
      */
     public function deleteCopies() {
 
+        // Get entity, where current fileupload-field belongs to
+        $entityR = $this->foreign('fieldId')->foreign('entityId');
+
         // Build the target directory
-        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $this->foreign('fieldId')->foreign('entityId')->table . '/';
+        $dir = DOC . STD . '/' . ini()->upload->path . '/' . $entityR->table . '/';
+
+        // Add subdir wildcard
+        if ($entityR->filesGroupBy) $dir .= '*/';
 
         // Get all copies ( of all images, that were uploaded using current field), created in respect of current row
-        $fileA = glob($dir . '*_' . $this->foreign('fieldId')->alias . ','  . $this->alias . '.*');
+        $expr = $dir . '*_' . $this->foreign('fieldId')->alias . ','  . $this->alias . '.*';
 
         // Delete them
-        foreach ($fileA as $fileI) @unlink($fileI);
+        foreach (glob($expr) as $fileI) @unlink($fileI);
 	}
 
     /**

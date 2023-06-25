@@ -5050,8 +5050,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         // If no $src argument given
         if (!$src) {
 
-            // Get the directory name
-            $dir = DOC . STD . '/' . ini()->upload->path . '/' . $this->_table . '/';
+            // Get dir
+            $dir = $this->dir('name');
 
             // If directory does not exist - return
             if (!is_dir($dir)) return;
