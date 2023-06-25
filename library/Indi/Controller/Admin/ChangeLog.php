@@ -93,8 +93,8 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
             // Build group title
             $data[$i]['_render']['datetime'] = $data[$i]['datetime']
-                . rif($entryId, ' - ' . $data[$i]['entityId'] . ' » ' . $data[$i]['entryId'])
-                . rif($data[$i]['adminId'], ' - ' . $data[$i]['adminId'] . ' [' . $data[$i]['roleId'] . ']');
+                . rif($entryId, ' - ' . $data[$i]['_render']['entityId'] . ' » ' . $data[$i]['_render']['entryId'])
+                . rif($data[$i]['adminId'], ' - ' . $data[$i]['_render']['adminId'] . ' [' . $data[$i]['_render']['roleId'] . ']');
 
             // Encode <iframe> tag descriptors into html entities
             $data[$i]['was'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['was']);
