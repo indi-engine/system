@@ -6,7 +6,7 @@ $msg = str_replace("\r\n", "\n", `git status`);
 $dir = getcwd();
 
 // If there are no changes in composer.lock to be committed - exit
-if (!preg_match('~Changes to be committed:\n(?:  \(.+?\)\n)*(?:(?:\s+modified:   .+?\n)*)(?:\s+modified:   composer\.lock\n)~m', $msg, $m))
+if (!preg_match('~Changes to be committed:.+composer\.lock~s', $msg))
     exit(0);
 
 // Get diff for composer.lock's changed that are stagede to commit
