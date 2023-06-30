@@ -756,6 +756,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if (isset($typeA['price'][$columnI]))
                     $data[$pointer]['_render'][$columnI] = number_format($value, $typeA['price'][$columnI], '.', ' ');
 
+                // Temporary: inject STD to img paths
+                if (isset($typeA['string'][$columnI]))
+                    $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/upload/)~', '$1' . STD . '$2', $data[$pointer][$columnI]);
+
                 // If field column type is 'boolean', we replace actual value with localized 'Yes' or 'No' strings
                 if (isset($typeA['boolean'][$columnI])) $data[$pointer]['_render'][$columnI] = $value ? I_YES : I_NO;
 
