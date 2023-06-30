@@ -993,6 +993,15 @@ class Indi_Controller_Admin extends Indi_Controller {
             }
         }
 
+        // Sort keys (they're level numbers) as otherwise it will break Excel if unsorted
+        ksort($byLevel, SORT_NUMERIC);
+
+        // Html entities replacements
+        $html = [
+            'code' => ['&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;','&sum;'],
+            'char' => [' ','«','»','—','"','<','>','∑']
+        ];
+
         // Get columns depth
         $depth = max(array_keys($byLevel));
 
@@ -1594,7 +1603,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $m));
 
                 // Replace &nbsp;
-                $columnI['title'] = str_replace('&nbsp;', ' ', $columnI['title']);
+                $columnI['title'] = str_replace($html['code'], $html['char'], $columnI['title']);
 
                 // Try detect an image
                 if ($columnI['icon']) {
@@ -1834,6 +1843,11 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Check if row is disabled
             $disabled = $data[$i]['_system']['disabled'] ?: false;
 
+            // Apply row color, if defined
+            if (preg_match('~color: (.*);~', $data[$i]['_system']['style'], $m))
+                if ($rgb = trim(Indi::hexColor($m[1]), '#'))
+                    $sheet->getStyle($currentRowIndex)->getFont()->getColor()->setRGB($rgb);
+
             // Foreach column
             foreach ($columnA as $n => $columnI) {
 
@@ -1993,9 +2007,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $value = strip_tags($value);
 
                 // Replace some special characters definitions to their actual symbols
-                $value = str_replace(
-                    ['&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;'],
-                    [' ','«','»','—','"','<','>'], $value);
+                $value = str_replace($html['code'], $html['char'], $value);
 
                 // Set right and bottom border, because cell fill will hide default Excel's ot OpenOffice Write's cell borders
                 $sheet
@@ -2035,7 +2047,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Set format
                     $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()->setFormatCode([
-                        'number    ' => '#,##0',
+                        'number'     => '#,##0',
                         'price'      => '#,##0.00',
                         'decimal143' => '#,##0.000',
                     ][$el]);
@@ -2116,7 +2128,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Set format
                     $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()->setFormatCode([
-                        'number    ' => '#,##0',
+                        'number'     => '#,##0',
                         'price'      => '#,##0.00',
                         'decimal143' => '#,##0.000',
                     ][$el]);

@@ -838,19 +838,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])) {
 
                     // Process color boxes
-                    /*if (preg_match(Indi::rex('hrgb'), $value, $color)) {
-                        $data[$pointer]['_render'][$columnI] = '<span class="i-color-box" style="background: #' . $color[1] . ';"></span>';
-                    } else if (preg_match('~<.*?box.*?>~', $data[$pointer][$columnI]) && !in($this->table(), 'enumset,changeLog')) {
-                        if (preg_match('/background:\s*url\(/', $data[$pointer][$columnI])) {
-                            if ($this->model()->fields($columnI)->relation == 6) {
-                                $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
-                            } else {
-                                $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/)~', '$1' . STD .  '$2', $data[$pointer][$columnI]);
-                            }
-                        } else {
-                            $data[$pointer]['_render'][$columnI] = preg_replace('/(><\/span>)(.*)$/', ' title="$2"$1', $data[$pointer][$columnI]);
-                        }
-                    } else*/ if ($typeA['enumset'][$columnI]) {
+                    if ($typeA['enumset'][$columnI]) {
                         if ($typeA['foreign']['single'][$columnI]['title']) {
                             $data[$pointer]['_render'][$columnI] = !$further || $entry
                                 ? ($entry->foreign($further ?: $columnI)
@@ -883,18 +871,32 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     }
                 }
 
-                // Provide jump feature
-                if ($_ = $renderCfg[$columnI]['jump']) {
+                // Shortcuts
+                $j = $renderCfg[$columnI]['jump'];
+                $c = $renderCfg[$columnI]['color'];
+
+                // If color and/or jump are defined
+                if ($c || $j) {
+
+                    // If it's not enumset-column
                     if (!$typeA['enumset'][$columnI]) {
 
                         // If it's a multiple foreign keys field
                         if ($typeA['foreign']['multiple'][$columnI]) {
 
+                            // Define _render for a cell
                             $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];
+
+                            // If color definition starts with color ':' - assume it's a foreign column name from where color can be picked
+                            if (preg_match('~^:(.+)$~', $c, $m))
+                                foreach ($r->foreign($columnI) ?: [] as $row)
+                                    $rgb[$row->id] = $row->rgb($m[1]);
 
                             // Apply jump markup for each value
                             foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
-                                $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
+                                $jump = rif($j, 'jump="'. str_replace('{id}', $id, $j) . '"');
+                                $color = rif($rgb[$id], 'style="color: $1;"');
+                                $with = "<span $jump $color>";
                                 $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
                             }
 
@@ -913,7 +915,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                             // Wrap cell contents into a <span jump="someuri">
                             $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
-                            $with = '<span jump="'. str_replace('{id}', $id, $_) .'">';
+                            $jump = rif($j, 'jump="'. str_replace('{id}', $id, $j) . '"');
+                            $color = rif($c, 'style="color: $1;"');
+                            $with = "<span $jump $color>";
                             $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
                         }
                     }
@@ -940,7 +944,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 else if (null !== ($color = $renderCfg[$columnI]['color']) || $columnI == 'level') {
 
                     // If color definition starts with color ':' - assume it's a foreight column name from where column can be picked
-                    if (preg_match('~^:(.+)$~', $color, $m)) $color = $r->foreign($columnI)->rgb($m[1]);
+                    if (preg_match('~^:(.+)$~', $color, $m)
+                        && !$typeA['foreign']['multiple'][$columnI]) $color = $r->foreign($columnI)->rgb($m[1]);
 
                     // If it's a numeric column
                     if ($typeA['numeric'][$columnI]) {
