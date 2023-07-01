@@ -757,7 +757,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_render'][$columnI] = number_format($value, $typeA['price'][$columnI], '.', ' ');
 
                 // Temporary: inject STD to img paths
-                if (isset($typeA['string'][$columnI]))
+                if (isset($typeA['string'][$columnI]) && preg_match('~(url\()(/data/upload/)~', $data[$pointer][$columnI]))
                     $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/upload/)~', '$1' . STD . '$2', $data[$pointer][$columnI]);
 
                 // If field column type is 'boolean', we replace actual value with localized 'Yes' or 'No' strings
@@ -982,7 +982,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // If color field is defined - get color and apply to record data
             $data[$pointer]['_system']['style'] = '';
             if ($colorField)
-                if ($color = $colorFurther ? $r->foreign($colorField)->rgb($colorFurther) : $r->rgb($colorField)) {
+                if ($color = $colorFurther
+                    ? ($r->$colorField
+                        ? $r->foreign($colorField)->rgb($colorFurther)
+                        : '')
+                    : $r->rgb($colorField)) {
                     $data[$pointer]['_system']['style'] = Indi::rowsetItemStyle($renderCfg['_system']['panel'], $color);
                 }
 
