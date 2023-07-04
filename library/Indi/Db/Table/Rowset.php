@@ -949,7 +949,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                     // If color definition starts with color ':' - assume it's a foreight column name from where column can be picked
                     if (preg_match('~^:(.+)$~', $color, $m)
-                        && !$typeA['foreign']['multiple'][$columnI]) $color = $r->foreign($columnI)->rgb($m[1]);
+                        && !$typeA['foreign']['multiple'][$columnI]) 
+                        $color = $r->$columnI ? $r->foreign($columnI)->rgb($m[1]) : '';
 
                     // If it's a numeric column
                     if ($typeA['numeric'][$columnI]) {
@@ -961,10 +962,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             $data[$pointer]['_style'][$columnI] = 'color: ' . ($value >= $level ? 'limegreen' : 'red') . ';';
 
                         // Else if $color is a color - use it as it is
-                        else $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
+                        else if ($color) $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
 
                     // Else simple apply defined color
-                    } else {
+                    } else if ($color) {
                         $data[$pointer]['_style'][$columnI] = 'color: ' . $color . ';';
                     }
 
