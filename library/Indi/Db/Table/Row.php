@@ -7814,4 +7814,14 @@ class Indi_Db_Table_Row implements ArrayAccess
                 : $this->$prop)
             : $this->$prop;
     }
+
+    /**
+     * Get previous value of a $prop
+     *
+     * @param $prop
+     * @return array|bool
+     */
+    public function was($prop) {
+        return $this->affected($prop, true);
+    }
 }

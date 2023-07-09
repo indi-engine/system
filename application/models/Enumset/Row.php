@@ -539,7 +539,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         $textColor = $this->rgb('textColor');
 
         // Get css style (css expr itself or wrapped into style-attr)
-        $cssStyle = rif($this->cssStyle,$textColor ? ' style="$1"' : ' $1');
+        $cssStyle = rif($this->cssStyle,$textColor && !$preview ? ' style="$1"' : ' $1');
 
         // Replace quotes
         $title = str_replace('"', '&quot;', $this->title);
@@ -553,16 +553,20 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s"></span>%s',
                 'boxColor'  => '<span class="i-color-box" style="background: %s;%s"></span>%s',
                 'textColor' => '<span style="color: %s;%s">%s</span>',
+                'cssStyle' =>  '<span style="%1$s">%3$s</span>'
             ] : [
                 'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s" title="%s"></span>',
                 'boxColor'  => '<span class="i-color-box" style="background: %s;%s" title="%s"></span>',
                 'textColor' => '<font color="%s"%s>%s</font>',
+                'cssStyle' =>  '<span style="%1$s">%3$s</span>'
             ];
 
         // Apply styles, if any
         foreach ($tplA as $prop => $tpl)
-            if ($$prop)
+            if ($$prop) {
                 $styled = sprintf($tpl, $$prop, $cssStyle, $title);
+                break;
+            }
 
         // Return
         return $styled;

@@ -1,5 +1,604 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function cosmeticAction() {
+        field('param', 'entityId', [
+            'title' => 'Сущность',
+            'storeRelationAbility' => 'one',
+            'relation' => 'entity',
+            'onDelete' => 'CASCADE',
+            'mode' => 'readonly',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => '',
+        ]);
+        param('param', 'entityId', 'groupBy', ['entityId' => '91', 'cfgValue' => '612']);
+        if ($_ = grid('paramsAll', 'fieldId', 'entityId')) $_->delete();
+        m('param')->all()->save();
+        alteredField('paramsAll', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('params', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        if ($_ = filter('paramsAll', 'fieldId', 'entityId')) $_->delete();
+        filter('paramsAll', 'entityId', 'fraction', true);
+        filter('paramsAll', 'entityId', true);
+        section('paramsAll', ['groupBy' => 'entityId']);
+        consider('param', 'fieldId', 'entityId', ['required' => 'y']);
+        grid('paramsAll', 'cfgValue', ['rowReqIfAffected' => 'y']);
+        grid('params', 'cfgValue', ['rowReqIfAffected' => 'y']);
+        field('queueTask', 'error', ['move' => 'queueSize']);
+        field('queueTask', 'stage', ['mode' => 'hidden']);
+        field('queueTask', 'state', ['mode' => 'hidden']);
+        grid('queueTask', 'proc', ['formToggle' => 'y', 'formMoreGridIds' => '2511,2514,2518,2521']);
+        section2action('fields','activate', ['multiSelect' => '1']);
+        enumset('section2action', 'south', 'no', ['boxIcon' => '', 'boxColor' => '000#FFFFFF']);
+        field('queueTask', 'stages', [
+            'title' => 'Шаги',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'applySize',
+        ]);
+        field('queueTask', 'props', [
+            'title' => 'Свойства',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'stages',
+        ]);
+        field('queueTask', 'config', [
+            'title' => 'Параметры',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'props',
+        ]);
+        section('queueTask')->nested('grid')->delete();
+        field('queueTask', 'params', ['title' => 'Настройки']);
+        grid('queueTask', 'title', ['move' => '']);
+        grid('queueTask', 'stage', ['toggle' => 'h', 'move' => 'title']);
+        grid('queueTask', 'state', ['toggle' => 'h', 'move' => 'stage']);
+        grid('queueTask', 'error', ['toggle' => 'h', 'move' => 'state', 'rowReqIfAffected' => 'y']);
+        grid('queueTask', 'props', ['move' => 'error', 'formToggle' => 'y']);
+        grid('queueTask', 'datetime', ['gridId' => 'props', 'move' => '']);
+        grid('queueTask', 'config', ['gridId' => 'props', 'move' => 'datetime']);
+        grid('queueTask', 'params', ['gridId' => 'config', 'move' => '']);
+        grid('queueTask', 'chunk', [
+            'gridId' => 'config',
+            'move' => 'params',
+            'jumpSectionId' => 'queueChunk',
+            'jumpSectionActionId' => 'index',
+        ]);
+        grid('queueTask', 'proc', ['gridId' => 'props', 'move' => 'config']);
+        grid('queueTask', 'procID', ['gridId' => 'proc', 'move' => '']);
+        grid('queueTask', 'procSince', ['gridId' => 'proc', 'move' => 'procID']);
+        grid('queueTask', 'stages', ['move' => 'props', 'formToggle' => 'y']);
+        grid('queueTask', 'count', ['gridId' => 'stages', 'move' => '']);
+        grid('queueTask', 'countState', ['gridId' => 'count', 'move' => '']);
+        grid('queueTask', 'countSize', ['gridId' => 'count', 'move' => 'countState']);
+        grid('queueTask', 'items', ['gridId' => 'stages', 'move' => 'count']);
+        grid('queueTask', 'itemsState', ['gridId' => 'items', 'move' => '']);
+        grid('queueTask', 'itemsSize', ['gridId' => 'items', 'move' => 'itemsState']);
+        grid('queueTask', 'itemsBytes', ['gridId' => 'items', 'move' => 'itemsSize', 'summaryType' => 'sum']);
+        grid('queueTask', 'queue', ['gridId' => 'stages', 'move' => 'items']);
+        grid('queueTask', 'queueState', ['gridId' => 'queue', 'move' => '']);
+        grid('queueTask', 'queueSize', ['gridId' => 'queue', 'move' => 'queueState']);
+        grid('queueTask', 'apply', ['gridId' => 'stages', 'move' => 'queue']);
+        grid('queueTask', 'applyState', ['gridId' => 'apply', 'move' => '']);
+        field('queueChunk', 'location', ['title' => 'Источник']);
+        field('queueChunk', 'where', ['move' => 'location']);
+        field('queueChunk', 'fraction', ['mode' => 'hidden']);
+        field('queueChunk', 'stages', [
+            'title' => 'Шаги',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'move',
+        ]);
+        grid('queueChunk', 'stages', ['move' => 'move', 'formToggle' => 'y']);
+        grid('queueChunk', 'count', ['gridId' => 'stages']);
+        grid('queueChunk', 'items', ['gridId' => 'stages']);
+        grid('queueChunk', 'queue', ['gridId' => 'stages']);
+        grid('queueChunk', 'apply', ['gridId' => 'stages']);
+        field('queueChunk', 'queueChunkId', ['elementId' => 'combo', 'mode' => 'regular']);
+        grid('queueChunk', 'itemsSize', ['jumpSectionId' => 'queueItem', 'jumpSectionActionId' => 'index']);
+        field('queueItem', 'target', ['title' => 'Ключ в источнике']);
+        field('notice', 'event', ['title' => 'Событие / PHP IF']);
+        field('notice', 'qtySql', ['title' => 'Отображение / SQL WHERE']);
+        enumset('notice', 'fraction', 'custom', ['title' => 'Проектная']);
+        enumset('notice', 'fraction', 'system', ['title' => 'Системная']);
+        grid('notices', 'trigger')->delete();
+        grid('notices', 'trigger', ['move' => 'props']);
+        grid('notices', 'entityId', [
+            'gridId' => 'trigger',
+            'move' => '',
+            'jumpSectionId' => 'entities',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('notices', 'qty', ['gridId' => 'trigger', 'move' => 'entityId']);
+        grid('notices', 'qtySql', ['gridId' => 'qty', 'move' => '']);
+        grid('notices', 'sectionId', ['gridId' => 'qty', 'move' => 'qtySql']);
+        grid('notices', 'tooltip', [
+            'gridId' => 'qty',
+            'move' => 'sectionId',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'editor' => '1',
+        ]);
+        grid('notices', 'qtyDiffRelyOn', ['gridId' => 'qty', 'move' => 'tooltip']);
+        grid('notices', 'event', ['gridId' => 'trigger', 'move' => 'qty']);
+        field('notice', 'tplFor', ['title' => 'Для вектора']);
+        notice('queueTask', 'failed', ['tooltip' => 'Очереди задач, процессинг<br>которых завершился ошибкой']);
+        field('noticeGetter', 'method', ['title' => 'Дублировать', 'elementId' => 'span', 'move' => 'http']);
+        field('noticeGetter', 'email', ['title' => 'Email']);
+        field('noticeGetter', 'vk', ['title' => 'VK']);
+        field('noticeGetter', 'sms', ['title' => 'SMS']);
+        field('noticeGetter', 'criteriaRelyOn', ['title' => 'Условие получения / PHP IF']);
+        field('noticeGetter', 'roleId', ['title' => 'Роль получателя']);
+        enumset('noticeGetter', 'criteriaRelyOn', 'event', ['title' => 'Общее - не зависит от вектора']);
+        enumset('noticeGetter', 'criteriaRelyOn', 'getter', ['title' => 'Зависит от вектора - а значит и от получателя']);
+        field('noticeGetter', 'criteriaEvt', ['title' => 'Получатели изменения']);
+        field('noticeGetter', 'criteriaInc', ['title' => 'Получатели увеличения']);
+        field('noticeGetter', 'criteriaDec', ['title' => 'Получатели уменьшения']);
+        field('noticeGetter', 'getters', ['title' => 'Уточнение получателей', 'elementId' => 'span', 'move' => 'roleId']);
+        field('noticeGetter', 'http', ['move' => 'roleId']);
+        field('noticeGetter', 'noticeId', ['move' => '']);
+        field('noticeGetter', 'roleId', ['move' => 'noticeId']);
+        entity('noticeGetter', ['title' => 'Настройка получателей уведомления']);
+        section('noticeGetters', ['title' => 'Настройки получателей']);
+        field('notice', 'roleId', ['title' => 'Роли получателей']);
+        field('noticeGetter', 'roleId', ['title' => 'Получатели с ролью']);
+        enumset('noticeGetter', 'toggle', 'y', ['title' => 'Включены']);
+        enumset('noticeGetter', 'toggle', 'n', ['title' => 'Выключены']);
+        field('noticeGetter', 'http', ['title' => 'Делать HTTP-запрос']);
+        field('noticeGetter', 'getters', ['title' => 'Кто именно получит']);
+        field('noticeGetter', 'features', [
+            'title' => 'Функции',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'sms',
+        ]);
+        section('noticeGetters', ['rowsetSeparate' => 'no']);
+        field('noticeGetter', 'getters', ['title' => 'Требование к получателям / SQL WHERE']);
+        field('noticeGetter', 'criteriaRelyOn', ['title' => 'Тип требования']);
+        cfgField('element', 'string', 'placeholder', [
+            'title' => 'Плейсхолдер',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'allowedTags',
+        ]);
+        param('noticeGetter', 'criteriaEvt', 'placeholder', ['entityId' => '310', 'cfgValue' => '`someStatus` = "someValue"']);
+        param('noticeGetter', 'criteriaInc', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
+        param('noticeGetter', 'criteriaDec', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
+        section2action('lang','dict', ['toggle' => 'n']);
+        section('enumset', ['extendsPhp' => 'Indi_Controller_Admin_Enumset']);
+        section('elementCfgFieldEnumset', ['extendsPhp' => 'Indi_Controller_Admin_Enumset']);
+        grid('enumset', 'cssStyle', [
+            'gridId' => 'features',
+            'move' => 'textColor',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        grid('elementCfgFieldEnumset', 'features', ['move' => 'alias']);
+        grid('elementCfgFieldEnumset', 'boxIcon', [
+            'gridId' => 'features',
+            'move' => '',
+            'icon' => 'resources/images/icons/icon-image.png',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        grid('elementCfgFieldEnumset', 'boxColor', [
+            'gridId' => 'features',
+            'move' => 'boxIcon',
+            'icon' => 'resources/images/icons/box-color.png',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        grid('elementCfgFieldEnumset', 'textColor', [
+            'gridId' => 'features',
+            'move' => 'boxColor',
+            'icon' => 'resources/images/icons/color-text.svg',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        grid('elementCfgFieldEnumset', 'cssStyle', [
+            'gridId' => 'features',
+            'move' => 'textColor',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        field('action', 'props', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'hasView']);
+        field('action', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'props']);
+        field('action', 'selection', ['title' => 'Выделение', 'elementId' => 'span', 'move' => 'features']);
+        field('action', 'binding', ['title' => 'Привязка к коду', 'elementId' => 'span', 'move' => 'selection']);
+        section('actions')->nested('grid')->delete();
+        grid('actions', 'title', ['move' => '', 'editor' => '1']);
+        grid('actions', 'props', ['move' => 'title']);
+        grid('actions', 'toggle', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('actions', 'fraction', ['gridId' => 'props', 'move' => 'toggle', 'editor' => '1']);
+        grid('actions', 'binding', ['gridId' => 'props', 'move' => 'fraction']);
+        grid('actions', 'alias', ['gridId' => 'binding', 'move' => '', 'editor' => '1']);
+        grid('actions', 'hasView', ['gridId' => 'binding', 'move' => 'alias', 'icon' => 'resources/images/icons/window.png']);
+        grid('actions', 'features', ['move' => 'props']);
+        grid('actions', 'icon', ['gridId' => 'features', 'move' => '', 'icon' => 'resources/images/icons/icon-image.png']);
+        grid('actions', 'selection', ['gridId' => 'features', 'move' => 'icon']);
+        grid('actions', 'selectionRequired', ['gridId' => 'selection', 'move' => '', 'editor' => '1']);
+        grid('actions', 'multiSelect', ['gridId' => 'selection', 'move' => 'selectionRequired', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        enumset('action', 'toggle', 'h', ['title' => 'Скрыто', 'move' => 'n', 'boxColor' => '000#D3D3D3']);
+        db()->query('UPDATE `action` SET `toggle` = "h" WHERE `display` = "0"');
+        if ($_ = field('action', 'display')) $_->delete();
+        field('action', 'fraction', ['elementId' => 'combo']);
+        field('action', 'binding', ['mode' => 'hidden']);
+        field('action', 'props', ['mode' => 'hidden']);
+        field('action', 'selection', ['mode' => 'hidden']);
+
+        field('action', 'title', ['move' => '']);
+        field('action', 'alias', ['move' => 'title']);
+        field('action', 'toggle', ['move' => 'alias']);
+        field('action', 'fraction', ['move' => 'toggle']);
+        field('action', 'binding', ['move' => 'fraction']);
+        field('action', 'hasView', ['move' => 'binding']);
+        field('action', 'props', ['move' => 'hasView']);
+        field('action', 'features', ['move' => 'props']);
+        field('action', 'icon', ['move' => 'features']);
+        field('action', 'selection', ['move' => 'icon']);
+        field('action', 'selectionRequired', ['move' => 'selection']);
+        field('action', 'multiSelect', ['move' => 'selectionRequired']);
+
+        enumset('role', 'demo', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('role', 'demo', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/readonly.png']);
+        field('role', 'props', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'demo']);
+        field('role', 'binding', ['title' => 'Привязка к коду', 'elementId' => 'span', 'move' => 'props']);
+        field('role', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'binding']);
+        field('role', 'other', ['title' => 'Разное', 'elementId' => 'span', 'move' => 'features']);
+
+        section('role')->nested('grid')->delete();
+        grid('role', 'title', ['move' => '', 'editor' => '1']);
+        grid('role', 'move', ['move' => 'title']);
+        grid('role', 'props', ['move' => 'move']);
+        grid('role', 'toggle', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('role', 'fraction', ['gridId' => 'props', 'move' => 'toggle']);
+        grid('role', 'binding', ['gridId' => 'props', 'move' => 'fraction']);
+        grid('role', 'alias', ['gridId' => 'binding', 'move' => '']);
+        grid('role', 'entityId', [
+            'gridId' => 'binding',
+            'move' => 'alias',
+            'editor' => '1',
+            'jumpSectionId' => 'entities',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('role', 'features', ['move' => 'props']);
+        grid('role', 'demo', ['gridId' => 'features', 'move' => '', 'icon' => 'resources/images/icons/readonly.png']);
+        grid('role', 'other', ['gridId' => 'features', 'move' => 'demo']);
+        grid('role', 'dashboard', ['gridId' => 'other', 'move' => '', 'editor' => '1']);
+        grid('role', 'maxWindows', ['gridId' => 'other', 'move' => 'dashboard', 'editor' => '1']);
+        field('role', 'props', ['mode' => 'hidden']);
+        field('role', 'binding', ['mode' => 'hidden']);
+        field('role', 'other', ['mode' => 'hidden']);
+        field('role', 'fraction', ['elementId' => 'combo']);
+        field('role', 'title', ['move' => '']);
+        field('role', 'alias', ['move' => 'title']);
+        field('role', 'toggle', ['move' => 'alias']);
+        field('role', 'fraction', ['move' => 'toggle']);
+        field('role', 'entityId', ['move' => 'fraction']);
+        field('role', 'features', ['move' => 'entityId']);
+        field('role', 'demo', ['move' => 'features']);
+        field('role', 'dashboard', ['move' => 'demo']);
+        field('role', 'move', ['move' => 'dashboard']);
+        field('role', 'maxWindows', ['move' => 'move']);
+        field('role', 'props', ['move' => 'maxWindows']);
+        field('role', 'binding', ['move' => 'props']);
+        field('role', 'other', ['move' => 'binding']);
+
+        field('admin', 'props', [
+            'title' => 'Свойства',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'uiedit',
+        ]);
+        field('admin', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'props']);
+        field('admin', 'roleId', ['move' => '']);
+        field('admin', 'title', ['move' => 'roleId']);
+        field('admin', 'email', ['move' => 'title']);
+        field('admin', 'password', ['move' => 'email']);
+        field('admin', 'phone', ['move' => 'password']);
+        field('admin', 'toggle', ['move' => 'phone']);
+        field('admin', 'features', ['move' => 'toggle']);
+        field('admin', 'demo', ['move' => 'features']);
+        field('admin', 'uiedit', ['move' => 'demo']);
+        field('admin', 'props', ['move' => 'uiedit']);
+        enumset('admin', 'demo', 'n', ['title' => 'Выключен', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('admin', 'demo', 'y', ['title' => 'Включен', 'move' => 'n', 'boxIcon' => 'resources/images/icons/readonly.png']);
+
+        section('admins')->nested('grid')->delete();
+        grid('admins', 'title', ['move' => '', 'editor' => '1']);
+        grid('admins', 'props', ['move' => 'title']);
+        grid('admins', 'toggle', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('admins', 'email', ['gridId' => 'props', 'move' => 'toggle', 'editor' => '1']);
+        grid('admins', 'phone', ['gridId' => 'props', 'move' => 'email', 'editor' => '1']);
+        grid('admins', 'features', ['move' => 'props']);
+        grid('admins', 'demo', ['gridId' => 'features', 'move' => '', 'icon' => 'resources/images/icons/readonly.png']);
+        grid('admins', 'uiedit', ['gridId' => 'features', 'move' => 'demo']);
+
+        enumset('consider', 'required', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('consider', 'required', 'y', ['title' => 'Да', 'move' => 'n', 'boxIcon' => 'resources/images/icons/field/required.png']);
+        grid('consider', 'required', ['rename' => '', 'tooltip' => '', 'icon' => 'resources/images/icons/field/required.png']);
+        field('resize', 'fieldId', ['mode' => 'readonly']);
+        field('resize', 'note', ['move' => 'alias']);
+        field('resize', 'size', ['title' => 'Размер', 'elementId' => 'span', 'move' => 'note']);
+        grid('resize', 'note', ['move' => 'mode', 'editor' => '1']);
+
+        field('entity', 'props', ['elementId' => 'span']);
+        field('entity', 'binding', ['elementId' => 'span']);
+        field('entity', 'features', ['elementId' => 'span']);
+        field('entity', 'space', ['elementId' => 'span']);
+        field('entity', 'changeLog', ['elementId' => 'span']);
+
+        field('entity', 'props', ['mode' => 'hidden']);
+        field('entity', 'binding', ['mode' => 'hidden']);
+        field('entity', 'features', ['mode' => 'hidden']);
+
+        field('entity', 'title', ['move' => '']);
+        field('entity', 'table', ['move' => 'title']);
+        field('entity', 'extends', ['move' => 'table']);
+        field('entity', 'fraction', ['move' => 'extends']);
+        field('entity', 'titleFieldId', ['move' => 'fraction']);
+        field('entity', 'filesGroupBy', ['move' => 'titleFieldId']);
+        field('entity', 'props', ['move' => 'filesGroupBy']);
+        field('entity', 'binding', ['move' => 'props']);
+        field('entity', 'features', ['move' => 'binding']);
+        field('entity', 'space', ['move' => 'features']);
+        field('entity', 'spaceScheme', ['move' => 'space']);
+        field('entity', 'spaceFields', ['move' => 'spaceScheme']);
+        field('entity', 'changeLog', ['move' => 'spaceFields']);
+        field('entity', 'changeLogToggle', ['move' => 'changeLog']);
+        field('entity', 'changeLogExcept', ['move' => 'changeLogToggle']);
+
+        grid('sections', 'entityId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'index']);
+        grid('entities', 'title', ['move' => '', 'editor' => '1']);
+        grid('entities', 'props', ['move' => 'title']);
+        grid('entities', 'fraction', ['gridId' => 'props', 'move' => '']);
+        grid('entities', 'binding', ['gridId' => 'props', 'move' => 'fraction']);
+        grid('entities', 'table', ['gridId' => 'binding', 'move' => '', 'editor' => '1']);
+        grid('entities', 'extends', [
+            'gridId' => 'binding',
+            'move' => 'table',
+            'icon' => 'resources/images/icons/btn-icon-php-parent.png',
+            'editor' => '1',
+        ]);
+        grid('entities', 'features', ['move' => 'props']);
+        grid('entities', 'titleFieldId', ['gridId' => 'features', 'move' => '']);
+        grid('entities', 'filesGroupBy', [
+            'gridId' => 'features',
+            'move' => 'titleFieldId',
+            'icon' => 'resources/images/icons/group.png',
+            'editor' => '1',
+        ]);
+        grid('entities', 'space', ['gridId' => 'features', 'move' => 'filesGroupBy']);
+        grid('entities', 'spaceScheme', ['gridId' => 'space', 'move' => '']);
+        grid('entities', 'spaceFields', ['gridId' => 'space', 'move' => 'spaceScheme']);
+        grid('entities', 'changeLog', ['gridId' => 'features', 'move' => 'space']);
+        grid('entities', 'changeLogToggle', ['gridId' => 'changeLog', 'move' => '']);
+        grid('entities', 'changeLogExcept', ['gridId' => 'changeLog', 'move' => 'changeLogToggle']);
+        section2action('alteredFields','toggle', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        field('alteredField', 'props', [
+            'title' => 'Свойства',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'jumpArgs',
+        ]);
+        field('alteredField', 'features', [
+            'title' => 'Функции',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'props',
+        ]);
+        section('alteredFields')->nested('grid')->delete();
+        grid('alteredFields', 'fieldId', ['move' => '']);
+        grid('alteredFields', 'props', ['move' => 'fieldId']);
+        grid('alteredFields', 'toggle', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('alteredFields', 'access', ['gridId' => 'props', 'move' => 'toggle']);
+        grid('alteredFields', 'accessRoles', [
+            'gridId' => 'access',
+            'move' => '',
+            'rename' => 'Роли',
+            'editor' => '1',
+        ]);
+        grid('alteredFields', 'accessExcept', [
+            'gridId' => 'access',
+            'move' => 'accessRoles',
+            'editor' => '1',
+            'jumpSectionId' => 'role',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('alteredFields', 'features', ['move' => 'props']);
+        grid('alteredFields', 'alter', ['gridId' => 'features', 'move' => '']);
+        grid('alteredFields', 'rename', [
+            'gridId' => 'alter',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-rename.png',
+            'editor' => '1',
+        ]);
+        grid('alteredFields', 'mode', ['gridId' => 'alter', 'move' => 'rename', 'icon' => 'resources/images/icons/field/readonly.png']);
+        grid('alteredFields', 'defaultValue', [
+            'gridId' => 'alter',
+            'move' => 'mode',
+            'icon' => 'resources/images/icons/default.png',
+            'editor' => '1',
+        ]);
+        grid('alteredFields', 'elementId', ['gridId' => 'alter', 'move' => 'defaultValue', 'editor' => '1']);
+        grid('alteredFields', 'jump', ['gridId' => 'features', 'move' => 'alter']);
+        grid('alteredFields', 'jumpSectionId', [
+            'gridId' => 'jump',
+            'move' => '',
+            'icon' => 'resources/images/icons/tree2.png',
+            'editor' => '1',
+        ]);
+        grid('alteredFields', 'jumpSectionActionId', [
+            'gridId' => 'jump',
+            'move' => 'jumpSectionId',
+            'icon' => 'resources/images/icons/action.png',
+            'editor' => '1',
+            'rowReqIfAffected' => 'y',
+        ]);
+        grid('alteredFields', 'jumpArgs', [
+            'gridId' => 'jump',
+            'move' => 'jumpSectionActionId',
+            'icon' => 'resources/images/icons/args.png',
+            'editor' => '1',
+        ]);
+
+        // Filters
+        field('filter', 'consistence', [
+            'title' => 'Показывать опции даже без результатов',
+            'alias' => 'allowZeroResult',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '0',
+            'move' => 'flags',
+        ]);
+        enumset('filter', 'allowZeroResult', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('filter', 'allowZeroResult', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/zero-result-ok.png']);
+        field('filter', 'allowClear', [
+            'title' => 'Запретить сброс значения',
+            'alias' => 'denyClear',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '0',
+            'move' => 'allowZeroResult',
+        ]);
+        enumset('filter', 'denyClear', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('filter', 'denyClear', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/clear-deny.png']);
+        field('filter', 'ignoreTemplate', [
+            'title' => 'Игнорировать шаблон опций',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '0',
+            'move' => 'denyClear',
+        ]);
+        enumset('filter', 'ignoreTemplate', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('filter', 'ignoreTemplate', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/template-ignore.png']);
+        field('filter', 'multiSelect', [
+            'title' => 'Выбор более одного значения',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => '0',
+            'move' => 'ignoreTemplate',
+        ]);
+        enumset('filter', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('filter', 'multiSelect', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        db()->query('UPDATE `filter` SET `ignoreTemplate` = "0"');
+        db()->query('UPDATE `filter` SET `denyClear` = IF(`denyClear` = "0", "1", "0")');
+        db()->query('UPDATE `filter` SET `allowEmptyResult` = IF(`allowEmptyResult` = "0", "1", "0")');
+        field('filter', 'props', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'multiSelect']);
+        field('filter', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'props']);
+        field('filter', 'data', ['title' => 'Данные', 'elementId' => 'span', 'move' => 'features']);
+
+        section('filter')->nested('grid')->delete();
+        grid('filter', 'fieldId', [
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('filter', 'props', ['move' => 'fieldId']);
+        grid('filter', 'toggle', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('filter', 'data', ['gridId' => 'props', 'move' => 'toggle']);
+        grid('filter', 'further', [
+            'gridId' => 'data',
+            'move' => '',
+            'icon' => 'resources/images/icons/join.png',
+            'editor' => '1',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('filter', 'filter', [
+            'gridId' => 'data',
+            'move' => 'further',
+            'icon' => 'resources/images/icons/filter-db-blue.png',
+            'editor' => '1',
+        ]);
+        grid('filter', 'defaultValue', [
+            'gridId' => 'data',
+            'move' => 'filter',
+            'icon' => 'resources/images/icons/default.png',
+            'editor' => '1',
+        ]);
+        grid('filter', 'access', ['gridId' => 'props', 'move' => 'data']);
+        grid('filter', 'accessRoles', ['gridId' => 'access', 'move' => '', 'editor' => '1']);
+        grid('filter', 'accessExcept', [
+            'gridId' => 'access',
+            'move' => 'accessRoles',
+            'editor' => '1',
+            'jumpSectionId' => 'role',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('filter', 'features', ['move' => 'props']);
+        grid('filter', 'display', ['gridId' => 'features', 'move' => '', 'rename' => 'Вид']);
+        grid('filter', 'move', ['gridId' => 'display', 'move' => '']);
+        grid('filter', 'rename', [
+            'gridId' => 'display',
+            'move' => 'move',
+            'icon' => 'resources/images/icons/btn-icon-rename.png',
+            'editor' => '1',
+        ]);
+        grid('filter', 'tooltip', [
+            'gridId' => 'display',
+            'move' => 'rename',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'editor' => '1',
+        ]);
+        grid('filter', 'flags', ['gridId' => 'features', 'move' => 'display']);
+        grid('filter', 'allowZeroResult', [
+            'gridId' => 'flags',
+            'move' => '',
+            'icon' => 'resources/images/icons/zero-result-ok.png',
+            'tooltip' => 'Показывать все опции, в том числе<br>с пустыми результатами поиска',
+        ]);
+        grid('filter', 'denyClear', ['gridId' => 'flags', 'move' => 'allowZeroResult', 'icon' => 'resources/images/icons/clear-deny.png']);
+        grid('filter', 'ignoreTemplate', ['gridId' => 'flags', 'move' => 'denyClear', 'icon' => 'resources/images/icons/template-ignore.png']);
+        grid('filter', 'multiSelect', ['gridId' => 'flags', 'move' => 'ignoreTemplate', 'icon' => 'resources/images/icons/btn-icon-multi-select.png']);
+
+        field('filter', 'props', ['mode' => 'hidden']);
+        field('filter', 'features', ['mode' => 'hidden']);
+
+        field('filter', 'sectionId', ['move' => '']);
+        field('filter', 'fieldId', ['move' => 'sectionId']);
+        field('filter', 'toggle', ['move' => 'fieldId']);
+        field('filter', 'data', ['move' => 'toggle']);
+        field('filter', 'further', ['move' => 'data']);
+        field('filter', 'move', ['move' => 'further']);
+        field('filter', 'filter', ['move' => 'move']);
+        field('filter', 'defaultValue', ['move' => 'filter']);
+        field('filter', 'access', ['move' => 'defaultValue']);
+        field('filter', 'accessRoles', ['move' => 'access']);
+        field('filter', 'accessExcept', ['move' => 'accessRoles']);
+        field('filter', 'title', ['move' => 'accessExcept']);
+        field('filter', 'display', ['move' => 'title']);
+        field('filter', 'rename', ['move' => 'display']);
+        field('filter', 'tooltip', ['move' => 'rename']);
+        field('filter', 'flags', ['move' => 'tooltip']);
+        field('filter', 'allowZeroResult', ['move' => 'flags']);
+        field('filter', 'denyClear', ['move' => 'allowZeroResult']);
+        field('filter', 'ignoreTemplate', ['move' => 'denyClear']);
+        field('filter', 'multiSelect', ['move' => 'ignoreTemplate']);
+        field('filter', 'props', ['move' => 'multiSelect']);
+        field('filter', 'features', ['move' => 'props']);
+
+
+        die('ok');
+    }
     public function panelsAction(){
         Indi::iflush(true);
         set_time_limit(0);

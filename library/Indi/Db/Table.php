@@ -349,6 +349,12 @@ class Indi_Db_Table
      * @return Indi_Db_Table_Rowset
      */
     public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false) {
+
+        // If $where arg is a comma-separated list of integers - assume we have to use '`id` IN (...)' expr
+        if (is_string($where) && strlen($where) && Indi::rexm('int11list', $where))
+            $where = "`id` IN ($where)";
+
+        // Do fetch
         return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast);
     }
 

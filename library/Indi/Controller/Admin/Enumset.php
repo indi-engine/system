@@ -1,5 +1,5 @@
 <?php
-class Admin_EnumsetController extends Indi_Controller_Admin_Exportable {
+class Indi_Controller_Admin_Enumset extends Indi_Controller_Admin_Exportable {
 
     /**
      * Action function is redeclared to provide a strip hue part from $this->row->alias

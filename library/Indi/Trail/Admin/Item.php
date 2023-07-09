@@ -207,7 +207,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // If `groupBy` is non-zero, and there is no such grid column yet - append
         if ($sectionR->groupBy && !$this->grid->gb($sectionR->groupBy, 'fieldId'))
-            $this->grid->append(['fieldId' => $sectionR->groupBy]);
+            $this->grid->append(['fieldId' => $sectionR->groupBy, 'toggle' => 'h']);
 
         // If `tileField` is non-zero, and there is no such grid column yet - append
         if ($sectionR->tileField && !$this->grid->gb($sectionR->tileField, 'fieldId'))

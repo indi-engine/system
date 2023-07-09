@@ -35,7 +35,7 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
 
         // Return
         return "param('" .
-            $this->foreign('fieldId')->foreign('entityId')->table . "', '" .
+            $this->foreign('entityId')->table . "', '" .
             $this->foreign('fieldId')->alias . "', '" .
             $this->foreign('cfgField')->alias . "', " . $this->_ctor($certain) . ");";
     }
@@ -65,5 +65,14 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
 
         // Return data
         return $data;
+    }
+
+    /**
+     * Pick entityId from fieldId
+     *
+     * @throws Exception
+     */
+    public function onBeforeSave() {
+        $this->entityId = $this->foreign('fieldId')->entityId;
     }
 }

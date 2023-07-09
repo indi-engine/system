@@ -646,8 +646,8 @@ class Indi_Controller {
         // Append statiс WHERE, defined for filter
         if (strlen($filter->filter)) $where[] = $filter->filter;
 
-        // Append special part to WHERE clause, responsible for filter combo to do not contain inconsistent options
-        if ($filter->consistence && $relation = $field->relation) {
+        // Append special part to WHERE clause, responsible for filter combo to do not contain options having no results
+        if (!$filter->allowZeroResult && $relation = $field->relation) {
 
             // Get table name
             $tbl = m()->table();
@@ -891,11 +891,11 @@ class Indi_Controller {
                 // Append summary data
                 if ($summary = $this->rowsetSummary()) $pageData['summary'] = $summary;
 
-                // Provide combo filters consistence
+                // Make sure that the only options shown - are the ones having non-empty results
                 foreach (t()->filters ?: [] as $filter) {
 
-                    // If `consistence` flag is Off - skip
-                    if (!$filter->consistence) continue;
+                    // If `allowZeroResult` flag is On - skip
+                    if ($filter->allowZeroResult) continue;
 
                     // Filter-field shortcut
                     $field = t()->fields->gb($filter->further ?: $filter->fieldId);
@@ -904,7 +904,8 @@ class Indi_Controller {
                     if ($field->storeRelationAbility == 'none' && $field->columnTypeId != 12)  continue;
 
                     // Make sure filters will have consistent options in case if grid data is fetched in same request
-                    if (t()->section->rowsetSeparate == 'no') $filter->consistence = 2;
+                    // todo: check whether we still need that
+                    if (t()->section->rowsetSeparate == 'no') $filter->allowZeroResult = 2;
 
                     // Setup combo data
                     view()->filterCombo($filter);

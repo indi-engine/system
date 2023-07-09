@@ -2433,7 +2433,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 `s`.`id`,
                 `s`.`toggle` != "n" AS `sectionToggle`,
                 `a`.`id` > 0 AS `actionExists`,
-                `a`.`toggle` = "y" AS `actionToggle`,
+                `a`.`toggle` != "n" AS `actionToggle`,
                 `sa`.`id` > 0 AS `section2actionExists`,
                 `sa`.`toggle` = "y" AS `section2actionToggle`,
                 FIND_IN_SET("' . $_SESSION['admin']['roleId'] . '", `sa`.`roleIds`) > 0 AS `granted`,

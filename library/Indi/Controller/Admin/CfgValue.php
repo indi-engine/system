@@ -6,14 +6,11 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
      */
     public function adjustCreatingRowAccess(&$row) {
 
-        //
-        if (uri()->action != 'form') return;
+        // Make sure all further code is reached for form-action only
+        if (uri()->action !== 'form') return;
 
-        // Preliminary prompt for cfgField
-        $data = $this->prompt(I_SELECT_CFGFIELD, [['fieldLabel' => ''] + $row->combo('cfgField')]);
-
-        // Check date
-        jcheck(['cfgField' => ['req' => true, 'rex' => 'int11', 'key' => 'field']], $data);
+        // Prompt for necessary data
+        $data = $this->promptCfgField($row);
 
         // Setup `cfgField` prop
         $row->cfgField = $data['cfgField'];
@@ -38,6 +35,26 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         // Spoof `cfgValue` field
         t()->fields->exclude('cfgValue', 'alias')->append($gen);
     }
+
+    /**
+     * Ask user which cfgField is going to be added for the chosen field.
+     * We need to know that in advance as we have to prepare relevant field config
+     *
+     * @param $row
+     * @return array[]|mixed
+     */
+    public function promptCfgField(&$row) {
+
+        // Preliminary prompt for cfgField
+        $data = $this->prompt(I_SELECT_CFGFIELD, [['fieldLabel' => ''] + $row->combo('cfgField')]);
+
+        // Check date
+        jcheck(['cfgField' => ['req' => true, 'rex' => 'int11', 'key' => 'field']], $data);
+
+        // Return prompt data
+        return $data;
+    }
+
 
     /**
      * @param Indi_Db_Table_Row $row

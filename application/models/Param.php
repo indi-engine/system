@@ -15,6 +15,13 @@ class Param extends Indi_Db_Table {
     public $_rowClass = 'Param_Row';
 
     /**
+     * Classname for rowset
+     *
+     * @var string
+     */
+    public $_rowsetClass = 'Param_Rowset';
+
+    /**
      * Info for l10n-fraction detection
      *
      * @var array

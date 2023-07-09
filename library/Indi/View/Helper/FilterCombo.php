@@ -80,14 +80,15 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
      */
     public function getConsistence() {
 
-        // Check if consistency is not toggled Off for current filter
-        if ($this->filter->model()->fields('consistence') && !$this->filter->consistence) return;
+        // If filter combo data options are allowed to have zero results - return
+        if ($this->filter->allowZeroResult && $this->filter->allowZeroResult != 2) return;
 
         // Field shortcut
         $field = $this->getField();
 
         // If filter is non-boolean
-        if (($field->relation || $field->columnTypeId == 12) && (uri('format') || $this->filter->consistence == 2)) {
+        if (   ($field->relation || coltype($field->columnTypeId)->type == 'BOOLEAN')
+            && (uri('format')    || $this->filter->allowZeroResult      == 2        )) {
 
             // Get field's alias
             $alias = $field->alias;

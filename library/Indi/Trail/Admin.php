@@ -58,7 +58,7 @@ class Indi_Trail_Admin {
 
         // Get array of actions that are toggled on
         self::$toggledActionIdA = db()
-            ->query('SELECT `id` FROM `action` WHERE `toggle` = "y"')
+            ->query('SELECT `id` FROM `action` WHERE `toggle` != "n"')
             ->col();
 
         // Setup accessible actions
