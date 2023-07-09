@@ -596,7 +596,78 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('filter', 'props', ['move' => 'multiSelect']);
         field('filter', 'features', ['move' => 'props']);
 
+        field('field', 'props', [
+            'title' => 'Свойства',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'move',
+        ]);
+        field('field', 'mode', ['move' => 'alias']);
 
+        section('fields')->nested('grid')->delete();
+        grid('fields', 'title', ['move' => '', 'editor' => '1']);
+        grid('fields', 'alias', ['move' => 'title', 'editor' => '1']);
+        grid('fields', 'fk', ['gridId' => 'props', 'move' => 'mode', 'rename' => 'Хранит ключи']);
+        grid('fields', 'storeRelationAbility', [
+            'gridId' => 'fk',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-multikey.png',
+            'editor' => 'enumNoCycle',
+        ]);
+        grid('fields', 'relation', [
+            'gridId' => 'fk',
+            'move' => 'storeRelationAbility',
+            'rename' => 'Сущность',
+            'editor' => '1',
+            'jumpSectionId' => 'entities',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fields', 'filter', [
+            'gridId' => 'fk',
+            'move' => 'relation',
+            'icon' => 'resources/images/icons/btn-icon-filter.png',
+            'rename' => 'Фильтрация',
+            'editor' => '1',
+        ]);
+        grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'icon' => 'resources/images/icons/ondelete.png']);
+        grid('fields', 'el', ['gridId' => 'props', 'move' => 'fk', 'rename' => 'Вид']);
+        grid('fields', 'elementId', [
+            'gridId' => 'el',
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'controlElements',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fields', 'tooltip', [
+            'gridId' => 'el',
+            'move' => 'elementId',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'editor' => '1',
+        ]);
+        grid('fields', 'mysql', ['gridId' => 'props', 'move' => 'el', 'rename' => 'Столбец в MySQL']);
+        grid('fields', 'columnTypeId', [
+            'gridId' => 'mysql',
+            'move' => '',
+            'rename' => 'Тип столбца',
+            'editor' => '1',
+            'jumpSectionId' => 'columnTypes',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fields', 'defaultValue', [
+            'gridId' => 'mysql',
+            'move' => 'columnTypeId',
+            'rename' => 'DEFAULT',
+            'editor' => '1',
+        ]);
+        grid('fields', 'l10n', [
+            'gridId' => 'props',
+            'move' => 'mysql',
+            'icon' => 'resources/images/icons/btn-icon-l10n.ico',
+            'rename' => 'l10n',
+        ]);
+        grid('fields', 'move', ['move' => 'props']);
+        grid('fields', 'props', ['move' => 'alias']);
+        grid('fields', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
         die('ok');
     }
     public function panelsAction(){

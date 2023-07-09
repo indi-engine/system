@@ -1,7 +1,7 @@
 <?php
 field('action', 'title')->toggleL10n('qy', $lang, false);
-field('action', 'fraction')->toggleL10n('qy', $lang, false);
 field('action', 'toggle')->toggleL10n('qy', $lang, false);
+field('action', 'fraction')->toggleL10n('qy', $lang, false);
 field('action', 'hasView')->toggleL10n('qy', $lang, false);
 field('action', 'selectionRequired')->toggleL10n('qy', $lang, false);
 field('action', 'multiSelect')->toggleL10n('qy', $lang, false);
@@ -20,8 +20,8 @@ field('entity', 'title')->toggleL10n('qy', $lang, false);
 field('entity', 'fraction')->toggleL10n('qy', $lang, false);
 field('entity', 'spaceScheme')->toggleL10n('qy', $lang, false);
 field('entity', 'changeLogToggle')->toggleL10n('qy', $lang, false);
-field('field', 'storeRelationAbility')->toggleL10n('qy', $lang, false);
 field('field', 'mode')->toggleL10n('qy', $lang, false);
+field('field', 'storeRelationAbility')->toggleL10n('qy', $lang, false);
 field('field', 'tooltip')->toggleL10n('qy', $lang, false);
 field('field', 'l10n')->toggleL10n('qy', $lang, false);
 field('filter', 'toggle')->toggleL10n('qy', $lang, false);
