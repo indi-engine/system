@@ -498,9 +498,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         enumset('filter', 'multiSelect', '0', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('filter', 'multiSelect', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
+        db()->query('UPDATE `filter` SET `allowZeroResult` = "0"');
         db()->query('UPDATE `filter` SET `ignoreTemplate` = "0"');
         db()->query('UPDATE `filter` SET `denyClear` = IF(`denyClear` = "0", "1", "0")');
-        db()->query('UPDATE `filter` SET `allowZeroResult` = IF(`allowZeroResult` = "0", "1", "0")');
         field('filter', 'props', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'multiSelect']);
         field('filter', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'props']);
         field('filter', 'data', ['title' => 'Данные', 'elementId' => 'span', 'move' => 'features']);
@@ -795,6 +795,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'editor' => '1',
         ]);
         grid('elementCfgField', 'l10n', ['gridId' => 'props', 'move' => 'mysql', 'icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('entities', 'titleFieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('entities', 'spaceFields', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('entities', 'changeLogExcept', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
         die('ok');
     }
     public function panelsAction(){
