@@ -500,7 +500,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('filter', 'multiSelect', '1', ['title' => 'Да', 'move' => '0', 'boxIcon' => 'resources/images/icons/btn-icon-multi-select.png']);
         db()->query('UPDATE `filter` SET `ignoreTemplate` = "0"');
         db()->query('UPDATE `filter` SET `denyClear` = IF(`denyClear` = "0", "1", "0")');
-        db()->query('UPDATE `filter` SET `allowEmptyResult` = IF(`allowEmptyResult` = "0", "1", "0")');
+        db()->query('UPDATE `filter` SET `allowZeroResult` = IF(`allowZeroResult` = "0", "1", "0")');
         field('filter', 'props', ['title' => 'Свойства', 'elementId' => 'span', 'move' => 'multiSelect']);
         field('filter', 'features', ['title' => 'Функции', 'elementId' => 'span', 'move' => 'props']);
         field('filter', 'data', ['title' => 'Данные', 'elementId' => 'span', 'move' => 'features']);
@@ -668,6 +668,133 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('fields', 'move', ['move' => 'props']);
         grid('fields', 'props', ['move' => 'alias']);
         grid('fields', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
+
+        //
+        section('fieldsAll')->nested('grid')->delete();
+        grid('fieldsAll', 'entityId', ['move' => '']);
+        grid('fieldsAll', 'title', ['move' => 'entityId', 'editor' => '1']);
+        grid('fieldsAll', 'alias', ['move' => 'title', 'editor' => '1']);
+        grid('fieldsAll', 'props', ['move' => 'alias']);
+        grid('fieldsAll', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
+        grid('fieldsAll', 'fk', ['gridId' => 'props', 'move' => 'mode']);
+        grid('fieldsAll', 'storeRelationAbility', [
+            'gridId' => 'fk',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-multikey.png',
+            'editor' => 'enumNoCycle',
+        ]);
+        grid('fieldsAll', 'relation', [
+            'gridId' => 'fk',
+            'move' => 'storeRelationAbility',
+            'rename' => 'Сущность',
+            'editor' => '1',
+            'jumpSectionId' => 'entities',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fieldsAll', 'filter', [
+            'gridId' => 'fk',
+            'move' => 'relation',
+            'icon' => 'resources/images/icons/btn-icon-filter.png',
+            'editor' => '1',
+        ]);
+        grid('fieldsAll', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'icon' => 'resources/images/icons/ondelete.png']);
+        grid('fieldsAll', 'el', ['gridId' => 'props', 'move' => 'fk']);
+        grid('fieldsAll', 'elementId', [
+            'gridId' => 'el',
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'controlElements',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fieldsAll', 'tooltip', [
+            'gridId' => 'el',
+            'move' => 'elementId',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'editor' => '1',
+        ]);
+        grid('fieldsAll', 'mysql', ['gridId' => 'props', 'move' => 'el']);
+        grid('fieldsAll', 'columnTypeId', [
+            'gridId' => 'mysql',
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'columnTypes',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('fieldsAll', 'defaultValue', [
+            'gridId' => 'mysql',
+            'move' => 'columnTypeId',
+            'rename' => 'DEFAULT',
+            'editor' => '1',
+        ]);
+        grid('fieldsAll', 'l10n', ['gridId' => 'props', 'move' => 'mysql', 'icon' => 'resources/images/icons/btn-icon-l10n.ico']);
+        grid('fieldsAll', 'move', ['move' => 'props']);
+        section('fieldsAll')->nested('filter')->delete();
+        filter('fieldsAll', 'entityId', 'fraction', true);
+        filter('fieldsAll', 'entityId', true);
+        filter('fieldsAll', 'mode', true);
+        filter('fieldsAll', 'elementId', true);
+        filter('fieldsAll', 'columnTypeId', ['rename' => 'Тип столбца']);
+        filter('fieldsAll', 'l10n', true);
+        filter('fieldsAll', 'storeRelationAbility', true);
+        filter('fieldsAll', 'relation', true);
+        filter('fieldsAll', 'onDelete', true);
+
+        section('elementCfgField')->nested('grid')->delete();
+        grid('elementCfgField', 'title', ['move' => '', 'editor' => '1']);
+        grid('elementCfgField', 'alias', ['move' => 'title', 'editor' => '1']);
+        grid('elementCfgField', 'move', ['move' => 'alias']);
+        grid('elementCfgField', 'props', ['move' => 'move']);
+        grid('elementCfgField', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
+        grid('elementCfgField', 'fk', ['gridId' => 'props', 'move' => 'mode']);
+        grid('elementCfgField', 'storeRelationAbility', [
+            'gridId' => 'fk',
+            'move' => '',
+            'icon' => 'resources/images/icons/btn-icon-multikey.png',
+            'editor' => 'enumNoCycle',
+        ]);
+        grid('elementCfgField', 'relation', [
+            'gridId' => 'fk',
+            'move' => 'storeRelationAbility',
+            'rename' => 'Сущность',
+            'editor' => '1',
+            'jumpSectionId' => 'entities',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('elementCfgField', 'filter', [
+            'gridId' => 'fk',
+            'move' => 'relation',
+            'icon' => 'resources/images/icons/btn-icon-filter.png',
+            'editor' => '1',
+        ]);
+        grid('elementCfgField', 'el', ['gridId' => 'props', 'move' => 'fk']);
+        grid('elementCfgField', 'elementId', [
+            'gridId' => 'el',
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'controlElements',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('elementCfgField', 'tooltip', [
+            'gridId' => 'el',
+            'move' => 'elementId',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'editor' => '1',
+        ]);
+        grid('elementCfgField', 'mysql', ['gridId' => 'props', 'move' => 'el']);
+        grid('elementCfgField', 'columnTypeId', [
+            'gridId' => 'mysql',
+            'move' => '',
+            'editor' => '1',
+            'jumpSectionId' => 'columnTypes',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('elementCfgField', 'defaultValue', [
+            'gridId' => 'mysql',
+            'move' => 'columnTypeId',
+            'rename' => 'DEFAULT',
+            'editor' => '1',
+        ]);
+        grid('elementCfgField', 'l10n', ['gridId' => 'props', 'move' => 'mysql', 'icon' => 'resources/images/icons/btn-icon-l10n.ico']);
         die('ok');
     }
     public function panelsAction(){
