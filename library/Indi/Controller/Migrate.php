@@ -12,7 +12,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => '0',
             'move' => '',
         ]);
-        param('param', 'entityId', 'groupBy', ['entityId' => '91', 'cfgValue' => '612']);
+        param('param', 'entityId', 'groupBy', ['entityId' => entity('param')->id, 'cfgValue' => field('entity', 'fraction')->id]);
         if ($_ = grid('paramsAll', 'fieldId', 'entityId')) $_->delete();
         m('param')->all()->save();
         alteredField('paramsAll', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
@@ -27,7 +27,6 @@ class Indi_Controller_Migrate extends Indi_Controller {
         field('queueTask', 'error', ['move' => 'queueSize']);
         field('queueTask', 'stage', ['mode' => 'hidden']);
         field('queueTask', 'state', ['mode' => 'hidden']);
-        grid('queueTask', 'proc', ['formToggle' => 'y', 'formMoreGridIds' => '2511,2514,2518,2521']);
         section2action('fields','activate', ['multiSelect' => '1']);
         enumset('section2action', 'south', 'no', ['boxIcon' => '', 'boxColor' => '000#FFFFFF']);
         field('queueTask', 'stages', [
@@ -607,7 +606,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section('fields')->nested('grid')->delete();
         grid('fields', 'title', ['move' => '', 'editor' => '1']);
         grid('fields', 'alias', ['move' => 'title', 'editor' => '1']);
-        grid('fields', 'fk', ['gridId' => 'props', 'move' => 'mode', 'rename' => 'Хранит ключи']);
+        grid('fields', 'props', ['move' => 'alias']);
+        grid('fields', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
+        grid('fields', 'fk', ['gridId' => 'props', 'move' => 'mode']);
         grid('fields', 'storeRelationAbility', [
             'gridId' => 'fk',
             'move' => '',
@@ -626,11 +627,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'gridId' => 'fk',
             'move' => 'relation',
             'icon' => 'resources/images/icons/btn-icon-filter.png',
-            'rename' => 'Фильтрация',
             'editor' => '1',
         ]);
         grid('fields', 'onDelete', ['gridId' => 'fk', 'move' => 'filter', 'icon' => 'resources/images/icons/ondelete.png']);
-        grid('fields', 'el', ['gridId' => 'props', 'move' => 'fk', 'rename' => 'Вид']);
+        grid('fields', 'el', ['gridId' => 'props', 'move' => 'fk']);
         grid('fields', 'elementId', [
             'gridId' => 'el',
             'move' => '',
@@ -644,11 +644,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'icon' => 'resources/images/icons/btn-icon-tooltip.png',
             'editor' => '1',
         ]);
-        grid('fields', 'mysql', ['gridId' => 'props', 'move' => 'el', 'rename' => 'Столбец в MySQL']);
+        grid('fields', 'mysql', ['gridId' => 'props', 'move' => 'el']);
         grid('fields', 'columnTypeId', [
             'gridId' => 'mysql',
             'move' => '',
-            'rename' => 'Тип столбца',
             'editor' => '1',
             'jumpSectionId' => 'columnTypes',
             'jumpSectionActionId' => 'form',
@@ -659,16 +658,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'rename' => 'DEFAULT',
             'editor' => '1',
         ]);
-        grid('fields', 'l10n', [
-            'gridId' => 'props',
-            'move' => 'mysql',
-            'icon' => 'resources/images/icons/btn-icon-l10n.ico',
-            'rename' => 'l10n',
-        ]);
+        grid('fields', 'l10n', ['gridId' => 'props', 'move' => 'mysql', 'icon' => 'resources/images/icons/btn-icon-l10n.ico']);
         grid('fields', 'move', ['move' => 'props']);
-        grid('fields', 'props', ['move' => 'alias']);
-        grid('fields', 'mode', ['gridId' => 'props', 'move' => '', 'icon' => 'resources/images/icons/field/readonly.png']);
-
         //
         section('fieldsAll')->nested('grid')->delete();
         grid('fieldsAll', 'entityId', ['move' => '']);
@@ -798,6 +789,181 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('entities', 'titleFieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
         grid('entities', 'spaceFields', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
         grid('entities', 'changeLogExcept', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        entity('noticeGetter', ['title' => 'Настройка получателей уведомления', 'fraction' => 'system']);
+        field('noticeGetter', 'noticeId', [
+            'title' => 'Уведомление',
+            'mode' => 'readonly',
+            'storeRelationAbility' => 'one',
+            'relation' => 'notice',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => '',
+        ]);
+        field('noticeGetter', 'roleId', [
+            'title' => 'Получатели с ролью',
+            'mode' => 'readonly',
+            'storeRelationAbility' => 'one',
+            'relation' => 'role',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'noticeId',
+        ]);
+        field('noticeGetter', 'toggle', [
+            'title' => 'Статус',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'y',
+            'move' => 'roleId',
+        ]);
+        enumset('noticeGetter', 'toggle', 'y', ['title' => 'Включены', 'move' => '', 'boxColor' => '120#00FF00']);
+        enumset('noticeGetter', 'toggle', 'n', ['title' => 'Выключены', 'move' => 'y', 'boxColor' => '000#FF0000']);
+        field('noticeGetter', 'http', [
+            'title' => 'Делать HTTP-запрос',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'toggle',
+        ]);
+        field('noticeGetter', 'getters', ['title' => 'Требование к получателям / SQL WHERE', 'elementId' => 'span', 'move' => 'http']);
+        field('noticeGetter', 'criteriaRelyOn', [
+            'title' => 'Тип требования',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'radio',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'event',
+            'move' => 'getters',
+        ]);
+        enumset('noticeGetter', 'criteriaRelyOn', 'event', ['title' => 'Одинаковое для всех получателей', 'move' => '']);
+        enumset('noticeGetter', 'criteriaRelyOn', 'getter', ['title' => 'Неодинаковое, зависит от получателя', 'move' => 'event']);
+        field('noticeGetter', 'criteriaEvt', [
+            'title' => 'Одинаковое для всех получателей',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'criteriaRelyOn',
+        ]);
+        param('noticeGetter', 'criteriaEvt', 'placeholder', ['entityId' => '310', 'cfgValue' => '`someStatus` = "someValue"']);
+        field('noticeGetter', 'criteriaInc', [
+            'title' => 'Для кого увеличение',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'criteriaEvt',
+        ]);
+        param('noticeGetter', 'criteriaInc', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
+        field('noticeGetter', 'criteriaDec', [
+            'title' => 'Для кого уменьшение',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'criteriaInc',
+        ]);
+        param('noticeGetter', 'criteriaDec', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
+        field('noticeGetter', 'title', [
+            'title' => 'Ауто титле',
+            'mode' => 'hidden',
+            'elementId' => 'string',
+            'columnTypeId' => 'TEXT',
+            'move' => 'criteriaDec',
+        ]);
+        consider('noticeGetter', 'title', 'roleId', ['foreign' => 'title', 'required' => 'y']);
+        field('noticeGetter', 'method', ['title' => 'Дублировать', 'elementId' => 'span', 'move' => 'title']);
+        field('noticeGetter', 'email', [
+            'title' => 'Email',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'method',
+        ]);
+        enumset('noticeGetter', 'email', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#D3D3D3']);
+        enumset('noticeGetter', 'email', 'y', ['title' => 'Да', 'move' => 'n', 'boxColor' => '120#00FF00']);
+        field('noticeGetter', 'vk', [
+            'title' => 'VK',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'email',
+        ]);
+        enumset('noticeGetter', 'vk', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#D3D3D3']);
+        enumset('noticeGetter', 'vk', 'y', ['title' => 'Да', 'move' => 'n', 'boxColor' => '120#00FF00']);
+        field('noticeGetter', 'sms', [
+            'title' => 'SMS',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'vk',
+        ]);
+        enumset('noticeGetter', 'sms', 'n', ['title' => 'Нет', 'move' => '', 'boxColor' => '000#D3D3D3']);
+        enumset('noticeGetter', 'sms', 'y', ['title' => 'Да', 'move' => 'n', 'boxColor' => '120#00FF00']);
+        field('noticeGetter', 'features', [
+            'title' => 'Функции',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'sms',
+        ]);
+        field('noticeGetter', 'getters2', [
+            'title' => 'Получатели',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'features',
+        ]);
+        entity('noticeGetter', ['titleFieldId' => 'roleId']);
+        section('noticeGetters', [
+            'title' => 'Настройки получателей',
+            'fraction' => 'system',
+            'sectionId' => 'notices',
+            'entityId' => 'noticeGetter',
+            'move' => '',
+            'rowsetSeparate' => 'no',
+            'defaultSortField' => 'roleId',
+            'roleIds' => 'dev',
+        ]);
+        section2action('noticeGetters','index', ['roleIds' => 'dev', 'move' => '']);
+        section2action('noticeGetters','form', ['roleIds' => 'dev', 'move' => 'index']);
+        section2action('noticeGetters','save', [
+            'roleIds' => 'dev',
+            'move' => 'form',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('noticeGetters','delete', [
+            'roleIds' => 'dev',
+            'move' => 'save',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        grid('noticeGetters', 'roleId', ['move' => '']);
+        grid('noticeGetters', 'toggle', ['move' => 'roleId', 'icon' => 'resources/images/icons/btn-icon-toggle.png']);
+        grid('noticeGetters', 'getters', ['move' => 'toggle']);
+        grid('noticeGetters', 'criteriaRelyOn', ['gridId' => 'getters', 'move' => '']);
+        grid('noticeGetters', 'criteriaEvt', ['gridId' => 'getters', 'move' => 'criteriaRelyOn', 'rename' => 'Одинаковое']);
+        grid('noticeGetters', 'getters2', ['gridId' => 'getters', 'move' => 'criteriaEvt', 'rename' => 'Зависящее от получателя']);
+        grid('noticeGetters', 'criteriaInc', ['gridId' => 'getters2', 'move' => '']);
+        grid('noticeGetters', 'criteriaDec', ['gridId' => 'getters2', 'move' => 'criteriaInc']);
+        grid('noticeGetters', 'features', ['move' => 'getters']);
+        grid('noticeGetters', 'http', ['gridId' => 'features', 'move' => '', 'editor' => 1]);
+        grid('noticeGetters', 'method', ['gridId' => 'features', 'move' => 'http']);
+        grid('noticeGetters', 'email', ['gridId' => 'method', 'move' => '']);
+        grid('noticeGetters', 'vk', ['gridId' => 'method', 'move' => 'email']);
+        grid('noticeGetters', 'sms', ['gridId' => 'method', 'move' => 'vk']);
+        alteredField('noticeGetters', 'noticeId', ['jumpSectionId' => 'notices', 'jumpSectionActionId' => 'form']);
+        alteredField('noticeGetters', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
         die('ok');
     }
     public function panelsAction(){
