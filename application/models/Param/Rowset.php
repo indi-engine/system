@@ -26,8 +26,13 @@ class Param_Rowset extends Indi_Db_Table_Rowset {
             // If no relation found - skip
             if (!$rel = $cfgField->rel()) continue;
 
+            // Prepare WHERE clause
+            $where = $rel->table() === 'enumset'
+                ? "`fieldId` = '{$cfgField->id}' AND FIND_IN_SET(`alias`, '{$item['cfgValue']}')"
+                : $item['cfgValue']; // will be converted into '`id` IN ($item['cfgValue'])' if it is an int11list
+
             // Setup title
-            $data[$idx]['_render']['cfgValue'] = $rel->all($item['cfgValue'])->col('title', ', ');
+            $data[$idx]['_render']['cfgValue'] = $rel->all($where)->col('title', ', ');
         }
 
         // Return grid data
