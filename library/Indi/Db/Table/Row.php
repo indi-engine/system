@@ -800,7 +800,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If realtime is configured to listen for mysql binlog events captured by vendor/zendesk/maxwell lib,
         // proceed only if MAXWELL-constant is defined, so that it means we're inside realtime/maxwell process
-        if (ini()->rabbitmq->maxwell && !defined('MAXWELL')) return;
+        if (ini()->rabbitmq->maxwell && !defined('MAXWELL') && $event != 'reload') return;
 
         // Start building WHERE clause
         $where = [
@@ -809,17 +809,21 @@ class Indi_Db_Table_Row implements ArrayAccess
             '`scope` != ""'
         ];
 
-        // If $event is 'update'
-        if ($event == 'update') {
+        // If $event is 'update' or 'reload'
+        if ($event == 'update' || $event == 'reload') {
 
             // Append clause for `entries` column
             $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
 
-            // If no fields affected - return
-            if (!$fieldIdA_affected = $this->field(array_keys($this->_affected))->column('id')) return;
+            // If $event is 'update'
+            if ($event == 'update') {
 
-            // Append clause for `fields` column
-            $where []= 'CONCAT(",", `fields`, ",") REGEXP ",(' . im($fieldIdA_affected, '|') . '),"';
+                // If no fields affected - return
+                if (!$fieldIdA_affected = $this->field(array_keys($this->_affected))->column('id')) return;
+
+                // Append clause for `fields` column
+                $where []= 'CONCAT(",", `fields`, ",") REGEXP ",(' . im($fieldIdA_affected, '|') . '),"';
+            }
         }
 
         // Fetch matching `realtime` entries
@@ -838,7 +842,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $context = $realtimeR->token;
 
             // If $event is 'update'
-            if ($event == 'update') {
+            if ($event == 'update' || $event == 'reload') {
 
                 // Prepare blank data and group it by channel and context
                 $byChannel[$channel][$context] = [
@@ -850,7 +854,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $scope = json_decode($realtimeR->scope, true);
 
                 // If at least one of affected fields stand behind of a grid column, having `rowReqIfAffected` = 'y'
-                if (array_intersect($fieldIdA_affected, ar($scope['rowReqIfAffected']))) {
+                if ($event === 'reload' || array_intersect($fieldIdA_affected, ar($scope['rowReqIfAffected']))) {
 
                     // It means that such column's cell content IS INVOLVED in the process
                     // of rendering content for at least one other column's cell within same grid,
@@ -4908,7 +4912,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Do all maintenance, related to file-uploads, e.g upload/replace/delete files and make copies if need
      *
      * @param array|bool $fields
-     * @return mixed
+     * @return Indi_Db_Table_Row
      */
     public function files($fields = []) {
 
@@ -4916,7 +4920,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_string($fields)) $fields = explode(',', $fields);
 
         // If there is no file upload fields that should be taken into attention - exit
-        if (is_array($fields) && !count($fields)) return;
+        if (is_array($fields) && !count($fields)) return $this;
 
         // If value, got by $this->model()->dir() call, is not a directory name
         if ((is_array($fields) ?: $this->_files) && !Indi::rexm('dir', $dir = $this->dir())) {
@@ -4994,7 +4998,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else foreach ($fields as $field) {
 
             // If there was a file uploaded a moment ago, we should move it to certain place
-            if (Indi::post($field) == 'm') {
+            if (Indi::post($field) == 'm' || Indi::files($field)) {
 
                 // Get the meta information
                 $meta = Indi::files($field);
@@ -5035,6 +5039,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         
         // Flush existing/collected/current mismatches
         $this->mflush(false);
+
+        // Return *_Row instance itself
+        return $this;
     }
 
     /**
@@ -7823,5 +7830,25 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function was($prop) {
         return $this->affected($prop, true);
+    }
+
+    /**
+     * Increment prop
+     *
+     * @param $prop
+     * @return $this
+     */
+    public function inc($prop) {
+        return $this->set($prop, $this->$prop + 1);
+    }
+
+    /**
+     * Decrement prop
+     *
+     * @param $prop
+     * @return $this
+     */
+    public function dec($prop) {
+        return $this->set($prop, $this->$prop - 1);
     }
 }

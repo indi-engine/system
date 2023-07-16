@@ -122,7 +122,7 @@ function jerror($errno, $errstr, $errfile, $errline) {
 function d($value) {
 
     // If it's a bool value
-    if (is_bool($value)) {
+    if (is_bool($value) || is_null($value)) {
 
         // Use var_dump() to produce 'bool(true)' or 'bool(false)' instead of '1' or '' (empty string), respectively
         ob_start(); var_dump($value); $out = ob_get_clean();
@@ -186,7 +186,7 @@ function i($value, $type = 'w', $file = 'debug.txt') {
     } else {
 
         // If it's a bool value - use var_dump() to produce 'bool(true)' or 'bool(false)' instead of '1' or '' (empty string), respectively
-        if (is_bool($value)) {
+        if (is_bool($value) || is_null($value)) {
             ob_start(); var_dump($value); $out = ob_get_clean();
 
         // Else use print_r()
@@ -1443,11 +1443,14 @@ function l10n_dataI($dataI, $props) {
  * @param $fn
  * @return array
  */
-function jcheck($ruleA, $data, $fn = 'jflush') {
+function jcheck($ruleA, $data = null, $fn = 'jflush') {
 
     // Declare $rowA array
     $rowA = [];
 
+    // If $data arg is not given - use $_POST by default
+    if ($data === null) $data = Indi::post(); 
+    
     // Foreach prop having mismatch rules
     foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
 

@@ -53,7 +53,7 @@ class Consider extends Indi_Db_Table {
         if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 0');
 
         // Call parent
-        $return = parent::insert($data, $where);
+        $return = parent::insert($data);
 
         // Enable foreign keys back
         if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 1');

@@ -998,9 +998,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Implement indents if need
             if ($data[$pointer][$_ = $titleProp ?: 'title'] && $treeColumn)
-                if ($r->system('level') !== null || $r->level())
+                if ($r->system('level') !== null || $r->level() !== null)
                     $data[$pointer]['_render'][$_]
-                        = str_repeat('&nbsp;', 5 * $r->system('level')) . $data[$pointer][$_];
+                        = str_repeat(' ', 5 * $r->system('level')) . $data[$pointer][$_];
 
             // Unset '_foreign'
             unset($data[$pointer]['_foreign']);

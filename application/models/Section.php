@@ -113,6 +113,29 @@ class Section extends Indi_Db_Table {
     }
 
     /**
+     * Temporary disable foreign key checks if connector is -1, which is used to point to `id`-column,
+     * because `id`-columns does not have corresponding entries in `field`-table
+     *
+     * @param array $data
+     * @return int|void
+     * @throws Exception
+     */
+    public function insert(array $data) {
+
+        // Temporarily disable foreign keys
+        if ($data['defaultSortField'] == -1) db()->query('SET `foreign_key_checks` = 0');
+
+        // Call parent
+        $return = parent::insert($data);
+
+        // Enable foreign keys back
+        if ($data['defaultSortField'] == -1) db()->query('SET `foreign_key_checks` = 1');
+
+        // Return
+        return $return;
+    }
+
+    /**
      * Temporary disable foreign key checks if defaultSortField is -1, which is used to point to `id`-column,
      * because `id`-columns does not have corresponding entries in `field`-table
      *

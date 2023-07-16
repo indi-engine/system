@@ -344,34 +344,10 @@ class Indi_Db {
                 ]);
             unset($considerA);
 
-            // Temporary flag indicating whether or not we have already removed legacy cfgFields implementation
-            if ($pep = self::$_instance->query('SHOW TABLES LIKE "possibleElementParam"')->cell()) {
-
-                // Get info about existing field params
-                // 1. Get info about possible field element params
-                $possibleElementParamA = self::$_instance->query('SELECT * FROM `possibleElementParam`')->fetchAll();
-
-                // 2. Declare two arrays, where:
-                //   a. possible params as array of arrays, each having params aliases as keys, and devault values as
-                //      values, grouped by elementId
-                //   b. possible params as array, having params ids as keys, and aliases as values
-                // - respectively
-                $ePossibleElementParamA = []; $possibleElementParamAliasA = [];
-
-                // 3. Fulfil these two arrays
-                foreach (l10n($possibleElementParamA, 'defaultValue') as $possibleElementParamI) {
-                    $ePossibleElementParamA[$possibleElementParamI['elementId']]
-                    [$possibleElementParamI['alias']] = $possibleElementParamI['defaultValue'];
-                    $possibleElementParamAliasA[$possibleElementParamI['id']] = $possibleElementParamI['alias'];
-                }
-                unset($possibleElementParamA);
-            }
-
             // 4. Get info about explicit set (e.g. non-default) config-fields' values
             $paramA = self::$_instance->query('SELECT * FROM `param`' . (is_array($fieldIdA)
                 ? ' WHERE FIND_IN_SET(`fieldId`, "' . implode(',', $fieldIdA) . '") ' : ''))->fetchAll();
             $fParamA = []; foreach (l10n($paramA, 'value') as $paramI) {
-                if ($pep) $fParamA[$paramI['fieldId']][$possibleElementParamAliasA[$paramI['possibleParamId']]] = $paramI['value'];
                 if (array_key_exists('cfgField', $paramI)) {
                     if ($fieldA[$paramI['cfgField']]['relation'] == 5)  $paramI['cfgValue'] = $paramI['cfgValue']
                         ? im(array_column(array_intersect_key($fieldA, array_flip(explode(',', $paramI['cfgValue']))), 'alias'))

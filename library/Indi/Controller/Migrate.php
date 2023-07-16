@@ -964,6 +964,13 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('noticeGetters', 'sms', ['gridId' => 'method', 'move' => 'vk']);
         alteredField('noticeGetters', 'noticeId', ['jumpSectionId' => 'notices', 'jumpSectionActionId' => 'form']);
         alteredField('noticeGetters', 'roleId', ['jumpSectionId' => 'role', 'jumpSectionActionId' => 'form']);
+
+        grid('sections', 'fraction', ['rowReqIfAffected' => 'y']);
+        grid('sections', 'alias', ['rowReqIfAffected' => 'y']);
+        grid('sections', 'extendsPhp', ['rowReqIfAffected' => 'y']);
+        grid('sections', 'extendsJs', ['rowReqIfAffected' => 'y']);
+        enumset('section', 'defaultSortDirection', 'DESC', ['cssStyle' => 'background-position: -3px -1px;']);
+        enumset('section', 'defaultSortDirection', 'ASC', ['cssStyle' => 'background-position: -3px -1px;']);
         die('ok');
     }
     public function panelsAction(){

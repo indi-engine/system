@@ -288,7 +288,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         if (array_key_exists($alias, $this->_aliases)) return $this;
 
         // If $before arg is not given, or is, but ot found among the keys of $this->_aliases
-        if (!$before || !array_key_exists($before, $this->_aliases)) {
+        if ($before !== true && (!$before || !array_key_exists($before, $this->_aliases))) {
 
             // Push alias into aliases and id into ids
             $this->_aliases[$alias] = $this->_count;
@@ -301,6 +301,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         } else {
 
             // Get index
+            if ($before === true) $before = key($this->_aliases);
             $idx = $this->_aliases[$before];
 
             // Inject new value in $this->_aliases array

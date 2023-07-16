@@ -1365,7 +1365,7 @@ class Indi_Db_Table
 
         // If non-false $assign argument is given - we assume that $input arg should not be used
         // be used for construction, but should be used for $this->set() call
-        if ($assign) { $assign = $input; $input = []; }
+        if ($assign) { $assign = is_object($input) ? (array) $input : $input; $input = []; }
 
         // Prepare data for construction
         $constructData = [
@@ -2491,5 +2491,33 @@ class Indi_Db_Table
      */
     public function nativeCascade() {
         return $this->_nativeCascade;
+    }
+
+    /**
+     * Create new record if it does not exists so far
+     *
+     * @param array $need [propName => propValue] pairs to check whether record having those - already exists
+     * @param array $ctor [propName => propValue] pairs to append to the data to be INSERTed, if record not exists
+     * @return Indi_Db_Table_Row|null
+     */
+    public function newIfNeed(array $need, $ctor = []) {
+
+        // Prepare WHERE clause
+        $where = [];
+        foreach ($need as $prop => $value)
+            $where []= "`$prop` = " . db()->quote($value);
+
+        // If row not exists
+        if (!$row = $this->row($where)) {
+
+            // Create new one
+            $row = $this->new($need + $ctor);
+
+            // Save it
+            $row->save();
+        }
+
+        // Return row exsiting or newly created
+        return $row;
     }
 }

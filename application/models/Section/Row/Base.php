@@ -23,7 +23,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         $dataRs = $this->callParent();
 
         // Prepend data rowset with 'ID' option
-        if ($field == 'defaultSortField') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 'title');
+        if ($field == 'defaultSortField') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], true);
 
         // Return
         return $dataRs;

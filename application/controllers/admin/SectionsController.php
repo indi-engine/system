@@ -65,6 +65,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
             // Chmod
             chmod($ctrlAbs, 0765);
+
+            // Reload this row in all grids it's currently shown in
+            t()->row->realtime('reload');
         }
 
         // Flush success
@@ -125,6 +128,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // Chmod
         chmod($ctrlAbs, 0765);
+
+        // Reload this row in all grids it's currently shown in
+        t()->row->realtime('reload');
 
         // Flush success
         jflush(true);
@@ -274,7 +280,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $sectionR = m()->new();
 
             // Get `sectionId` field extjs config
-            $sectionId_field = $sectionR->combo('sectionId') + ['disabledOptions' => $sectionId_disabled];
+            $sectionId_field = ['fieldLabel' => ''] + $sectionR->combo('sectionId') + ['disabledOptions' => $sectionId_disabled];
 
             // Prompt for timeId
             jprompt(I_SECTION_CLONE_SELECT_PARENT, [$sectionId_field]);
@@ -354,11 +360,8 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
                 }
             }
 
-            // Flush success
-            jflush(true, 'Copied');
-
         // Else flush failure
-        } else jflush(false, 'Copying cancelled');
+        } else jflush(false);
     }
 
     /**

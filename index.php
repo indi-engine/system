@@ -42,6 +42,9 @@ define('PRE', STD . (COM ? '' : '/admin'));
 // Setup DOC constant, representing $_SERVER['DOCUMENT_ROOT'] environment variable, with no right-side slash
 define('DOC', rtrim($_SERVER['DOCUMENT_ROOT'], '/'));
 
+// Setup DIR constant, representing the directory where current Indi Engine instance is located
+define('DIR', DOC . STD);
+
 // Setup URI constant, representing $_SERVER['REQUEST_URI'] environment variable, for short-hand accessibility
 define('URI', $_SERVER['REQUEST_URI'] == '/' ? '/' : rtrim($_SERVER['REQUEST_URI'], '/'));
 
