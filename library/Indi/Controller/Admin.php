@@ -137,6 +137,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
                 if (uri()->ph) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
+                $applyA['tree'] = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'];
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
 
                 if (is_array($f = Indi::get()->filter) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
@@ -185,9 +186,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort);
 
                     // Build fetch method name
-                    $fetchMethod = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn']
-                        ? 'fetchTree'
-                        : 'fetchAll';
+                    $fetchMethod = t()->scope->tree ? 'fetchTree' : 'fetchAll';
 
                     // If $_GET['required'] given and it's a comma-separated list
                     if (is_array($required = json_decode(Indi::get('required')))
