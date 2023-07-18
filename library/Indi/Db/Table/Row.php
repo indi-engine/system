@@ -2089,6 +2089,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Boild color box
                     $box = '<span class="i-color-box" style="background: url(' . $icon . ');"></span>';
 
+                    // If keyword is given but icon path does not match it - skip
+                    if ($selectedTypeIsKeyword)
+                        if (!preg_match('~' . preg_quote($keyword = $selected) . '~', $icon))
+                            continue;
+
                     // Setup option data
                     $data []= [
                         'alias' => $icon,

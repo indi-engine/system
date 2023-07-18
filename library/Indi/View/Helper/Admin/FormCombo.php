@@ -196,7 +196,7 @@ class Indi_View_Helper_Admin_FormCombo {
 
             // Setup css color property for input, if original title of selected value contained a color definition
             if ($options[$selected['value']]['system']['color'])
-                $selected['style'] =  ' style="color: ' . $options[$selected['value']]['system']['color'] . ';"';
+                $selected['style'] =  " style=\"color: {$options[$selected['value']]['system']['color']};{$selected['cssStyle']}\"";
 
             // Set up html attributes for hidden input, if optionAttrs param was used
             if ($options[$selected['value']]['attrs']) {
@@ -308,7 +308,8 @@ class Indi_View_Helper_Admin_FormCombo {
                 $view['subTplData']['selected']['items'][] = $item;
             }
         } else {
-            $view['subTplData']['selected'] = self::detectColor($this->selected);
+            if ($this->field->alias == 'fraction') i($this->selected, 'a');
+            $view['subTplData']['selected'] = self::detectColor($this->selected, true);
         }
 
         // Assign view params
@@ -322,7 +323,7 @@ class Indi_View_Helper_Admin_FormCombo {
      * @param $option
      * @return array
      */
-    public static function detectColor($option) {
+    public static function detectColor($option, $flag = false) {
 
         // Color detection in different places within one certain option
         ($v = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', is_string($option['value']) ? $option['value'] : '', $color)) ||
@@ -332,21 +333,21 @@ class Indi_View_Helper_Admin_FormCombo {
         ($i = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\((.*)\).*?);[^"]*"[^>]*>/', $option['title'], $color));
 
         // If color was detected somewhere
-        if ($v || $t || $s || $b || $i || $option['boxColor'] || $option['textColor'] || $option['boxIcon']) {
+        if ($v || $t || $s || $b || $i || $option['boxColor'] || $option['textColor'] || $option['boxIcon'] || $option['cssStyle']) {
 
             // Setup color
-            $option['color'] = $color[1] ? $color[1] : ($option['textColor'] ?: $option['boxColor']);
+            $option['color'] = $color[1] ? $color[1] : ($option['textColor'] ?: $option['boxColor'] ?: '');
 
             // If color was detected in 'title' property, and found as 'color' or 'background' css property
             // - strip tags from title
             if ($s || $b || $i) $option['title'] = strip_tags($option['title']);
 
             // If color was detected in 'title' property as 'color' css property
-            if ($s || $option['textColor']) {
+            if ($s || $option['textColor'] || $option['cssStyle']) {
 
                 // If there is no 'style' property within $option variable -
                 // set it as 'color' and 'font' css properties specification
-                if (!$option['style']) $option['style'] = ' style="color: ' . $option['color'] . '; ' . $option['font'] . '"';
+                if (!$option['style']) $option['style'] = ' style="color: ' . $option['color'] . '; ' . $option['cssStyle'] . '"';
                 if (!$option['textColor']) $option['textColor'] = $option['color'];
 
             // Else if color was not detected in 'title' property as 'color' css property - we assume that color should

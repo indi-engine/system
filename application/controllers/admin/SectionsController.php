@@ -299,7 +299,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             ], json_decode(Indi::post('_prompt'), true));
 
             // Get prefix
-            $prefix = m($_['sectionId']->entityId)->table();
+            $prefix = $_['sectionId']->entityId ? m($_['sectionId']->entityId)->table() : $_['sectionId']->alias;
 
             // Get sectionId
             $sectionId_parent = $_['sectionId']->id;

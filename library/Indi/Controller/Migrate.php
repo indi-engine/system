@@ -971,6 +971,17 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('sections', 'extendsJs', ['rowReqIfAffected' => 'y']);
         enumset('section', 'defaultSortDirection', 'DESC', ['cssStyle' => 'background-position: -3px -1px;']);
         enumset('section', 'defaultSortDirection', 'ASC', ['cssStyle' => 'background-position: -3px -1px;']);
+
+        section2action('paramsAll','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section('paramsAll', ['multiSelect' => '1']);
+        param('grid', 'jumpArgs', 'placeholder', ['entityId' => '9', 'cfgValue' => '?filter[someProp]=someValue']);
+        param('alteredField', 'jumpArgs', 'placeholder', ['entityId' => '171', 'cfgValue' => '?filter[someProp]=someValue']);
         die('ok');
     }
     public function panelsAction(){
