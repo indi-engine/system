@@ -688,7 +688,7 @@ class Indi_Db {
 
         // Here we separate all queries by their type, and and this time we deal with queries, that provide affected
         // rows count as return value of execution
-        if (preg_match('/^UPDATE|DELETE|INSERT/', $sql)) {
+        if (preg_match('/^(UPDATE|DELETE|INSERT)/', $sql)) {
 
             // Execute query and get affected rows count
             $affected = self::$_pdo->exec($sql);
