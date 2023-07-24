@@ -136,7 +136,7 @@ class Indi_Db {
                     // --
                     // Basically we need this dirty hack for case when Indi Engine is running inside a docker container,
                     // and docker-entrypoint.sh has commands that require mysql to be completely initialized, so we wait
-                    $tryQty = 5;
+                    $tryQty = 15;
 
                     // Do attempts
                     for ($i = 1; $i <= $tryQty; $i++) try {
@@ -154,7 +154,7 @@ class Indi_Db {
                     } catch (PDOException $e) {
 
                         // If max attempt qty is not yet reached - wait a bit
-                        if ($i < $tryQty) sleep(1);
+                        if ($i < $tryQty) sleep(3);
 
                         // Else pass caught exception to the own handler
                         else self::$_instance->jerror($e);

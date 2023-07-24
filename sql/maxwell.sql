@@ -1,0 +1,2 @@
+GRANT ALL ON `maxwell`.* TO 'custom'@'%';
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'custom'@'%';

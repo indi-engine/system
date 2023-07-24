@@ -382,6 +382,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
 
         // Prepare params
         $params = [
+            'rabbitmq_host' => ini()->rabbitmq->host,
             'rabbitmq_exchange' => qn(),
             'filter' => '"exclude:*.*, include:' . $dn .'.*"',
             'client_id' => $dn,
