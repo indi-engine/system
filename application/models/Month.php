@@ -178,4 +178,19 @@ class Month extends Indi_Db_Table {
         $Ym2 = explode('-', $Ym2);
         return $Ym1[0] * 12 + $Ym1[1] - ($Ym2[0] * 12 + $Ym2[1]);
     }
+
+    /**
+     * This method will be called after foreign-key field is created somewhere
+     * pointing to this entity
+     *
+     * @param Field_Row $field
+     */
+    public function onAddedAsForeignKey(Field_Row $field) {
+
+        // Make that month-options are grouped by year
+        param($field->entityId, $field->alias, 'groupBy', $this->fields('yearId')->id);
+
+        // Make that year is not shown in the option text itself
+        param($field->entityId, $field->alias, 'optionTemplate', '<?=$o->foreign(\'month\')->title?>');
+    }
 }

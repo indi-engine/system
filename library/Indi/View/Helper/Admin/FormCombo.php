@@ -308,7 +308,6 @@ class Indi_View_Helper_Admin_FormCombo {
                 $view['subTplData']['selected']['items'][] = $item;
             }
         } else {
-            if ($this->field->alias == 'fraction') i($this->selected, 'a');
             $view['subTplData']['selected'] = self::detectColor($this->selected, true);
         }
 

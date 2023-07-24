@@ -2306,4 +2306,19 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Return WHERE clause for finding usages
         return $where;
     }
+
+    /**
+     * Call onAddedAsForeignKey() on the model, that foreign-key field is pointing to
+     */
+    public function onInsert() {
+
+        // If it's not a foreign-key field - return
+        if ($this->storeRelationAbility === 'none') return;
+
+        // If it's a multi-entity foreign-key field - return
+        if (!$this->relation) return;
+
+        // If it's a single-entity foreign-key field - call hook method
+        $this->rel()->onAddedAsForeignKey($this);
+    }
 }

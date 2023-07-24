@@ -861,7 +861,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if (isset($typeA['foreign']['single'][$columnI]['title']) && !isset($typeA['enumset'][$columnI]) && !$value)
                     $data[$pointer]['_render'][$columnI] = '';
 
-                // Provide icon overflow feature, so that if a text-column
+                // Provide icon overflow feature
                 if ($_ = $renderCfg[$columnI]['icon']) {
                     if ($value != $this->model()->fields($columnI)->defaultValue || !$value) {
                         $tpl = '<img src="' . $_ . '" class="i-cell-img">$1';
@@ -872,6 +872,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         } else if ($typeA['upload'][$columnI]) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI], $tpl);
                         }
+                    } else if (!$data[$pointer]['_render'][$columnI]) {
+                        $data[$pointer]['_render'][$columnI] = '';
                     }
                 }
 
@@ -919,7 +921,16 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                             // Wrap cell contents into a <span jump="someuri">
                             $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
-                            $jump = rif($j, 'jump="'. str_replace('{id}', $id, $j) . '"');
+                            if ($j) {
+                                $href = str_replace('{id}', $id, $j);
+                                $href = str_replace('{value}', $data[$pointer][$columnI], $href);
+                                $href = preg_replace_callback('~\{(?<alias>[a-z0-9_]+)\}~i', function($m) use ($r){
+                                    return $r->{$m['alias']};
+                                }, $href);
+                                $jump = rif($href, 'jump="$1"');
+                            } else {
+                                $jump = '';
+                            }
                             $color = rif($c, 'style="color: $1;"');
                             $with = "<span $jump $color>";
                             $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);

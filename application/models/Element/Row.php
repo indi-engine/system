@@ -2,6 +2,25 @@
 class Element_Row extends Indi_Db_Table_Row {
 
     /**
+     * This method was redefined to provide ability for some element
+     * props to be set using aliases rather than ids
+     *
+     * @param  string $columnName The column key.
+     * @param  mixed  $value      The value for the property.
+     * @return void
+     */
+    public function __set($columnName, $value) {
+
+        // Provide ability for some element props to be set using aliases rather than ids
+        if (is_string($value) && !Indi::rexm('int11', $value)) {
+            if ($columnName == 'defaultType') $value = coltype($value)->id ?: 0;
+        }
+
+        // Call parent
+        parent::__set($columnName, $value);
+    }
+
+    /**
      * Build an expression for creating the current `element` entry in another project, running on Indi Engine
      *
      * @param string $certain
@@ -52,6 +71,9 @@ class Element_Row extends Indi_Db_Table_Row {
 
             // Exclude prop, if it has value equal to default value
             if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+
+            // Else if it's defaultType-prop
+            else if ($prop === 'defaultType') $value = coltype($value)->type;
         }
 
         // Stringify and return $ctor

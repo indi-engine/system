@@ -12,14 +12,20 @@ class Admin_FilterController extends Indi_Controller_Admin_Multinew {
     public $unset = 'rename,filter,defaultValue';
 
     /**
-     * Add icon for `filter` prop
-     *
-     * @param $item
-     * @param Indi_Db_Table_Row $r
+     * @param $cell
+     * @param $value
      */
-    public function adjustGridDataItem(&$item, $r) {
+    public function onBeforeCellSave($cell, $value) {
 
-        // If _render prop is not set - set it to empty object
-        if (!$item['_render']) $item['_render'] = new stdClass();
+        // If we're going to turn on one of those features
+        if (in($cell, 'filter,allowZeroResult,denyClear,ignoreTemplate,multiSelect') && $value) {
+
+            // If it's a not foreign-key field behind this filter
+            if (t()->row->fieldBehind()->storeRelationAbility === 'none') {
+
+                // Show side msg
+                wflush(false, 'This feature is only applicable for filters that are having foreign-key fields behind');
+            }
+        }
     }
 }

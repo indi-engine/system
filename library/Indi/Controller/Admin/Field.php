@@ -12,9 +12,6 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
             // Strip hue part from that color, for it to be displayed in form without hue
             $this->row->modified('defaultValue', substr($this->row->defaultValue, 3));
 
-        // Disable `l10n` field
-        $this->appendDisabledField('l10n', true);
-
         // Disable `entry` field, as it's not applicable here
         $this->appendDisabledField('entry');
 
@@ -109,16 +106,20 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
     }
 
     /**
-     * 1.Hide default values for `extendsPhp` and `extendsJs` props, to prevent it from creating a mess in eyes
-     * 2.Check php/js-controller files exist, and if yes, check whether it's actual parent class is
-     *   as per specified in `extendsPhp`/`extendsJs` prop
+     * Disable `l10n` field
      *
-     * @param array $data
+     * @param Indi_Db_Table_Row $row
      */
-    public function adjustGridDataItem(&$item, $r) {
+    public function adjustCreatingRowAccess(Indi_Db_Table_Row $row) {
+        $this->appendDisabledField('l10n');
+    }
 
-        // Add icon for `filter` prop
-        if ($_ = $item['filter']) $item['_render']['filter']
-            = '<img src="resources/images/icons/btn-icon-filter.png" class="i-cell-img">' . $_;
+    /**
+     * Disable `l10n` field, but keep hidden
+     *
+     * @param Indi_Db_Table_Row $row
+     */
+    public function adjustEditingRowAccess(Indi_Db_Table_Row $row) {
+        $this->appendDisabledField('l10n', true);
     }
 }

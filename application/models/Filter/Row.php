@@ -109,4 +109,33 @@ class Filter_Row extends Indi_Db_Table_Row {
     public function setTitle() {
         $this->_setTitle();
     }
+
+    /**
+     * Get field behind this filter
+     *
+     * @return Field_Row|Indi_Db_Table_Rowset|void
+     */
+    public function fieldBehind() {
+        return $this->foreign($this->further ? 'further' : 'fieldId');
+    }
+
+    /**
+     * Clear some props if not applicable
+     */
+    public function onBeforeSave() {
+
+        // If base field behind this filter - is not a foreign-key field
+        if ($this->foreign('fieldId')->storeRelationAbility === 'none') {
+
+            // Clear `further`-prop
+            $this->zero('further', true);
+        }
+
+        // If real field behind this filter - is not a foreign-key field
+        if ($this->fieldBehind()->storeRelationAbility === 'none') {
+
+            // Make sure those features are disabled
+            $this->zero('allowZeroResult,denyClear,ignoreTemplate,multiSelect,filter', true);
+        }
+    }
 }

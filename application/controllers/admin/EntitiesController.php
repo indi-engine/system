@@ -29,10 +29,23 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!preg_match(Indi::rex('dir'), $dir)) jflush(false, $dir);
 
         // Get the model name with first letter upper-cased
-        $model = ucfirst($this->row->table);
+        $model = ucfirst(t()->row->table);
 
-        // If model file is not yet exist
-        if (!is_file($modelFn = $dir . '/' . $model . '.php')) {
+        // Messages
+        $msg = [];
+
+        // Get absolute and relative paths
+        $modelAbs = $dir . $model . '.php';
+        $modelRel = preg_replace('~^' . preg_quote(DOC) . '/~', '', $modelAbs);
+
+        // If model file already exists
+        if (is_file($modelAbs)) {
+
+            // Add msg
+            $msg [] = sprintf('File already exists: %s', $modelRel);
+
+        // Else
+        } else {
 
             // Build template model file name
             $tplModelFn = DOC. STD . VDR . '/system/application/models/{Model}.php';
@@ -50,10 +63,16 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $modelSc = preg_replace(':\{extends\}:', $this->row->extends, $modelSc);
 
             // Put the contents to a model file
-            file_put_contents($modelFn, $modelSc);            
+            file_put_contents($modelAbs, $modelSc);
 
             // Chmod
-            chmod($modelFn, 0765);
+            chmod($modelAbs, 0765);
+
+            // Reload this row in all grids it's currently shown in
+            t()->row->realtime('reload');
+
+            // Flush success
+            $msg []= 'Created file: ' . $modelRel;
         }
 
         // Build the model's own dir name, and try to create it, if it not yet exist
@@ -62,8 +81,18 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // If model's own dir doesn't exist and can't be created - flush an error
         if (!preg_match(Indi::rex('dir'), $modelDir)) jflush(false, $modelDir);
 
-        // If model's row-class file is not yet exist
-        if (!is_file($modelRowFn = $dir . '/' . $model . '/Row.php')) {
+        // Get absolute and relative paths
+        $modelRowAbs = $dir . $model . '/Row.php';
+        $modelRowRel = preg_replace('~^' . preg_quote(DOC) . '/~', '', $modelRowAbs);
+
+        // If model's row-class file already exists
+        if (is_file($modelRowAbs)) {
+
+            // Add msg
+            $msg [] = sprintf('File already exists: %s', $modelRowRel);
+
+        // Else
+        } else {
 
             // Build template model's rowClass file name
             $tplModelRowFn = DOC. STD . VDR . '/system/application/models/{Model}/Row.php';
@@ -78,14 +107,20 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $modelRowSc = preg_replace(':\{Model\}:', $model, $tplModelRowSc);
 
             // Put the contents to a model's rowClass file
-            file_put_contents($modelRowFn, $modelRowSc);
+            file_put_contents($modelRowAbs, $modelRowSc);
 
             // Chmod
-            chmod($modelRowFn, 0765);
+            chmod($modelRowAbs, 0765);
+
+            // Flush success
+            $msg []= 'Created file: ' . $modelRowRel;
         }
 
+        // Reload this row in all grids it's currently shown in
+        t()->row->realtime('reload');
+
         // Flush success
-        jflush(true);
+        jflush(true, join('<br>', $msg));
     }
 
     /**
@@ -157,9 +192,6 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function adjustGridData(&$data) {
 
-        // Get default values
-        foreach (ar('extends') as $prop) $default[$prop] = t()->fields($prop)->defaultValue;
-
         // Foreach data item
         foreach ($data as &$item) {
 
@@ -175,12 +207,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 // Get parent class
                 $parent = get_parent_class($php);
 
-                // If actual parent class is not as per section `extendsPhp` prop - setup error
+                // If actual parent class is not as per entity `extends` prop - setup error
                 if ($parent != $item['extends']) $item['_system']['php-error'] = sprintf(I_ENT_EXTENDS_OTHER, $parent);
             }
-
-            // Hide default values
-            foreach ($default as $prop => $defaultValue) if ($item[$prop] == $defaultValue) $item[$prop] = '';
         }
     }
 }

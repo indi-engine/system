@@ -173,7 +173,15 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
                             'href' => '/' . $_->foreign('jumpSectionId')->alias
                                 . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
-                                . '/id/{id}/' . $_->jumpArgs
+                                . '/id/{value}/' . $_->jumpArgs
+                        ]
+                    ];
+                } else if ($_->jumpArgs) {
+                    $fieldR->altered = [
+                        'jump' => [
+                            'text' => 'Goto',
+                            'icon' => 'resources/images/icons/btn-icon-goto.png',
+                            'href' => $_->jumpArgs
                         ]
                     ];
                 }
@@ -808,12 +816,24 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // If jumps are not yet introduced - return
         if (!m('grid')->fields('jumpSectionId')) return;
 
-        // Collect jumps info
-        foreach ($this->grid->select(': !== null', 'jumpSectionId')->select(': !="0"', 'jumpSectionId') as $gridR)
-            $jumpA[$gridR->further ?: $gridR->fieldId]
-                = '/' . $gridR->foreign('jumpSectionId')->alias
-                . '/' . $gridR->foreign('jumpSectionActionId')->foreign('actionId')->alias
-                . '/id/{id}/' . $gridR->jumpArgs;
+        foreach ($this->grid as $gridR) {
+
+            // If it's an ordinary jump
+            if ($gridR->jumpSectionId) {
+
+                // Prepare jump destination template
+                $jumpA[$gridR->further ?: $gridR->fieldId]
+                    = '/' . $gridR->foreign('jumpSectionId')->alias
+                    . '/' . $gridR->foreign('jumpSectionActionId')->foreign('actionId')->alias
+                    . '/id/{id}/' . $gridR->jumpArgs;
+
+            // Else if it's a free jump
+            } else if ($gridR->jumpArgs) {
+
+                // Use value jumpArgs as jump destination template
+                $jumpA[$gridR->further ?: $gridR->fieldId] = $gridR->jumpArgs;
+            }
+        }
 
         // Return jumps info
         return $jumpA ?? [];

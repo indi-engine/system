@@ -13,7 +13,7 @@ class Indi_Controller_Admin_Exportable extends Indi_Controller_Admin {
             'elementId' => 'combo',
             'storeRelationAbility' => 'many',
             'relation' => 'field',
-            'filter' => '`entityId` = "' . m()->id() . '"',
+            'filter' => '`entityId` = "' . m()->id() . '" AND `entry` = "0"',
             'mode' => 'regular',
             'defaultValue' => ''
         ]);

@@ -2225,13 +2225,23 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get title column
         $titleColumn = $fieldR->params['titleColumn'] ?: $relatedM->titleColumn();
 
+        // Get tree column
+        $treeColumn = $relatedM->treeColumn();
+
+        // Get options limit. If field is readonly - prepare only 1 option to improve performance both
+        // server side (data preeparation) and client-side (width calculation)
+        // todo: implement proper logic for tree-like entities
+        $limit = $fieldR->mode === 'readonly' && !$treeColumn
+            ? (count(ar($this->{$fieldR->alias})) ?: 1)
+            : self::$comboOptionsVisibleCount;
+
         // Set ORDER clause for combo data
         if (is_null($order)) {
             if ($relatedM->comboDataOrder) {
                 $order = $relatedM->comboDataOrder;
                 if (!@func_get_arg(7) && $relatedM->comboDataOrderDirection) $dir = $relatedM->comboDataOrderDirection;
                 if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
-            } else if ($relatedM->fields('move') && $relatedM->treeColumn()) {
+            } else if ($relatedM->fields('move') && $treeColumn) {
                 $order = 'move';
             } else {
 
@@ -2278,7 +2288,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $where['owner'] = $relatedM->ownerWHERE(admin());
 
         // If related entity has tree-structure
-        if ($relatedM->treeColumn()) {
+        if ($treeColumn) {
 
             // If we go lower, page number should be incremented, so if passed page number
             // is 1, it will be 2, because actually results of page 1 were already fetched
@@ -2302,7 +2312,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $order = [$groupByFieldOrder, $order];
 
                 // Fetch results
-                $dataRs = $relatedM->fetchTree($where, $order, self::$comboOptionsVisibleCount, $page, 0, null, $keyword);
+                $dataRs = $relatedM->fetchTree($where, $order, $limit, $page, 0, null, $keyword);
 
             // Else
             } else {
@@ -2316,9 +2326,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $order = [$groupByFieldOrder, $order];
 
                 if (!$hasModifiedConsiderWHERE) {
-                    $dataRs = $relatedM->fetchTree($where, $order, self::$comboOptionsVisibleCount, $page, 0, $selected);
+                    $dataRs = $relatedM->fetchTree($where, $order, $limit, $page, 0, $selected);
                 } else {
-                    $dataRs = $relatedM->fetchTree($where, $order, self::$comboOptionsVisibleCount, $page, 0, null, null);
+                    $dataRs = $relatedM->fetchTree($where, $order, $limit, $page, 0, null, null);
                 }
             }
 
@@ -2372,7 +2382,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // 3. none of consider-fields (if they exist) are changed
                     // 4. first option of final results, fetched by current function (getComboData) - wil be option
                     //    related to selected value
-                    // So, we remember this fact, because if $found will be not greater than self::$comboOptionsVisibleCount
+                    // So, we remember this fact, because if $found will be not greater than $limit
                     // there will be no need for results set to be started from selected value, and what is why this
                     $resultsShouldBeStartedFromSelectedValue = true;
                 }
@@ -2395,7 +2405,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // we will not use selected value as start point for results, because there will be a sutiation
                 // that PgUp or PgDn should be pressed to view all available options in combo, instead of being
                 // available all initially
-                if ($resultsShouldBeStartedFromSelectedValue && $found <= self::$comboOptionsVisibleCount) {
+                if ($resultsShouldBeStartedFromSelectedValue && $found <= $limit) {
                     unset($where['lookup']);
                 }
 
@@ -2441,7 +2451,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $order = [$groupByFieldOrder, $order];
 
                 // Fetch raw combo data
-                $dataRs = $relatedM->all($where, $order, self::$comboOptionsVisibleCount, $page, $offset);
+                $dataRs = $relatedM->all($where, $order, $limit, $page, $offset);
 
                 // We set number of total found rows only if passed page number is null, so that means that
                 // we are doing a search of first page of results by a keyword, that just has been recently changed
@@ -2481,7 +2491,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $order = [$groupByFieldOrder, $order];
 
                     // Fetch raw combo data
-                    $dataRs = $relatedM->all($where, $order, self::$comboOptionsVisibleCount, $page + 1);
+                    $dataRs = $relatedM->all($where, $order, $limit, $page + 1);
                 }
             }
         }
@@ -2501,39 +2511,77 @@ class Indi_Db_Table_Row implements ArrayAccess
                 '`alias` = "' . $fieldR->params['groupBy'] . '"'
             ]);
 
-            // Get group field related entity model
-            $groupByFieldEntityM = m($groupByFieldR->relation);
+            // If groupBy-field is not a foreign-key field
+            if ($groupByFieldR->storeRelationAbility === 'none') {
 
-            // Get titles for optgroups
-            $groupByOptions = [];
+                // Model is the same model where groupBy-field belongs
+                $groupByFieldEntityM = m($fieldR->entityId);
 
-            // If groupBy-field is an enumset-field
-            if ($groupByFieldEntityM->table() == 'enumset') {
+                // Title column if groupBy-field's alias
+                $groupBy_titleColumn = $groupByFieldR->alias;
 
-                // Get groups by aliases
-                $groupByRs = $groupByFieldEntityM->all([
-                    '`fieldId` = "' . $groupByFieldR->id . '"',
-                    'FIND_IN_SET(`alias`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")'
-                ]);
+                // Key property is the same
+                $keyProperty = $groupBy_titleColumn;
 
-                // Set key prop
-                $keyProperty = 'alias';
+                //
+                $groupByRs = $dataRs;
 
             // Else
             } else {
 
-                // Get groups by ids
-                $groupByRs = $groupByFieldEntityM->all(
-                    'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")',
-                    'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '") ASC'
-                );
+                // If groupBy-field is a single-entity foreign-key field
+                if ($groupByFieldEntityM = $groupByFieldR->rel()) {
 
-                // Set key prop
-                $keyProperty = 'id';
+                    // If groupBy-field is an enumset-field
+                    if ($groupByFieldEntityM->table() == 'enumset') {
+
+                        // Get groups by aliases
+                        $groupByRs = $groupByFieldEntityM->all([
+                            '`fieldId` = "' . $groupByFieldR->id . '"',
+                            'FIND_IN_SET(`alias`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")'
+                        ]);
+
+                        // Set key prop
+                        $keyProperty = 'alias';
+
+                    // Else
+                    } else {
+
+                        // Get groups by ids
+                        $groupByRs = $groupByFieldEntityM->all(
+                            'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")',
+                            'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '") ASC'
+                        );
+
+                        // Set key prop
+                        $keyProperty = 'id';
+                    }
+
+                    // Get groupBy title-column
+                    $groupBy_titleColumn = $groupByFieldEntityM->titleColumn();
+
+                // Else if groupBy-field is a multi-entity foreign-key field
+                } else {
+
+                    // Model is entity-model
+                    $groupByFieldEntityM = m('entity');
+
+                    // Title column is title
+                    $groupBy_titleColumn = 'title';
+
+                    // Get groups by ids
+                    $groupByRs = $groupByFieldEntityM->all(
+                        'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '")',
+                        'FIND_IN_SET(`id`, "' . implode(',', array_keys($distinctGroupByFieldValues)) . '") ASC'
+                    );
+
+                    // Set key prop
+                    $keyProperty = 'id';
+                }
             }
 
-            // Get groupBy title-column
-            $groupBy_titleColumn = $groupByFieldEntityM->titleColumn();
+            // Get titles for optgroups
+            $groupByOptions = [];
 
             // If some of combo data entries are not within any group
             if ($groupByRs->count() < count($distinctGroupByFieldValues) && array_key_exists('0', $distinctGroupByFieldValues)) {
@@ -2561,14 +2609,14 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if ($info['style']) $system['color'] = $info['color'];
 
                 // Setup primary option data
-                $groupByOptions[] = [
+                $groupByOptions [$groupByR->$keyProperty]= [
                     'id' => $groupByR->$keyProperty,
                     'title' => usubstr($info['title'], 50),
                     'system' => $system
                 ];
             }
 
-            $dataRs->optgroup = ['by' => $groupByFieldR->alias, 'groups' => $groupByOptions];
+            $dataRs->optgroup = ['by' => $groupByFieldR->alias, 'groups' => array_values($groupByOptions)];
         }
 
         // If additional params should be passed as each option attributes, setup list of such params
@@ -6200,7 +6248,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($where)) $where = im($where, ' AND ');
 
         // Append alternative
-        if (!$consistence) $where = im(['(' . $where . ')', $or[$fieldR->storeRelationAbility]], ' OR ');
+        if (!$consistence)
+            $where = $fieldR->mode === 'readonly'
+                ? $or[$fieldR->storeRelationAbility]
+                : im(['(' . $where . ')', $or[$fieldR->storeRelationAbility]], ' OR ');
 
         // Append alternative
         //$where = im(['(' . $where . ')', /*$consistence ? '(' . $consistence . ')' : $or[$fieldR->storeRelationAbility]*/], ' OR ');

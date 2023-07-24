@@ -2520,4 +2520,29 @@ class Indi_Db_Table
         // Return row exsiting or newly created
         return $row;
     }
+
+    /**
+     * This method will be called after foreign-key field is created somewhere
+     * pointing to this entity
+     *
+     * @param Field_Row $field
+     */
+    public function onAddedAsForeignKey(Field_Row $field) {
+
+    }
+
+    /**
+     * Calls the parent class's same function, passing same arguments.
+     * This is similar to ExtJs's callParent() function, except that agruments are
+     * FORCED to be passed (in extjs, if you call this.callParent() - no arguments would be passed,
+     * unless you use this.callParent(arguments) expression instead)
+     */
+    public function callParent() {
+
+        // Get call info from backtrace
+        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+
+        // Make the call
+        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+    }
 }

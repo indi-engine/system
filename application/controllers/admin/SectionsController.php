@@ -42,36 +42,40 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Get the controller name
         $ctrl = $this->row->alias;
 
-        // If controller file is not yet exist
-        if (!is_file($ctrlAbs = $dir . '/' . $ctrl . '.js')) {
+        // Get absolute and relative paths
+        $ctrlAbs = $dir . $ctrl . '.js';
+        $ctrlRel = preg_replace('~^' . preg_quote(DOC) . '/~', '', $ctrlAbs);
 
-            // Build template model absolute file name
-            $tplAbs = DOC. STD . VDR . '/client/classic/resources/{controller}.js';
+        // If controller file already exists
+        if (is_file($ctrlAbs))
+            jflush(false, sprintf('File already exists: %s', $ctrlRel));
 
-            // If it is not exists - flush an error, as we have no template for creating a model file
-            if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
+        // Build template model absolute file name
+        $tplAbs = DOC. STD . VDR . '/client/classic/resources/{controller}.js';
 
-            // Get the template contents (source code)
-            $tplRaw = file_get_contents($tplAbs);
+        // If it is not exists - flush an error, as we have no template for creating a model file
+        if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
 
-            // Replace {controller} keyword with an actual section name
-            $ctrlRaw = preg_replace(':\{controller\}:', $ctrl, $tplRaw);
+        // Get the template contents (source code)
+        $tplRaw = file_get_contents($tplAbs);
 
-            // Replace {extends} keyword with an actual parent class name
-            $ctrlRaw = preg_replace(':\{extends\}:', $this->row->extendsJs, $ctrlRaw);
+        // Replace {controller} keyword with an actual section name
+        $ctrlRaw = preg_replace(':\{controller\}:', $ctrl, $tplRaw);
 
-            // Put the contents to a model file
-            file_put_contents($ctrlAbs, $ctrlRaw);
+        // Replace {extends} keyword with an actual parent class name
+        $ctrlRaw = preg_replace(':\{extends\}:', $this->row->extendsJs, $ctrlRaw);
 
-            // Chmod
-            chmod($ctrlAbs, 0765);
+        // Put the contents to a model file
+        file_put_contents($ctrlAbs, $ctrlRaw);
 
-            // Reload this row in all grids it's currently shown in
-            t()->row->realtime('reload');
-        }
+        // Chmod
+        chmod($ctrlAbs, 0765);
+
+        // Reload this row in all grids it's currently shown in
+        t()->row->realtime('reload');
 
         // Flush success
-        jflush(true);
+        jflush(true, 'Created file: ' . $ctrlRel);
     }
 
     /**
@@ -104,9 +108,13 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Get the controller name
         $ctrl = ucfirst($this->row->alias);
 
+        // Get absolute and relative paths
+        $ctrlAbs = $dir . $ctrl . 'Controller.php';
+        $ctrlRel = preg_replace('~^' . preg_quote(DOC) . '/~', '', $ctrlAbs);
+
         // If controller file is not yet exist
-        if (is_file($ctrlAbs = $dir . '/' . $ctrl . 'Controller.php'))
-            jflush(false, 'PHP-controller file for that section already exists');
+        if (is_file($ctrlAbs))
+            jflush(false, sprintf('File already exists: %s', $ctrlRel));
 
         // Build template model absolute file name
         $tplAbs = DOC. STD . VDR . '/system/application/controllers/admin/{controller}.php';
@@ -133,7 +141,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         t()->row->realtime('reload');
 
         // Flush success
-        jflush(true);
+        jflush(true, 'Created file: ' . $ctrlRel);
     }
 
     /**

@@ -982,6 +982,63 @@ class Indi_Controller_Migrate extends Indi_Controller {
         section('paramsAll', ['multiSelect' => '1']);
         param('grid', 'jumpArgs', 'placeholder', ['entityId' => '9', 'cfgValue' => '?filter[someProp]=someValue']);
         param('alteredField', 'jumpArgs', 'placeholder', ['entityId' => '171', 'cfgValue' => '?filter[someProp]=someValue']);
+
+        cfgField('element', 'string', 'wide', [
+            'title' => 'Во всю ширину',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'placeholder',
+        ]);
+        grid('entities', 'fraction', ['rowReqIfAffected' => 'n']);
+        field('section2action', 'roleIds', ['defaultValue' => '']);
+        grid('alteredFields', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        param('filter', 'further', 'optionAttrs', ['entityId' => '195', 'cfgValue' => '470']);
+        grid('filter', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
+        grid('grid', 'editor', ['icon' => 'resources/images/icons/edit-cell.png']);
+        section2action('columnTypes','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        coltype('DECIMAL(14,3)', ['elementId' => 'decimal143']);
+        field('element', 'defaultType', [
+            'title' => 'Тип столбца по умолчанию',
+            'storeRelationAbility' => 'one',
+            'relation' => 'columnType',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'storeRelationAbility',
+        ]);
+        grid('controlElements', 'defaultType', ['move' => 'storeRelationAbility', 'editor' => '1']);
+        section('controlElements', ['multiSelect' => '1']);
+        element('string', ['defaultType' => 'VARCHAR(255)']);
+        element('move', ['defaultType' => 'INT(11)']);
+        element('radio', ['defaultType' => 'ENUM']);
+        element('textarea', ['defaultType' => 'TEXT']);
+        element('multicheck', ['defaultType' => 'VARCHAR(255)']);
+        element('check', ['defaultType' => 'BOOLEAN']);
+        element('color', ['defaultType' => 'VARCHAR(10)']);
+        element('calendar', ['defaultType' => 'DATE']);
+        element('html', ['defaultType' => 'TEXT']);
+        element('time', ['defaultType' => 'TIME']);
+        element('number', ['defaultType' => 'INT(11)']);
+        element('datetime', ['defaultType' => 'DATETIME']);
+        element('hidden', ['defaultType' => 'VARCHAR(255)']);
+        element('combo', ['defaultType' => 'INT(11)']);
+        element('price', ['defaultType' => 'DECIMAL(11,2)']);
+        element('decimal143', ['defaultType' => 'DECIMAL(14,3)']);
+        element('icon', ['defaultType' => 'VARCHAR(255)']);
+        cfgField('element', 'combo', 'optionAttrs', ['filter' => '`entry` = "0"']);
+        grid('fields', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
+        grid('elementCfgField', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
+        grid('fieldsAll', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
+        param('field', 'elementId', 'optionAttrs', ['entityId' => '5', 'cfgValue' => '2746']);
+
         die('ok');
     }
     public function panelsAction(){

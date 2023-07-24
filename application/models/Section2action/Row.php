@@ -238,12 +238,16 @@ class Section2action_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Make sure correct value for l10n-field is set depending on whether action has view or not
+     * Make sure correct values for `l10n`, `fitWindow` and `south`
+     * fields are set depending on whether action has view or not
      *
      * @throws Exception
      */
     public function onBeforeInsert() {
-        $this->l10n = $this->foreign('actionId')->hasView === 'y' ? 'n' : 'na';
+        $hasView = $this->foreign('actionId')->hasView === 'y';
+        $this->l10n      = $hasView ? 'n'    : 'na';
+        $this->fitWindow = $hasView ? 'y'    : 'n';
+        $this->south     = $hasView ? 'auto' : 'no';
     }
 
     /**

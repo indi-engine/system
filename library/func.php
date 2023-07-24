@@ -3200,6 +3200,27 @@ function msg($msg, $success = true, $to = null) {
 }
 
 /**
+ * Same as jflush but message is delivered via websocket-channel and shown as side-message instead of via Ext.Msg
+ *
+ * @param $success
+ * @param $msg
+ */
+function wflush($success, $msg) {
+
+    // If rabbitmq enabled
+    if (ini()->rabbitmq->enabled) {
+
+        // Show side message via websocket
+        msg($msg, $success);
+
+        // Exit
+        jflush($success);
+
+    // Else use jflush as fallback
+    } else jflush($success, $msg);
+}
+
+/**
  * Run controller action as a separated background process
  *
  * @param $action For example 'realtime/cleanup'

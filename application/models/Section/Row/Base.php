@@ -213,6 +213,9 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         // Clear colorFurther-field, which depends on colorField-field
         if ($this->fieldIsZeroed('colorField')) $this->zero('colorFurther', true);
 
+        // If we're going to turn tile-panel but no tileField is given - abort
+        if ($this->tileToggle === 'y' && !$this->tileField) $this->zero('tileToggle', true);
+
         // Clear tileThumb-field, which depends on tileField-field
         if ($this->fieldIsZeroed('tileField')) $this->zero('tileThumb', true);
 

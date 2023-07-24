@@ -28,10 +28,46 @@ class Grid_Row extends Indi_Db_Table_Row {
                     ->all('FIND_IN_SET(`alias`, "' . $value .'")')
                     ->col('id', true);
             }
+            else if ($columnName == 'formMoreGridIds') {
+                if ($value && !Indi::rexm('int11list', $value)) {
+
+                    // Get comma-separated list of fields ids
+                    $fieldIds = m(section($this->sectionId)->entityId)->fields($value)->fis();
+
+                    // Get comma-separated list of corresponding grid-cols ids
+                    $value = $this->model()->all([
+                        "`sectionId` = '$this->sectionId'",
+                        "FIND_IN_SET(IFNULL(`further`,`fieldId`), '$fieldIds')"
+                    ])->fis();
+                }
+            }
+            else if ($columnName == 'formNotHideFieldIds') {
+                if ($value && !Indi::rexm('int11list', $value)) {
+                    $value = m(section($this->sectionId)->entityId)->fields($value)->fis();
+                }
+            }
         }
 
         // Call parent
         parent::__set($columnName, $value);
+    }
+
+    /**
+     * Overridden to given ability to get syntetic value of alias-prop
+     *
+     * @param string $columnName
+     * @return string|null
+     * @throws Exception
+     */
+    public function __get($columnName) {
+
+        // If $columnName is 'alias' - return syntetic value
+        if ($columnName === 'alias')
+            return $this->foreign('fieldId')->alias
+                . rif($this->foreign('further')->alias, '_$1');
+
+        // Else call parent
+        return parent::__get($columnName);
     }
 
     /**
@@ -117,6 +153,10 @@ class Grid_Row extends Indi_Db_Table_Row {
 
                 // Export roles
                 else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
+
+                // Export other things
+                else if (in($prop, 'formMoreGridIds,formNotHideFieldIds'))
+                    $value = $this->foreign($prop)->col('alias', true);
             }
         }
 
