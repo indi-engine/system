@@ -159,9 +159,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'allowedTags',
         ]);
-        param('noticeGetter', 'criteriaEvt', 'placeholder', ['entityId' => '310', 'cfgValue' => '`someStatus` = "someValue"']);
-        param('noticeGetter', 'criteriaInc', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
-        param('noticeGetter', 'criteriaDec', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
+        param('noticeGetter', 'criteriaEvt', 'placeholder', ['cfgValue' => '`someStatus` = "someValue"']);
+        param('noticeGetter', 'criteriaInc', 'placeholder', ['cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
+        param('noticeGetter', 'criteriaDec', 'placeholder', ['cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
         section2action('lang','dict', ['toggle' => 'n']);
         section('enumset', ['extendsPhp' => 'Indi_Controller_Admin_Enumset']);
         section('elementCfgFieldEnumset', ['extendsPhp' => 'Indi_Controller_Admin_Enumset']);
@@ -849,21 +849,21 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'criteriaRelyOn',
         ]);
-        param('noticeGetter', 'criteriaEvt', 'placeholder', ['entityId' => '310', 'cfgValue' => '`someStatus` = "someValue"']);
+        param('noticeGetter', 'criteriaEvt', 'placeholder', ['cfgValue' => '`someStatus` = "someValue"']);
         field('noticeGetter', 'criteriaInc', [
             'title' => 'Для кого увеличение',
             'elementId' => 'string',
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'criteriaEvt',
         ]);
-        param('noticeGetter', 'criteriaInc', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
+        param('noticeGetter', 'criteriaInc', 'placeholder', ['cfgValue' => '`id` = "<?=$this->row->someOwnerIdProp?>"']);
         field('noticeGetter', 'criteriaDec', [
             'title' => 'Для кого уменьшение',
             'elementId' => 'string',
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'criteriaInc',
         ]);
-        param('noticeGetter', 'criteriaDec', 'placeholder', ['entityId' => '310', 'cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
+        param('noticeGetter', 'criteriaDec', 'placeholder', ['cfgValue' => '`id` = "<?=$this->row->was(\'someOwnerIdProp\')?>"']);
         field('noticeGetter', 'title', [
             'title' => 'Ауто титле',
             'mode' => 'hidden',
@@ -972,6 +972,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('section', 'defaultSortDirection', 'DESC', ['cssStyle' => 'background-position: -3px -1px;']);
         enumset('section', 'defaultSortDirection', 'ASC', ['cssStyle' => 'background-position: -3px -1px;']);
 
+        grid('queueTask', 'applySize', ['gridId' => 'apply', 'move' => 'applyState']);
         section2action('paramsAll','export', [
             'roleIds' => 'dev',
             'move' => 'delete',
@@ -980,9 +981,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'l10n' => 'na',
         ]);
         section('paramsAll', ['multiSelect' => '1']);
-        param('grid', 'jumpArgs', 'placeholder', ['entityId' => '9', 'cfgValue' => '?filter[someProp]=someValue']);
-        param('alteredField', 'jumpArgs', 'placeholder', ['entityId' => '171', 'cfgValue' => '?filter[someProp]=someValue']);
-
+        param('grid', 'jumpArgs', 'placeholder', ['cfgValue' => '?filter[someProp]=someValue']);
+        param('alteredField', 'jumpArgs', 'placeholder', ['cfgValue' => '?filter[someProp]=someValue']);
+        //
         cfgField('element', 'string', 'wide', [
             'title' => 'Во всю ширину',
             'elementId' => 'check',
@@ -993,7 +994,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('entities', 'fraction', ['rowReqIfAffected' => 'n']);
         field('section2action', 'roleIds', ['defaultValue' => '']);
         grid('alteredFields', 'fieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
-        param('filter', 'further', 'optionAttrs', ['entityId' => '195', 'cfgValue' => '470']);
+        param('filter', 'further', 'optionAttrs', ['cfgValue' => field('field', 'storeRelationAbility')->id]);
         grid('filter', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         grid('grid', 'editor', ['icon' => 'resources/images/icons/edit-cell.png']);
         section2action('columnTypes','export', [
@@ -1037,7 +1038,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('fields', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         grid('elementCfgField', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         grid('fieldsAll', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
-        param('field', 'elementId', 'optionAttrs', ['entityId' => '5', 'cfgValue' => '2746']);
+        param('field', 'elementId', 'optionAttrs', ['cfgValue' => field('element', 'defaultType')->id]);
 
         die('ok');
     }
