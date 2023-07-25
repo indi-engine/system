@@ -92,6 +92,11 @@ if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
     define('CID', $_[2] ?: false);
 }
 
+// Spoof hosts for mysql and rabbitmq services if given by environment variables
+foreach (['db' => 'MYSQL_HOST', 'rabbitmq' => 'RABBITMQ_HOST'] as $service => $env)
+    if ($value = getenv($env)) ini()->$service->host = $value;
+
+// Setup db connection
 Indi::db(ini()->db);
 
 // Save config and global request data to registry
