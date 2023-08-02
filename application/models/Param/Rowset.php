@@ -32,7 +32,7 @@ class Param_Rowset extends Indi_Db_Table_Rowset {
                 : $item['cfgValue']; // will be converted into '`id` IN ($item['cfgValue'])' if it is an int11list
 
             // Setup title
-            $data[$idx]['_render']['cfgValue'] = $rel->all($where)->col('title', ', ');
+            $data[$idx]['_render']['cfgValue'] = $where ? $rel->all($where)->col('title', ', ') : '';
         }
 
         // Return grid data

@@ -2494,18 +2494,18 @@ function filter($section, $field, $ctor = false) {
 }
 
 /**
- * Short-hand function that allows to manipulate `param` entry, identified by $table, $field and $alias args.
+ * Short-hand function that allows to manipulate `param` entry, identified by $table, $field and $cfgField args.
  * If only those two args given - function will fetch and return appropriate `param` entry (or null, if not found)
- * If 4th arg - $value - is given and it's a string - it will be used as value - function will create new `enumset`
+ * If 4th arg - $cfgValue - is given and it's a string - it will be used as value - function will create new `enumset`
  * entry, or update existing if found
  *
  * @param string|int $table Entity ID or table name
  * @param string $field Field alias
- * @param string $alias Possible element param alias
- * @param bool|array $value
+ * @param string $cfgField Possible element param alias
+ * @param int|string|array|null $cfgValue
  * @return Param_Row|null
  */
-function param($table, $field, $alias, $value = null) {
+function param($table, $field, $cfgField, $cfgValue = null) {
 
     // Get `fieldId` according to $table and $field args
     $fieldR = field($table, $field); $fieldId = $fieldR->id;
@@ -2513,27 +2513,11 @@ function param($table, $field, $alias, $value = null) {
     // Where clause for finding `param` entry
     $where = ['`fieldId` = "' . $fieldId . '"'];
 
-    // If 'possibleElementParam' model still exists, it means we're yet using legacy logic
-    if (m('PossibleElementParam', true) && (!is_array($value) || isset($value['value']))) {
+    // Get config-field id
+    $cfgField = cfgField('element', $fieldR->elementId, $cfgField)->id;
 
-        // Get underlying `possibleElementParam` entry's id
-        $possibleParamId = m('PossibleElementParam')->row([
-            '`elementId` = "' . $fieldR->elementId . '"',
-            '`alias` = "' . $alias . '"'
-        ])->id;
-
-        // Use it in WHERE clause
-        $where []= '`possibleParamId` = "' . $possibleParamId . '"';
-
-    // Else
-    } else {
-
-        // Get config-field id
-        $cfgField = cfgField('element', $fieldR->elementId, $alias)->id;
-
-        // Use it in WHERE clause
-        $where []= '`cfgField` = "' . $cfgField . '"';
-    }
+    // Use it in WHERE clause
+    $where []= '`cfgField` = "' . $cfgField . '"';
 
     // Try to find `param` entry
     $paramR = m('Param')->row($where);
@@ -2541,19 +2525,18 @@ function param($table, $field, $alias, $value = null) {
     // If $ctor arg is non-false and is not and empty array - return `param` entry, else
     if (func_num_args() < 4) return $paramR;
 
-    // Build $ctor
-    $ctor = is_array($value) ? $value : ['value' => $value, 'cfgValue' => $cfgValue = $value];
-    foreach (ar('fieldId,possibleParamId,cfgField'
-        . rif(!is_array($value), ',value')
-        . rif(!is_array($cfgValue), ',cfgValue')) as $prop)
+    // Build $ctor, with support of $cfgValue-arg to be array for backwards compatibility
+    $ctor = [];
+    if (is_array($cfgValue)) $cfgValue = $cfgValue['cfgValue'];
+    foreach (ar('fieldId,cfgField,cfgValue') as $prop)
         if (!array_key_exists($prop, $ctor))
-            $ctor[$prop] = $$prop ?? 0;
+            $ctor[$prop] = $$prop;
 
-    // If `param` entry already exists - do not allow re-linking it from one field to another
-    if ($paramR) unset($ctor['fieldId'], $ctor['possibleParamId'], $ctor['cfgField']);
+    // If `param` entry already exists - do not allow re-linking it from one field and/or cfgField to another
+    if ($paramR) unset($ctor['fieldId'], $ctor['cfgField']);
 
     // Else - create it
-    else $paramR = m('Param')->new();
+    else $paramR = m('param')->new();
 
     // Assign other props and save
     $paramR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();

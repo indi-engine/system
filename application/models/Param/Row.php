@@ -2,6 +2,28 @@
 class Param_Row extends Indi_Db_Table_Row_Noeval {
 
     /**
+     * This method was redefined to provide ability for some
+     * props to be set using aliases rather than ids
+     *
+     * @param  string $columnName The column key.
+     * @param  mixed  $value      The value for the property.
+     * @return void
+     */
+    public function __set($columnName, $value) {
+
+        // Do that  for cfgValue-prop
+        if ($columnName === 'cfgValue') {
+            if (m('field')->row($this->cfgField)->relation === m('field')->id())
+                if ($value && !Indi::rexm('int11list', $value))
+                    if ($field = m('field')->row($this->fieldId))
+                        $value = m($field->relation)->fields($value, 'rowset')->fis();
+        }
+
+        // Call parent
+        parent::__set($columnName, $value);
+    }
+
+    /**
      * Build a string, that will be used in Param_Row->export()
      *
      * @param string $certain
@@ -16,13 +38,22 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
         unset($ctor['id'], $ctor['title']);
 
         // Exclude props that will be already represented by shorthand-fn args
-        foreach (ar('fieldId,possibleParamId,cfgField') as $arg) unset($ctor[$arg]);
+        foreach (ar('entityId,fieldId,possibleParamId,cfgField') as $arg) unset($ctor[$arg]);
 
-        // If certain fields should be exported - keep them only
-        $ctor = $this->_certain($certain, $ctor);
+        // Get fcgField
+        $cfgField = $this->foreign('cfgField');
 
-        // Stringify
-        return _var_export($ctor);
+        // If it's a foreign-key value, that is referencing to some field(s)
+        if ($cfgField->relation === m('field')->id()) {
+            $value = m('field')->all($this->cfgValue)->fis('alias');
+
+        // Else
+        } else {
+            $value = $this->cfgValue;
+        }
+
+        // Return exported
+        return var_export($value, true);
     }
 
     /**

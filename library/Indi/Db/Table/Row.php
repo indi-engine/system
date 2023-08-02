@@ -2662,7 +2662,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // Build array containing rows, that are ordered within that array
                 // in the same order as their ids in $selected comma-separated string
-                foreach (ar($selected) as $id) if ($row = $unsortedRs->select($id)->at(0)) $sorted[] = $row;
+                $sorted = []; foreach (ar($selected) as $id) if ($row = $unsortedRs->select($id)->at(0)) $sorted[] = $row;
 
                 // Unset $unsorted
                 unset($unsortedRs);

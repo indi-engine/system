@@ -90,4 +90,16 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
         // Disable cfgField-field, but keep displayed in form
         $this->appendDisabledField('cfgField', true);
     }
+
+    /**
+     * Flush creation expression for selected entries, to be applied on another project running on Indi Engine
+     */
+    public function exportAction() {
+
+        // For each row get export expression
+        $php = []; foreach (t()->rows as $row) $php []= $row->export();
+
+        // Flush
+        jtextarea(true, im($php, "\n"));
+    }
 }
