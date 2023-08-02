@@ -286,7 +286,7 @@ define('I_ENT_TOGGLE_Y', 'Turned on');
 define('I_ENT_TOGGLE_N', 'Turned off');
 define('I_ENT_EXTENDS_OTHER', 'File with php-model exists, but %s is specified as parent class there');
 
-define('I_GAPI_KEY_REQUIRED', 'You should obtain Google Cloud Translate API key and specify it as <br>a value of \'gapi.key\' param in [lang] section in application/config.ini file');
+define('I_GAPI_KEY_REQUIRED', 'Please obtain Google Cloud Translate API key');
 define('I_SELECT_CFGFIELD', 'Select config param you want to add for this field');
 define('I_SELECT_PLEASE', 'Please select');
 define('I_L10N_TOGGLE_ACTION_Y', 'If you want to %s localization for action "%s" press "%s".');

@@ -54,9 +54,6 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
         // If current field depends on other fields - deny
         if (t()->row->nested('consider')->count()) jflush(false, I_L10N_TOOGLE_FIELD_DENIED);
 
-        // Check if [lang]->gapi.key is given in application/config.ini
-        if ($value == 'qy' && !ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
-
         // If we're going to create queue task for turning selected language either On or Off
         if (in($value, 'qy,qn')) {
 
@@ -67,7 +64,7 @@ class Indi_Controller_Admin_Field extends Indi_Controller_Admin_Exportable {
                 mb_strtolower($value == 'qy' ? I_TOGGLE_Y : I_TOGGLE_N), t()->row->title, I_YES, I_NO), 'YESNOCANCEL'))
                 return;
 
-            // Else if we're going to setup fraction-status directly
+        // Else if we're going to setup fraction-status directly
         } else if ('ok' == $this->confirm(__(I_L10N_TOGGLE_FIELD_EXPL, t()->row->title, t()->row->enumset($cell, $value)), 'OKCANCEL'))
             return;
 

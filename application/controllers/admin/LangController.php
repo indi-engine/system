@@ -347,6 +347,9 @@ class Admin_LangController extends Indi_Controller_Admin {
         jflush(true, 'OK');
     }
 
+    /**
+     * Import admin system or custom ui translation from php-code
+     */
     public function importAction() {
 
         // Set no time limit

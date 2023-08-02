@@ -286,7 +286,7 @@ define('I_ENT_TOGGLE_Y', 'Включено');
 define('I_ENT_TOGGLE_N', 'Выключено');
 define('I_ENT_EXTENDS_OTHER', 'Файл php-модели существует, но в нем родительский класс указан как %s');
 
-define('I_GAPI_KEY_REQUIRED', 'Вам необходимо получить ключ доступа для Google Cloud Translate API и указать его как значение параметра \'gapi.key\' в разделе [lang] в файле application/config.ini');
+define('I_GAPI_KEY_REQUIRED', 'Вам необходимо получить ключ доступа для Google Cloud Translate API');
 define('I_SELECT_CFGFIELD', 'Выберите параметр настройки элемента управления');
 define('I_SELECT_PLEASE', 'Пожалуйста, выберите');
 define('I_L10N_TOGGLE_ACTION_Y', 'Если вы хотите %s мультиязычность для действия "%s" нажмите "%s".');

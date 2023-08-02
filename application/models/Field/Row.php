@@ -1670,9 +1670,10 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param string $direction
      * @param string $within
+     * @param bool $last If true - _colAFTER() is called
      * @return bool
      */
-    public function move($direction = 'up', $within = '') {
+    public function move($direction = 'up', $within = '', $last = true) {
 
         // If $within arg is not given - move field within the entity it belongs to
         if (func_num_args() < 2) $within = '`entityId` = "' . $this->entityId . '"';
@@ -1680,8 +1681,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Call parent
         $return = parent::move($direction, $within);
 
-        // Adjust underlying db table column position as well
-        $this->_colAFTER();
+        // If field was not moved as there nowhere to move - setup $last flag to true
+        if (!$return) $last = true;
+
+        // If that was the last move - adjust underlying db table column position as well
+        if ($last) $this->_colAFTER();
 
         // Return
         return $return;

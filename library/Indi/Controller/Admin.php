@@ -89,9 +89,6 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Perform authentication
         $this->auth();
 
-        // Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
-        $this->deleteContextIfNeed();
-
         // Jump, if need
         $this->jump();
 
@@ -341,13 +338,19 @@ class Indi_Controller_Admin extends Indi_Controller {
                     jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
                 }
 
-                // Apply scope params
-                t()->scope->apply([
+                // Props to be applied to scope
+                $applyA = [
                     'hash' => uri()->ph,
                     'aix' => uri()->aix,
                     'lastIds' => t()->rows->column('id'),
-                    'toggledSave' => !!Indi::get()->stopAutosave
-                ]);
+                ];
+
+                // Manage autosave-mode
+                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
+                else if (Indi::get()->startAutosave) $applyA['toggledSave'] = true;
+
+                // Apply scope params
+                t()->scope->apply($applyA);
 
                 // If we are here for just check of row availability, do it
                 if (uri()->check) jflush(true, $this->checkRowIsInScope());
@@ -576,14 +579,14 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function move($direction) {
 
-        // Get grouping field
-        $groupBy = t()->section->groupBy ? t()->section->foreign('groupBy')->alias : '';
-
         // Get shift, 1 by default
         $shift = (int) Indi::post('shift') ?: 1;
 
         // Get the scope of rows to move within
-        $within = t()->scope->WHERE;
+        $where = t()->scope->WHERE;
+
+        // Get grouping field
+        if (t()->section->groupBy) $groupBy = t()->section->foreign('groupBy')->alias;
 
         // Get tree-column, if exists
         $tree = m()->treeColumn();
@@ -594,9 +597,21 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Move each row $shift times towards given $direction
         foreach (t()->rows as $row)
-            for ($i = 0; $i < $shift; $i++)
-                if (!$row->move($direction, $within, $groupBy) && !$tree)
+            for ($i = 0; $i < $shift; $i++) {
+
+                // Prepare within-clause
+                $within = [];
+                if ($where) $within []= "($where)";
+                if ($groupBy) $within []= "`$groupBy` = " . db()->quote($row->$groupBy);
+                $within = join(' AND ', $within);
+
+                // Setup $last flag, indicating whether it's a last move() call for $row
+                $last = $i === $shift - 1;
+
+                // Do move
+                if (!$row->move($direction, $within, $last) && !$tree)
                     break 2;
+            }
 
         // Get the page of results, that we were at
         $wasPage = t()->scope->page;
@@ -2643,6 +2658,9 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Else if current section is not 'index', e.g we are not in the root of interface
             } else if (uri()->section != 'index') {
+
+                // Delete `realtime` entry having `type` = "context", if $_POST['destroy'] is given
+                $this->deleteContextIfNeed();
 
                 // Do the second level access check
                 $data = $this->_authLevel2(uri()->section, uri()->action);
