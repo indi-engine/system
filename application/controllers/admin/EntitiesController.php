@@ -16,12 +16,6 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             'custom' => ''
         ];
 
-        // If current section has a fraction, that is (for some reason) not in the list of known fractions
-        if (!in($this->row->fraction, array_keys($repoDirA)))
-
-            // Flush an error
-            jflush(false, __('Unable to detect the alias of repository, associated with a fraction of the chosen entity'));
-
         // Build the dir name, that model's php-file will be created in
         $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/application/models/');
 
@@ -42,7 +36,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (is_file($modelAbs)) {
 
             // Add msg
-            $msg [] = __('File already exists: %s', $modelRel);
+            $msg [] = __(I_FILE_EXISTS, $modelRel);
 
         // Else
         } else {
@@ -51,7 +45,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $tplModelFn = DOC. STD . VDR . '/system/application/models/{Model}.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model file
-            if (!is_file($tplModelFn)) jflush(false, __('No template-model file found'));
+            if (!is_file($tplModelFn)) jflush(false, I_ENTITIES_TPLMDL_404);
 
             // Get the template contents (source code)
             $emptyModelSc = file_get_contents($tplModelFn);
@@ -72,7 +66,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             t()->row->realtime('reload');
 
             // Flush success
-            $msg []= __('Created file: %s', $modelRel);
+            $msg []= __(I_FILE_CREATED, $modelRel);
         }
 
         // Build the model's own dir name, and try to create it, if it not yet exist
@@ -89,7 +83,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (is_file($modelRowAbs)) {
 
             // Add msg
-            $msg [] = __('File already exists: %s', $modelRowRel);
+            $msg [] = __(I_FILE_EXISTS, $modelRowRel);
 
         // Else
         } else {
@@ -98,7 +92,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $tplModelRowFn = DOC. STD . VDR . '/system/application/models/{Model}/Row.php';
 
             // If it is not exists - flush an error, as we have no template for creating a model's rowClass file
-            if (!is_file($tplModelRowFn)) jflush(false, __('No template file for model\'s rowClass found'));
+            if (!is_file($tplModelRowFn)) jflush(false, I_ENTITIES_TPLMDLROW_404);
 
             // Get the template contents (source code)
             $tplModelRowSc = file_get_contents($tplModelRowFn);
@@ -113,7 +107,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             chmod($modelRowAbs, 0765);
 
             // Flush success
-            $msg []= __('Created file: %s', $modelRowRel);
+            $msg []= __(I_FILE_CREATED, $modelRowRel);
         }
 
         // Reload this row in all grids it's currently shown in

@@ -13,12 +13,12 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
             $name = 'lang.gapi.key';
 
             // Prepare message
-            $msg = __('Google Cloud Translate API response: %s', t()->row->error);
+            $msg = __(I_GAPI_RESPONSE, t()->row->error);
 
             // Prompt for valid Google Cloud Translate API key
             $prompt = $this->prompt($msg, [[
                 'xtype' => 'textfield',
-                'emptyText' => __('Please specify API key here..'),
+                'emptyText' => I_GAPI_KEY_REQUIRED,
                 'width' => 250,
                 'name' => $name
             ]]);

@@ -499,7 +499,7 @@ class Indi_Schedule {
         // Load existing busy spaces into schedule
         foreach ($rs as $r)
             if ($this->busy($r))
-                jflush(false, __('Не удалось загрузить %s %s в раcписание', m($table)->title(), $r->id));
+                jflush(false, __(I_PLAN_ITEM_LOAD_FAIL, m($table)->title(), $r->id));
 
         // Return schedule itself
         return $this;
@@ -596,7 +596,7 @@ class Indi_Schedule {
         if (!$until) return $this;
 
         // Ensure $since arg to be in 'hh:mm:ss' format
-        if (!Indi::rexm('time', $until)) jflush(false, __('Value "%s" of argument %s should be a time in format hh:mm:ss', $until, '$until'));
+        if (!Indi::rexm('time', $until)) jflush(false, __(I_FORMAT_HIS, $until, '$until'));
 
         // Fill schedule with 'early' spaces, where possible
         $this->fillwp(0, $this->_daily['since'] = _2sec($until), 'early');
@@ -623,7 +623,7 @@ class Indi_Schedule {
         if (!$since) return $this;
 
         // Ensure $since arg to be in 'hh:mm:ss' format
-        if (!Indi::rexm('time', $since)) jflush(false, __('Value "%s" of argument %s should be a time in format hh:mm:ss', $since, '$since'));
+        if (!Indi::rexm('time', $since)) jflush(false, __(I_FORMAT_HIS, $since, '$since'));
 
         // Fill schedule with 'late' spaces, where possible
         $this->fillwp($this->_daily['until'] = _2sec($since) + $this->_shift['gap'], _2sec('1d'), 'late');
@@ -982,7 +982,7 @@ class Indi_Schedule {
             $this->_seek['from'] = $this->_seek['last'];
 
             // Flush failure
-            if ($this->busy($r)) jflush(false, __('Не удалось загрузить %s %s в раcписание', m($this->_rs->table())->title(), $r->id));
+            if ($this->busy($r)) jflush(false, __(I_PLAN_ITEM_LOAD_FAIL, m($this->_rs->table())->title(), $r->id));
         }
 
         // Setup daily hours
@@ -1249,7 +1249,8 @@ class Indi_Schedule {
                         $this->_seek['from'] = $idx;
 
                         // Mark found part as 'rest'
-                        if ($this->busy($max, $frame, false, false, 'rest')) jflush(false, __('Can\'t set \'rest\' space'));
+                        if ($this->busy($max, $frame, false, false, 'rest'))
+                            jflush(false, I_SCHED_UNABLE_SET_REST);
                     }
                 }
             }

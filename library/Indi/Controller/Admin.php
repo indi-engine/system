@@ -2978,12 +2978,12 @@ class Indi_Controller_Admin extends Indi_Controller {
             $name = 'lang.gapi.key';
 
             // Get message
-            $msg = __('Google Cloud Translate API response: %s', json_decode($e->getMessage())->error->message);
+            $msg = __(I_GAPI_RESPONSE, json_decode($e->getMessage())->error->message);
 
             // Prompt for valid Google Cloud Translate API key
             $prompt = $this->prompt($msg, [[
                 'xtype' => 'textfield',
-                'emptyText' => __('Please specify API key here..'),
+                'emptyText' => I_GAPI_KEY_REQUIRED,
                 'width' => 200,
                 'name' => $name,
                 'allowBlank' => false

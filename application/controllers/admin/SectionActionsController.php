@@ -27,7 +27,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
             // If template file not exists - there is nothing to be translated
             if ($file = $this->templateRequired())
-                jflush(false, __('Template file missing: %s', $file));
+                jflush(false, __(I_SCNACS_TPL_404, $file));
 
             // Ask whether we want to turn l10n On/Off,
             // or want to arrange value of `l10n` for it to match real situation.
@@ -80,7 +80,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         $queueClassName = 'Indi_Queue_L10n_Action';
 
         // Check that class exists
-        if (!class_exists($queueClassName)) jflush(false, __('Не найден класс %s', $queueClassName));
+        if (!class_exists($queueClassName)) jflush(false, __(I_CLASS_404, $queueClassName));
 
         // Create queue class instance
         $queue = new $queueClassName();
@@ -135,12 +135,6 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
 
         // Get fraction that current record belongs to
         $fraction = t()->row->foreign('sectionId')->fraction;
-
-        // If current section has a fraction, that is (for some reason) not in the list of known types
-        if (!in($fraction, array_keys($repoDirA)))
-
-            // Flush an error
-            jflush(false, __('Unable to detect the alias of repository, associated with a fraction of the section of chosen action'));
 
         // Build the dir name, that controller's js-file should be created in
         $template = DOC . STD . $repoDirA[$fraction]
