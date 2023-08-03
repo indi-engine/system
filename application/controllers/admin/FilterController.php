@@ -24,7 +24,7 @@ class Admin_FilterController extends Indi_Controller_Admin_Multinew {
             if (t()->row->fieldBehind()->storeRelationAbility === 'none') {
 
                 // Show side msg
-                wflush(false, 'This feature is only applicable for filters that are having foreign-key fields behind');
+                wflush(false, __('This feature is only applicable for filters that are having foreign-key fields behind'));
             }
         }
     }

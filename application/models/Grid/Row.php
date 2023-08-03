@@ -219,7 +219,7 @@ class Grid_Row extends Indi_Db_Table_Row {
             // Check parent entries
             while ($parent = ($parent ? $parent->parent() : $this->parent()))
                 if ($parent->group != $this->group)
-                    $this->_mismatch['group'] = sprintf('One of parent entries has non-same value');
+                    $this->_mismatch['group'] = __('One of parent entries has non-same value');
 
         // If colorBreak-prop was modified to 'y',
         // and underlying data source field's element is non-numeric

@@ -24,7 +24,10 @@ class Admin_AlteredFieldsController extends Indi_Controller_Admin_Multinew {
         // If no icon-overflow html rendered (so no value there) - return
         if (!$render = &$item['_render']['jumpSectionActionId']) return;
 
+        // Get action's icon
+        $icon = $r->foreign('jumpSectionActionId')->foreign('actionId')->icon;
+
         // Else spoof icon with actual action-icon
-        $render = preg_replace('~src="[^"]+"~', 'src="' . $r->foreign('jumpSectionActionId')->foreign('actionId')->icon . '"', $render);
+        $render = preg_replace('~src="[^"]+"~', 'src="' . $icon . '"', $render);
     }
 }

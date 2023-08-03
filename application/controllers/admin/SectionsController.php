@@ -31,7 +31,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect fraction of selected section');
+            jflush(false, __('Can\'t detect fraction of selected section'));
 
         // Build the dir name, that controller's js-file should be created in
         $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/js/admin/app/controller/');
@@ -48,13 +48,13 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // If controller file already exists
         if (is_file($ctrlAbs))
-            jflush(false, sprintf('File already exists: %s', $ctrlRel));
+            jflush(false, __('File already exists: %s', $ctrlRel));
 
         // Build template model absolute file name
         $tplAbs = DOC. STD . VDR . '/client/classic/resources/{controller}.js';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
-        if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
+        if (!is_file($tplAbs)) jflush(false, __('No template-controller file found'));
 
         // Get the template contents (source code)
         $tplRaw = file_get_contents($tplAbs);
@@ -75,7 +75,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         t()->row->realtime('reload');
 
         // Flush success
-        jflush(true, 'Created file: ' . $ctrlRel);
+        jflush(true, __('Created file: %s', $ctrlRel));
     }
 
     /**
@@ -97,7 +97,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, 'Can\'t detect the alias of repository, associated with a fraction of the chosen section');
+            jflush(false, __('Can\'t detect the alias of repository, associated with a fraction of the chosen section'));
 
         // Build the dir name, that controller's js-file should be created in
         $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/application/controllers/admin/');
@@ -114,13 +114,13 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
         // If controller file is not yet exist
         if (is_file($ctrlAbs))
-            jflush(false, sprintf('File already exists: %s', $ctrlRel));
+            jflush(false, __('File already exists: %s', $ctrlRel));
 
         // Build template model absolute file name
         $tplAbs = DOC. STD . VDR . '/system/application/controllers/admin/{controller}.php';
 
         // If it is not exists - flush an error, as we have no template for creating a model file
-        if (!is_file($tplAbs)) jflush(false, 'No template-controller file found');
+        if (!is_file($tplAbs)) jflush(false, __('No template-controller file found'));
 
         // Get the template contents (source code)
         $tplRaw = file_get_contents($tplAbs);
@@ -141,7 +141,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         t()->row->realtime('reload');
 
         // Flush success
-        jflush(true, 'Created file: ' . $ctrlRel);
+        jflush(true, __('Created file: %s', $ctrlRel));
     }
 
     /**
@@ -211,7 +211,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
                 // If actual parent class is not as per section `extendsPhp` prop - setup error
                 if ($parent != $item['extendsPhp']) $item['_system']['php-error']
-                    = sprintf('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
+                    = __('Файл php-контроллера существует, но в нем родительский класс указан как %s', $parent);
             }
 
             // If it's a system-fraction
@@ -226,7 +226,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
                     // If parent class is not as per `extendsJs` prop - setup error
                     if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
-                        = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $m[1]);
+                        = __('Файл js-контроллера существует, но в нем родительский класс указан как %s', $m[1]);
                 }
             }
 
@@ -238,15 +238,15 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
 
 
                 // If js-controller file is empty - setup error
-                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = 'Файл js-контроллера пустой';
+                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = __('Файл js-контроллера пустой');
 
                 // Else we're unable to find parent class mention - setup error
                 else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
-                    $item['_system']['js-error'] = 'В файле js-контроллера не удалось найти родительский класс';
+                    $item['_system']['js-error'] = __('В файле js-контроллера не удалось найти родительский класс');
 
                 // Else if parent class is not as per `extendsJs` prop - setup error
                 else if (($parent = $m[2]) != $item['extendsJs']) $item['_system']['js-error']
-                    = sprintf('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
+                    = __('Файл js-контроллера существует, но в нем родительский класс указан как %s', $parent);;
             }
 
             // Hide default values

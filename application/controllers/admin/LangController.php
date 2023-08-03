@@ -36,7 +36,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         }
 
         // Flush result
-        jflush(true, 'Новых языков: ' .  $l);
+        jflush(true, __('Новых языков: %s', $l));
     }
 
     /**
@@ -120,7 +120,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueClassName = 'Indi_Queue_L10n_' . ucfirst($cell);
 
         // Check that class exists
-        if (!class_exists($queueClassName)) jflush(false, sprintf('Не найден класс %s', $queueClassName));
+        if (!class_exists($queueClassName)) jflush(false, __('Не найден класс %s', $queueClassName));
 
         // Create queue class instance
         $queue = new $queueClassName();
@@ -325,7 +325,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueClassName = 'Indi_Queue_L10n_' . ucfirst($prompt['fraction']) . 'Export';
 
         // Check that class exists
-        if (!class_exists($queueClassName)) jflush(false, sprintf('Не найден класс %s', $queueClassName));
+        if (!class_exists($queueClassName)) jflush(false, __('Не найден класс %s', $queueClassName));
 
         // Create queue class instance
         $queue = new $queueClassName();

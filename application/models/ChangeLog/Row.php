@@ -11,7 +11,7 @@ class ChangeLog_Row extends Indi_Db_Table_Row {
 
         // If field , that we're trying to revert is hidden or readonly (e.g disabled) - prevent reverting
         if (in($this->foreign('fieldId')->mode, 'hidden,readonly'))
-            jflush(false, 'Восстановление недоступно для полей, заполняемых автоматически');
+            jflush(false, __('Восстановление недоступно для полей, заполняемых автоматически'));
 
         // If field, that we're trying to revert is using element not from allowed list - prevent reverting
         if (!in($this->foreign('fieldId')->foreign('elementId')->alias, $types)) {
@@ -23,12 +23,12 @@ class ChangeLog_Row extends Indi_Db_Table_Row {
             $last = array_pop($titles);
 
             // Flush failure msg
-            jflush(false, 'Восстановление доступно только для полей типа ' . im($titles, ', ') . ' и ' . $last);
+            jflush(false, __('Восстановление доступно только для полей типа %s и %s', im($titles, ', '), $last));
         }
 
         // If field , that we're trying to revert is a foreign key field - prevent reverting
         if (in($this->foreign('fieldId')->mode, 'hidden,readonly'))
-            jflush(false, 'Восстановление недоступно для полей, являющихся внешними ключами');
+            jflush(false, __('Восстановление недоступно для полей, являющихся внешними ключами'));
 
         // Get field alias
         $field = m($this->entityId)->fields($this->fieldId)->alias;

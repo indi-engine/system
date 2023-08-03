@@ -25,7 +25,7 @@ class Indi_Controller_Admin_Exportable extends Indi_Controller_Admin {
         $combo = ['width' => 400] + t()->row->combo('certain');
 
         // Prompt for source language
-        $prompt = $this->prompt('Если нужно экспортировать только некоторые поля - выберите их', [$combo]);
+        $prompt = $this->prompt(__('Если нужно экспортировать только некоторые поля - выберите их'), [$combo]);
 
         // Check prompt data
         $_ = jcheck(['certain' => ['rex' => 'int11list', 'key' => 'field*']], $prompt);

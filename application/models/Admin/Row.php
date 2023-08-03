@@ -30,7 +30,7 @@ class Admin_Row extends Indi_Db_Table_Row {
         if (strlen($this->vk) && $this->isModified('vk')) {
 
             if (!preg_match('~^https://vk.com/([a-zA-Z0-9_\.]{3,})~', $this->vk, $m))
-                $this->_mismatch['vk'] = 'Адрес страницы должен начинаться с https://vk.com/';
+                $this->_mismatch['vk'] = __('Адрес страницы должен начинаться с https://vk.com/');
 
             else if (ini('vk')->enabled) {
 
@@ -44,10 +44,10 @@ class Admin_Row extends Indi_Db_Table_Row {
                     $result = $response['json']['response'];
 
                     // If no result
-                    if (!$result) $this->_mismatch['vk'] = 'Этой страницы ВКонтакте не существует';
+                    if (!$result) $this->_mismatch['vk'] = __('Этой страницы ВКонтакте не существует');
 
                     // If result's type is not 'user'
-                    else if ($result['type'] != 'user') $this->_mismatch['vk'] = 'Эта страница ВКонтакте не является страницей пользователя';
+                    else if ($result['type'] != 'user') $this->_mismatch['vk'] = __('Эта страница ВКонтакте не является страницей пользователя');
 
                     // Else setup custom mismatch message
                 } else $this->_mismatch['vk'] = $response['msg'];

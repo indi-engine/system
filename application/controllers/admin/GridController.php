@@ -23,8 +23,11 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
         // If there is some value rendered for icon-overflow html
         if ($render = &$item['_render']['jumpSectionActionId']) {
 
+            // Get action icon
+            $icon = $r->foreign('jumpSectionActionId')->foreign('actionId')->icon;
+
             // Spoof icon with actual action-icon
-            $render = preg_replace('~src="[^"]+"~', 'src="' . $r->foreign('jumpSectionActionId')->foreign('actionId')->icon . '"', $render);
+            $render = preg_replace('~src="[^"]+"~', "src=\"$icon\"", $render);
         }
 
         // Spoof rendered value with color-box having color picked from the external source
@@ -32,12 +35,17 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
             $field = $r->foreign('colorField')->alias;
             $color = $r->foreign('colorEntry')->rgb($field);
             $title = $r->foreign('colorEntry')->attr('title');
-            $render = '<span class="i-color-box" style="background: ' . $color . ';" title="' . $title . '"></span>';
+            $render = "<span class=\"i-color-box\" style=\"background: $color;\" title=\"$title\"></span>";
         }
 
         // Prepend entity title to colorField title
         if ($render = &$item['_render']['colorField']) {
-            $render = preg_replace('~<img.+?>~', '$0' . $r->foreign('colorField')->foreign('entityId')->title . ' &raquo; ', $render);
+
+            // Get entity title
+            $entityTitle =  $r->foreign('colorField')->foreign('entityId')->title;
+
+            // Prepend it to colorField's title
+            $render = preg_replace('~<img.+?>~', '$0' . "$entityTitle &raquo; ", $render);
         }
     }
 
