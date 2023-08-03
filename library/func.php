@@ -298,12 +298,12 @@ function ago($date1, $date2 = null, $mode = 'ago', $exact = false) {
 
     // Build an array of difference levels quantity spelling, depends on their values
     $tbqA = [
-        'Y' => 'лет,год,года',
-        'n' => 'месяцев,месяц,месяца',
-        'j' => 'дней,день,дня',
-        'G' => 'часов,час,часа',
-        'i' => 'минут,минута,минуты',
-        's' => 'секунд,секунда,секунды'
+        'Y' => I_AGO_YEARS,
+        'n' => I_AGO_MONTHS,
+        'j' => I_AGO_DAYS,
+        'G' => I_AGO_HOURS,
+        'i' => I_AGO_MINUTES,
+        's' => I_AGO_SECONDS
     ];
 
     // If $exact arg is true

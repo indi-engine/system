@@ -33,14 +33,12 @@ class Config_Row extends Indi_Db_Table_Row {
 
             // Set up wording versions
             $versionA = [
-                'minute' => 'минут,минута,минуты',
-                'hour' => 'часов,час,часа',
-                'day' => 'дней,день,дня',
-                'week' => 'недель,неделя,недели',
-                'month' => 'месяцев,месяц,месяца',
-                'quarter' => 'кварталов,квартал,квартала',
-                'half' => 'полугодий,полугодие,полугодия',
-                'year' => 'лет,год,года',
+                'minute' => I_AGO_MINUTES,
+                'hour'   => I_AGO_HOURS,
+                'day'    => I_AGO_DAYS,
+                'week'   => I_AGO_WEEKS,
+                'month'  => I_AGO_MONTHS,
+                'year'   => I_AGO_YEARS,
             ];
 
             // Set up `expiryDurationStr` according to `expiryMeasure` and it's duration

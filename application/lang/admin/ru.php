@@ -277,6 +277,14 @@ define('I_NUM2STR_TBQ_THD', 'тысяча,тысячи,тысяч');
 define('I_NUM2STR_TBQ_MLN', 'миллион,миллиона,миллионов');
 define('I_NUM2STR_TBQ_BLN', 'миллиард,милиарда,миллиардов');
 
+define('I_AGO_SECONDS', 'секунд,секунда,секунды');
+define('I_AGO_MINUTES', 'минут,минута,минуты');
+define('I_AGO_HOURS', 'часов,час,часа');
+define('I_AGO_DAYS', 'дней,день,дня');
+define('I_AGO_WEEKS', 'недель,неделя,недели');
+define('I_AGO_MONTHS', 'месяцев,месяц,месяца');
+define('I_AGO_YEARS', 'лет,год,года');
+
 define('I_ENT_AUTHOR_SPAN', 'Создание');
 define('I_ENT_AUTHOR_ROLE', 'Роль');
 define('I_ENT_AUTHOR_USER', 'Пользователь');

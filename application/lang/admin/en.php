@@ -277,6 +277,14 @@ define('I_NUM2STR_TBQ_THD', 'thousand,thousand,thousand');
 define('I_NUM2STR_TBQ_MLN', 'million,million,million');
 define('I_NUM2STR_TBQ_BLN', 'billion,billion,billion');
 
+define('I_AGO_SECONDS', 'second,seconds');
+define('I_AGO_MINUTES', 'minute,minutes');
+define('I_AGO_HOURS', 'hour,hours');
+define('I_AGO_DAYS', 'day,days');
+define('I_AGO_WEEKS', 'week,weeks');
+define('I_AGO_MONTHS', 'month,months');
+define('I_AGO_YEARS', 'year,years');
+
 define('I_ENT_AUTHOR_SPAN', 'Created');
 define('I_ENT_AUTHOR_ROLE', 'Role');
 define('I_ENT_AUTHOR_USER', 'User');
