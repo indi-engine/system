@@ -140,7 +140,7 @@ class Admin_SectionActionsController extends Indi_Controller_Admin_Multinew {
         if (!in($fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, __('Can\'t detect the alias of repository, associated with a fraction of the chosen action\'s section'));
+            jflush(false, __('Unable to detect the alias of repository, associated with a fraction of the section of chosen action'));
 
         // Build the dir name, that controller's js-file should be created in
         $template = DOC . STD . $repoDirA[$fraction]

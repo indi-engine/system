@@ -20,7 +20,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!in($this->row->fraction, array_keys($repoDirA)))
 
             // Flush an error
-            jflush(false, __('Can\'t detect the alias of repository, associated with a fraction of the chosen entity'));
+            jflush(false, __('Unable to detect the alias of repository, associated with a fraction of the chosen entity'));
 
         // Build the dir name, that model's php-file will be created in
         $dir = Indi::dir(DOC . STD . $repoDirA[$this->row->fraction] . '/application/models/');

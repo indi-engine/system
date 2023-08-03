@@ -164,7 +164,7 @@ class Admin_LangController extends Indi_Controller_Admin {
             foreach ([
                  'php' => [
                      'dir' => ['application/controllers/admin', 'application/models', 'library/Project', 'library/Indi'],
-                     'rex' => ['~(__\()(\s*)\'(.*?)\'~']
+                     'rex' => ['~(__\()(\s*)\'(.*?[^\\\])\'~']
                  ],
                  'js'  => [
                      'dir' => ['js/admin/app/controller', 'js/admin/app/lib/controller'],
