@@ -1037,6 +1037,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('fieldsAll', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         param('field', 'elementId', 'optionAttrs', 'defaultType');
         enumset('section', 'rownumberer', '0', ['cssStyle' => '']);
+        section2action('lang','export', ['multiSelect' => 'inherit']);
+        section2action('lang','import', ['multiSelect' => '1']);
         field('queueTask', 'stageState')->delete();
         field('section', 'multiSelect')->delete();
         die('ok');

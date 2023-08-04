@@ -318,29 +318,33 @@ class Admin_LangController extends Indi_Controller_Admin {
         // Show prompt
         $prompt = $this->_prompt(I_LANG_EXPORT_HEADER);
 
-        // Prepare params
-        $params = ['source' => t()->row->alias, 'export' => $prompt['settings']];
+        // Foreach selected language
+        foreach (t()->rows as $row) {
 
-        // Build queue class name
-        $queueClassName = 'Indi_Queue_L10n_' . ucfirst($prompt['fraction']) . 'Export';
+            // Prepare params
+            $params = ['source' => $row->alias, 'export' => $prompt['settings']];
 
-        // Check that class exists
-        if (!class_exists($queueClassName)) jflush(false, __(I_CLASS_404, $queueClassName));
+            // Build queue class name
+            $queueClassName = 'Indi_Queue_L10n_' . ucfirst($prompt['fraction']) . 'Export';
 
-        // Create queue class instance
-        $queue = new $queueClassName();
+            // Check that class exists
+            if (!class_exists($queueClassName)) jflush(false, __(I_CLASS_404, $queueClassName));
 
-        // Run first stage
-        $queueTaskR = $queue->chunk($params);
+            // Create queue class instance
+            $queue = new $queueClassName();
 
-        // If data should be exported
-        if ($prompt['settings'] == 'data') {
+            // Run first stage
+            $queueTaskR = $queue->chunk($params);
 
-            // If fraction is adminCustomData - flush failure
-            if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
+            // If data should be exported
+            if ($prompt['settings'] == 'data') {
 
-            // Else auto-start queue as a background process
-            Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+                // If fraction is adminCustomData - flush failure
+                if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
+
+                // Else auto-start queue as a background process
+                Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+            }
         }
 
         // Flush ok
@@ -414,23 +418,27 @@ class Admin_LangController extends Indi_Controller_Admin {
             // If fraction is 'adminCustomData' - flush not supported msg
             if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
 
-            // Else get file containing data-part of migration, e.g. the code, that is setting up titles for given language
-            $data = DOC . STD . $dir . '/application/lang/ui/' . t()->row->alias . '.php';
+            // Foreach selected row
+            foreach (t()->rows as $row) {
 
-            // Backup current language
-            $_lang = ini('lang')->admin;
+                // Else get file containing data-part of migration, e.g. the code, that is setting up titles for given language
+                $data = DIR . $dir . '/application/lang/ui/' . $row->alias . '.php';
 
-            // Spoof current language with given language
-            ini('lang')->admin = t()->row->alias;
+                // Backup current language
+                $_lang = ini('lang')->admin;
 
-            // Execute file, containing php-code for setting up titles for given language
-            require_once $data;
+                // Spoof current language with given language
+                ini('lang')->admin = $row->alias;
 
-            // Restore current language
-            ini('lang')->admin = $_lang;
+                // Execute file, containing php-code for setting up titles for given language
+                require_once $data;
 
-            // Set 'y' for imported language's fraction-column
-            t()->row->set($prompt['fraction'], 'y')->save();
+                // Restore current language
+                ini('lang')->admin = $_lang;
+
+                // Set 'y' for imported language's fraction-column
+                $row->set($prompt['fraction'], 'y')->save();
+            }
         }
 
         // Flush ok
