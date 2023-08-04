@@ -926,6 +926,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                         if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ({$realtimeR->entries})";
                         $pgdn1stWHERE = rif(join(' AND ', $pgdn1stWHERE), 'WHERE $1');
 
+                        // Nasty hack. todo: investigate how that might happend in /realtime
+                        if ($scope['page'] < 1) $scope = 1;
+
                         // Prepare OFFSET clause for current page's first record
                         $pg1stOFFSET = $scope['rowsOnPage'] * ($scope['page'] - 1);
 

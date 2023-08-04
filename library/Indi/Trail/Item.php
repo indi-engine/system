@@ -125,6 +125,7 @@ class Indi_Trail_Item {
         if ($this->section) {
             if ($this->action->selectionRequired == 'y') $this->section->rownumberer = false;
             $array['section'] = $this->section->toArray();
+            $array['section']['multiSelect'] = $this->actions->select('1,separate', 'multiSelect')->count();
             if ($this->section->defaultSortField)
                 $array['section']['defaultSortFieldAlias']
                     = $this->section->defaultSortField == -1

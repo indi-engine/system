@@ -188,14 +188,17 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Foreach data item
         foreach ($data as &$item) {
 
-            // Get php-controller class name
-            $php = 'Admin_' . ucfirst($item['alias']) . 'Controller';
+            // Get php-controller file name
+            $phpAbs = DIR . $dir[$item['fraction']] . '/application/controllers/admin/' . ucfirst($item['alias']) . 'Controller.php';
 
             // If php-controller file exists for this section
-            if ($item['_system']['php-class'] = class_exists($php)) {
+            if ($item['_system']['php-class'] = file_exists($phpAbs)) {
+
+                // Setup class name
+                $item['_system']['php-class'] = preg_replace('~^' . preg_quote(DIR). '/~', '', $phpAbs);
 
                 // Get parent class
-                $parent = get_parent_class($php);
+                $parent = get_parent_class('Admin_' . ucfirst($item['alias']) . 'Controller');
 
                 // If actual parent class is not as per section `extendsPhp` prop - setup error
                 if ($parent != $item['extendsPhp']) $item['_system']['php-error']
@@ -206,11 +209,14 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             if ($item['fraction'] == 'system') {
 
                 // If system app js is not yet set up - do it
-                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DOC . STD . VDR . '/client/classic/app.js');
+                if (!self::$systemAppJs) self::$systemAppJs = file_get_contents(DIR . VDR . '/client/classic/app.js');
 
-                // If js-controller file exists
+                // If js-controller class exists
                 if ($item['_system']['js-class']
                     = preg_match('~Ext\.cmd\.derive\(\'Indi\.controller\.' . $item['alias'] . '\',([^,]+),~', self::$systemAppJs, $m)) {
+
+                    // Setup class location
+                    $item['_system']['js-class'] = VDR . '/client/classic/app.js: Indi.controller.' . $item['alias'];
 
                     // If parent class is not as per `extendsJs` prop - setup error
                     if ($m[1] != $item['extendsJs']) $item['_system']['js-error']
@@ -219,14 +225,16 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             }
 
             // Get js-controller file name
-            $js = DOC . STD . $dir[$item['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
+            $jsAbs = DIR . $dir[$item['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
             // If js-controller file exists
-            if (!$item['_system']['js-class'] && $item['_system']['js-class'] = file_exists($js)) {
+            if (!$item['_system']['js-class'] && $item['_system']['js-class'] = file_exists($jsAbs)) {
 
+                // Setup filename
+                $item['_system']['js-class'] = preg_replace('~^' . preg_quote(DIR). '/~', '', $jsAbs);
 
                 // If js-controller file is empty - setup error
-                if (!$js = file_get_contents($js)) $item['_system']['js-error'] = I_SECTIONS_CTLR_EMPTY_JS;
+                if (!$js = file_get_contents($jsAbs)) $item['_system']['js-error'] = I_SECTIONS_CTLR_EMPTY_JS;
 
                 // Else we're unable to find parent class mention - setup error
                 else if (!preg_match('~extend:\s*(\'|")([a-zA-Z0-9\.]+)\1~', $js, $m))
@@ -238,7 +246,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             }
 
             // Hide default values
-            foreach ($default as $prop => $defaultValue) if ($item[$prop] == $defaultValue) $item[$prop] = '';
+            foreach ($default as $prop => $defaultValue) if ($item[$prop] == $defaultValue) $item['_render'][$prop] = '';
         }
     }
 

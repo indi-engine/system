@@ -31,27 +31,6 @@ class QueueTask_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     *
-     */
-    public function onBeforeUpdate() {
-        if ($this->isModified('stage,state')) $this->setStageState();
-    }
-
-    /**
-     *
-     */
-    public function onBeforeInsert() {
-        $this->setStageState();
-    }
-
-    /**
-     * Setter for `stageState` prop
-     */
-    public function setStageState() {
-        $this->stageState = $this->foreign('stage')->title . ' - ' . $this->foreign('state')->title;
-    }
-
-    /**
      * @return int|void
      */
     public function basicUpdate() {

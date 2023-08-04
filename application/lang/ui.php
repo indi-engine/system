@@ -102,7 +102,6 @@ field('section', 'showID')->toggleL10n('qy', $lang, false);
 field('section', 'rowsetDefault')->toggleL10n('qy', $lang, false);
 field('section', 'help')->toggleL10n('qy', $lang, false);
 field('section', 'gridToggle')->toggleL10n('qy', $lang, false);
-field('section', 'multiSelect')->toggleL10n('qy', $lang, false);
 field('section', 'planToggle')->toggleL10n('qy', $lang, false);
 field('section', 'planTypes')->toggleL10n('qy', $lang, false);
 field('section', 'tileToggle')->toggleL10n('qy', $lang, false);

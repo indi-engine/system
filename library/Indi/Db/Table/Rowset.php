@@ -873,7 +873,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI], $tpl);
                         }
                     } else if (!$data[$pointer]['_render'][$columnI]) {
-                        $data[$pointer]['_render'][$columnI] = '';
+                        if (!$typeA['numeric'][$columnI]) {
+                            $data[$pointer]['_render'][$columnI] = '';
+                        }
                     }
                 }
 

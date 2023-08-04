@@ -1036,7 +1036,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
         grid('elementCfgField', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         grid('fieldsAll', 'filter', ['icon' => 'resources/images/icons/filter-combo.png']);
         param('field', 'elementId', 'optionAttrs', 'defaultType');
-
+        enumset('section', 'rownumberer', '0', ['cssStyle' => '']);
+        field('queueTask', 'stageState')->delete();
+        field('section', 'multiSelect')->delete();
         die('ok');
     }
     public function panelsAction(){
