@@ -322,6 +322,7 @@ define('I_SECTION_ROWSET_MIN_CONF', 'For activation of panel %s please specify t
 define('I_SECTION_CONF_SETUP', 'Config is being applied..');
 define('I_SECTION_CONF_SETUP_DONE', 'Config has been successfully applied');
 define('I_NOTICE_HIDE_ALL', 'Hide all');
+define('I_RECORD_DELETED', 'This record was deleted');
 
 define('I_FILE_EXISTS', 'File already exists: %s');
 define('I_FILE_CREATED', 'Created file: %s');

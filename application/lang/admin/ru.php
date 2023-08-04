@@ -322,6 +322,7 @@ define('I_SECTION_ROWSET_MIN_CONF', 'Для активации панели %s �
 define('I_SECTION_CONF_SETUP', 'Применение параметров..');
 define('I_SECTION_CONF_SETUP_DONE', 'Применение параметров завершено');
 define('I_NOTICE_HIDE_ALL', 'Скрыть все');
+define('I_RECORD_DELETED', 'Эта запись была удалена');
 
 define('I_FILE_EXISTS', 'Файл уже существует: %s');
 define('I_FILE_CREATED', 'Файл создан: %s');
