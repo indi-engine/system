@@ -285,6 +285,10 @@ define('I_AGO_WEEKS', 'week,weeks');
 define('I_AGO_MONTHS', 'month,months');
 define('I_AGO_YEARS', 'year,years');
 
+define('I_PANEL_GRID', 'Grid');
+define('I_PANEL_PLAN', 'Calendar');
+define('I_PANEL_TILE', 'Gallery');
+
 define('I_ENT_AUTHOR_SPAN', 'Created');
 define('I_ENT_AUTHOR_ROLE', 'Role');
 define('I_ENT_AUTHOR_USER', 'User');

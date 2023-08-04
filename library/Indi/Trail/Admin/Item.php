@@ -429,9 +429,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         //
         $panelA = [];
-        if ($this->section->gridToggle === 'y') $panelA []= ['alias' => 'grid', 'title' => 'Грид'];
-        if ($this->section->planToggle === 'y') $panelA []= ['alias' => 'plan', 'title' => 'Календарь'];
-        if ($this->section->tileToggle === 'y') $panelA []= ['alias' => 'tile', 'title' => 'Галерея'];
+        if ($this->section->gridToggle === 'y') $panelA []= ['alias' => 'grid', 'title' => I_PANEL_GRID];
+        if ($this->section->planToggle === 'y') $panelA []= ['alias' => 'plan', 'title' => I_PANEL_PLAN];
+        if ($this->section->tileToggle === 'y') $panelA []= ['alias' => 'tile', 'title' => I_PANEL_TILE];
         $array['section']['panels'] = $panelA;
 
         // Setup pressed-prop

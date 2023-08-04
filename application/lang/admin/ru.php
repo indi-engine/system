@@ -285,6 +285,10 @@ define('I_AGO_WEEKS', 'недель,неделя,недели');
 define('I_AGO_MONTHS', 'месяцев,месяц,месяца');
 define('I_AGO_YEARS', 'лет,год,года');
 
+define('I_PANEL_GRID', 'Грид');
+define('I_PANEL_PLAN', 'Календарь');
+define('I_PANEL_TILE', 'Галерея');
+
 define('I_ENT_AUTHOR_SPAN', 'Создание');
 define('I_ENT_AUTHOR_ROLE', 'Роль');
 define('I_ENT_AUTHOR_USER', 'Пользователь');
