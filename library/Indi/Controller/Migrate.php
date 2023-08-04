@@ -1,6 +1,8 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function cosmeticAction() {
+        if (uri()->command !== 'step2') {
+            
         field('param', 'entityId', [
             'title' => 'Сущность',
             'storeRelationAbility' => 'one',
@@ -1039,8 +1041,10 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('section', 'rownumberer', '0', ['cssStyle' => '']);
         section2action('lang','export', ['multiSelect' => 'inherit']);
         section2action('lang','import', ['multiSelect' => '1']);
+        } else {
         field('queueTask', 'stageState')->delete();
         field('section', 'multiSelect')->delete();
+        }
         die('ok');
     }
     public function panelsAction(){
