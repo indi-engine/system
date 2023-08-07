@@ -2627,7 +2627,12 @@ function lang($langId) {
 }
 
 /**
- * Return monthId for a given 'yyyy-mm(-dd)' string, or full array of 'yyyy-mm' => monthId key-pairs
+ * Get `id` of `month` entry that $date arg relates to.
+ * $date can be any date compatible with php's strtotime() function
+ * If $date arg is 'all' - all [year => id] pairs are returned
+ * If $date arg is null or not given - current date assumed
+ * If $date arg is given but is falsy or is not recognizable by strtotime() - boolean false is returned
+ * If no `month` entry exists - it's created
  *
  * @param null $date
  * @return array|int
@@ -2637,13 +2642,35 @@ function monthId($date = null) {
 }
 
 /**
- * Return 'yyyy-mm' expression according to given $monthId arg, or full array of monthId => 'yyyy-mm' key-pairs
+ * Get `yyyy-mm` expr of `month` entry having `id` equal to $monthId arg
+ * If $monthId arg is null or not given - current month assumed
+ * If monthId arg is 'all' - all [monthId => yyyy-mm] pairs are returned
  *
  * @param int $monthId
  * @return array|string
  */
 function monthYm($monthId = null) {
     return Month::monthYm($monthId);
+}
+
+/**
+ * Return yearId for a given $date, or, if $date is 'all', full array of [yyyy => yearId] pairs
+ *
+ * @param null $date
+ * @return array|int
+ */
+function yearId($date = null) {
+    return Year::yearId($date);
+}
+
+/**
+ * Get title of a year picked by $yearId, where title is 4-digit year number, e.g same as given by date('Y')
+ *
+ * @param int $yearId
+ * @return array|string
+ */
+function yearY($yearId = null) {
+    return Year::yearY($yearId);
 }
 
 /**

@@ -91,22 +91,20 @@ class Month extends Indi_Db_Table {
         // Extract 4-digit year and 2-digit month from a current date
         list($y, $m) = explode('-', $date ?: date('Y-m-d'));
 
-        // Get year
-        $yearO = Year::o($y);
+        // Get year id
+        $yearId = yearId($date);
 
         // If current month not exists within `month` table
-        if (!$monthI = db()->query('
-            SELECT * FROM `month` WHERE `month` = "' . $m . '" AND `yearId` = "' . $yearO->id . '"
-        ')->fetch()) {
+        if (!$monthI = db()->query("SELECT * FROM `month` WHERE `month` = '$m' AND `yearId` = '$yearId'")->fetch()) {
 
             // Create month entry
-            $monthR = m('month')->new(['month' => $m, 'yearId' => $yearO->id]);
+            $monthR = m('month')->new(['month' => $m, 'yearId' => $yearId]);
             $monthR->save();
 
             // Get it's id
             $monthI = [
                 'id' => $monthR->id,
-                'yearId' => $yearO->id,
+                'yearId' => $yearId,
                 'month' => $m,
                 'title' => $monthR->title
             ];
@@ -118,13 +116,15 @@ class Month extends Indi_Db_Table {
 
     /**
      * Get `id` of `month` entry that $date arg relates to.
-     * $date arg should contain month definition, so it can be an exact
-     * date (e.g in 'Y-m-d' format) or datetime (e.g. in 'Y-m-d H:i:s') format
-     * or expression, containing month definition only (e.g in 'Y-m' format)
+     * $date can be any date compatible with php's strtotime() function
+     * If $date arg is 'all' - all [year => id] pairs are returned
+     * If $date arg is null or not given - current date assumed
+     * If $date arg is given but is falsy or is not recognizable by strtotime() - boolean false is returned
+     * If no `month` entry exists - it's created
      *
      * @static
      * @param null|string $date
-     * @return int|array|null
+     * @return int|array|bool
      */
     public static function monthId($date = null) {
 
@@ -139,12 +139,48 @@ class Month extends Indi_Db_Table {
         // If self::$_monthYmA is null - setup it by flipping self::$_monthIdA
         if (self::$_monthYmA === null) self::$_monthYmA = array_flip(self::$_monthIdA);
 
-        // If $date arg is given - return id of corresponding `month` entry, that $date belongs to
-        return $date ? self::$_monthIdA[substr($date, 0, 7)] : self::$_monthIdA;
+        // If $date arg is 'all' - return all pairs we have
+        if ($date === 'all') return self::$_monthIdA;
+
+        // If $date arg is NOT given - assume current date
+        if ($date === null) $date = date('Y-m');
+
+        // If $date arg is falsy - return false
+        if (!$date) return false;
+
+        // Get time to base on
+        $time = strtotime($date);
+
+        // If $date arg is not recognizable by php's strtotime() - return false
+        if ($time === false) return false;
+
+        // Get yyyy-mm value
+        $monthYm = date('Y-m', $time);
+
+        // If there is no such month so far
+        if (!self::$_monthIdA[$monthYm]) {
+
+            // Create new month-record and get it's id
+            $monthId = self::o($monthYm)->id;
+
+            // Update pairs
+            self::$_monthIdA[$monthYm] = $monthId;
+
+            // Make sure new month to appear inside $_monthIdA according to it's chronology
+            ksort(self::$_monthIdA);
+
+            // Update $_monthYmA
+            self::$_monthYmA = array_flip(self::$_monthIdA);
+        }
+
+        // Return id of corresponding `month` entry, that $date belongs to
+        return self::$_monthIdA[$monthYm];
     }
 
     /**
      * Get `yyyy-mm` expr of `month` entry having `id` same as $monthId arg
+     * If $monthId arg is null or not given - current month assumed
+     * If monthId arg is 'all' - all [monthId => yyyy-mm] pairs are returned
      *
      * @static
      */
@@ -161,8 +197,17 @@ class Month extends Indi_Db_Table {
         // If self::$_monthIdA is null - setup it by flipping self::$_monthYmA
         if (self::$_monthIdA === null) self::$_monthIdA = array_flip(self::$_monthYmA);
 
-        // If $monthId arg is given - return 'yyyy-mm' expr of corresponding `month` entry
-        return $monthId ? self::$_monthYmA[$monthId] : self::$_monthYmA;
+        // If $monthId arg is 'all' - return all pairs we have
+        if ($monthId === 'all') return self::$_monthYmA;
+
+        // If $yearId arg is NOT given - assume current date
+        if ($monthId === null) $monthId = monthId();
+
+        // If $monthId arg is falsy - return false
+        if (!$monthId) return false;
+
+        // Return month in 'yyyy-mm' format, e.g. the same as date('Y-m') returns, or return false
+        return self::$_monthYmA[$monthId] ?? false;
     }
 
     /**

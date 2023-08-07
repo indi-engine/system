@@ -1435,8 +1435,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     if ($this->rel()->table() == 'month') {
 
                         // Build the order clause, using FIND_IN_SET function and comma-separated
-                        // list of months' ids, as monthId() fn return them in right chronology
-                        $order = 'FIND_IN_SET(`' . $this->alias . '`, "' . im(monthId()) . '")' . $direction;
+                        // list of months' ids, as monthId('all') fn return them in right chronology
+                        $order = 'FIND_IN_SET(`' . $this->alias . '`, "' . im(monthId('all')) . '")' . $direction;
 
                     // Else
                     } else {
