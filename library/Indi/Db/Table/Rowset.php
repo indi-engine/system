@@ -1869,9 +1869,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * modify current rowset, it just returns it's clone, that contains only root-level tree items,
      * and all other (non-root-level) items are accessible as nested items
      *
+     * @param false $appendOrphans
      * @return Indi_Db_Table_Rowset
      */
-    public function toNestingTree() {
+    public function toNestingTree($appendOrphans = false) {
 
         // If current rowset is owned by a non-tree model - return rowset with no changes
         if (!($treeColumn = $this->model()->treeColumn())) return $this;
@@ -1879,8 +1880,30 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Get root-level items
         $rs = $this->select(0, $treeColumn);
 
+        // Here we'll collect [id => id] pairs for all items that are root items or have parents
+        $areRootOrHaveParents = [];
+
         // Attach child items to each root item, recursively
-        foreach ($rs as $r) $r->nestDescedants($this);
+        foreach ($rs as $r) {
+
+            // Get ids of items (that are root or have parents) iterated during processing of $r
+            $_ = $r->nestDescedants($this);
+
+            // If it's a non-phantom - append to collection
+            if ($r->id) $areRootOrHaveParents += $_;
+        }
+
+        // If $appendOrphans-flag is true
+        if ($appendOrphans)
+
+            // Foreach row within current rowset
+            foreach ($this as $r)
+
+                // If that row was not attached to the nesting tree so far
+                if (!in_array($r->id, $areRootOrHaveParents))
+
+                    // Append it as root-row
+                    $rs->append($r);
 
         // Return nesting-tree rowset
         return $rs;

@@ -229,7 +229,7 @@ class Indi_Trail_Item {
             }
 
             // Convert to nesting tree and then to array
-            $array['grid'] = $this->grid->toNestingTree()->toArray(true);
+            $array['grid'] = $this->grid->toNestingTree(true)->toArray(true);
         }
 
         if ($this->filters) $array['filters'] = $this->filters->toArray();
