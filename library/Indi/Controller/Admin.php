@@ -1874,7 +1874,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?? ' ';
+                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?? $data[$i][$columnI['dataIndex']] ?? ' ';
                 else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
