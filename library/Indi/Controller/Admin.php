@@ -136,6 +136,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 $applyA['tree'] = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'];
                 if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
+                $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
 
                 if (is_array($f = Indi::get()->filter) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
                 else if ($f == '[]') $applyA['filters'] = $f;
