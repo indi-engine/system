@@ -756,6 +756,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if (isset($typeA['price'][$columnI]))
                     $data[$pointer]['_render'][$columnI] = number_format($value, $typeA['price'][$columnI], '.', ' ');
 
+                // Else if field column type is 'number', we do format with no decimal precision
+                // so if current row's price is '30000' - we convert it to '30 000'
+                // Note: 'numeric' means all types of numbers, e.g. with and/or without decimals
+                // so here we make sure it's without decimal precision by using in 'else if'
+                else if (isset($typeA['numeric'][$columnI]))
+                    $data[$pointer]['_render'][$columnI] = number_format($value, 0, '.', ' ');
+
                 // Temporary: inject STD to img paths
                 if (isset($typeA['string'][$columnI]) && preg_match('~(url\()(/data/upload/)~', $data[$pointer][$columnI]))
                     $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/upload/)~', '$1' . STD . '$2', $data[$pointer][$columnI]);

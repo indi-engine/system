@@ -203,6 +203,9 @@ class Indi_Trail_Item {
                 // Turn on cell editor for grid chunk columns
                 if ($this->action->selectionRequired == 'y') $r->editor = 1;
 
+                // Stop using `width`-prop. todo: refactor
+                $r->width = 0;
+
                 // If editor is turned off - skip
                 if (!$r->editor || $r->editor == 'enumNoCycle') continue;
 
