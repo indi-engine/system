@@ -38,7 +38,7 @@ class Indi_Queue_L10n_AdminCustomData extends Indi_Queue_L10n_AdminUi {
 
             // Create chunks
             foreach (m('Entity')->all('`fraction` = "custom"', '`table` ASC') as $entityR)
-                foreach ($entityR->nested('field', ['where' => '`l10n` = "y" AND `relation` != "6"']) as $fieldR)
+                foreach ($entityR->nested('field', ['where' => '`l10n` = "y" AND IFNULL(`relation`, 0) != "6"']) as $fieldR)
                     $this->appendChunk($queueTaskR, $entityR, $fieldR);
 
             // Order chunks to be sure that all dependen fields will be processed after their dependencies
