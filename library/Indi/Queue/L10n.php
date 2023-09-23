@@ -34,10 +34,14 @@ class Indi_Queue_L10n extends Indi_Queue {
             // Get table
             list ($table, $field) = explode(':', $queueChunkR->location);
 
+            // 
+            $queueChunkR->countSize = 0;
+
             // Count items
-            $queueChunkR->countSize = db()->query('
-                SELECT COUNT(`id`) FROM `' . $table . '`' . rif($queueChunkR->where, ' WHERE $1')
-            )->cell();
+            if ($field)
+                $queueChunkR->countSize = db()->query('
+                    SELECT COUNT(`id`) FROM `' . $table . '`' . rif($queueChunkR->where, ' WHERE $1')
+                )->cell();
 
             // Remember that our try to count was successful
             $queueChunkR->set(['countState' => 'finished'])->basicUpdate();
