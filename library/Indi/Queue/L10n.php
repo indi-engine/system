@@ -34,7 +34,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             // Get table
             list ($table, $field) = explode(':', $queueChunkR->location);
 
-            // 
+            //
             $queueChunkR->countSize = 0;
 
             // Count items
@@ -90,51 +90,55 @@ class Indi_Queue_L10n extends Indi_Queue {
             // Get last target
             $last = m('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
 
-            // Check whether we will use setter method call (instead of google translate api call) as queue-stage
-            $setter = method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
+            // 
+            if ($table && $field) {
 
-            // Build WHERE clause
-            $where = [];
-            if ($queueChunkR->where) $where []= $queueChunkR->where;
-            if ($last) $where []= '`id` > ' . $last;
-            $where = $where ? im($where, ' AND ') : null;
+                // Check whether we will use setter method call (instead of google translate api call) as queue-stage
+                $setter = method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
 
-            // Detect order column
-            $orderColumn = m($table)->fields('move')->alias ?: m($table)->fields('alias')->alias ?: 'id';
+                // Build WHERE clause
+                $where = [];
+                if ($queueChunkR->where) $where []= $queueChunkR->where;
+                if ($last) $where []= '`id` > ' . $last;
+                $where = $where ? im($where, ' AND ') : null;
 
-            // Foreach entry matching chunk's definition
-            m($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
+                // Detect order column
+                $orderColumn = m($table)->fields('move')->alias ?: m($table)->fields('alias')->alias ?: 'id';
 
-                // Get value
-                $value = $params['toggle'] == 'n'
-                    ? $r->language($field, $params['source'])
-                    : (preg_match('~^{"~', $r->$field)
-                        ? json_decode($r->$field)->{$params['source']}
-                        : $r->language($field, $params['source']) ?: $r->$field);
+                // Foreach entry matching chunk's definition
+                m($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
 
-                // Create `queueItem` entry
-                $queueItemR = m('QueueItem')->new([
-                    'queueTaskId' => $queueTaskR->id,
-                    'queueChunkId' => $queueChunkR->id,
-                    'target' => $r->id,
-                    'value' => $value
-                ]);
+                    // Get value
+                    $value = $params['toggle'] == 'n'
+                        ? $r->language($field, $params['source'])
+                        : (preg_match('~^{"~', $r->$field)
+                            ? json_decode($r->$field)->{$params['source']}
+                            : $r->language($field, $params['source']) ?: $r->$field);
 
-                // Save `queueItem` entry
-                $queueItemR->save();
+                    // Create `queueItem` entry
+                    $queueItemR = m('QueueItem')->new([
+                        'queueTaskId' => $queueTaskR->id,
+                        'queueChunkId' => $queueChunkR->id,
+                        'target' => $r->id,
+                        'value' => $value
+                    ]);
 
-                // Increment `queued` prop on `queueChunk` entry and save it
-                $queueChunkR->itemsSize ++;
-                $queueChunkR->itemsBytes += ($bytes = mb_strlen($value, 'utf-8') * $this->itemsBytesMultiplier($params, $setter));
-                $queueChunkR->basicUpdate();
+                    // Save `queueItem` entry
+                    $queueItemR->save();
 
-                // Increment `itemsSize` prop on `queueTask` entry and save it
-                $queueTaskR->itemsSize ++;
-                $queueTaskR->itemsBytes += $bytes;
-                $queueTaskR->basicUpdate(false, false);
+                    // Increment `queued` prop on `queueChunk` entry and save it
+                    $queueChunkR->itemsSize ++;
+                    $queueChunkR->itemsBytes += ($bytes = mb_strlen($value, 'utf-8') * $this->itemsBytesMultiplier($params, $setter));
+                    $queueChunkR->basicUpdate();
 
-                // Fetch entries according to chunk's WHERE clause, and order by `id` ASC
-            }, $where, '`' . $orderColumn . '` ASC');
+                    // Increment `itemsSize` prop on `queueTask` entry and save it
+                    $queueTaskR->itemsSize ++;
+                    $queueTaskR->itemsBytes += $bytes;
+                    $queueTaskR->basicUpdate(false, false);
+
+                    // Fetch entries according to chunk's WHERE clause, and order by `id` ASC
+                }, $where, '`' . $orderColumn . '` ASC');
+            }
 
             // Remember that our try to count was successful
             $queueChunkR->set(['itemsState' => 'finished'])->basicUpdate();
