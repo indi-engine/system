@@ -1521,6 +1521,9 @@ class Indi_Db_Table
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
 
+            // Skip further / JOINed fields
+            if ($fieldR->entityId != $this->_id) continue;
+
             // We will insert values for fields, that are actually exist in database table structure
             if ($fieldR->columnTypeId) {
 
@@ -1592,6 +1595,9 @@ class Indi_Db_Table
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
+
+            // Skip further / JOINed fields
+            if ($fieldR->entityId != $this->_id) continue;
 
             // We will update values for fields, that are actually exist in database table structure
             if (!$fieldR->columnTypeId) continue;
