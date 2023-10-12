@@ -1,5 +1,54 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+	public function queuefinishedAction() {
+		enumset('section', 'rowsetSeparate', 'auto', ['boxIcon' => 'resources/images/icons/field/inherit.png']);
+		enumset('section', 'rowsetSeparate', 'yes', ['boxIcon' => 'resources/images/icons/field/readonly.png']);
+		enumset('section', 'rowsetSeparate', 'no', ['boxIcon' => 'resources/images/icons/field/required.png']);
+		enumset('field', 'mode', 'regular', ['boxIcon' => 'resources/images/icons/field/regular.png']);
+		enumset('field', 'mode', 'required', ['boxIcon' => 'resources/images/icons/field/required.png']);
+		enumset('field', 'mode', 'readonly', ['boxIcon' => 'resources/images/icons/field/readonly.png']);
+		enumset('field', 'mode', 'hidden', ['boxIcon' => 'resources/images/icons/field/hidden.png']);
+		enumset('field', 'storeRelationAbility', 'one', ['boxIcon' => 'resources/images/icons/btn-icon-login.png']);
+		enumset('field', 'storeRelationAbility', 'many', ['boxIcon' => 'resources/images/icons/btn-icon-multikey.png']);
+		
+		notice('queueTask', 'done', [
+		  'title' => 'Queue completed',
+		  'fraction' => 'system',
+		  'event' => '$this->applyState == \'finished\' && preg_match(\'~^L10n~\', $this->title)',
+		  'roleId' => 'dev',
+		  'qtySql' => '`applyState` = "finished" AND `title` LIKE "L10n%"',
+		  'sectionId' => '',
+		  'tplIncBody' => 'Queue task PID#<?=$this->row->procID?> is completed',
+		]);
+		noticeGetter('queueTask', 'done', 'dev', true);
+		
+		action('backup', ['title' => 'Backup', 'fraction' => 'system', 'selectionRequired' => 'n']);
+		action('restore', ['title' => 'Restore', 'fraction' => 'system', 'selectionRequired' => 'n']);
+		section2action('entities','backup', [
+		  'roleIds' => 'dev',
+		  'move' => 'export',
+		  'south' => 'no',
+		  'fitWindow' => 'n',
+		  'l10n' => 'na',
+		]);
+		section2action('entities','restore', [
+		  'roleIds' => 'dev',
+		  'move' => 'backup',
+		  'south' => 'no',
+		  'fitWindow' => 'n',
+		  'l10n' => 'na',
+		]);
+        
+        db()->query("ALTER TABLE `section2action`
+          CHANGE `sectionId` `sectionId` INT NULL AFTER `id`,
+          CHANGE `actionId` `actionId` INT NULL AFTER `sectionId`,
+          CHANGE `toggle` `toggle` ENUM ('y', 'n') DEFAULT 'y' NOT NULL AFTER `actionId`,
+          CHANGE `filterOwner` `filterOwner` ENUM ('no', 'yes', 'certain') DEFAULT 'no' NOT NULL AFTER `roleIds`,
+          CHANGE `south` `south` ENUM ('auto', 'yes', 'no') DEFAULT 'auto' NOT NULL AFTER `multiSelect`,
+          CHANGE `fitWindow` `fitWindow` ENUM ('y', 'n') DEFAULT 'y' NOT NULL AFTER `south`
+        ");
+		die('ok');
+	}
     public function cosmeticAction() {
         if (uri()->command !== 'step2') {
             

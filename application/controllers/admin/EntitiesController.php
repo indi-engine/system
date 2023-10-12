@@ -2,6 +2,98 @@
 class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
     /**
+     * Backup the whole db as sql dump
+     */
+    public function backupAction() {
+        
+        // Prompt for filename
+        $prompt = $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
+            'xtype' => 'textfield',
+            'name' => 'dump',
+            'value' => 'custom-demo.sql.gz'
+        ]]);
+        
+        // Prepare variables
+        $user = ini()->db->user;
+        $pass = ini()->db->pass;
+        $name = ini()->db->name;
+        $dump = $prompt['dump'];
+
+        // Make sure dump name ends with .sql or .sql.gz
+        jcheck([
+            'dump' => [
+                'req' => true,
+                'rex' => '~\.(sql|sql\.gz)$~'
+            ]
+        ], $prompt);
+
+        // Make sure dump name contains alphanumeric and basic punctuation chars
+        jcheck([
+            'dump' => [
+                'req' => true,
+                'rex' => '~^[a-zA-Z0-9\.\-]+$~'
+            ]
+        ], $prompt);
+
+        // Exec mysqldump-command
+        $exec = preg_match('~\.gz$~', $dump) 
+            ? `mysqldump -u $user -p$pass $name | gzip > sql/$dump`
+            : `mysqldump -u $user -p$pass $name > sql/$dump`;
+        
+        // Flush result
+        jflush(!$exec, $exec ?: 'Done');
+    }
+
+    /**
+     * Restore the whole db from sql dump
+     */
+    public function restoreAction() {
+
+        // Prompt for filename
+        $prompt = $this->prompt('Please specify db dump filename to be imported from sql/ directory', [[
+            'xtype' => 'textfield',
+            'name' => 'dump',
+            'value' => 'custom-demo.sql.gz'
+        ]]);
+
+        // Prepare variables
+        $user = ini()->db->user;
+        $pass = ini()->db->pass;
+        $name = ini()->db->name;
+        $dump = $prompt['dump'];
+
+        // Make sure dump name ends with .sql or .sql.gz
+        jcheck([
+            'dump' => [
+                'req' => true,
+                'rex' => '~\.(sql|sql\.gz)$~'
+            ]
+        ], $prompt);
+
+        // Make sure dump name contains alphanumeric and basic punctuation chars
+        jcheck([
+            'dump' => [
+                'req' => true,
+                'rex' => '~^[a-zA-Z0-9\.\-]+$~'
+            ]
+        ], $prompt);
+        
+        // Disable maxwell
+        `php indi realtime/maxwell/disable`;
+
+        // Exec mysqldump-command
+        $exec = preg_match('~\.gz$~', $dump)
+            ? `zcat sql/$dump | mysql -u $user -p$pass $name`
+            : `mysql -u $user -p$pass $name < sql/$dump`;
+        
+        // Enable maxwell back
+        `php indi realtime/maxwell/enable`;
+
+        // Flush result
+        jflush(!$exec, $exec ?: 'Done');
+    }
+    
+    /**
      * Create php classes files
      */
     public function phpAction() {
