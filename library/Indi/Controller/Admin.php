@@ -692,7 +692,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * Provide form action
      */
     public function formAction() {
-
+        t()->row->set(Indi::get()->form ?? []);
     }
 
     /**
@@ -1875,7 +1875,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?: $data[$i][$columnI['dataIndex']] ?? ' ';
+                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?? $data[$i][$columnI['dataIndex']] ?? ' ';
                 else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
@@ -3551,6 +3551,15 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If uri has no 'jump' param - return
         if (!uri('jump')) return;
 
+        // Pick certain props from query string
+        $query = [];
+        foreach (['form', 'filter'] as $key)
+            if ($val = Indi::get()->$key)
+                $query []= http_build_query([$key => $val]);
+
+        // Convert into string
+        $query = $query ? '?' . join('&', $query) : '';
+
         // Backup current trail's items
         $ti = Indi_Trail_Admin::$items;
 
@@ -3576,7 +3585,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $to = preg_replace(':/(id|aix)//:', '/', array_pop($nav));
 
                 // Now we have proper (containing `ph` and `aix` params) uri, so we dispatch it
-                jflush(true, ['redirect' => $to]);
+                jflush(true, ['redirect' => $to . $query]);
 
             // Simulate as if rowset panel was loaded
             } else uri()->dispatch($nav[$i]);

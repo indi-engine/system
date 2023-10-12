@@ -82,27 +82,11 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             // Else no WHERE clause
             else $where = false;
 
-            /**
-             * Additional WHERE clause for `changeLog` values
-             */
-            if ($entityR->table == 'changeLog') {
+            // Skip changeLog-records. todo: make it work for cases when changeLog is turned On for system entities
+            if ($entityR->table == 'changeLog') continue;
 
-                // Get distinct `fieldId`-values
-                $fieldIds = im(db()->query('SELECT DISTINCT `fieldId` FROM `changeLog`')->col());
-
-                // Collect ids of applicable fields
-                $fieldIdA = [];
-                foreach (m('Field')->all('`id` IN (0' . rif($fieldIds, ',$1') . ') AND (`l10n` = "y" OR `storeRelationAbility` != "none")') as $fieldR)
-                    if ($fieldR->l10n == 'y' || $fieldR->rel()->titleField()->l10n == 'y')
-                        $fieldIdA []= $fieldR->id;
-
-                // Prepend `fieldId`-clause
-                $where = '`fieldId` IN (0' . rif(im($fieldIdA), ',$1') . ') AND ' . $where;
-
-            /**
-             *
-             */
-            } else if ($entityR->table == 'noticeGetter') {
+            // Append special WHERE-clase for noticeGetter-records
+            if ($entityR->table == 'noticeGetter') {
                 $where .= ' AND `roleId` IN (' . $master['role']['instances'] . ')';
 
             /**

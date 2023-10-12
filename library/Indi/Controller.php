@@ -278,7 +278,7 @@ class Indi_Controller {
             foreach (t()->fields as $fieldR) if ($fieldR->alias == $column) break;
 
             // Skip further-foreign fields. todo: add support for such fields
-            if ($fieldR->entityId != m()->id()) continue;
+            if ($column !== 'id' && $fieldR->entityId != m()->id()) continue;
 
             // If no direction - set as ASC by default
             if (!preg_match('/^(ASC|DESC)$/', $direction)) $direction = 'ASC';

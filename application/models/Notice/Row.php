@@ -64,8 +64,9 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param Indi_Db_Table_Row $row
      * @param int $diff
+     * @param string $event
      */
-    public function trigger(Indi_Db_Table_Row $row, $diff) {
+    public function trigger(Indi_Db_Table_Row $row, $diff, $event = 'update') {
 
         // Assign `row` prop, that will be visible in compiling context
         $this->row = $row;
@@ -78,7 +79,7 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
             $noticeGetterR->foreign('noticeId', $this);
 
             // Notify
-            $noticeGetterR->notify($row, $diff);
+            $noticeGetterR->notify($row, $diff, $event);
         }
     }
 

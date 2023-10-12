@@ -1695,6 +1695,13 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Save result
             $this->_notices[$noticeR->id]['now'] = $match;
 
+            // If row was deleted then the only possible change is decrementation
+            // Else if row was just inserted then the only possible change is incrementation
+            // Else set $diff to be 0
+            if (!func_num_args() && $this->_notices[$noticeR->id]['was']) $event = 'delete';
+            else if (array_key_exists('id', $this->_affected) && !$this->_affected['id'] && $this->id) $event = 'insert';
+            else $event = 'update';
+
             // If match value changed
             if ($this->_notices[$noticeR->id]['now'] != $this->_notices[$noticeR->id]['was']) {
 
@@ -1712,7 +1719,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 else $diff = -1;
 
                 // Call the trigger
-                $noticeR->trigger($this, $diff);
+                $noticeR->trigger($this, $diff, $event);
             }
 
             // Unset results

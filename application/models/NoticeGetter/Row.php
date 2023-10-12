@@ -10,6 +10,13 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     public $row = null;
 
     /**
+     * Can be 'insert', 'update' or 'delete'
+     *
+     * @var string
+     */
+    public $event = 'update';
+
+    /**
      * This method was redefined to provide ability for some field
      * props to be set using aliases rather than ids
      *
@@ -34,7 +41,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
      * @param Indi_Db_Table_Row $row
      * @param $diff
      */
-    public function notify(Indi_Db_Table_Row $row, $diff) {
+    public function notify(Indi_Db_Table_Row $row, $diff, $event) {
 
         // If $diff arg is not 0, it means that `notice` entry (that current `noticeGetter` entry belongs to)
         // has `qtyDiffRelyOn` == 'event', and this, in it's turn, means that change-direction-of-counter,
@@ -53,10 +60,14 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         $this->row = $row;
 
         // 2.1 If current getter's `criteriaRelyOn` is 'event' - use $diff arg as is
-        if ($this->criteriaRelyOn == 'event') $this->_notify($diff);
+        if ($this->criteriaRelyOn == 'event') $this->_notify($diff, $event);
 
-        // 2.2 Else separately notify two groups of recipients: ones for 'dec' and others for 'inc'
-        else foreach ([-1, 1] as $diff) $this->_notify($diff);
+        // 2.2 Else separately notify one or two groups of recipients: 'dec' and/or 'inc'
+        else foreach ([
+            'update' => [-1, 1],
+            'insert' => [ 1],
+            'delete' => [-1]
+        ][$event] as $diff) $this->_notify($diff, $event);
     }
 
     /**
@@ -67,7 +78,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
      *
      * @param $diff
      */
-    protected function _notify($diff) {
+    protected function _notify($diff, $event) {
 
         // Setup possible directions
         $dirs = [-1 => 'Dec', 0 => 'Evt', 1 => 'Inc'];
@@ -82,7 +93,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         $audio = $dir == 'Inc' ? $this->foreign('noticeId')->src('tpl' . $dir . 'Audio') : false;
 
         // Get recipients
-        $notifyA = $this->users('criteria' . ($this->criteriaRelyOn == 'event' ? 'Evt' : $dir));
+        $notifyA = $this->users('criteria' . ($this->criteriaRelyOn == 'event' ? 'Evt' : $dir), $event);
 
         // If no recipients - return
         if (!$notifyA['rs']) return;
@@ -249,7 +260,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Get array of recipients ids
      */
-    public function users($criteriaProp) {
+    public function users($criteriaProp, $event) {
 
         // Start building WHERE clauses array
         $where = ['`toggle` = "y"'];
@@ -262,6 +273,9 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
 
         // Prevent recipients duplication
         if ($model->table() == 'admin') $where[] = '`roleId` = "' . $this->roleId . '"';
+
+        // Make $event to me accessible during complication
+        $this->event = $event;
 
         // If criteria specified
         if (strlen($this->$criteriaProp)) {
