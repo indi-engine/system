@@ -17,6 +17,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $user = ini()->db->user;
         $pass = ini()->db->pass;
         $name = ini()->db->name;
+        $host = ini()->db->host;
         $dump = $prompt['dump'];
 
         // Make sure dump name ends with .sql or .sql.gz
@@ -37,8 +38,8 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Exec mysqldump-command
         $exec = preg_match('~\.gz$~', $dump) 
-            ? `mysqldump -u $user -p$pass $name | gzip > sql/$dump`
-            : `mysqldump -u $user -p$pass $name > sql/$dump`;
+            ? `mysqldump -h $host -u $user -p$pass $name | gzip > sql/$dump`
+            : `mysqldump -h $host -u $user -p$pass $name > sql/$dump`;
         
         // Flush result
         jflush(!$exec, $exec ?: 'Done');
@@ -60,6 +61,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $user = ini()->db->user;
         $pass = ini()->db->pass;
         $name = ini()->db->name;
+        $host = ini()->db->host;
         $dump = $prompt['dump'];
 
         // Make sure dump name ends with .sql or .sql.gz
@@ -70,24 +72,59 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             ]
         ], $prompt);
 
+        // If given dump name is actually an URL
+        if (Indi::rexm('url', $dump)) {
+
+            // Flush step
+            msg('Downloading dump...');
+
+            // Download dump
+            $raw = file_get_contents($dump);
+
+            // Spoof $dump for it to contain just filename with extension
+            $dump = $prompt['dump'] = pathinfo($dump, PATHINFO_BASENAME);
+
+            // Save dump in sql/ directory
+            file_put_contents("sql/$dump", $raw);
+        }
+
         // Make sure dump name contains alphanumeric and basic punctuation chars
         jcheck([
             'dump' => [
-                'req' => true,
                 'rex' => '~^[a-zA-Z0-9\.\-]+$~'
             ]
         ], $prompt);
-        
-        // Disable maxwell
-        `php indi realtime/maxwell/disable`;
+
+        // Whether maxwell is enabled
+        $maxwell = ini()->rabbitmq->maxwell;
+
+        // If yes
+        if ($maxwell) {
+
+            // Flush step
+            msg('Disabling maxwell...');
+
+            // Disable maxwell
+            `php indi realtime/maxwell/disable`;
+        }
+
+        // Flush step
+        msg('Importing dump...');
 
         // Exec mysqldump-command
         $exec = preg_match('~\.gz$~', $dump)
-            ? `zcat sql/$dump | mysql -u $user -p$pass $name`
-            : `mysql -u $user -p$pass $name < sql/$dump`;
-        
-        // Enable maxwell back
-        `php indi realtime/maxwell/enable`;
+            ? `zcat sql/$dump | mysql -h $host -u $user -p$pass $name`
+            : `mysql -h $host -u $user -p$pass $name < sql/$dump`;
+
+        // If maxwell was enabled
+        if ($maxwell) {
+
+            // Flush step
+            msg('Enabling maxwell back...');
+
+            // Enable maxwell back
+            `php indi realtime/maxwell/enable`;
+        }
 
         // Flush result
         jflush(!$exec, $exec ?: 'Done');
