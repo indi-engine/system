@@ -1839,7 +1839,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $within
      * @return bool
      */
-    public function move($direction = 'up', $within = '', $groupBy = '') {
+    public function move($direction = 'up', $within = '') {
 
         // If $direction arg is either 'up' or 'down'
         if (in_array($direction, ['up', 'down'])) {
@@ -1850,10 +1850,6 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Apend additional part to WHERE clause, in case if current entity - is a tree-like entity
             if ($this->model()->treeColumn())
                 $where['treeColumn'] = 'IFNULL(`' . $this->model()->treeColumn() . '`, 0) = "' . $this->{$this->model()->treeColumn()} . '"';
-
-            // Append groupBy-part of WHERE clause, for cases when moving should be made among
-            // sibling entries, having value of $groupBy prop equal tos current entry's $groupBy prop
-            if ($groupBy) $where['groupBy'] = '`' . $groupBy . '` = "' . $this->$groupBy . '"';
 
             // Append nearest-neighbour WHERE clause part, for finding the row,
             // that current row should exchange value of `move` property with
@@ -2251,7 +2247,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $order = $relatedM->comboDataOrder;
                 if (!@func_get_arg(7) && $relatedM->comboDataOrderDirection) $dir = $relatedM->comboDataOrderDirection;
                 if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
-            } else if ($relatedM->fields('move') && $treeColumn) {
+            } else if ($relatedM->fields('move')) {
                 $order = 'move';
             } else {
 
