@@ -136,7 +136,7 @@ class Indi_Db {
                     // --
                     // Basically we need this dirty hack for case when Indi Engine is running inside a docker container,
                     // and docker-entrypoint.sh has commands that require mysql to be completely initialized, so we wait
-                    $tryQty = 15;
+                    $tryQty = 1;
 
                     // Do attempts
                     for ($i = 1; $i <= $tryQty; $i++) try {
