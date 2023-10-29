@@ -2,6 +2,341 @@
 class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
     /**
+     * Output of last $this->exec($command) call
+     *
+     * @var string
+     */
+    public string $msg = '';
+
+    /**
+     * Git things
+     *
+     * @var array
+     */
+    private $git = [
+
+        // Path to git config file
+        'config' => '.git/config',
+
+        // Git
+        'auth' => [
+
+            // Auth string in format 'username:token' for use to access current project's private repository, if private
+            'value' => '',
+
+            // Regular expressions to work with git config file contents and/or auth string given via prompt
+            'rex' => [
+
+                // Regex to match some text which comes right before auth string inside git config file
+                'conf' => '\[remote "origin"\]\s+url\s*=\s*.*//',
+
+                // Regex to match auth string itself
+                'self' => '[a-zA-Z0-9_]+:[a-zA-Z0-9_]+',
+
+                // Regex to match repo url (e.g. github.com/repo-account/repo-name.git) that comes after auth string plus '@'
+                'repo' => '[^\n]+'
+            ]
+        ]
+    ];
+
+    /**
+     * Prompt for auth-string to be able to update current repository using `git pull` command
+     */
+    public function promptGitUserToken() {
+
+        // Prompt for valid Google Cloud Translate API key
+        $prompt = $this->prompt(im([
+            'Please specify git username and token to update current repo via `git pull` command',
+            'Leave empty if your project use public repository'
+        ], '<br>'), [[
+            'xtype' => 'textfield',
+            'emptyText' => 'yourUsername:yourToken',
+            'regex' => '/' . $this->git['auth']['rex']['self'] . '/',
+            'width' => 250,
+            'name' => $name = 'user:token'
+        ]]);
+
+        // Check prompt data
+        jcheck([
+            $name => [
+                'rex' => '~^' . $this->git['auth']['rex']['self'] . '$~'
+            ]
+        ], $prompt);
+
+        // Assign as prop to be further accessible
+        $this->git['auth']['value'] = $prompt[$name];
+    }
+
+    /**
+     * Execute shell command
+     *
+     * @param $command
+     * @param string $folder Directory context
+     * @param string $noExitOnFailureIfMsgContains Don't die on non-0 exit code if output contains given string
+     * @return false|string
+     */
+    public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '') {
+
+        // Prepare msg
+        $msg = rif($folder, '$1$  ');
+        $msg .= str_replace($this->git['auth']['value'], '*user*:*token*', $command);
+
+        // Print where we are
+        msg($msg);
+
+        // If command should be executed within a certain directory
+        if ($folder) {
+
+            // Remember current directory
+            $wasdir = getcwd();
+
+            // Change current directory
+            chdir($folder);
+        }
+
+        // Exec command
+        exec("$command 2>&1", $output, $exit_code);
+
+        // Change current directory back
+        if ($folder) chdir($wasdir);
+
+        // Prepare msg
+        $this->msg = join("<br>", $output);
+
+        // If success (e.g. exit code is 0) - just return msg
+        if (!$exit_code) return $this->msg;
+
+        // Else if failure, but msg contains given value - return false
+        if ($match = $noExitOnFailureIfMsgContains)
+            if (preg_match("~$match~", $this->msg))
+                return false;
+
+        // Setup debug info
+        $debug [-3] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
+        $debug [-2] = 'php get_current_user(): ' . get_current_user();
+        $debug [-1] = '---------';
+
+        // Return output
+        $msg = join("<br>", $debug + $output);
+
+        // Else flush failure right here
+        jflush(false, $msg);
+    }
+
+    /**
+     * Strip git username and token (if any) from repository url inside git config file
+     */
+    public function stripGitUserToken() {
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Strip username and token (if any) from repository url
+        $config['text'] = preg_replace("~($conf)$self@($repo)~",'$1$2', $config['text']);
+
+        // Write back
+        file_put_contents($this->git['config'], $config['text']);
+    }
+
+    /**
+     * Parse repo url within git config file
+     */
+    public function parseGitRepoUrl() : string {
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Strip username and token (if any) from repository url
+        return 'https://' . Indi::rexm("~($conf)($self@|)($repo)~", $config['text'], 3);
+    }
+
+    /**
+     * Apply git username and token (if any) from repository url inside git config file
+     *
+     * @param string $url
+     * @return string|null
+     */
+    public function applyGitUserToken($url = ''): ?string
+    {
+        // If git auth string is empty - return
+        if (!$this->git['auth']['value']) return $url;
+
+        // If repo url is given as argument
+        if ($url) {
+
+            // Apply auth string into that url here and return it
+            return preg_replace('~://~', '${0}' . $this->git['auth']['value'] . '@', $url);
+        }
+
+        // Strip git username and token from repo url within git config file
+        $this->stripGitUserToken();
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Apply auth string value
+        $config['text'] = preg_replace("~($conf)($repo)~",'$1' . $this->git['auth']['value'] . '@$2', $config['text']);
+
+        // Write back
+        file_put_contents($this->git['config'], $config['text']);
+
+        // Return null
+        return null;
+    }
+
+    /**
+     * Check whether local $repo is outdated
+     *
+     * @param string $repo
+     * @return true|string
+     */
+    public function isRepoOutdated(string $repo) {
+
+        // If $repo is 'custom'
+        if ($repo === 'custom') {
+
+            // Get project remote repository URL
+            $remote = $this->parseGitRepoUrl();
+
+            // Current folder assumed
+            $folder = false;
+
+            // Apply git username and token
+            $remote = '-h -t ' . $this->applyGitUserToken($remote);
+
+        // Else assume vendor package
+        } else {
+
+            // Get package remote repository URL
+            $remote = "https://github.com/indi-engine/$repo.git";
+
+            // Get the folder where package's local repository reside
+            $folder = ltrim(VDR, '/') . "/$repo";
+        }
+
+        // Get the latest commit in package's remote repository
+        //$commit = $this->exec("git ls-remote $remote master | awk '{print $1}'");
+        $commit = preg_split('~\s+~', $this->exec("git ls-remote $remote master"))[0];
+
+        // Call 'git branch' command in that folder to check whether latest commit already exists there
+        $exists = $this->exec("git branch --contains $commit", $folder, 'no such commit');
+
+        // Return
+        return $exists === false ? true : $commit;
+    }
+
+    /**
+     * Check whether contents of composer.lock file is outdated due to that commit hash
+     * mentioned as a package source reference is not equal to the $commit, assuming that
+     * $commit arg is the hash of the most recently pushed commit
+     *
+     * @param $repo
+     * @param $commit
+     * @return bool
+     */
+    public function isLockOutdated($repo, $commit) {
+
+        // Get and decode lock file contents
+        $lock = json_decode(file_get_contents('composer.lock'));
+
+        // Find $repo among packages and check last commit
+        foreach ($lock->packages as $package) {
+            if ($package->name === "indi-engine/$repo") {
+                return $package->source->reference !== $commit;
+            }
+        }
+
+        // If no such package was found at all - return true
+        return true;
+    }
+
+    /**
+     * At first, check if current project repo is outdated, and if so do `git pull`
+     * Afterwards, check if any of indi-engine package repos are outdated, and if so
+     */
+    public function updateAction() {
+
+        // If confirmation answer is already given - prevent 'git status' from being executed more than once
+        if (!Indi::get()->answer)
+            $this->exec('git status', ltrim(VDR, '/') . '/system');
+
+        // Ask for confirmation to proceed
+        if (!preg_match('~nothing to commit~', $this->msg)) {
+            $this->confirm($this->msg);
+        }
+
+        // Prompt git username and token to work with private repo
+        $this->promptGitUserToken();
+
+        // If custom repo is outdated
+        if ($this->isRepoOutdated('custom') === true) {
+
+            // Apply github username and token
+            $this->applyGitUserToken();
+
+            // Do git pull and hope composer.lock will be among updated files
+            $this->exec('git pull');
+
+            // Strip github username and token
+            $this->stripGitUserToken();
+
+            // Do composer install. todo: detect whether composer.lock was really updated
+            $this->exec('composer install');
+        }
+
+        // Foreach local repo check whether at least one of them is outdated
+        $isOutdated = false;
+        foreach (ar('system,client') as $repo) {
+
+            // Get last pushed commit if local repo is NOT outdated
+            $lastPushedCommit = $this->isRepoOutdated($repo);
+
+            // If local repo is outdated, or if not but composer.lock file is outdated
+            if ($lastPushedCommit === true || $this->isLockOutdated($repo, $lastPushedCommit)) {
+
+                // Setup $isOutdated flag and break
+                $isOutdated = true; break;
+            }
+        }
+
+        // If one/both of indi-engine packages is/are outdated,
+        // or their mentions inside composer.lock are outdated
+        // or composer.lock file is changed but not committed
+        if ($isOutdated || $this->exec('git status --porcelain composer.lock')) {
+
+            // Run composer update
+            if ($isOutdated) $this->exec('composer update indi-engine/*');
+
+            // Add to commit
+            $this->exec('git add composer.lock');
+
+            // Commit
+            $this->exec('git commit -F .git/COMMIT_EDITMSG');
+
+            // Insert git username and token in repo url
+            $this->applyGitUserToken();
+
+            // Push changes
+            $this->exec('git push');
+
+            // Strip git username and token from repo url
+            $this->stripGitUserToken();
+        }
+
+        // Flush output printed by last command
+        jflush(true, $this->msg);
+    }
+
+    /**
      * Backup the whole db as sql dump
      */
     public function backupAction() {
