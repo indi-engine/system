@@ -19,9 +19,15 @@ $rex .=  '-\s+"reference": "(?<was>[0-9a-f]+)"\n';
 $rex .= '\+\s+"reference": "(?<now>[0-9a-f]+)"';
 $rex .= '~';
 
-// If no indi-engine packages were updated - exit
-if (!preg_match_all($rex, $diff, $packageA, PREG_SET_ORDER))
+// If no indi-engine packages were updated
+if (!preg_match_all($rex, $diff, $packageA, PREG_SET_ORDER)) {
+
+    // Spoof COMMIT_EDITMSG file contents
+    file_put_contents('.git/COMMIT_EDITMSG', 'composer.lock: some changes not related to indi-engine packages');
+
+    // Exit
     exit(0);
+}
 
 // Prepare regexp to parse commit messages
 $rex = '~commit (?<hash>[0-9a-f]+)\nAuthor: .*?\nDate: (?<date>.*?)\n\n(?<msg>(?: {4}.+?\n)+)~s';
