@@ -9,7 +9,7 @@ $dir = getcwd();
 if (!preg_match('~Changes to be committed:.+composer\.lock~s', $msg))
     exit(0);
 
-// Get diff for composer.lock's changed that are stagede to commit
+// Get diff for composer.lock's changed that are staged to commit
 $diff = `git diff --staged composer.lock`;
 
 // Prepare regexp to check which indi-engine packages were updated
@@ -70,7 +70,7 @@ $msg = array_map(fn($line) => '# ' . $line, $msg);
 $msg = join("\n", $msg);
 
 // Build msg
-$msg = "composer.lock updated:\n\n" . join("\n\n", array_column($packageA, 'msg')) . "\n\n"  . $msg;
+$msg = "composer.lock updated:\n\n" . join("\n\n", array_column($packageA, 'msg'));// . "\n\n"  . $msg;
 
 // Spoof COMMIT_EDITMSG file contents
 file_put_contents('.git/COMMIT_EDITMSG', $msg);
