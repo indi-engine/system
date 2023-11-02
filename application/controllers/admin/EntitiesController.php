@@ -319,17 +319,17 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             // Add to commit
             $this->exec('git add composer.lock');
 
-            // Commit 
+            // Commit
             $this->exec('git commit -F .git/COMMIT_EDITMSG');
 
             // Insert git username and token in repo url
-            //$this->applyGitUserToken();
+            $this->applyGitUserToken();
 
             // Push changes
-            //$this->exec('git push');
+            $this->exec('git push');
 
             // Strip git username and token from repo url
-            //$this->stripGitUserToken();
+            $this->stripGitUserToken();
         }
 
         // Flush output printed by last command
