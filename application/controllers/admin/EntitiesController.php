@@ -28,7 +28,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             'rex' => [
 
                 // Regex to match some text which comes right before auth string inside git config file
-                'conf' => '\[remote "origin"\]\s+url\s*=\s*.*//',
+                'conf' => '\[remote "origin"\]\s+.*?url\s*=\s*.*//',
 
                 // Regex to match auth string itself
                 'self' => '[a-zA-Z0-9_]+:[a-zA-Z0-9_]+',
@@ -51,7 +51,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         ], '<br>'), [[
             'xtype' => 'textfield',
             'emptyText' => 'yourUsername:yourToken',
-            'regex' => '/' . $this->git['auth']['rex']['self'] . '/',
+            //'regex' => '/' . $this->git['auth']['rex']['self'] . '/',
             'width' => 250,
             'name' => $name = 'user:token'
         ]]);
@@ -153,7 +153,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
 
         // Strip username and token (if any) from repository url
-        return 'https://' . Indi::rexm("~($conf)($self@|)($repo)~", $config['text'], 3);
+        return 'https://' . Indi::rexm("~($conf)($self@|)($repo)~s", $config['text'], 3);
     }
 
     /**
