@@ -112,7 +112,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 return false;
 
         // Setup debug info
-        $debug [-3] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
+        $debug [-5] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
+        $debug [-4] = 'env HOME: ' . getenv('HOME');
+        $debug [-3] = 'env COMPOSER_HOME: ' . getenv('COMPOSER_HOME');
         $debug [-2] = 'php get_current_user(): ' . get_current_user();
         $debug [-1] = '---------';
 
@@ -135,7 +137,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
 
         // Strip username and token (if any) from repository url
-        $config['text'] = preg_replace("~($conf)$self@($repo)~",'$1$2', $config['text']);
+        $config['text'] = preg_replace("~($conf)$self@($repo)~s",'$1$2', $config['text']);
 
         // Write back
         file_put_contents($this->git['config'], $config['text']);
@@ -184,7 +186,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
 
         // Apply auth string value
-        $config['text'] = preg_replace("~($conf)($repo)~",'$1' . $this->git['auth']['value'] . '@$2', $config['text']);
+        $config['text'] = preg_replace("~($conf)($repo)~s",'$1' . $this->git['auth']['value'] . '@$2', $config['text']);
 
         // Write back
         file_put_contents($this->git['config'], $config['text']);
