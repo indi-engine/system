@@ -268,6 +268,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function updateAction() {
 
+        // Temporarily set HOME env, if not set
+        if (!getenv('HOME')) putenv('HOME=' . DOC);
+
         // Check status of system package
         $this->exec(
             'git status',
