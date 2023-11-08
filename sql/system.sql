@@ -1,6 +1,6 @@
 /*
-SQLyog Ultimate v13.1.1 (64 bit)
-MySQL - 8.0.28 : Database - custom
+SQLyog Trial v13.1.9 (64 bit)
+MySQL - 8.0.29 : Database - custom
 *********************************************************************
 */
 
@@ -33,7 +33,7 @@ CREATE TABLE `action` (
   KEY `multiSelect` (`multiSelect`),
   KEY `hasView` (`hasView`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `action` */
 
@@ -70,7 +70,10 @@ insert  into `action`(`id`,`title`,`alias`,`toggle`,`fraction`,`hasView`,`icon`,
 (55,'{\"en\":\"Receipt\",\"ru\":\"Чек\"}','receipt','y','system','y','resources/images/icons/receipt.png','y','0'),
 (56,'{\"en\":\"Refund\",\"ru\":\"Вернуть платеж\"}','refund','y','system','n','resources/images/icons/btn-icon-refund.png','y','0'),
 (57,'{\"en\":\"Reset\",\"ru\":\"Сбросить\"}','reset','y','system','n','','y','0'),
-(58,'{\"en\":\"Start\",\"ru\":\"Начать\"}','start','y','system','y','','y','0');
+(58,'{\"en\":\"Start\",\"ru\":\"Начать\"}','start','y','system','y','','y','0'),
+(59,'{\"en\":\"Update\",\"ru\":\"Обновить\"}','update','y','system','n','','n','0'),
+(60,'{\"en\":\"Backup\",\"ru\":\"Резервное копирование\"}','backup','y','system','n','','n','0'),
+(61,'{\"en\":\"Restore\",\"ru\":\"Восстановить\"}','restore','y','system','n','','n','0');
 
 /*Table structure for table `admin` */
 
@@ -82,7 +85,7 @@ CREATE TABLE `admin` (
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `phone` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `toggle` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `demo` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   `uiedit` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
@@ -119,7 +122,7 @@ CREATE TABLE `alteredField` (
   `defaultValue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `jumpSectionId` int DEFAULT NULL,
   `jumpSectionActionId` int DEFAULT NULL,
-  `jumpArgs` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `jumpArgs` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `sectionId` (`sectionId`),
   KEY `fieldId` (`fieldId`),
@@ -403,7 +406,7 @@ CREATE TABLE `entity` (
   `spaceScheme` enum('none','date','datetime','date-time','date-timeId','date-dayQty','datetime-minuteQty','date-time-minuteQty','date-timeId-minuteQty','date-timespan') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
   `spaceFields` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `changeLogToggle` enum('none','all') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
-  `changeLogExcept` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `changeLogExcept` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `system` (`fraction`),
   KEY `titleFieldId` (`titleFieldId`),
@@ -457,10 +460,10 @@ CREATE TABLE `enumset` (
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `alias` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
-  `boxIcon` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `boxColor` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `textColor` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `cssStyle` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `boxIcon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `boxColor` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `textColor` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `cssStyle` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `fieldId` (`fieldId`),
   FULLTEXT KEY `title` (`title`),
@@ -1344,9 +1347,9 @@ CREATE TABLE `grid` (
   `accessExcept` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `jumpSectionId` int DEFAULT NULL,
   `jumpSectionActionId` int DEFAULT NULL,
-  `jumpArgs` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `jumpArgs` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `colorBreak` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
-  `colorDirect` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `colorDirect` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `colorField` int DEFAULT NULL,
   `colorEntry` int NOT NULL DEFAULT '0',
   `formToggle` enum('n','y') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
@@ -1966,14 +1969,15 @@ CREATE TABLE `notice` (
   FULLTEXT KEY `tplEvtBody` (`tplEvtBody`),
   FULLTEXT KEY `title` (`title`),
   CONSTRAINT `notice_ibfk_entityId` FOREIGN KEY (`entityId`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `notice` */
 
 insert  into `notice`(`id`,`title`,`alias`,`fraction`,`entityId`,`event`,`roleId`,`toggle`,`qtySql`,`qtyDiffRelyOn`,`sectionId`,`bg`,`fg`,`tooltip`,`tplFor`,`tplIncSubj`,`tplIncBody`,`tplDecSubj`,`tplDecBody`,`tplEvtSubj`,`tplEvtBody`) values 
 (1,'{\"en\":\"Queue failed\",\"ru\":\"Очередь задач прервана\"}','failed','system',314,'$this->queueState == \'error\'','1','y','`queueState` = \"error\"','event','','353#e3495a','000#ffffff','{\"en\":\"\",\"ru\":\"Очереди задач, процессинг<br>которых завершился ошибкой\"}','inc','','{\"en\":\"Queue task failed due to Google Cloud Translate API response: <?=$this->row->error?>\",\"ru\":\"Очередь задач прервана из-за ошибки Google Cloud Translate API response: <?=$this->row->error?>\"}','','','',''),
 (2,'{\"en\":\"Queue started\",\"ru\":\"Очередь задач запущена\"}','started','system',314,'$this->procID != 0','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task started with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач запущена с PID: <?=$this->row->procID?>\"}','','','',''),
-(3,'{\"en\":\"Queue resumed\",\"ru\":\"Очередь задач возобновлена\"}','resumed','system',314,'$this->affected(\"procID\", true)','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task resumed with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач возобновлена с PID: <?=$this->row->procID?>\"}','','','','');
+(3,'{\"en\":\"Queue resumed\",\"ru\":\"Очередь задач возобновлена\"}','resumed','system',314,'$this->affected(\"procID\", true)','1','y','`procID` != \"0\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task resumed with PID: <?=$this->row->procID?>\",\"ru\":\"Очередь задач возобновлена с PID: <?=$this->row->procID?>\"}','','','',''),
+(4,'{\"en\":\"Queue completed\",\"ru\":\"Очередь задач завершена\"}','done','system',314,'$this->applyState == \'finished\' && preg_match(\'~^L10n~\', $this->title)','1','y','`applyState` = \"finished\" AND `title` LIKE \"L10n%\"','event','','195#008dbc','000#ffffff','','inc','','{\"en\":\"Queue task PID#<?=$this->row->procID?> is completed\",\"ru\":\"Очередь задач PID#<?=$this->row->procID?> - завершена\"}','','','','');
 
 /*Table structure for table `noticeGetter` */
 
@@ -2004,14 +2008,15 @@ CREATE TABLE `noticeGetter` (
   FULLTEXT KEY `title` (`title`),
   CONSTRAINT `noticeGetter_ibfk_noticeId` FOREIGN KEY (`noticeId`) REFERENCES `notice` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `noticeGetter_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `noticeGetter` */
 
 insert  into `noticeGetter`(`id`,`noticeId`,`roleId`,`toggle`,`http`,`criteriaRelyOn`,`criteriaEvt`,`criteriaInc`,`criteriaDec`,`title`,`email`,`vk`,`sms`) values 
 (1,1,1,'y','/queueTask/run/id/{id}/gapikey/','event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n'),
 (2,2,1,'y','','event','','','','{\"ru\":\"Разработчик\",\"en\":\"Developer\"}','n','n','n'),
-(3,3,1,'y','','event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','n','n','n');
+(3,3,1,'y','','event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','n','n','n'),
+(4,4,1,'y','','event','','','','{\"en\":\"Developer\",\"ru\":\"Разработчик\"}','n','n','n');
 
 /*Table structure for table `param` */
 
@@ -2101,7 +2106,7 @@ CREATE TABLE `queueChunk` (
   FULLTEXT KEY `where` (`where`),
   CONSTRAINT `queueChunk_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueChunk_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17913 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18673 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueChunk` */
 
@@ -2125,7 +2130,7 @@ CREATE TABLE `queueItem` (
   FULLTEXT KEY `result` (`result`),
   CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueItem_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=249712 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=270143 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
 
@@ -2162,7 +2167,7 @@ CREATE TABLE `queueTask` (
   KEY `applyState` (`applyState`),
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=InnoDB AUTO_INCREMENT=724 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=735 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueTask` */
 
@@ -2206,7 +2211,7 @@ CREATE TABLE `realtime` (
   CONSTRAINT `realtime_ibfk_realtimeId` FOREIGN KEY (`realtimeId`) REFERENCES `realtime` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4833 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4865 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -2380,15 +2385,15 @@ CREATE TABLE `section2action` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sectionId` int DEFAULT NULL,
   `actionId` int DEFAULT NULL,
-  `toggle` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `roleIds` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `filterOwner` enum('no','yes','certain') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'no',
-  `filterOwnerRoleIds` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `filterOwner` enum('no','yes','certain') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'no',
+  `filterOwnerRoleIds` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `multiSelect` enum('inherit','1','0','separate') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'inherit',
-  `south` enum('auto','yes','no') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
-  `fitWindow` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `south` enum('auto','yes','no') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
+  `fitWindow` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `rename` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `l10n` enum('n','qy','y','qn','na') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
@@ -2407,7 +2412,7 @@ CREATE TABLE `section2action` (
   FULLTEXT KEY `rename` (`rename`),
   CONSTRAINT `section2action_ibfk_actionId` FOREIGN KEY (`actionId`) REFERENCES `action` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `section2action_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1698 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1702 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section2action` */
 
@@ -2578,7 +2583,10 @@ insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`roleIds`,`fi
 (1694,391,4,'y','14','no','',1694,'{\"en\":\"Delete\",\"ru\":\"Удалить\"}','1','no','n','','na'),
 (1695,201,7,'y','1','no','',1585,'{\"en\":\"Toggle\",\"ru\":\"Статус\"}','inherit','no','n','','na'),
 (1696,407,36,'y','1','no','',1696,'{\"en\":\"Export\",\"ru\":\"Экспорт\"}','inherit','no','n','','na'),
-(1697,2,36,'y','1','no','',1697,'{\"en\":\"Export\",\"ru\":\"Экспорт\"}','inherit','no','n','','na');
+(1697,2,36,'y','1','no','',1697,'{\"en\":\"Export\",\"ru\":\"Экспорт\"}','inherit','no','n','','na'),
+(1698,5,59,'y','1','no','',1700,'{\"en\":\"Update\",\"ru\":\"Обновить\"}','inherit','no','n','','na'),
+(1699,5,60,'y','1','no','',1698,'{\"en\":\"Backup\",\"ru\":\"Резервное копирование\"}','inherit','no','n','','na'),
+(1700,5,61,'y','1','no','',1699,'{\"en\":\"Restore\",\"ru\":\"Восстановить\"}','inherit','no','n','','na');
 
 /*Table structure for table `year` */
 
