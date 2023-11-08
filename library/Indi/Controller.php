@@ -853,8 +853,8 @@ class Indi_Controller {
             $this->adjustGridData($data);
 
             // Adjust grid data on a per-item basis
-            foreach ($data as $idx => &$item) {
-                $r = $this->rowset->at($idx);
+            foreach ($data as &$item) {
+                $r = $this->rowset->gb($item['id']);
                 $this->adjustGridDataItem($item, $r);
                 $this->renderGridDataItem($item, $r);
             }
