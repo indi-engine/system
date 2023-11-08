@@ -73,16 +73,17 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      * @param $command
      * @param string $folder Directory context
      * @param string $noExitOnFailureIfMsgContains Don't die on non-0 exit code if output contains given string
+     * @param bool $silent Prevent this command from being shown in user's notification area
      * @return false|string
      */
-    public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '') {
+    public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '', $silent = false) {
 
         // Prepare msg
         $msg = rif($folder, '$1$  ');
         $msg .= str_replace($this->git['auth']['value'], '*user*:*token*', $command);
 
         // Print where we are
-        msg($msg);
+        if (!$silent) msg($msg);
 
         // If command should be executed within a certain directory
         if ($folder) {
@@ -267,11 +268,15 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function updateAction() {
 
-        // If confirmation answer is already given - prevent 'git status' from being executed more than once
-        if (!Indi::get()->answer)
-            $this->exec('git status', ltrim(VDR, '/') . '/system');
+        // Check status of system package
+        $this->exec(
+            'git status',
+            ltrim(VDR, '/') . '/system',
+            false,
+            !!Indi::get()->answer
+        );
 
-        // Ask for confirmation to proceed
+        // If some changes are there - ask for confirmation to proceed further
         if (!preg_match('~nothing to commit~', $this->msg)) {
             $this->confirm($this->msg);
         }
