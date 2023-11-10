@@ -357,6 +357,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function backupAction() {
         
+        // Check sql/ directory is writable
+        if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
+        
         // Prompt for filename
         $prompt = $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
             'xtype' => 'textfield',
