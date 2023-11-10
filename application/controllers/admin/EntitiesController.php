@@ -83,7 +83,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $msg .= str_replace($this->git['auth']['value'], '*user*:*token*', $command);
 
         // Print where we are
-        if (!$silent) msg($msg);
+        if (!$silent) ini()->rabbitmq->enabled ? msg($msg) : i($msg, 'a', 'log/update.log');
 
         // If command should be executed within a certain directory
         if ($folder) {
@@ -270,6 +270,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      * Afterwards, check if any of indi-engine package repos are outdated, and if so
      */
     public function updateAction() {
+
+        // If rabbitmq is not enabled - clear log/update.log
+        if (!ini()->rabbitmq->enabled) i('', 'w', 'log/update.log');
 
         // Temporarily set HOME env, if not set
         if (!getenv('HOME') || !is_writable(getenv('HOME'))) putenv('HOME=' . DOC);
