@@ -1,5 +1,32 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function updateactionsAction() {
+        action('backup', ['title' => 'Резервное копирование', 'fraction' => 'system', 'selectionRequired' => 'n']);
+        action('restore', ['title' => 'Восстановить', 'fraction' => 'system', 'selectionRequired' => 'n']);
+        action('update', ['title' => 'Обновить', 'fraction' => 'system', 'selectionRequired' => 'n']);
+        section2action('entities','backup', [
+            'roleIds' => 'dev',
+            'move' => 'export',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('entities','restore', [
+            'roleIds' => 'dev',
+            'move' => 'backup',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('entities','update', [
+            'roleIds' => 'dev',
+            'move' => 'restore',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        die('ok');
+    }
 	public function queuefinishedAction() {
 		enumset('section', 'rowsetSeparate', 'auto', ['boxIcon' => 'resources/images/icons/field/inherit.png']);
 		enumset('section', 'rowsetSeparate', 'yes', ['boxIcon' => 'resources/images/icons/field/readonly.png']);
