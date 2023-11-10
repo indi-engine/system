@@ -113,10 +113,13 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 return false;
 
         // Setup debug info
-        $debug [-5] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
-        $debug [-4] = 'env HOME: ' . getenv('HOME');
-        $debug [-3] = 'env COMPOSER_HOME: ' . getenv('COMPOSER_HOME');
-        $debug [-2] = 'php get_current_user(): ' . get_current_user();
+        $user = posix_getpwuid(posix_geteuid());
+        $debug [-7] = 'php posix_getpwuid(..)[\'name\']: ' . $user['name'];
+        $debug [-6] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
+        $debug [-5] = 'php get_current_user(): ' . get_current_user();
+        $debug [-4] = 'php posix_getpwuid(..)[\'dir\']: ' . $user['dir'];
+        $debug [-3] = 'env HOME: ' . getenv('HOME');
+        $debug [-2] = 'env COMPOSER_HOME: ' . getenv('COMPOSER_HOME');
         $debug [-1] = '---------';
 
         // Return output
