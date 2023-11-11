@@ -7831,7 +7831,8 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Save adjusted target-props on foreign entries
         foreach (array_unique(array_column($inQtySum, 'foreign')) as $foreign)
-            $this->foreign($foreign)->save();
+            if ($this->foreign($foreign))
+                $this->foreign($foreign)->save();
     }
 
     /**
