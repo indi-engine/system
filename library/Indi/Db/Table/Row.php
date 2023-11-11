@@ -7784,7 +7784,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             foreach ($inQtySum as $info) {
 
                 // Shortcuts
-                $foreign = $this->foreign($info['foreign']);
+                if (!$foreign = $this->foreign($info['foreign'])) continue;
                 $target = $info['target'];
                 $source = $info['source'];
 
@@ -7802,7 +7802,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             foreach ($inQtySum as $info) {
 
                 // Shortcuts
-                $foreign = $this->foreign($info['foreign']);
+                if (!$foreign = $this->foreign($info['foreign'])) continue;
                 $target = $info['target'];
                 $source = $info['source'];
 
@@ -7820,7 +7820,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             foreach ($inQtySum as $info) {
 
                 // Shortcuts
-                $foreign = $this->foreign($info['foreign']);
+                if (!$foreign = $this->foreign($info['foreign'])) continue;
                 $target = $info['target'];
                 $source = $info['source'];
 
