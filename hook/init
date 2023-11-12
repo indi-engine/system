@@ -1,7 +1,10 @@
 <?php
 
+// System package directory shortcut
+$system = 'vendor/indi-engine/system';
+
 // Get path from where to pick to hook itself
-$self = '#!/bin/sh' . PHP_EOL . 'php vendor/indi-engine/system/hook/self';
+$self = "#!/bin/sh\nphp $system/hook/self";
 
 // Get path from where hook will be called
 $hook = '.git/hooks/prepare-commit-msg';
@@ -13,4 +16,9 @@ file_put_contents($hook, $self);
 chmod($hook, 0744);
 
 // Create indi-command file
-file_put_contents('indi', '<?php' . PHP_EOL . "require 'vendor/indi-engine/system/application/indi';");
+file_put_contents('indi', '<?php' . "\nrequire '$system/application/indi';");
+
+// If .idea directory was not exist but successfully created - copy files
+if (!is_dir('.idea') && mkdir('.idea'))
+    foreach(['custom.iml', 'modules.xml', 'vcs.xml'] as $file) 
+        copy("$system/hook/_idea/$file", ".idea/$file");
