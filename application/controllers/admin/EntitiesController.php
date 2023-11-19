@@ -79,8 +79,14 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '', $silent = false) {
 
         // Prepare msg
-        $msg = rif($folder, '$1$  ');
-        $msg .= str_replace($this->git['auth']['value'], '*user*:*token*', $command);
+        $msg = rif($folder, '$1$ ');
+        $msg .= str_replace([
+            $this->git['auth']['value'],
+            '-p' . ini()->db->pass
+        ], [
+            '*user*:*token*',
+            '-p*pass*'
+        ], $command);
 
         // Print where we are
         if (!$silent) ini()->rabbitmq->enabled ? msg($msg) : i($msg, 'a', 'log/update.log');
@@ -266,6 +272,111 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     }
 
     /**
+     *
+     */
+    private function _migrate() {
+
+        // Repos to be checked for pending migrations
+        $repoA = [
+            'system' => [
+                'folder' => ltrim(VDR, '/') . '/system',
+                'commit' => '13363c622921edd7e709b42f088accbeb711ae16',
+                'detect' => 'library/Indi/Controller/Migrate.php'
+            ],
+            'custom' => [
+                'folder' => '',
+                'commit' => '42f49fa04ea45d54fca6834b7b6db543e2161a1c',
+                'detect' => 'application/controllers/admin/MigrateController.php',
+            ]
+        ];
+
+        // Foreach repo
+        foreach ($repoA as $fraction => $repo) {
+
+            // Shortcuts
+            $folder = $repo['folder'];
+            $commit = $repo['commit'];
+            $detect = $repo['detect'];
+
+            // Get files changed since last commit which we did migrate at
+            if ($files = $this->exec("git diff --name-only $commit", $folder)) {
+
+                // Convert files list into an array
+                $files = explode("<br>", $files);
+
+                // If migrations-file was changed
+                if (in($detect, $files)) {
+
+                    // Get what's changed
+                    $diff = $this->exec("git diff $commit -- $detect", $folder);
+
+                    // If new migration-actions detected
+                    if ($actions = Indi::rexma('~<br>\+\s+public function ([a-zA-Z_]+)Action\(~', $diff)[1]) {
+
+                        // Reverse list of migrations, as new ones are added at the top of migrations controller class
+                        // just to prevent developer to scrolling to the bottom of file having thousands of lines
+                        $actions = array_reverse($actions);
+
+                        // Run migrations
+                        foreach ($actions as $action)
+                            $this->exec("php indi migrate/$action");
+
+                    // Else flush the status
+                    } else msg("$fraction: no new migrations yet");
+
+                // Else flush the status
+                } else msg("$fraction: migrations file not changed");
+
+                // If php-file responsible for turning On l10n for certain field - was changed
+                if (in($l10n_meta = 'application/lang/ui.php', $files)) {
+
+                    // Print where we are
+                    msg("$fraction: importing $l10n_meta");
+
+                    // Get language to assume as current language for fields that are going to be localized
+                    // This variable is used by application/lang/ui.php file required by further require_once call
+                    $lang = m('lang')->row('`adminSystemUi` = "y"', '`move`')->alias;
+
+                    // Run php file to turn on l10n
+                    require_once rif($folder, '$1/') . $l10n_meta;
+
+                // Else flush the status
+                } else msg("$fraction: no l10n meta was changed");
+
+                // Collect [lang => file] pairs
+                $l10n_data = [];
+                foreach ($files as $file)
+                    if ($lang = Indi::rexm('~^application/lang/ui/(.*?).php$~', $file, 1))
+                        $l10n_data[$lang] = $file;
+
+                // If nothing collected - flush the status
+                if (!$l10n_data) msg("$fraction: no l10n data was changed");
+
+                // Else Import titles
+                else foreach ($l10n_data as $lang => $file) {
+
+                    // Print where we are
+                    msg("$fraction: importing $file");
+
+                    // Backup current language
+                    $_lang = ini('lang')->admin;
+
+                    // Spoof current language with given language
+                    ini('lang')->admin = $lang;
+
+                    // Execute file, containing php-code for setting up titles for given language
+                    require_once rif($folder, '$1/') . $file;
+
+                    // Restore current language
+                    ini('lang')->admin = $_lang;
+                }
+
+            // Else flush the status
+            } else msg("$fraction: no files were changed");
+        }
+    }
+
+    /**
      * At first, check if current project repo is outdated, and if so do `git pull`
      * Afterwards, check if any of indi-engine package repos are outdated, and if so
      */
@@ -348,6 +459,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $this->stripGitUserToken();
         }
 
+        // Run migrations, if need
+        //$this->_migrate();
+
         // Flush output printed by last command
         jflush(true, $this->msg);
     }
@@ -390,13 +504,17 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             ]
         ], $prompt);
 
-        // Exec mysqldump-command
-        $exec = preg_match('~\.gz$~', $dump) 
-            ? `mysqldump -h $host -u $user -p$pass $name | gzip > sql/$dump`
-            : `mysqldump -h $host -u $user -p$pass $name > sql/$dump`;
-        
+        // Get sql-file name, e.g. with NO '.gz' at the end
+        $sql = preg_replace('~\.gz$~', '', $dump);
+
+        // Create dump
+        $this->exec("mysqldump -h $host -u $user -p$pass -y $name -r sql/$sql");
+
+        // Gzip dump
+        if ($dump === "$sql.gz") $this->exec("gzip sql/$sql");
+
         // Flush result
-        jflush(!$exec, $exec ?: 'Done');
+        jflush(true, $this->msg ?: 'Done');
     }
 
     /**
