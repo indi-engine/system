@@ -469,7 +469,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $this->_migrate();
 
         // Flush output printed by last command
-        jflush(true, $this->msg);
+        jflush(true, 'Done');
     }
 
     /**
