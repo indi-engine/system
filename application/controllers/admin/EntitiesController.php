@@ -517,7 +517,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $this->exec("mysqldump -h $host -u $user -p$pass -y $name -r sql/$sql");
 
         // Gzip dump
-        if ($dump === "$sql.gz") $this->exec("gzip sql/$sql");
+        if ($dump === "$sql.gz") $this->exec("gzip -f sql/$sql");
 
         // Flush result
         jflush(true, $this->msg ?: 'Done');
