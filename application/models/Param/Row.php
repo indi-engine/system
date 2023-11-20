@@ -104,6 +104,16 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
      * @throws Exception
      */
     public function onBeforeSave() {
-        $this->entityId = $this->foreign('fieldId')->entityId;
+        if ($this->fieldId) $this->entityId = $this->foreign('fieldId')->entityId;
+    }
+
+    /**
+     * Overridden to handle case when current param is a value of global-level config-field,
+     * so in that case we assume such a field to belong to 'system' fraction
+     *
+     * @return string
+     */
+    public function fraction() {
+        return $this->fieldId ? parent::fraction() : 'system';
     }
 }

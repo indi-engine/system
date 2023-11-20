@@ -510,7 +510,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!$this->wasNew() && $_ibfkRelyOnAffected) $this->dropIbfk();
 
         // Do schema changes and files maintenance, if need
-        $this->_schema();
+        if ($this->entityId) $this->_schema();
 
         // Handle positioning if _system['move'] is set
         $this->_move();
@@ -2324,5 +2324,15 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // If it's a single-entity foreign-key field - call hook method
         $this->rel()->onAddedAsForeignKey($this);
+    }
+
+    /**
+     * Overridden to handle case when current field is a global-level config-field,
+     * so in that case we assume such a field to belong to 'system' fraction
+     *
+     * @return string
+     */
+    public function fraction() {
+        return $this->entityId ? parent::fraction() : 'system';
     }
 }

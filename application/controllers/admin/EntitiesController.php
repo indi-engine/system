@@ -280,12 +280,12 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $repoA = [
             'system' => [
                 'folder' => ltrim(VDR, '/') . '/system',
-                'commit' => '13363c622921edd7e709b42f088accbeb711ae16',
+                'commit' => param('migration-commit-system')->cfgValue ?? 'ee31c122a5417ebdc05c5fadaad8ef96e2831b2d',
                 'detect' => 'library/Indi/Controller/Migrate.php'
             ],
             'custom' => [
                 'folder' => '',
-                'commit' => '42f49fa04ea45d54fca6834b7b6db543e2161a1c',
+                'commit' => param('migration-commit-custom')->cfgValue ?? $this->exec('git rev-parse HEAD'),
                 'detect' => 'application/controllers/admin/MigrateController.php',
             ]
         ];
@@ -370,6 +370,12 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                     // Restore current language
                     ini('lang')->admin = $_lang;
                 }
+
+                // Get current commit
+                $commit = $this->exec('git rev-parse HEAD', $folder);
+
+                // Update global-level config-field's value
+                param("migration-commit-$fraction", $commit);
 
             // Else flush the status
             } else msg("$fraction: no files were changed");
@@ -460,7 +466,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         // Run migrations, if need
-        //$this->_migrate();
+        $this->_migrate();
 
         // Flush output printed by last command
         jflush(true, $this->msg);

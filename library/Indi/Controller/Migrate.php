@@ -1,5 +1,26 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+
+    public function migratecommitsAction() {
+
+        cfgField('migration-commit-system', [
+            'title' => 'System-package: last commit which we did run migrations',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)'
+        ]);
+
+        cfgField('migration-commit-custom', [
+            'title' => 'Custom-package: last commit which we did run migrations',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)'
+        ]);
+
+        param('migration-commit-system', 'ee31c122a5417ebdc05c5fadaad8ef96e2831b2d');
+        exec("git rev-parse HEAD 2>&1", $output);
+        d($output);
+        param('migration-commit-custom', join('', $output));
+        die('ok');
+    }
     public function updateactionsAction() {
         action('backup', ['title' => 'Резервное копирование', 'fraction' => 'system', 'selectionRequired' => 'n']);
         action('restore', ['title' => 'Восстановить', 'fraction' => 'system', 'selectionRequired' => 'n']);

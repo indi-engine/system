@@ -1826,21 +1826,35 @@ function noticeGetter($table, $notice, $role, $ctor = false) {
  * @param array $ctor Props to be involved in insert/update
  * @return Field_Row|null
  */
-function cfgField($table, $entry, $alias, array $ctor = []) {
+function cfgField($table, $entry = null, $alias = null, array $ctor = []) {
 
-    // Get `entityId` according to $table arg
-    $entityId = entity($table)->id;
+    // If only two or less arguments are given assume it's a global-level config-field
+    if (func_num_args() <= 2) {
 
-    // If $alias arg is an integer - assume it's a `field` entry's `id`, otherwise it's a `alias`
-    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+        // Prepare variables to be fed further
+        $alias = $table;
+        $ctor = $entry;
+        $entry = 0;
+        $entityId = 0;
+        $byprop = 'alias';
 
-    // If entry's alias is specified instead of id - get the id,
-    // as we need it to check whether such cfgField is already defined for that entry
-    if (!Indi::rexm('int11', $entry)) $entry = m($table)->row('`alias` = "' . $entry . '"')->id;
+    // Else assume it's a field-level config-field
+    } else {
+
+        // Get `entityId` according to $table arg
+        $entityId = entity($table)->id;
+
+        // If $alias arg is an integer - assume it's a `field` entry's `id`, otherwise it's a `alias`
+        $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+        // If entry's alias is specified instead of id - get the id,
+        // as we need it to check whether such cfgField is already defined for that entry
+        if (!Indi::rexm('int11', $entry)) $entry = m($table)->row('`alias` = "' . $entry . '"')->id;
+    }
 
     // Try to find `field` entry
     $fieldR = m('Field')->row([
-        '`entityId` = "' . $entityId . '"',
+        'IFNULL(`entityId`, 0) = "' . $entityId . '"',
         '`entry` = "' . $entry . '"',
         '`' . $byprop . '` = "' . $alias . '"'
     ]);
@@ -2505,16 +2519,27 @@ function filter($section, $field, $ctor = false) {
  * @param int|string|array|null $cfgValue
  * @return Param_Row|null
  */
-function param($table, $field, $cfgField, $cfgValue = null) {
+function param($table, $field = null, $cfgField = null, $cfgValue = null) {
 
-    // Get `fieldId` according to $table and $field args
-    $fieldR = field($table, $field); $fieldId = $fieldR->id;
+    // If only 1 or 2 args are given, assume 1st arg is an alias of a global-level
+    // config field, and 2nd arg is a value to be set for that field
+    if (func_num_args() <= 2) {
+        $cfgField = cfgField($cfgField = $table)->id;
+        $cfgValue = $field;
+        $fieldId = 0;
+
+    // Else assume it's a field-level config-field
+    } else {
+
+        // Get `fieldId` according to $table and $field args
+        $fieldR = field($table, $field); $fieldId = $fieldR->id;
+
+        // Get config-field id
+        $cfgField = cfgField('element', $fieldR->elementId, $cfgField)->id;
+    }
 
     // Where clause for finding `param` entry
-    $where = ['`fieldId` = "' . $fieldId . '"'];
-
-    // Get config-field id
-    $cfgField = cfgField('element', $fieldR->elementId, $cfgField)->id;
+    $where = ['IFNULL(`fieldId`, 0) = "' . $fieldId . '"'];
 
     // Use it in WHERE clause
     $where []= '`cfgField` = "' . $cfgField . '"';
@@ -2523,7 +2548,7 @@ function param($table, $field, $cfgField, $cfgValue = null) {
     $paramR = m('Param')->row($where);
 
     // If $ctor arg is non-false and is not and empty array - return `param` entry, else
-    if (func_num_args() < 4) return $paramR;
+    if (func_num_args() === 3 || func_num_args() === 1) return $paramR;
 
     // Build $ctor, with support of $cfgValue-arg to be array for backwards compatibility
     $ctor = [];
