@@ -796,7 +796,7 @@ CREATE TABLE `field` (
   CONSTRAINT `field_ibfk_elementId` FOREIGN KEY (`elementId`) REFERENCES `element` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `field_ibfk_entityId` FOREIGN KEY (`entityId`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `field_ibfk_relation` FOREIGN KEY (`relation`) REFERENCES `entity` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2717 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2719 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `field` */
 
@@ -1242,7 +1242,9 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`mode`,`storeRelati
 (2713,5,0,'{\"en\":\"Properties\",\"ru\":\"Свойства\"}','props','hidden','none',NULL,'','-',16,'',NULL,'','n',2713),
 (2714,310,0,'{\"en\":\"Separate, depends on recipient\",\"ru\":\"Получатели\"}','getters2','hidden','none',NULL,'','-',16,'',NULL,'','n',2714),
 (2715,4,1,'{\"en\":\"Full width\",\"ru\":\"Во всю ширину\"}','wide','regular','none',NULL,'','-',9,'',12,'0','n',2715),
-(2716,4,0,'{\"en\":\"Default MySQL column type\",\"ru\":\"Тип столбца по умолчанию\"}','defaultType','regular','one',1,'','CASCADE',23,'',3,'0','n',2460);
+(2716,4,0,'{\"en\":\"Default MySQL column type\",\"ru\":\"Тип столбца по умолчанию\"}','defaultType','regular','one',1,'','CASCADE',23,'',3,'0','n',2460),
+(2717,NULL,0,'System-package: last commit which we did run migrations','migration-commit-system','regular','none',NULL,'','-',1,'',1,'','n',2717),
+(2718,NULL,0,'Custom-package: last commit which we did run migrations','migration-commit-custom','regular','none',NULL,'','-',1,'',1,'','n',2718);
 
 /*Table structure for table `filter` */
 
@@ -2038,7 +2040,7 @@ CREATE TABLE `param` (
   CONSTRAINT `param_ibfk_cfgField` FOREIGN KEY (`cfgField`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `param_ibfk_entityId` FOREIGN KEY (`entityId`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `param_ibfk_fieldId` FOREIGN KEY (`fieldId`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=197 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `param` */
 
@@ -2072,7 +2074,9 @@ insert  into `param`(`id`,`entityId`,`fieldId`,`title`,`cfgField`,`cfgValue`) va
 (191,9,2617,'{\"en\":\"Placeholder\",\"ru\":\"Плейсхолдер\"}',2691,'?filter[someProp]=someValue'),
 (192,171,2623,'{\"en\":\"Placeholder\",\"ru\":\"Плейсхолдер\"}',2691,'?filter[someProp]=someValue'),
 (193,195,2314,'{\"en\":\"Additionally pass fields (as html attributes)\",\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\"}',2440,'470'),
-(194,5,10,'{\"en\":\"Additionally pass fields (as html attributes)\",\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\"}',2440,'2716');
+(194,5,10,'{\"en\":\"Additionally pass fields (as html attributes)\",\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\"}',2440,'2716'),
+(195,NULL,NULL,'System-package: last commit which we did run migrations',2717,'789de06c58caf4a8d17c69d69d07ba135565f62f'),
+(196,NULL,NULL,'Custom-package: last commit which we did run migrations',2718,'5c555753ec55bec36c9ae9d91f4c6b4d56f117da');
 
 /*Table structure for table `queueChunk` */
 
@@ -2211,7 +2215,7 @@ CREATE TABLE `realtime` (
   CONSTRAINT `realtime_ibfk_realtimeId` FOREIGN KEY (`realtimeId`) REFERENCES `realtime` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4865 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4873 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -2385,15 +2389,15 @@ CREATE TABLE `section2action` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sectionId` int DEFAULT NULL,
   `actionId` int DEFAULT NULL,
-  `toggle` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `toggle` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `roleIds` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `filterOwner` enum('no','yes','certain') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'no',
+  `filterOwner` enum('no','yes','certain') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'no',
   `filterOwnerRoleIds` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `move` int NOT NULL DEFAULT '0',
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `multiSelect` enum('inherit','1','0','separate') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'inherit',
-  `south` enum('auto','yes','no') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
-  `fitWindow` enum('y','n') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
+  `south` enum('auto','yes','no') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'auto',
+  `fitWindow` enum('y','n') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'y',
   `rename` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `l10n` enum('n','qy','y','qn','na') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'n',
   PRIMARY KEY (`id`),
