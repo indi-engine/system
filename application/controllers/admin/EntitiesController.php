@@ -276,6 +276,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     private function _migrate() {
 
+        // Flag indicating whether sql dump should be pushed to github
+        $github = false;
+
         // Repos to be checked for pending migrations
         $repoA = [
             'system' => [
@@ -321,6 +324,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                         foreach ($actions as $action)
                             $this->exec("php indi migrate/$action");
 
+                        // Setup $github flag to true
+                        if ($actions) $github = true;
+
                     // Else flush the status
                     } else msg("$fraction: no new migrations yet");
 
@@ -339,6 +345,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                     // Run php file to turn on l10n
                     require_once rif($folder, '$1/') . $l10n_meta;
+
+                    // Setup $github flag to true
+                    $github = true;
 
                 // Else flush the status
                 } else msg("$fraction: no l10n meta was changed");
@@ -369,6 +378,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                     // Restore current language
                     ini('lang')->admin = $_lang;
+
+                    // Setup $github flag to true
+                    $github = true;
                 }
 
                 // Get current commit
@@ -380,6 +392,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             // Else flush the status
             } else msg("$fraction: no files were changed");
         }
+
+        // If $github flag is true - export db dump and save it to repo with old versions removal from git history
+        if ($github) $this->_persist();
     }
 
     /**
@@ -473,18 +488,57 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     }
 
     /**
+     * Export db dump and save it to repo with old versions removal from git history
+     */
+    public function _persist() {
+
+        // Get instance type
+        $type = param('instance-type');
+
+        // If it's not in the whitelist - skip
+        if (!in($type, 'demo,prod,bare')) return;
+
+        // Do backup
+        $this->backupAction($prompt = ['dump' => "custom-$type.sql.gz"]);
+
+        // Sql dump path shortcut
+        $dump = "sql/{$prompt['dump']}";
+
+        // If dump was changed
+        if ($this->exec("git status --porcelain $dump")) {
+
+            // Erase dump from existing git history but not from working copy
+            rename($dump, "$dump.tmp");
+            $this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --refs master");
+            rename("$dump.tmp", $dump);
+
+            // Add updated dump and commit
+            $this->exec("git add $dump");
+            $this->exec("git commit -m 'updated $dump with cleanup of prev versions from history'");
+
+            // Insert git username and token in repo url, push changes and strip git username and token back
+            $this->applyGitUserToken();
+            $this->exec('git push -f');
+            $this->stripGitUserToken();
+        }
+    }
+
+    /**
      * Backup the whole db as sql dump
      */
-    public function backupAction() {
+    public function backupAction($prompt = null) {
         
         // Check sql/ directory is writable
         if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
-        
+
+        // Get instance type
+        $type = param('instance-type');
+
         // Prompt for filename
-        $prompt = $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
+        $prompt = $prompt ?? $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
             'xtype' => 'textfield',
             'name' => 'dump',
-            'value' => 'custom-demo.sql.gz'
+            'value' => "custom-$type.sql.gz"
         ]]);
         
         // Prepare variables
@@ -520,7 +574,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($dump === "$sql.gz") $this->exec("gzip -f sql/$sql");
 
         // Flush result
-        jflush(true, $this->msg ?: 'Done');
+        if (!func_num_args()) jflush(true, $this->msg ?: 'Done');
     }
 
     /**

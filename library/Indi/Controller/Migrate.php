@@ -1,6 +1,21 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
-
+    public function instancetypeAction() {
+        cfgField('instance-type', [
+            'title' => 'In most cases can be either "prod", "demo" or "bare"',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)'
+        ]);
+        if (m('lang')->all('`adminCustomData` = "y"')->count() > 1) {
+            $type = 'demo';
+        } else if (ini()->db->type) {
+            $type = ini()->db->type;
+        } else {
+            $type = 'prod';
+        }
+        param('instance-type', $type);
+        die('ok');
+    }
     public function migratecommitsAction() {
 
         cfgField('migration-commit-system', [
