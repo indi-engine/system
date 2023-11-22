@@ -467,8 +467,11 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             // Add to commit
             $this->exec('git add composer.lock');
 
+            // Create commit message filename if not exists
+            if (!file_exists($m = '.git/COMMIT_EDITMSG')) $this->exec("touch $m");
+
             // Commit
-            $this->exec('git commit -F .git/COMMIT_EDITMSG');
+            $this->exec("git commit -F $m");
 
             // Insert git username and token in repo url
             $this->applyGitUserToken();
@@ -493,7 +496,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     public function _persist() {
 
         // Get instance type
-        $type = param('instance-type');
+        $type = param('instance-type')->cfgValue;
 
         // If it's not in the whitelist - skip
         if (!in($type, 'demo,prod,bare')) return;
@@ -532,7 +535,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
 
         // Get instance type
-        $type = param('instance-type');
+        $type = param('instance-type')->cfgValue;
 
         // Prompt for filename
         $prompt = $prompt ?? $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
