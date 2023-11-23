@@ -394,7 +394,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         // If $github flag is true - export db dump and save it to repo with old versions removal from git history
-        if ($github) $this->_persist();
+        //if ($github) $this->_persist();
     }
 
     /**
