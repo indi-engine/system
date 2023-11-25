@@ -301,6 +301,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $commit = $repo['commit'];
             $detect = $repo['detect'];
 
+            // If it's not really a commit but is a timestamp in 'Wed Nov 22 17:56:41 2023 +0000' format
+            if (preg_match('~[:+]~', $timestamp = $commit)) {
+
+                // Get commit info by timestamp, as timestamps are kept the same even if
+                // commit history rewritten due to removal of previous versions of database dumps
+                $commit = $this->exec("git log --since=\"$timestamp\" --until=\"$timestamp\"");
+
+                // If we're unable to find commit that was made at such timestamp
+                if (!$commit || !($commit = Indi::rexm("~commit ([a-f0-9]+)~", $commit, 1))) {
+                    jflush(false, "No commit found by timestamp $timestamp");
+                }
+            }
+
             // Get files changed since last commit which we did migrate at
             if ($files = $this->exec("git diff --name-only $commit", $folder)) {
 
@@ -394,7 +407,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         // If $github flag is true - export db dump and save it to repo with old versions removal from git history
-        //if ($github) $this->_persist();
+        if ($github) $this->_persist();
     }
 
     /**
@@ -512,7 +525,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
             // Erase dump from existing git history but not from working copy
             rename($dump, "$dump.tmp");
-            $this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --refs master");
+            $this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --prune-empty never");
             rename("$dump.tmp", $dump);
 
             // Add updated dump and commit

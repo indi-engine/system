@@ -1,5 +1,17 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function migratecommittimestampAction() {
+        cfgField('migration-commit-custom', [
+            'title' => 'Custom-package: timestamp of last commit which we did run migrations',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)'
+        ]);
+
+        exec("git rev-parse HEAD 2>&1",$commit); $commit = join('', $commit);
+        exec("git log -n 1 --pretty=format:%cd $commit 2>&1", $timestamp);
+        param('migration-commit-custom', join('', $timestamp));
+        die('ok');
+    }
     public function instancetypeAction() {
         cfgField('instance-type', [
             'title' => 'In most cases can be either "prod", "demo" or "bare"',
