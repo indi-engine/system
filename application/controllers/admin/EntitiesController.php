@@ -524,17 +524,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($this->exec("git status --porcelain $dump")) {
 
             // Erase dump from existing git history but not from working copy
-            rename($dump, "$dump.tmp");
-            $this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --prune-empty never");
-            rename("$dump.tmp", $dump);
+            //rename($dump, "$dump.tmp");
+            //$this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --prune-empty never");
+            //rename("$dump.tmp", $dump);
 
             // Add updated dump and commit
             $this->exec("git add $dump");
-            $this->exec("git commit -m 'updated $dump with cleanup of prev versions from history'");
+            //$this->exec("git commit -m 'updated $dump with cleanup of prev versions from history'");
+            $this->exec("git commit -m 'updated $dump'");
 
             // Insert git username and token in repo url, push changes and strip git username and token back
             $this->applyGitUserToken();
-            $this->exec('git push -f');
+            //$this->exec('git push -f');
+            $this->exec('git push');
             $this->stripGitUserToken();
         }
     }
