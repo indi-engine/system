@@ -2251,7 +2251,7 @@ class Indi {
      */
     public static function abs($src) {
         foreach (['', VDR . '/public', VDR . '/system'] as $rep)
-            if (file_exists($abs = DOC . STD . $rep . $src))
+            if (file_exists($abs = DOC . STD . $rep . '/' . ltrim($src, '/')))
                 return $abs;
     }
 
