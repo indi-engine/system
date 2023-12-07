@@ -2,6 +2,44 @@
 class Indi_Controller {
 
     /**
+     * Output of last $this->exec($command) call
+     *
+     * @var string
+     */
+    public string $msg = '';
+
+    /**
+     * Git things
+     *
+     * @var array
+     */
+    public array $git = [
+
+        // Path to git config file
+        'config' => '.git/config',
+
+        // Git
+        'auth' => [
+
+            // Auth string in format 'username:token' for use to access current project's private repository, if private
+            'value' => '',
+
+            // Regular expressions to work with git config file contents and/or auth string given via prompt
+            'rex' => [
+
+                // Regex to match some text which comes right before auth string inside git config file
+                'conf' => '\[remote "origin"\]\s+.*?url\s*=\s*[^\s]*//',
+
+                // Regex to match auth string itself
+                'self' => '[a-zA-Z0-9_]+:[a-zA-Z0-9_]+',
+
+                // Regex to match repo url (e.g. github.com/repo-account/repo-name.git) that comes after auth string plus '@'
+                'repo' => '[^\n]+'
+            ]
+        ]
+    ];
+
+    /**
      * Encoding of contents, that will be sent to the client browser
      *
      * @var string
@@ -1572,5 +1610,205 @@ class Indi_Controller {
 
         // Flush response
         jflush(!$pid);
+    }
+
+    /**
+     * Execute shell command
+     *
+     * @param $command
+     * @param string $folder Directory context
+     * @param string $noExitOnFailureIfMsgContains Don't die on non-0 exit code if output contains given string
+     * @param bool $silent Prevent this command from being shown in user's notification area
+     * @return false|string
+     */
+    public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '', $silent = false) {
+
+        // Prepare msg
+        $msg = rif($folder, '$1$ ');
+        $msg .= str_replace([
+            $this->git['auth']['value'],
+            '-p' . ini()->db->pass
+        ], [
+            '*user*:*token*',
+            '-p*pass*'
+        ], $command);
+
+        // Print where we are
+        if (!$silent) ini()->rabbitmq->enabled ? msg($msg) : i($msg, 'a', 'log/update.log');
+
+        // If command should be executed within a certain directory
+        if ($folder) {
+
+            // Remember current directory
+            $wasdir = getcwd();
+
+            // Change current directory
+            chdir($folder);
+        }
+
+        // Exec command
+        exec("$command 2>&1", $output, $exit_code);
+
+        // Change current directory back
+        if ($folder) chdir($wasdir);
+
+        // Prepare msg
+        $this->msg = join("<br>", $output);
+
+        // If success (e.g. exit code is 0) - just return msg
+        if (!$exit_code) return $this->msg;
+
+        // Else if failure, but msg contains given value - return false
+        if ($match = $noExitOnFailureIfMsgContains)
+            if (preg_match("~$match~", $this->msg))
+                return false;
+
+        // Setup debug info
+        $user = posix_getpwuid(posix_geteuid());
+        $debug [-7] = 'php posix_getpwuid(..)[\'name\']: ' . $user['name'];
+        $debug [-6] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
+        $debug [-5] = 'php get_current_user(): ' . get_current_user();
+        $debug [-4] = 'php posix_getpwuid(..)[\'dir\']: ' . $user['dir'];
+        $debug [-3] = 'env HOME: ' . getenv('HOME');
+        $debug [-2] = 'env COMPOSER_HOME: ' . getenv('COMPOSER_HOME');
+        $debug [-1] = '---------';
+
+        // Return output
+        $msg = join("<br>", $debug + $output);
+
+        // Else flush failure right here
+        jflush(false, $msg);
+    }
+
+    /**
+     * Get current repository name
+     *
+     * @return mixed
+     */
+    public function getRepoName() {
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Get repo url starting from host (e.g. github.com/repo-account/repo-name.git)
+        preg_match($rex = "~($conf)($self@|)($repo)~s", $config['text'], $m);
+
+        // Get repo name
+        preg_match('~/([^/]+)\.git$~', $m[3], $n);
+
+        // Return
+        return $n[1];
+    }
+
+    /**
+     * Create new github repository
+     *
+     * @param $name
+     * @return bool|string
+     */
+    public function createGithubRepo($name) {
+
+        // Setup curl request
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => 'https://api.github.com/orgs/indi-engine/repos',
+            CURLOPT_USERPWD => $this->git['auth']['value'],
+            CURLOPT_HEADER => true,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_USERAGENT => explode(':', $this->git['auth']['value'])[0],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => json_encode([
+                'name' => $name,
+                'private' => true,
+                'has_issues' => false,
+                'has_wiki' => false,
+                'auto_init' => true,
+            ])
+        ]);
+
+        // If some curl error occured - flush failure
+        if (!$resp = curl_exec($ch)) jflush(false, 'curl_exec() === false: ' . curl_error($ch));
+
+        // Else if response http code is not 201 - flush failure
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) !== 201) jflush(false, $resp);
+
+        // Close curl
+        curl_close($ch);
+
+        // Return response
+        return $resp;
+    }
+
+    /**
+     * Strip git username and token (if any) from repository url inside git config file
+     */
+    public function stripGitUserToken() {
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Strip username and token (if any) from repository url
+        $config['text'] = preg_replace("~($conf)$self@($repo)~s",'$1$2', $config['text']);
+
+        // Write back
+        file_put_contents($this->git['config'], $config['text']);
+    }
+
+    /**
+     * Parse repo url within git config file
+     */
+    public function parseGitRepoUrl() : string {
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Strip username and token (if any) from repository url
+        return 'https://' . Indi::rexm("~($conf)($self@|)($repo)~s", $config['text'], 3);
+    }
+
+    /**
+     * Apply git username and token (if any) from repository url inside git config file
+     *
+     * @param string $url
+     * @return string|null
+     */
+    public function applyGitUserToken($url = ''): ?string
+    {
+        // If git auth string is empty - return
+        if (!$this->git['auth']['value']) return $url;
+
+        // If repo url is given as argument
+        if ($url) {
+
+            // Apply auth string into that url here and return it
+            return preg_replace('~://~', '${0}' . $this->git['auth']['value'] . '@', $url);
+        }
+
+        // Strip git username and token from repo url within git config file
+        $this->stripGitUserToken();
+
+        // Get config file contents
+        $config['text'] = file_get_contents($this->git['config']);
+
+        // Shortcuts
+        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
+
+        // Apply auth string value
+        $config['text'] = preg_replace("~($conf)($repo)~s",'$1' . $this->git['auth']['value'] . '@$2', $config['text']);
+
+        // Write back
+        file_put_contents($this->git['config'], $config['text']);
+
+        // Return null
+        return null;
     }
 }

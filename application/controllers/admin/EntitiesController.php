@@ -2,44 +2,6 @@
 class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
     /**
-     * Output of last $this->exec($command) call
-     *
-     * @var string
-     */
-    public string $msg = '';
-
-    /**
-     * Git things
-     *
-     * @var array
-     */
-    private $git = [
-
-        // Path to git config file
-        'config' => '.git/config',
-
-        // Git
-        'auth' => [
-
-            // Auth string in format 'username:token' for use to access current project's private repository, if private
-            'value' => '',
-
-            // Regular expressions to work with git config file contents and/or auth string given via prompt
-            'rex' => [
-
-                // Regex to match some text which comes right before auth string inside git config file
-                'conf' => '\[remote "origin"\]\s+.*?url\s*=\s*.*//',
-
-                // Regex to match auth string itself
-                'self' => '[a-zA-Z0-9_]+:[a-zA-Z0-9_]+',
-
-                // Regex to match repo url (e.g. github.com/repo-account/repo-name.git) that comes after auth string plus '@'
-                'repo' => '[^\n]+'
-            ]
-        ]
-    ];
-
-    /**
      * Prompt for auth-string to be able to update current repository using `git pull` command
      */
     public function promptGitUserToken() {
@@ -65,144 +27,6 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Assign as prop to be further accessible
         $this->git['auth']['value'] = $prompt[$name];
-    }
-
-    /**
-     * Execute shell command
-     *
-     * @param $command
-     * @param string $folder Directory context
-     * @param string $noExitOnFailureIfMsgContains Don't die on non-0 exit code if output contains given string
-     * @param bool $silent Prevent this command from being shown in user's notification area
-     * @return false|string
-     */
-    public function exec($command, string $folder = '', string $noExitOnFailureIfMsgContains = '', $silent = false) {
-
-        // Prepare msg
-        $msg = rif($folder, '$1$ ');
-        $msg .= str_replace([
-            $this->git['auth']['value'],
-            '-p' . ini()->db->pass
-        ], [
-            '*user*:*token*',
-            '-p*pass*'
-        ], $command);
-
-        // Print where we are
-        if (!$silent) ini()->rabbitmq->enabled ? msg($msg) : i($msg, 'a', 'log/update.log');
-
-        // If command should be executed within a certain directory
-        if ($folder) {
-
-            // Remember current directory
-            $wasdir = getcwd();
-
-            // Change current directory
-            chdir($folder);
-        }
-
-        // Exec command
-        exec("$command 2>&1", $output, $exit_code);
-
-        // Change current directory back
-        if ($folder) chdir($wasdir);
-
-        // Prepare msg
-        $this->msg = join("<br>", $output);
-
-        // If success (e.g. exit code is 0) - just return msg
-        if (!$exit_code) return $this->msg;
-
-        // Else if failure, but msg contains given value - return false
-        if ($match = $noExitOnFailureIfMsgContains)
-            if (preg_match("~$match~", $this->msg))
-                return false;
-
-        // Setup debug info
-        $user = posix_getpwuid(posix_geteuid());
-        $debug [-7] = 'php posix_getpwuid(..)[\'name\']: ' . $user['name'];
-        $debug [-6] = 'env APACHE_RUN_USER: ' . getenv('APACHE_RUN_USER');
-        $debug [-5] = 'php get_current_user(): ' . get_current_user();
-        $debug [-4] = 'php posix_getpwuid(..)[\'dir\']: ' . $user['dir'];
-        $debug [-3] = 'env HOME: ' . getenv('HOME');
-        $debug [-2] = 'env COMPOSER_HOME: ' . getenv('COMPOSER_HOME');
-        $debug [-1] = '---------';
-
-        // Return output
-        $msg = join("<br>", $debug + $output);
-
-        // Else flush failure right here
-        jflush(false, $msg);
-    }
-
-    /**
-     * Strip git username and token (if any) from repository url inside git config file
-     */
-    public function stripGitUserToken() {
-
-        // Get config file contents
-        $config['text'] = file_get_contents($this->git['config']);
-
-        // Shortcuts
-        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
-
-        // Strip username and token (if any) from repository url
-        $config['text'] = preg_replace("~($conf)$self@($repo)~s",'$1$2', $config['text']);
-
-        // Write back
-        file_put_contents($this->git['config'], $config['text']);
-    }
-
-    /**
-     * Parse repo url within git config file
-     */
-    public function parseGitRepoUrl() : string {
-
-        // Get config file contents
-        $config['text'] = file_get_contents($this->git['config']);
-
-        // Shortcuts
-        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
-
-        // Strip username and token (if any) from repository url
-        return 'https://' . Indi::rexm("~($conf)($self@|)($repo)~s", $config['text'], 3);
-    }
-
-    /**
-     * Apply git username and token (if any) from repository url inside git config file
-     *
-     * @param string $url
-     * @return string|null
-     */
-    public function applyGitUserToken($url = ''): ?string
-    {
-        // If git auth string is empty - return
-        if (!$this->git['auth']['value']) return $url;
-
-        // If repo url is given as argument
-        if ($url) {
-
-            // Apply auth string into that url here and return it
-            return preg_replace('~://~', '${0}' . $this->git['auth']['value'] . '@', $url);
-        }
-
-        // Strip git username and token from repo url within git config file
-        $this->stripGitUserToken();
-
-        // Get config file contents
-        $config['text'] = file_get_contents($this->git['config']);
-
-        // Shortcuts
-        list ($conf, $self, $repo) = array_values($this->git['auth']['rex']);
-
-        // Apply auth string value
-        $config['text'] = preg_replace("~($conf)($repo)~s",'$1' . $this->git['auth']['value'] . '@$2', $config['text']);
-
-        // Write back
-        file_put_contents($this->git['config'], $config['text']);
-
-        // Return null
-        return null;
     }
 
     /**
@@ -406,8 +230,21 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             } else msg("$fraction: no files were changed");
         }
 
-        // If $github flag is true - export db dump and save it to repo with old versions removal from git history
-        if ($github) $this->_persist();
+        // If $github flag is true - export db dump and save as repo's latest-release asset
+        if ($github) {
+
+            // Get instance type
+            $type = param('instance-type')->cfgValue;
+
+            // If it's not in the whitelist - skip
+            if (!in($type, 'demo,prod,bare')) return;
+
+            // Do backup
+            $this->backupAction($prompt = [
+                'dump' => "custom-$type.sql.gz",
+                'token' => explode(':', $this->git['auth']['value'])[1]
+            ]);
+        }
     }
 
     /**
@@ -504,48 +341,10 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
     }
 
     /**
-     * Export db dump and save it to repo with old versions removal from git history
-     */
-    public function _persist() {
-
-        // Get instance type
-        $type = param('instance-type')->cfgValue;
-
-        // If it's not in the whitelist - skip
-        if (!in($type, 'demo,prod,bare')) return;
-
-        // Do backup
-        $this->backupAction($prompt = ['dump' => "custom-$type.sql.gz"]);
-
-        // Sql dump path shortcut
-        $dump = "sql/{$prompt['dump']}";
-
-        // If dump was changed
-        if ($this->exec("git status --porcelain $dump")) {
-
-            // Erase dump from existing git history but not from working copy
-            //rename($dump, "$dump.tmp");
-            //$this->exec("vendor/newren/git-filter-repo/git-filter-repo --path $dump --invert-paths --force --prune-empty never");
-            //rename("$dump.tmp", $dump);
-
-            // Add updated dump and commit
-            $this->exec("git add $dump");
-            //$this->exec("git commit -m 'updated $dump with cleanup of prev versions from history'");
-            $this->exec("git commit -m 'updated $dump'");
-
-            // Insert git username and token in repo url, push changes and strip git username and token back
-            $this->applyGitUserToken();
-            //$this->exec('git push -f');
-            $this->exec('git push');
-            $this->stripGitUserToken();
-        }
-    }
-
-    /**
      * Backup the whole db as sql dump
      */
     public function backupAction($prompt = null) {
-        
+
         // Check sql/ directory is writable
         if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
 
@@ -557,6 +356,11 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             'xtype' => 'textfield',
             'name' => 'dump',
             'value' => "custom-$type.sql.gz"
+        ], [
+            'xtype' => 'textfield',
+            'inputType' => 'password',
+            'emptyText' => 'Specify token if you need to upload this asset on github',
+            'name' => 'token'
         ]]);
         
         // Prepare variables
@@ -590,6 +394,21 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Gzip dump
         if ($dump === "$sql.gz") $this->exec("gzip -f sql/$sql");
+
+        // If github token is given
+        if ($prompt['token']) {
+
+            // Setup GH_TOKEN variable required for gh-command
+            putenv('GH_TOKEN=' . $prompt['token']);
+
+            // Release tag
+            $release = 'latest';
+
+            // If we have a release
+            $this->exec("gh release list | awk '$3 == \"$release\"'")
+                ? $this->exec("gh release upload $release 'sql/$dump' --clobber")
+                : $this->exec("gh release create $release 'sql/$dump'");
+        }
 
         // Flush result
         if (!func_num_args()) jflush(true, $this->msg ?: 'Done');

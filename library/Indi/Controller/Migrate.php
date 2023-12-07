@@ -129,7 +129,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         foreach (['sectionId' => 'grid,section2action,filter', 'entityId' => 'field'] as $within => $tables) {
             foreach (ar($tables) as $table) {
                 d("Table $table:");
-                $withinIdA = db()->query("SELECT DISTINCT $within FROM $table")->col();
+                $withinIdA = db()->query("SELECT DISTINCT $within FROM $table WHERE $within IS NOT NULL")->col();
                 foreach ($withinIdA as $withinId) {
                     $order = db()->query("SELECT `id`, `move` FROM $table WHERE $within = $withinId")->pairs();
                     if (count(array_unique($order)) < count($order)) {
