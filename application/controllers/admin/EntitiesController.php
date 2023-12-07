@@ -419,11 +419,14 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function restoreAction() {
 
+        // Get instance type
+        $type = param('instance-type')->cfgValue;
+
         // Prompt for filename
         $prompt = $this->prompt('Please specify db dump filename to be imported from sql/ directory', [[
             'xtype' => 'textfield',
             'name' => 'dump',
-            'value' => 'custom-demo.sql.gz'
+            'value' => "custom-$type.sql.gz"
         ]]);
 
         // Prepare variables

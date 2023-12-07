@@ -2216,7 +2216,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if ($format == 'pdf') $objWriter->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
 
         // Create temporary file
-        $tmp = tempnam(ini_get('upload_tmp_dir'), 'xls');
+        $tmp = tempnam(DOC . STD . '/log', 'xls');
 
         // Save into temporary file
         $objWriter->save($tmp);
