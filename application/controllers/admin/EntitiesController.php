@@ -427,6 +427,11 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             'xtype' => 'textfield',
             'name' => 'dump',
             'value' => "custom-$type.sql.gz"
+        ], [
+            'xtype' => 'textfield',
+            'inputType' => 'password',
+            'emptyText' => 'Specify token if you want to download that dump from github',
+            'name' => 'token'
         ]]);
 
         // Prepare variables
@@ -458,9 +463,21 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
             // Save dump in sql/ directory
             file_put_contents("sql/$dump", $raw);
+
+        // Else if token is given
+        } else if ($prompt['token']) {
+
+            // Setup GH_TOKEN variable required for gh-command
+            putenv('GH_TOKEN=' . $prompt['token']);
+
+            // Release tag
+            $release = 'latest';
+
+            // Download from latest release assets into sql/ directory
+            $this->exec("gh release download $release -D sql -p '$dump' --clobber");
         }
 
-        // Make sure dump name contains alphanumeric and basic punctuation chars
+        // Make sure dump name contains alphanumeric and basic punctuation chars only
         jcheck([
             'dump' => [
                 'rex' => '~^[a-zA-Z0-9\.\-]+$~'
