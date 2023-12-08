@@ -48,7 +48,7 @@ services:
       - mysql_client_binaries:/usr/bin/volumed
     healthcheck:
       test: mysqladmin ping && [ -f /var/lib/mysql/init.done ]
-      start_period: 3m
+      start_period: 7m
       interval: 5s
     entrypoint: /usr/local/bin/custom-entrypoint.sh
 
