@@ -22,3 +22,18 @@ file_put_contents('indi', '<?php' . "\nrequire '$system/application/indi';");
 if (!is_dir('.idea') && mkdir('.idea'))
     foreach(['custom.iml', 'modules.xml', 'vcs.xml'] as $file) 
         copy("$system/hook/_idea/$file", ".idea/$file");
+
+// We need rglob() function
+require_once("$system/library/func.php");
+
+// Foreach file to be copied from system to custom
+foreach (rglob(($prefix = "$system/custom/") . "*") as $source) {
+
+    // Get target path
+    $target = str_replace($prefix, '', $source);
+
+    // If system source path is file - copy it to custom else create dir if not exists
+    is_file($source)
+        ? copy($source, $target)
+        : (is_dir($target) || mkdir($target));
+}
