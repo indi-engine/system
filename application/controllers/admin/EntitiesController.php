@@ -327,12 +327,13 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             $this->applyGitUserToken();
             $this->exec('git push');
             $this->stripGitUserToken();
-
-            // If we've updated system-package - check whether some files from system-package's custom/ dir
-            // mostly responsible for docker-compose setup - should be replicated to the project root, so that
-            // same files already existing there to be updated
-            if ($isOutdated['system']) $this->_custom();
         }
+
+        // If we've updated system-package - check whether some files from system-package's custom/ dir
+        // mostly responsible for docker-compose setup - should be replicated to the project root, so that
+        // same files already existing there to be updated
+        // todo: remove ' || true' once all instances updated
+        if ($isOutdated['system'] || true) $this->_custom();
 
         // Run migrations, if need
         $this->_migrate();
