@@ -1,6 +1,7 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
     public function migratecommittimestampAction() {
+        die('disabled');
         cfgField('migration-commit-custom', [
             'title' => 'Custom-package: timestamp of last commit which we did run migrations',
             'elementId' => 'string',

@@ -292,7 +292,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         // Foreach local repo check whether at least one of them is outdated
-        $isOutdated = false;
+        $isOutdated = [];
         foreach (ar('system,client') as $repo) {
 
             // Get last pushed commit if local repo is NOT outdated
@@ -302,7 +302,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             if ($lastPushedCommit === true || $this->isLockOutdated($repo, $lastPushedCommit)) {
 
                 // Setup $isOutdated flag and break
-                $isOutdated = true; break;
+                $isOutdated[$repo] = true; break;
             }
         }
 
@@ -323,14 +323,15 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             // Commit
             $this->exec("git commit -F $m");
 
-            // Insert git username and token in repo url
-            $this->applyGitUserToken();
-
             // Push changes
+            $this->applyGitUserToken();
             $this->exec('git push');
-
-            // Strip git username and token from repo url
             $this->stripGitUserToken();
+
+            // If we've updated system-package - check whether some files from system-package's custom/ dir
+            // mostly responsible for docker-compose setup - should be replicated to the project root, so that
+            // same files already existing there to be updated
+            if ($isOutdated['system']) $this->_custom();
         }
 
         // Run migrations, if need
@@ -338,6 +339,68 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Flush output printed by last command
         jflush(true, 'Done');
+    }
+
+    /**
+     * Check whether some files from system-package's custom/ dir (mostly responsible for docker-compose setup)
+     * - should be replicated to the project root, so that same files already existing there to be updated
+     */
+    private function _custom() {
+
+        // System-package's dir shortcut
+        $system = ltrim(VDR, '/') . '/system';
+
+        // Files to be commited
+        $commit = [];
+
+        // Foreach file to be copied from system to custom
+        foreach (rglob(($prefix = "$system/custom/") . "*") as $source) {
+
+            // Get target path
+            $target = str_replace($prefix, '', $source);
+
+            // Prevent some files from being copied. todo: make this configurable
+            if (in($target, ['.env.dist'])) continue;
+
+            // If source path is a file
+            if (is_file($source)) {
+
+                // If there is no corresponding target file yet, or there is but contents differs
+                if (!is_file($target) || file_get_contents($source) !== file_get_contents($target) ) {
+
+                    // Copy file
+                    copy($source, $target);
+
+                    // Add this file to the list of to be committed
+                    $this->exec("git add $target");
+
+                    // Append to the list of files to be commited
+                    $commit []= $target;
+                }
+
+            // Else if it's a dir
+            } else if (is_dir($source)) {
+
+                // If there is no corresponding target dir
+                if (!is_dir($target)) {
+
+                    // Create it
+                    mkdir($target);
+                }
+            }
+        }
+
+        // If there is something to commit
+        if ($commit) {
+
+            // Do commit
+            $this->exec('git commmit -m "docker-compose setup updated"');
+
+            // Push changes
+            $this->applyGitUserToken();
+            $this->exec('git push');
+            $this->stripGitUserToken();
+        }
     }
 
     /**
