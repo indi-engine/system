@@ -394,7 +394,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($commit) {
 
             // Do commit
-            $this->exec('git commmit -m "docker-compose setup updated"');
+            $this->exec('git commit -m "docker-compose setup updated"');
 
             // Push changes
             $this->applyGitUserToken();
