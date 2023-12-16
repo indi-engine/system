@@ -1,5 +1,132 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function inqtysumAction() {
+        entity('inQtySum', ['title' => 'Count in Qty/Sum', 'fraction' => 'system']);
+        field('inQtySum', 'sourceEntity', [
+            'title' => 'Source entity',
+            'mode' => 'readonly',
+            'storeRelationAbility' => 'one',
+            'relation' => 'entity',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => '',
+        ]);
+        field('inQtySum', 'sourceTarget', [
+            'title' => 'Foreign-key field pointing to target entry',
+            'mode' => 'required',
+            'storeRelationAbility' => 'one',
+            'relation' => 'field',
+            'filter' => '`storeRelationAbility` = "one" AND IFNULL(`relation`, 0) != "0" AND `entry` = "0"',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'sourceEntity',
+        ]);
+        consider('inQtySum', 'sourceTarget', 'sourceEntity', ['required' => 'y', 'connector' => 'entityId']);
+        field('inQtySum', 'targetField', [
+            'title' => 'Target field to update qty/sum in',
+            'mode' => 'required',
+            'storeRelationAbility' => 'one',
+            'relation' => 'field',
+            'filter' => '`entry` = "0"',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'sourceTarget',
+        ]);
+        consider('inQtySum', 'targetField', 'sourceTarget', ['foreign' => 'relation', 'required' => 'y', 'connector' => 'entityId']);
+        field('inQtySum', 'type', [
+            'title' => 'Count type',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'radio',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'qty',
+            'move' => 'targetField',
+        ]);
+        enumset('inQtySum', 'type', 'qty', ['title' => 'Qty', 'move' => '']);
+        enumset('inQtySum', 'type', 'sum', ['title' => 'Sum', 'move' => 'qty']);
+        field('inQtySum', 'sourceField', [
+            'title' => 'Source field to append/deduct to/from target field',
+            'storeRelationAbility' => 'one',
+            'relation' => 'field',
+            'filter' => '`elementId` IN (18,24,25)',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'type',
+        ]);
+        consider('inQtySum', 'sourceField', 'sourceEntity', ['required' => 'y', 'connector' => 'entityId']);
+        field('inQtySum', 'sourceWhere', [
+            'title' => 'SQL WHERE that source entry should match',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'sourceField',
+        ]);
+        field('inQtySum', 'title', [
+            'title' => 'Auto title',
+            'mode' => 'hidden',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'sourceWhere',
+        ]);
+        entity('inQtySum', ['titleFieldId' => 'targetField']);
+        section('inQtySum', [
+            'title' => 'Учет в количествах/суммах',
+            'fraction' => 'system',
+            'sectionId' => 'entities',
+            'extendsPhp' => 'Indi_Controller_Admin_Exportable',
+            'entityId' => 'inQtySum',
+            'parentSectionConnector' => 'sourceEntity',
+            'move' => 'fields',
+            'rowsetSeparate' => 'no',
+            'roleIds' => 'dev',
+            'groupBy' => 'sourceTarget',
+        ]);
+        section2action('inQtySum','index', ['roleIds' => 'dev', 'move' => '']);
+        section2action('inQtySum','form', ['roleIds' => 'dev', 'move' => 'index']);
+        section2action('inQtySum','save', [
+            'roleIds' => 'dev',
+            'move' => 'form',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('inQtySum','delete', [
+            'roleIds' => 'dev',
+            'move' => 'save',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('inQtySum','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        grid('inQtySum', 'sourceTarget', ['move' => '', 'jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('inQtySum', 'targetField', ['move' => 'sourceTarget', 'jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('inQtySum', 'type', ['move' => 'targetField']);
+        grid('inQtySum', 'sourceField', [
+            'move' => 'type',
+            'rename' => 'Поле источника',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('inQtySum', 'sourceWhere', ['move' => 'sourceField', 'editor' => 1]);
+        alteredField('inQtySum', 'sourceTarget', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('inQtySum', 'targetField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        alteredField('inQtySum', 'sourceField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        die('ok');
+    }
     public function migratecommittimestampAction() {
         die('disabled');
         cfgField('migration-commit-custom', [

@@ -1293,12 +1293,20 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Currently this is used in cases when the db-entry, that this instance is representing - was already deleted
      * from the database, but we still need to invoke into realtime logic as if it would be still there
      *
+     * @param string $version Can be 'original' (default), 'current', 'modified' (alias for 'current') and 'affected'
      * @return string
      */
-    public function phantom() {
+    public function phantom($version = 'original') {
 
         // Original data is used
         $data = $this->_original;
+
+        // If $version is 'affected' - spoof original values with affected ones, if any
+        if ($version === 'affected') {
+            $data = array_merge($data, $this->_affected);
+        } else if ($version === 'current' || $version === 'modified') {
+            $data = array_merge($data, $this->_modified);
+        }
 
         // Make sure localized fields to have values for all languages
         foreach ($this->_language as $prop => $valueByLang) {
@@ -2793,10 +2801,15 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param string $key The  name of foreign key
      * @param bool $refresh If specified, cached foreign row will be refreshed
+     * @param string $version Can be 'original', 'modified', 'current' or 'affected'. Default is 'current'
+     *  original: $this->_original[$key]
+     *  modified: $this->_modified[$key]
+     *  current: array_key_exists($key, $this->_modified) ? $this->_modified[$key] : $this->_original[$key]
+     *  affected: $this->_affected[$key]
      * @return Indi_Db_Table_Row|Indi_Db_Table_Rowset|null
      * @throws Exception
      */
-    public function foreign($key = '', $refresh = false) {
+    public function foreign($key = '', $refresh = false, $version = 'current') {
 
         // If $key argument is an array, it mean that key argument contains info about not only multiple foreign rows
         // to be fetched, but also info about sub-nested rowsets and sub-foreign rows that should be fetched too
@@ -2853,7 +2866,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $refresh_ = $refresh ?: array_key_exists(trim($key), $this->_modified);
 
         // If foreign row, got by foreign key, was got already got earlier, and no refresh should be done - return it
-        if (array_key_exists($key, $this->_foreign) && !$refresh_) {
+        if (array_key_exists($key, $this->_foreign) && !$refresh_ && func_num_args() < 3) {
             return $this->_foreign[$key];
 
         // Else
@@ -2868,7 +2881,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     throw new Exception('Field with alias `' . $key . '` (`' . $fieldR->alias . '`) within entity with table name `' . $this->_table .'` is not a foreign key');
 
                 // Get foreign key value
-                $val = $this->$key;
+                if ($version === 'current') $val = $this->$key;
+                else $val = $this->{"_$version"}[$key];
 
                 // If $refresh arg is 'ins' or 'del'
                 if (in($refresh, 'ins,del,was')) {
@@ -3311,11 +3325,14 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Else if where arg is a non-empty string
         else if (strlen($where)) $nested []= $where;
 
+        // Prepare WHERE clause
+        $where = im($nested, ' AND ');
+
         // Build the query
-        $sql = 'SELECT COUNT(`id`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
+        $sql = "SELECT COUNT(`id`) FROM `$table` WHERE $where";
 
         // Get qty
-        return db()->query($sql)->cell();
+        return db()->query($sql)->cell() ?: 0;
     }
 
     /**
@@ -3339,8 +3356,11 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Else if where arg is a non-empty string
         else if (strlen($where)) $nested []= $where;
 
+        // Prepare WHERE clause
+        $where = im($nested, ' AND ');
+
         // Build the query
-        $sql = 'SELECT SUM(`' . $column .'`) FROM `' . $table . '` WHERE ' . im($nested, ' AND ');
+        $sql = "SELECT SUM(`$column`) FROM `$table` WHERE $where";
 
         // Get qty
         return db()->query($sql)->cell() ?: 0;
@@ -7777,62 +7797,158 @@ class Indi_Db_Table_Row implements ArrayAccess
         // If we don't need to count/summarize this entry anywhere - return
         if (!$inQtySum = $this->model()->inQtySum()) return;
 
-        // If new entry was inserted
-        if ($event == 'insert') {
+        // Foreach location that we should count/summarize that in
+        foreach ($inQtySum as $info) {
 
-            // Foreach location that we should count/summarize that in
-            foreach ($inQtySum as $info) {
+            // Shortcuts
+            $type  = $info['type'];
+            $fgn   = $info['targetEntry'];
+            $trg   = $info['targetField'];
+            $src   = $info['sourceField'];
+            $where = $info['sourceWhere'];
 
-                // Shortcuts
-                if (!$foreign = $this->foreign($info['foreign'])) continue;
-                $target = $info['target'];
-                $source = $info['source'];
+            // If new entry was inserted
+            if ($event == 'insert') {
 
-                // If type is 'qty' - just increment $target prop
-                if ($info['type'] == 'qty') $foreign->$target ++;
+                // If current target-record ID is non-zero
+                if ($this->$fgn) {
 
-                // Else if type is 'sum' - append $source to the $target sum
-                else if ($info['type'] == 'sum') $foreign->$target += $this->$source;
-            }
+                    // If current target-record still exists in DB
+                    if ($foreign = $this->foreign($fgn, true, 'original')) {
 
-        // Else if existing entry was deleted
-        } else if ($event == 'delete') {
+                        // If source-record match WHERE clause
+                        if ($match['now'] = $this->match($where, 'original')) {
 
-            // Foreach location that we should count/summarize that in
-            foreach ($inQtySum as $info) {
+                            // Increment/increase value of target-field on current target-record
+                            $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
-                // Shortcuts
-                if (!$foreign = $this->foreign($info['foreign'])) continue;
-                $target = $info['target'];
-                $source = $info['source'];
+                            // Apply changes to current target-record
+                            $foreign->save();
+                        }
+                    }
+                }
 
-                // If type is 'qty' - just increment $target prop
-                if ($info['type'] == 'qty') $foreign->$target --;
+            // Else if existing entry was deleted
+            } else if ($event == 'delete') {
 
-                // Else if type is 'sum' - append $source to the $target sum
-                else if ($info['type'] == 'sum') $foreign->$target -= $this->$source;
-            }
+                // If previous target-record ID was non-zero
+                if ($this->$fgn) {
 
-        // Else if existing entry was updated
-        } else if ($event == 'update') {
+                    // If previous target-record still exists in DB
+                    if ($foreign = $this->foreign($fgn, true, 'original')) {
 
-            // Foreach location that we should count/summarize that in
-            foreach ($inQtySum as $info) {
+                        // If source-record match WHERE clause
+                        if ($match['was'] = $this->match($where, 'original')) {
 
-                // Shortcuts
-                if (!$foreign = $this->foreign($info['foreign'])) continue;
-                $target = $info['target'];
-                $source = $info['source'];
+                            // Decrement/decrease value of target-field on previous target-record
+                            $foreign->$trg -= $type == 'qty' ? 1 : $this->original($src);
 
-                // If type is 'sum' - append $source to the $target sum
-                if ($info['type'] == 'sum') $foreign->$target += $this->adelta($source);
+                            // Apply changes to previous target-record
+                            $foreign->save();
+                        }
+                    }
+                }
+
+            // Else if existing entry was updated
+            } else if ($event == 'update') {
+
+                // If target-record ID was changed
+                if ($this->affected($fgn)) {
+
+                    // If previous target-record ID was non-zero
+                    if ($this->affected($fgn, true)) {
+
+                        // If previous target-record still exists in DB
+                        if ($foreign = $this->foreign($fgn, true, 'affected')) {
+
+                            // If source-record match WHERE clause
+                            if ($match['was'] = $this->match($where, 'affected')) {
+
+                                // Decrement/decrease value of target-field on previous target-record
+                                $foreign->$trg -= $type == 'qty' ? 1 : $this->aoo($src);
+
+                                // Apply changes to previous target-record
+                                $foreign->save();
+                            }
+                        }
+                    }
+
+                    // If current target-record ID is non-zero
+                    if ($this->$fgn) {
+
+                        // If current target-record still exists in DB
+                        if ($foreign = $this->foreign($fgn, true, 'original')) {
+
+                            // If source-record match WHERE clause
+                            if ($match['now'] = $this->match($where, 'original')) {
+
+                                // Increment/increase value of target-field on current target-record
+                                $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
+
+                                // Apply changes to current target-record
+                                $foreign->save();
+                            }
+                        }
+                    }
+
+                // Else if target-record ID was NOT changed
+                } else {
+
+                    // If target-record ID is non-zero
+                    if ($this->$fgn) {
+
+                        // If target-record still exists in DB
+                        if ($foreign = $this->foreign($fgn)) {
+
+                            // Get flags indicating whether source-record match WHERE clause before and after change
+                            $match['was'] = $this->match($where, 'affected');
+                            $match['now'] = $this->match($where, 'original');
+
+                            // If source-record was and is still matching WHERE clause
+                            if ($match['was'] && $match['now']) {
+
+                                // Increment/increase value of target-field on target-record
+                                $foreign->$trg += $type == 'qty' ? 0 : $this->adelta($src);
+
+                            // Else if source-record does not match WHERE clause anymore
+                            } else if ($match['was'] && !$match['now']) {
+
+                                // Decrement/decrease value of target-field on target-record
+                                $foreign->$trg -= $type == 'qty' ? 1 : $this->aoo($src);
+
+                            // Else if source-record did not match WHERE clause but not it does
+                            } else if (!$match['was'] && $match['now']) {
+
+                                // Increment/increase value of target-field on target-record
+                                $foreign->$trg += $type == 'qty' ? 1 : $this->$src;
+                            }
+
+                            // Apply changes to current target-record
+                            if ($foreign->isModified($trg)) $foreign->save();
+                        }
+                    }
+                }
             }
         }
+    }
 
-        // Save adjusted target-props on foreign entries
-        foreach (array_unique(array_column($inQtySum, 'foreign')) as $foreign)
-            if ($this->foreign($foreign))
-                $this->foreign($foreign)->save();
+    /**
+     * Check whether certain version of current entry does match given SQL WHERE clause
+     *
+     * @param $where
+     * @param $version
+     * @return mixed
+     */
+    public function match($where, $version) {
+
+        // If where clause is empty - return true
+        if (!$where) return true;
+
+        // Get sql to be usage as derived table
+        $phantom = $this->phantom($version);
+
+        // Get
+        return db()->query("SELECT `id` FROM ($phantom) AS `phantom` WHERE $where")->cell();
     }
 
     /**
@@ -7870,7 +7986,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     /**
      * 'aoc' - means 'affected or current'
      *
-     * If $prop was affected by the last inserrt/update - get affected (e.g. previous) value , else get current value
+     * If $prop was affected by the last insert/update - get affected (e.g. previous) value , else get current value
      * If $aoc arg is given as false - current value is returned in any case
      *
      * @param $prop
@@ -7883,6 +7999,24 @@ class Indi_Db_Table_Row implements ArrayAccess
                 ? $this->affected($prop, true)
                 : $this->$prop)
             : $this->$prop;
+    }
+
+    /**
+     * 'aoo' - means 'affected or original'
+     *
+     * If $prop was affected by the last insert/update - get affected (e.g. previous) value , else get original value
+     * If $aoo arg is given as false - original value is returned in any case
+     *
+     * @param $prop
+     * @param bool $aoo
+     * @return mixed
+     */
+    public function aoo($prop, $aoo = true) {
+        return $aoo
+            ? ($this->affected($prop)
+                ? $this->affected($prop, true)
+                : $this->original($prop))
+            : $this->original($prop);
     }
 
     /**

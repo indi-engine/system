@@ -520,6 +520,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 'entity',
                 'enumset',
                 'field',
+                'inQtySum',
                 'lang',
                 'notice',
                 'noticeGetter',

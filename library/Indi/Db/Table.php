@@ -250,8 +250,11 @@ class Indi_Db_Table
         // Set array of [foreignKeyField => ON DELETE RULE] pairs
         $this->_ibfk = $config['ibfk'];
 
-        // Set array references
+        // Set array of references
         $this->_refs = $config['refs'];
+
+        // Set info about sums and quantities where instances of current entity should be counted in
+        $this->_inQtySum = $config['inQtySum'];
 
         // Set notices
         if (isset($config['notices'])) $this->_notices = $config['notices'];

@@ -2623,6 +2623,57 @@ function consider($entity, $field, $consider, $ctor = false) {
 }
 
 /**
+ * Short-hand function that allows to manipulate `inQtySum` entry, identified by $sourceEntity, $sourceTarget and $targetField args.
+ * If only 3 args given - function will fetch and return appropriate `inQtySum` entry (or null, if not found)
+ * If $ctor arg is given and it's a non-empty array - function will create new `inQtySum` entry, or update existing if found
+ *
+ * @param string $sourceEntity
+ * @param string $sourceTarget
+ * @param string $targetField
+ * @param false $ctor
+ * @return Indi_Db_Table_Row|null
+ */
+function inQtySum(string $sourceEntity, string $sourceTarget, string $targetField, $ctor = false) {
+
+    // Get `sourceEntity`, `sourceTarget` and `targetField`-ids according to first 3 args
+    $sourceEntity = entity($sourceEntity)->id ?: 0;
+    $sourceTarget = field($sourceEntity, $sourceTarget)->id ?: 0;
+    $targetField = field(field($sourceEntity, $sourceTarget)->relation, $targetField)->id ?: 0;
+
+    // Try to find such `inQtySum` entry
+    $row = m('inQtySum')->row([
+        "`sourceEntity` = '$sourceEntity'",
+        "`sourceTarget` = '$sourceTarget'",
+        "`targetField` = '$targetField'",
+    ]);
+
+    // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise.
+    // This part of this function differs from such part if other similar functions, for example grid() function,
+    // because presence of $sourceEntity, $sourceTarget and $targetField args - is not enough for `inQtySum` entry to be created
+    if (!$ctor) return $row;
+
+    // If any of `sourceEntity`, `sourceTarget` and `targetField` props are not defined
+    // within $ctor arg - use values given by corresponding variables
+    if (!is_array($ctor)) $ctor = [];
+    foreach (ar('sourceEntity,sourceTarget,targetField') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If `inQtySum` entry was not found - create it
+    if (!$row) $row = m('inQtySum')->new();
+
+    // Assign some props first
+    foreach (ar('sourceEntity,sourceTarget,targetField') as $prop)
+        if ($ctor[$prop] && $row->$prop = $ctor[$prop]) unset($ctor[$prop]);
+
+    // Assign other props and save
+    $row->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return row (newly created, or existing but updated)
+    return $row;
+}
+
+/**
  * Return timeId for a given 'hh:mm' string, or full array of 'hh:mm' => timeId key-pairs
  *
  * @param null $Hi

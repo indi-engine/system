@@ -187,14 +187,14 @@ class Indi_Db {
                 SELECT `c`.`TABLE_NAME`, SUBSTRING_INDEX(`c`.`CONSTRAINT_NAME`, 'ibfk_', -1) AS `field`, c.*
                 FROM `information_schema`.`REFERENTIAL_CONSTRAINTS` `c`
                 WHERE `CONSTRAINT_SCHEMA` = DATABASE()
-            ")->fetchAll(PDO::FETCH_GROUP) as $table => $fields)
+            ")->groups() as $table => $fields)
                 $ibfk[$table] = array_column($fields, 'DELETE_RULE', 'field');
 
             // Get info about existing entities, or one certain entity, identified by id,
             // passed within value of 'model' key of $config argument
             $entityA = self::$_instance->query(
                 'SELECT * FROM `entity`' . ($entityId ? ' WHERE `id` = "' . $entityId . '"' : '')
-            )->fetchAll();
+            )->all();
 
             // If we're not reloading some certain entity
             if (!$entityId) {
@@ -222,18 +222,14 @@ class Indi_Db {
                         .'FROM `entity` WHERE LOWER(`table`) COLLATE utf8_bin != `table` COLLATE utf8_bin';
                 
                 // Get RENAME queries
-                $renameQA = self::$_instance->query($needQ)->fetchAll(PDO::FETCH_COLUMN);
+                $renameQA = self::$_instance->query($needQ)->col();
                 
                 // Execute RENAME queries
                 foreach ($renameQA as $renameQI) self::$_instance->query($renameQI);
             }
 
-            // Get info about fields, existing within all entities, or one certain entity
-            $fieldA = self::$_instance->query(
-                'SELECT * FROM `field`'  .
-                ($entityId ? ' WHERE `entityId` = "' . $entityId . '" ' : '') .
-                'ORDER BY `move`'
-            )->fetchAll();
+            // Get info about fields, existing within all entities
+            $fieldA = self::$_instance->query('SELECT * FROM `field` ORDER BY `move`')->all();
 
             // Get temporary table names array
             foreach($entityA as $entityI) $_[$entityI['id']] = $entityI['table'];
@@ -241,8 +237,20 @@ class Indi_Db {
             // Make fields ids to be used as the keys
             $fieldA = array_combine(array_column($fieldA, 'id'), $fieldA);
 
+            // Prepare info about quantities and sum where entities instances are counted in
+            $inQtySumA = [];
+            foreach(self::$_instance->query('SELECT *  FROM `inQtySum`')->all() as $_inQtySumI) {
+                $inQtySumI = ['type' => $_inQtySumI['type']];
+                foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
+                    $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
+                $inQtySumA [ $_inQtySumI['entityId'] ] []= $inQtySumI + ['sourceWhere' => $_inQtySumI['sourceWhere']];
+            }
+
             // Walk through fields, and
             foreach ($fieldA as $fieldI) {
+
+                // If we're reloading some certain entity, but $fieldI is not from that entity - skip
+                if ($entityId && $fieldI['entityId'] != $entityId) continue;
 
                 // Collect config-fields alias=>defaultValue pairs, grouped by entity and entry
                 if ($fieldI['entry'])
@@ -267,7 +275,7 @@ class Indi_Db {
             // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
             if (($lang = $_COOKIE['i-language']) && ini('lang')->admin != $lang
-                && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->fetchAll(PDO::FETCH_COLUMN)))
+                && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->col()))
                 ini('lang')->admin = $_COOKIE['i-language'];
 
             // Setup json-templates for each possible fractions
@@ -285,10 +293,10 @@ class Indi_Db {
                     FROM `lang` 
                     WHERE "y" IN (`' . im(ar($fraction), '`,`') . '`)
                     ORDER BY `move`
-                ')->fetchAll(PDO::FETCH_KEY_PAIR);
+                ')->pairs();
 
             // Get info about existing control elements
-            $elementA = self::$_instance->query('SELECT * FROM `element`')->fetchAll();
+            $elementA = self::$_instance->query('SELECT * FROM `element`')->all();
             $iElementA = []; foreach ($elementA as $elementI)
                 $iElementA[$elementI['id']] = new Indi_Db_Table_Row_Noeval([
                     'table' => 'element',
@@ -297,7 +305,7 @@ class Indi_Db {
             unset($elementA);
 
             // Get info about existing column types
-            $columnTypeA = self::$_instance->query('SELECT * FROM `columnType`')->fetchAll();
+            $columnTypeA = self::$_instance->query('SELECT * FROM `columnType`')->all();
             $iColumnTypeA = []; foreach ($columnTypeA as $columnTypeI)
                 $iColumnTypeA[$columnTypeI['id']] = new ColumnType_Row([
                     'table' => 'columnType',
@@ -313,14 +321,16 @@ class Indi_Db {
                 $fieldIdA = [];
 
                 // Fulfil that array
-                foreach ($fieldA as $fieldI) $fieldIdA[] = $fieldI['id'];
+                foreach ($fieldA as $fieldI)
+                    if ($fieldI['entityId'] == $entityId)
+                        $fieldIdA[] = $fieldI['id'];
             }
 
             // Get info about existing enumset values
             $enumsetA = self::$_instance->query(
                 'SELECT * FROM `enumset`' . (is_array($fieldIdA) ? ' WHERE FIND_IN_SET(`fieldId`, "' .
                 implode(',', $fieldIdA) . '") ' : '') . 'ORDER BY `move`'
-            )->fetchAll();
+            )->all();
 
             // Group them by `fieldId`
             $fEnumsetA = []; foreach ($enumsetA as $enumsetI)
@@ -334,7 +344,7 @@ class Indi_Db {
             $considerA = self::$_instance->query(
                 'SELECT * FROM `consider`' . (is_array($fieldIdA) ? ' WHERE FIND_IN_SET(`fieldId`, "' .
                 implode(',', $fieldIdA) . '") ' : '')
-            )->fetchAll();
+            )->all();
 
             // Group them by `fieldId`
             $fConsiderA = []; foreach ($considerA as $considerI)
@@ -346,7 +356,7 @@ class Indi_Db {
 
             // 4. Get info about explicit set (e.g. non-default) config-fields' values
             $paramA = self::$_instance->query('SELECT * FROM `param`' . (is_array($fieldIdA)
-                ? ' WHERE FIND_IN_SET(`fieldId`, "' . implode(',', $fieldIdA) . '") ' : ''))->fetchAll();
+                ? ' WHERE FIND_IN_SET(`fieldId`, "' . implode(',', $fieldIdA) . '") ' : ''))->all();
             $fParamA = []; foreach (l10n($paramA, 'value') as $paramI) {
                 if (array_key_exists('cfgField', $paramI)) {
                     if ($fieldA[$paramI['cfgField']]['relation'] == 5)  $paramI['cfgValue'] = $paramI['cfgValue']
@@ -363,6 +373,9 @@ class Indi_Db {
             // Group fields by their entity ids, and append system info
             $eFieldA = [];
             foreach ($fieldA as $fieldI) {
+
+                // If we're reloading some certain entity, but $fieldI is not from that entity - skip
+                if ($entityId && $fieldI['entityId'] != $entityId) continue;
 
                 // Setup original data
                 $fieldI = ['original' => $fieldI];
@@ -511,12 +524,13 @@ class Indi_Db {
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
                     'fraction' => $entityI['fraction'],
+                    'ibfk' => $ibfk[$entityI['table']] ?: [],
+                    'refs' => $refs[$entityI['table']] ?: [],
+                    'inQtySum' => $inQtySumA[$entityI['id']] ?: [],
                     'changeLog' => [
                         'toggle' => $entityI['changeLogToggle'],
                         'except' => $entityI['changeLogExcept'],
                     ],
-                    'ibfk' => $ibfk[$entityI['table']] ?: [],
-                    'refs' => $refs[$entityI['table']] ?: [],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
                         'rows' => $eFieldA[$entityI['id']]['rows'],
@@ -555,7 +569,7 @@ class Indi_Db {
                 // Get info about notices, attached to entities
                 $noticeA = self::$_instance->query('
                     SELECT * FROM `notice` WHERE `toggle` = "y"' . ($entityId ? ' AND `entityId` = "' . $entityId . '"' : '') . '
-                ')->fetchAll();
+                ')->all();
 
                 // Group notices by their entity ids, preliminary converting
                 // each notice into an instance of Indi_Db_Table_Row
