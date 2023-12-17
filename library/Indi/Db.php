@@ -250,7 +250,7 @@ class Indi_Db {
                     $inQtySumA [ $_inQtySumI['sourceEntity'] ] []= $inQtySumI + [
                         'sourceWhereSQL' => $_inQtySumI['sourceWhere'],
                         'sourceWherePHP' => isPhpableWHERE($_inQtySumI['sourceWhere'])
-                            ? sql2phpWHERE($_inQtySumI['sourceWhere'])
+                            ? sql2phpWHERE($_inQtySumI['sourceWhere'], '$phantom')
                             : false
                     ];
                 }

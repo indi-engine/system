@@ -3417,8 +3417,8 @@ function sql2phpWHERE($sqlWhere, $object = '$this') {
         '<>'  => '!=',
         '>'   => '>',
         '<'   => '<',
-        'AND' => 'AND',
-        'OR'  => 'OR',
+        'AND' => '&&',
+        'OR'  => '||',
         '('   => '(',
         ')'   => ')',
     ];

@@ -1314,13 +1314,16 @@ class Indi_Db_Table_Row implements ArrayAccess
             $data[$prop] = json_encode($valueByLang, JSON_UNESCAPED_UNICODE);
         }
 
-        // Build
+        // If format is 'php' - return phantom entry instance
+        if ($format === 'php') return $this->model()->createRow(['original' => $data]);
+
+        // Build cols values
         foreach ($data as $prop => $value) {
             $colA []= db()->quote($value) . " AS `$prop`";
         }
 
-        // Return
-        return $format === 'sql' ? 'SELECT ' . join(', ', $colA) : $this->new($data);
+        // Return SQL SELECT expression usable as derived table definition
+        return 'SELECT ' . join(', ', $colA);
     }
 
     /**
@@ -7823,7 +7826,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to current target-record
-                            $foreign->basicUpdate();
+                            $foreign->save();
                         }
                     }
                 }
@@ -7844,7 +7847,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $foreign->$trg -= $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to previous target-record
-                            $foreign->basicUpdate();
+                            $foreign->save();
                         }
                     }
                 }
@@ -7868,7 +7871,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $foreign->$trg -= $type == 'qty' ? 1 : $this->aoo($src);
 
                                 // Apply changes to previous target-record
-                                $foreign->basicUpdate();
+                                $foreign->save();
                             }
                         }
                     }
@@ -7886,7 +7889,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                                 // Apply changes to current target-record
-                                $foreign->basicUpdate();
+                                $foreign->save();
                             }
                         }
                     }
@@ -7924,7 +7927,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             }
 
                             // Apply changes to current target-record
-                            if ($foreign->isModified($trg)) $foreign->basicUpdate();
+                            if ($foreign->isModified($trg)) $foreign->save();
                         }
                     }
                 }
@@ -7952,7 +7955,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $phantom = $this->phantom($version,'php');
 
             // Eval the php-expression and assign the result into $match variable
-            eval("\$match = $where;");
+            eval("\$match = ($where);");
 
             // Return boolean flag
             return $match;
