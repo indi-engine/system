@@ -3358,3 +3358,77 @@ function qn($type = '') {
     // Return as '$vendorName.$databaseName' (with '.$type', if given)
     return "$vn.$dn" . rif($type, '.$1');
 }
+
+/**
+ * Check whether given $sqlWHERE is enough basic for being converted into php-expression usable in php if-operator
+ * To be considered convertible, given SQL WHERE expression should be a sequence of simple comparison expressions
+ * looking like '`col1` = "value1" delimited with SQL 'OR' and/or 'AND' with optional grouping using round brackets
+ * Comparison operators supported: '=', '!=', '<>', '<', '>', '<=', '>='.
+ * Column names should be enclosed with back-quotes.
+ * Column values should be enclosed with double-quotes.
+ *
+ * Examples:
+ *  - `col1` = "val1"
+ *  - `col1` = "val1" AND `col2` > "val2"
+ *  - (`col1` <= "val1" OR `col2` != "val1") AND `col2` = "val2"
+ *
+ * @param string $sqlWHERE
+ * @return bool
+ */
+function isPhpableWHERE(string $sqlWHERE) {
+
+    // Strip round brackets
+    $sqlWHERE = str_replace(['(', ')'], '', $sqlWHERE);
+
+    // Split into compare-expression by separating using ' AND ' and ' OR ' delimiters
+    foreach (preg_split('~ (AND|OR) ~', trim($sqlWHERE)) as $compareExpr)
+        if (!preg_match('~^(`[a-zA-Z_0-9]+`)\s*(=|!=|<>|<|>|<=|>=)\s*"[^"]*"$~', trim($compareExpr)))
+            return false;
+
+    // Return true
+    return true;
+}
+
+/**
+ * Convert sql where into php-expression usable in php if-operator.
+ * This is currently used for inQtySum-feature, for cased when inQtySum-entry has non-empty value of sourceWhere-prop,
+ * so in order for the source-entry to be appended/excluded to/from target-entry's target-field - this source-entry
+ * should match the WHERE clase specified in sourceWHERE-prop, and evenmore, when we change some properties of source-entry
+ * we should calc two(!) match-flags - before and after the change to affect the counting in te right way.
+ *
+ * The problem is that if we do that with SQL-query - this works longer than with php and this becomes noticable in case
+ * of batch changes, for example in queue(Task|Chunk|Item)-records. Currently there are 7 inQtySum-entries that are handling
+ * qties and sums there to be updated, and for 3500 queueItem-records with pure sql where this tooks ~480 seconds, but with
+ * using php-equivalent for those SQL's this tooks ~330 seconds, so it's ~31% faster, so it's preferred way when it's possible
+ * to use SQL WHERE expression that is enough simple to be converted to php-equivalent
+ *
+ * @param $sqlWhere
+ * @param string $object
+ * @return array|string|string[]|null
+ */
+function sql2phpWHERE($sqlWhere, $object = '$this') {
+
+    // Replace SQL operators with equivalent PHP operators
+    $phpOperators = [
+        '<='  => '<=',
+        '>='  => '>=',
+        '!='  => '!=',
+        '='   => '==',
+        '<>'  => '!=',
+        '>'   => '>',
+        '<'   => '<',
+        'AND' => 'AND',
+        'OR'  => 'OR',
+        '('   => '(',
+        ')'   => ')',
+    ];
+
+    // Replace SQL operators with equivalent PHP operators
+    $phpWhere = strtr($sqlWhere, $phpOperators);
+
+    // Replace SQL column names with equivalent PHP object property access
+    $phpWhere = preg_replace('/`(\w+)`/', $object . '->$1', $phpWhere);
+
+    // Return php
+    return $phpWhere;
+}

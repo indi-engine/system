@@ -1294,9 +1294,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      * from the database, but we still need to invoke into realtime logic as if it would be still there
      *
      * @param string $version Can be 'original' (default), 'current', 'modified' (alias for 'current') and 'affected'
+     * @param string $format Can be 'sql' (default) and 'php'
      * @return string
      */
-    public function phantom($version = 'original') {
+    public function phantom($version = 'original', $format = 'sql') {
 
         // Original data is used
         $data = $this->_original;
@@ -1319,7 +1320,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Return
-        return 'SELECT ' . join(', ', $colA);
+        return $format === 'sql' ? 'SELECT ' . join(', ', $colA) : $this->new($data);
     }
 
     /**
@@ -7803,7 +7804,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             $fgn   = $info['sourceTarget'];
             $trg   = $info['targetField'];
             $src   = $info['sourceField'];
-            $where = $info['sourceWhere'];
+            $where = $info['sourceWherePHP'] ?: $info['sourceWhereSQL'];
+            $isPHPWhere = $info['sourceWherePHP'] !== false;
 
             // If new entry was inserted
             if ($event == 'insert') {
@@ -7815,13 +7817,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                     if ($foreign = $this->foreign($fgn, true, 'original')) {
 
                         // If source-record match WHERE clause
-                        if ($match['now'] = $this->match($where, 'original')) {
+                        if ($match['now'] = $this->match($where, 'original', $isPHPWhere)) {
 
                             // Increment/increase value of target-field on current target-record
                             $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to current target-record
-                            $foreign->save();
+                            $foreign->basicUpdate();
                         }
                     }
                 }
@@ -7836,13 +7838,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                     if ($foreign = $this->foreign($fgn, true, 'original')) {
 
                         // If source-record match WHERE clause
-                        if ($match['was'] = $this->match($where, 'original')) {
+                        if ($match['was'] = $this->match($where, 'original', $isPHPWhere)) {
 
                             // Decrement/decrease value of target-field on previous target-record
                             $foreign->$trg -= $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to previous target-record
-                            $foreign->save();
+                            $foreign->basicUpdate();
                         }
                     }
                 }
@@ -7860,13 +7862,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                         if ($foreign = $this->foreign($fgn, true, 'affected')) {
 
                             // If source-record match WHERE clause
-                            if ($match['was'] = $this->match($where, 'affected')) {
+                            if ($match['was'] = $this->match($where, 'affected', $isPHPWhere)) {
 
                                 // Decrement/decrease value of target-field on previous target-record
                                 $foreign->$trg -= $type == 'qty' ? 1 : $this->aoo($src);
 
                                 // Apply changes to previous target-record
-                                $foreign->save();
+                                $foreign->basicUpdate();
                             }
                         }
                     }
@@ -7878,13 +7880,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                         if ($foreign = $this->foreign($fgn, true, 'original')) {
 
                             // If source-record match WHERE clause
-                            if ($match['now'] = $this->match($where, 'original')) {
+                            if ($match['now'] = $this->match($where, 'original', $isPHPWhere)) {
 
                                 // Increment/increase value of target-field on current target-record
                                 $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                                 // Apply changes to current target-record
-                                $foreign->save();
+                                $foreign->basicUpdate();
                             }
                         }
                     }
@@ -7899,8 +7901,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                         if ($foreign = $this->foreign($fgn)) {
 
                             // Get flags indicating whether source-record match WHERE clause before and after change
-                            $match['was'] = $this->match($where, 'affected');
-                            $match['now'] = $this->match($where, 'original');
+                            $match['was'] = $this->match($where, 'affected', $isPHPWhere);
+                            $match['now'] = $this->match($where, 'original', $isPHPWhere);
 
                             // If source-record was and is still matching WHERE clause
                             if ($match['was'] && $match['now']) {
@@ -7922,7 +7924,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             }
 
                             // Apply changes to current target-record
-                            if ($foreign->isModified($trg)) $foreign->save();
+                            if ($foreign->isModified($trg)) $foreign->basicUpdate();
                         }
                     }
                 }
@@ -7931,22 +7933,39 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
-     * Check whether certain version of current entry does match given SQL WHERE clause
+     * Check whether certain version of current entry does match given SQL WHERE clause or php-expression
      *
      * @param $where
      * @param $version
+     * @param bool $isPHPWhere
      * @return mixed
      */
-    public function match($where, $version) {
+    public function match($where, $version, $isPHPWhere = false) {
 
         // If where clause is empty - return true
         if (!$where) return true;
 
-        // Get sql to be usage as derived table
-        $phantom = $this->phantom($version);
+        // If $where arg contains a php-expression
+        if ($isPHPWhere) {
 
-        // Get
-        return db()->query("SELECT `id` FROM ($phantom) AS `phantom` WHERE $where")->cell();
+            // Get plain entry instance
+            $phantom = $this->phantom($version,'php');
+
+            // Eval the php-expression and assign the result into $match variable
+            eval("\$match = $where;");
+
+            // Return boolean flag
+            return $match;
+
+        // Else if it's an SQL-expression
+        } else {
+
+            // Get sql expression to be used as derived table
+            $phantom = $this->phantom($version,'sql');
+
+            // Return
+            return db()->query("SELECT `id` FROM ($phantom) AS `phantom` WHERE $where")->cell();
+        }
     }
 
     /**
@@ -8053,10 +8072,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @return Indi_Db_Table_Row
      */
-    public function new() {
+    public function new($ctor = null) {
 
         // Use original data as ctor
-        $ctor = $this->_original;
+        if (!$ctor) $ctor = $this->_original;
 
         // Unset 'id' and 'move'
         unset ($ctor['id'], $ctor['move']);
