@@ -133,7 +133,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => '0',
             'move' => 'procID',
         ]);
-        grid('queueTask', 'procSpan', ['gridId' => 'proc', 'move' => 'procSince', 'icon' => 'resources/images/icons/plan-day.png']);
+        grid('queueTask', 'procSpan', ['gridId' => 'proc', 'move' => 'procSince', 'icon' => 'resources/images/icons/plan-week.png']);
         die('ok');
     }
     public function migratecommittimestampAction() {
