@@ -1340,9 +1340,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param bool $notices If `true - notices will not be omitted
      * @param bool $amerge If `true - previous value $this->_affected will be kept, but newly affected will have a priority
      * @param bool $realtime If `true - $this->realtime('update') call will be made
+     * @param bool $inQtySum If `true - $this->_inQtySum('update') call will be made
      * @return int
      */
-    public function basicUpdate($notices = false, $amerge = true, $realtime = true) {
+    public function basicUpdate($notices = false, $amerge = true, $realtime = true, $inQtySum = true) {
 
         // Data types check, and if smth is not ok - flush mismatches
         $this->scratchy(true);
@@ -1385,6 +1386,9 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Involve realtime feature
         if ($realtime) $this->realtime('update');
+
+        // Trigger dependent counters / summaries to be updated
+        if ($inQtySum) $this->_inQtySum('update');
 
         // Return number of affected rows (1 or 0)
         return $affected;
@@ -3348,7 +3352,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($where)) $nested = array_merge($nested, count($where = un($where, [null, ''])) ? $where : []);
 
         // Else if where arg is a non-empty string
-        else if (strlen($where)) $nested []= $where;
+        else if (strlen($where)) $nested []= "($where)";
 
         // Prepare WHERE clause
         $where = im($nested, ' AND ');
@@ -7796,7 +7800,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Shortcuts
             $type  = $info['type'];
-            $fgn   = $info['targetEntry'];
+            $fgn   = $info['sourceTarget'];
             $trg   = $info['targetField'];
             $src   = $info['sourceField'];
             $where = $info['sourceWhere'];
@@ -8041,5 +8045,23 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function dec($prop) {
         return $this->set($prop, $this->$prop - 1);
+    }
+
+    /**
+     * Prepare new entry based on current on, except that 'id' and 'move' props are unset
+     * Note: it's now saved into db yet
+     *
+     * @return Indi_Db_Table_Row
+     */
+    public function new() {
+
+        // Use original data as ctor
+        $ctor = $this->_original;
+
+        // Unset 'id' and 'move'
+        unset ($ctor['id'], $ctor['move']);
+
+        // Use others to init new entry
+        return $this->model()->new($ctor);
     }
 }

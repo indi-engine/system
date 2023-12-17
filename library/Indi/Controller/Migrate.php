@@ -125,6 +125,15 @@ class Indi_Controller_Migrate extends Indi_Controller {
         alteredField('inQtySum', 'sourceTarget', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
         alteredField('inQtySum', 'targetField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
         alteredField('inQtySum', 'sourceField', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        field('queueTask', 'procSpan', [
+            'title' => 'Длительность',
+            'mode' => 'readonly',
+            'elementId' => 'number',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'procID',
+        ]);
+        grid('queueTask', 'procSpan', ['gridId' => 'proc', 'move' => 'procSince', 'icon' => 'resources/images/icons/plan-day.png']);
         die('ok');
     }
     public function migratecommittimestampAction() {

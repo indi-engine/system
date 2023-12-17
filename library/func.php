@@ -2630,7 +2630,7 @@ function consider($entity, $field, $consider, $ctor = false) {
  * @param string $sourceEntity
  * @param string $sourceTarget
  * @param string $targetField
- * @param false $ctor
+ * @param bool|array $ctor
  * @return Indi_Db_Table_Row|null
  */
 function inQtySum(string $sourceEntity, string $sourceTarget, string $targetField, $ctor = false) {
@@ -2647,9 +2647,7 @@ function inQtySum(string $sourceEntity, string $sourceTarget, string $targetFiel
         "`targetField` = '$targetField'",
     ]);
 
-    // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise.
-    // This part of this function differs from such part if other similar functions, for example grid() function,
-    // because presence of $sourceEntity, $sourceTarget and $targetField args - is not enough for `inQtySum` entry to be created
+    // If $ctor arg is an empty array - return `field` entry, if found, or null otherwise
     if (!$ctor) return $row;
 
     // If any of `sourceEntity`, `sourceTarget` and `targetField` props are not defined
@@ -2662,7 +2660,7 @@ function inQtySum(string $sourceEntity, string $sourceTarget, string $targetFiel
     // If `inQtySum` entry was not found - create it
     if (!$row) $row = m('inQtySum')->new();
 
-    // Assign some props first
+    // Assign some props before others
     foreach (ar('sourceEntity,sourceTarget,targetField') as $prop)
         if ($ctor[$prop] && $row->$prop = $ctor[$prop]) unset($ctor[$prop]);
 

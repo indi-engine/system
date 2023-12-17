@@ -247,7 +247,7 @@ class Indi_Db {
                     $inQtySumI = ['type' => $_inQtySumI['type']];
                     foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
                         $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
-                    $inQtySumA [ $_inQtySumI['entityId'] ] []= $inQtySumI + ['sourceWhere' => $_inQtySumI['sourceWhere']];
+                    $inQtySumA [ $_inQtySumI['sourceEntity'] ] []= $inQtySumI + ['sourceWhere' => $_inQtySumI['sourceWhere']];
                 }
             }
 

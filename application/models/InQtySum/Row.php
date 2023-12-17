@@ -94,8 +94,8 @@ class InQtySum_Row extends Indi_Db_Table_Row {
         // Use original data as initial ctor
         $ctor = $this->_original;
 
-        // Exclude `id` as it will be set automatically by MySQL
-        unset($ctor['id']);
+        // Exclude `id` as it will be set automatically by MySQL and Indi Engine, respectively
+        unset($ctor['id'], $ctor['title']);
 
         // Exclude props that will be already represented by shorthand-fn args
         foreach (ar('sourceEntity,sourceTarget,targetField') as $arg) unset($ctor[$arg]);

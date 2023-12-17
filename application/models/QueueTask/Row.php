@@ -61,4 +61,14 @@ class QueueTask_Row extends Indi_Db_Table_Row {
             ]);
         }
     }
+
+    /**
+     * Update time spent on this queue task so far
+     */
+    public function onBeforeUpdate() {
+
+        // Update time spent on this queue task so far
+        if (!Indi::rexm('zerodate', $this->procSince))
+            $this->procSpan = time() - strtotime($this->procSince);
+    }
 }
