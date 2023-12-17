@@ -3311,28 +3311,8 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $where
      * @return int
      */
-    public function qty($table, $where = null) {
-
-        // Connector
-        $connector = $this->_table . 'Id';
-
-        // Build part of WHERE clause, responsible for nesting
-        $nested = ['`' . $connector . '` = "' . $this->id . '"'];
-
-        // If $where arg is an array
-        if (is_array($where)) $nested = array_merge($nested, count($where = un($where, [null, ''])) ? $where : []);
-
-        // Else if where arg is a non-empty string
-        else if (strlen($where)) $nested []= $where;
-
-        // Prepare WHERE clause
-        $where = im($nested, ' AND ');
-
-        // Build the query
-        $sql = "SELECT COUNT(`id`) FROM `$table` WHERE $where";
-
-        // Get qty
-        return db()->query($sql)->cell() ?: 0;
+    public function qty($table, $where = null, $connector = null) {
+        return $this->nestedSummary($table, 'COUNT', 'id', $where, $connector);
     }
 
     /**
@@ -3342,10 +3322,24 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param $where
      * @return int
      */
-    public function sum($table, $column, $where = null) {
+    public function sum($table, $column, $where = null, $connector = null) {
+        return $this->nestedSummary($table, 'SUM', $column, $where, $connector);
+    }
+
+    /**
+     * Get certain type of summary among certain nested entries
+     *
+     * @param $table
+     * @param string $summaryType
+     * @param string $column
+     * @param null $where
+     * @param null $connector
+     * @return int|mixed
+     */
+    public function nestedSummary($table, $summaryType = 'COUNT', $column = 'id', $where = null, $connector = null) {
 
         // Connector
-        $connector = $this->_table . 'Id';
+        if (!$connector) $connector = $this->_table . 'Id';
 
         // Build part of WHERE clause, responsible for nesting
         $nested = ['`' . $connector . '` = "' . $this->id . '"'];
@@ -3360,7 +3354,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $where = im($nested, ' AND ');
 
         // Build the query
-        $sql = "SELECT SUM(`$column`) FROM `$table` WHERE $where";
+        $sql = "SELECT $summaryType(`$column`) FROM `$table` WHERE $where";
 
         // Get qty
         return db()->query($sql)->cell() ?: 0;

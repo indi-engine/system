@@ -234,16 +234,21 @@ class Indi_Db {
             // Get temporary table names array
             foreach($entityA as $entityI) $_[$entityI['id']] = $entityI['table'];
 
+            // Get [table name => entityId] pairs
+            $entityIdByTable = array_flip($_);
+
             // Make fields ids to be used as the keys
             $fieldA = array_combine(array_column($fieldA, 'id'), $fieldA);
 
-            // Prepare info about quantities and sum where entities instances are counted in
+            // Prepare info about quantities and sums where entities instances are counted in
             $inQtySumA = [];
-            foreach(self::$_instance->query('SELECT *  FROM `inQtySum`')->all() as $_inQtySumI) {
-                $inQtySumI = ['type' => $_inQtySumI['type']];
-                foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
-                    $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
-                $inQtySumA [ $_inQtySumI['entityId'] ] []= $inQtySumI + ['sourceWhere' => $_inQtySumI['sourceWhere']];
+            if ($entityIdByTable['inQtySum']) {
+                foreach(self::$_instance->query('SELECT *  FROM `inQtySum`')->all() as $_inQtySumI) {
+                    $inQtySumI = ['type' => $_inQtySumI['type']];
+                    foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
+                        $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
+                    $inQtySumA [ $_inQtySumI['entityId'] ] []= $inQtySumI + ['sourceWhere' => $_inQtySumI['sourceWhere']];
+                }
             }
 
             // Walk through fields, and
@@ -526,7 +531,7 @@ class Indi_Db {
                     'fraction' => $entityI['fraction'],
                     'ibfk' => $ibfk[$entityI['table']] ?: [],
                     'refs' => $refs[$entityI['table']] ?: [],
-                    'inQtySum' => $inQtySumA[$entityI['id']] ?: [],
+                    'inQtySum' => $inQtySumA[$entityI['id']] ?? [],
                     'changeLog' => [
                         'toggle' => $entityI['changeLogToggle'],
                         'except' => $entityI['changeLogExcept'],

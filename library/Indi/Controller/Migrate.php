@@ -31,7 +31,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'mode' => 'required',
             'storeRelationAbility' => 'one',
             'relation' => 'field',
-            'filter' => '`entry` = "0"',
+            'filter' => '`entry` = "0" AND `id` NOT IN (SELECT `targetField` FROM `inQtySum`)',
             'onDelete' => 'CASCADE',
             'elementId' => 'combo',
             'columnTypeId' => 'INT(11)',

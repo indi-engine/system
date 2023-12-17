@@ -23,6 +23,13 @@ class InQtySum_Row extends Indi_Db_Table_Row {
     }
 
     /**
+     * Make sure non-zero value of sourceField is applicable only if count type is 'sum'
+     */
+    public function onBeforeSave() {
+        if ($this->type !== 'sum') $this->zero('sourceField', true);
+    }
+
+    /**
      * @return int
      */
     public function onSave() {
@@ -49,6 +56,9 @@ class InQtySum_Row extends Indi_Db_Table_Row {
         // Get target model instance
         $targetModel = $this->foreign('sourceTarget')->rel();
 
+        // Get an alias of the field that is a connector between source entries and target entry
+        $connector = $this->foreign('sourceTarget')->alias;
+
         // Get target field
         $targetField = $this->foreign('targetField')->alias;
 
@@ -65,8 +75,8 @@ class InQtySum_Row extends Indi_Db_Table_Row {
             $targetValue = $event === 'delete'
                 ? 0
                 : ($this->type === 'qty'
-                    ? $targetEntry->qty($sourceTable, $this->sourceWhere)
-                    : $targetEntry->sum($sourceTable, $sourceField, $this->sourceWhere));
+                    ? $targetEntry->qty($sourceTable, $this->sourceWhere, $connector)
+                    : $targetEntry->sum($sourceTable, $sourceField, $this->sourceWhere, $connector));
 
             // Calc and apply value into target field
             $targetEntry->set($targetField, $targetValue)->save();
