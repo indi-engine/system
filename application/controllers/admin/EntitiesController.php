@@ -100,6 +100,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     private function _migrate() {
 
+        // Get instance type
+        $type = param('instance-type')->cfgValue;
+
         // Flag indicating that we had already backed up our database both locally and on github.
         // Initial value for now is `false`, because there might be nothing to migrate, so no backup needed.
         // In case if further script detects there is something to be migrated - backup is made and flag is set to `true`,
