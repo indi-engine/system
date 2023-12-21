@@ -818,7 +818,7 @@ class Indi_Db {
         }
 
         // Flush an error
-        iexit(jerror($errcode, $errstr, $file, $line));
+        iexit(jerror($errcode, $errstr, $file, $line), 1);
     }
 
     /**

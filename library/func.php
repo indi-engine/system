@@ -916,8 +916,18 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
         echo json_encode($flush, $options);
     }
 
-    // Exit if need
-    if ($redir) die(header('Location: ' . $die)); else if ($die) iexit();
+    // If redirect should be done - do that
+    if ($redir) die(header('Location: ' . $die));
+
+    // Else if we should terminate the execution
+    else if ($die) {
+
+        // Get exit code
+        $exitCode = (int) ($flush['success'] === false);
+
+        // Do exit
+        iexit(null, $exitCode);
+    }
 }
 
 /**
@@ -1110,7 +1120,7 @@ function alias($title){
 /**
  * @param $msg
  */
-function iexit($msg = null) {
+function iexit($msg = null, $code = 0) {
 
     // Send all DELETE queries to an special email address, for debugging
     Indi::mailDELETE();
@@ -1119,7 +1129,7 @@ function iexit($msg = null) {
     // for a sub-request initiated uri()->response($href) call so here we just
     // print that without execution termination, expecting the printed output
     // to be captured and used as return value by response() method mentioned above
-    if (Indi_Uri::$stack) echo $msg; else exit($msg);
+    echo $msg; if (!Indi_Uri::$stack) exit($code);
 }
 
 /**

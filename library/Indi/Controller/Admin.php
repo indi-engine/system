@@ -1415,7 +1415,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             if ($h = trim(Indi::hexColor($c[1]), '#')) {
 
                                 // Create the GD image
-                                $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream');
+                                $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream', 1);
                                 imagefill($gdImage, 0, 0, imagecolorallocate(
                                     $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
                                 );
@@ -1888,7 +1888,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if ($h = trim(Indi::hexColor($c[1]), '#')) {
 
                         // Create the GD image
-                        $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream');
+                        $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream', 1);
                         imagefill($gdImage, 0, 0, imagecolorallocate(
                             $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
                         );

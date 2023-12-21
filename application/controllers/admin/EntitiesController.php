@@ -100,7 +100,15 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     private function _migrate() {
 
-        // Flag indicating whether sql dump should be pushed to github
+        // Flag indicating that we had already backed up our database both locally and on github.
+        // Initial value for now is `false`, because there might be nothing to migrate, so no backup needed.
+        // In case if further script detects there is something to be migrated - backup is made and flag is set to `true`,
+        // so that backup is made once per $this->__migrate() call. As a result of a backup the file
+        // named as 'custom-$type-backup-before-migrate.sql.gz' appears locally (in sql/) and on github
+        // and is kept there until overwritten
+        $backed = false;
+
+        // Flag indicating we have successfully migrated so that we need to upload fresh db dump on github
         $github = false;
 
         // Repos to be checked for pending migrations
@@ -157,6 +165,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                         // just to prevent developer to scrolling to the bottom of file having thousands of lines
                         $actions = array_reverse($actions);
 
+                        // If there is really something to migrate
+                        if ($actions && !$backed) {
+
+                            // Do backup
+                            $this->backupAction([
+                                'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                                'token' => explode(':', $this->git['auth']['value'])[1]
+                            ]);
+
+                            // Setup $backup flag to true
+                            $backed = true;
+                        }
+
                         // Run migrations
                         foreach ($actions as $action)
                             $this->exec("php indi migrate/$action");
@@ -172,6 +193,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                 // If php-file responsible for turning On l10n for certain field - was changed
                 if (in($l10n_meta = 'application/lang/ui.php', $files)) {
+
+                    // If there is really something to migrate
+                    if (!$backed) {
+
+                        // Do backup
+                        $this->backupAction([
+                            'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                            'token' => explode(':', $this->git['auth']['value'])[1]
+                        ]);
+
+                        // Setup $backup flag to true
+                        $backed = true;
+                    }
 
                     // Print where we are
                     msg("$fraction: importing $l10n_meta");
@@ -200,6 +234,19 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                 // Else Import titles
                 else foreach ($l10n_data as $lang => $file) {
+
+                    // If there is really something to migrate
+                    if (!$backed) {
+
+                        // Do backup
+                        $this->backupAction([
+                            'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                            'token' => explode(':', $this->git['auth']['value'])[1]
+                        ]);
+
+                        // Setup $backup flag to true
+                        $backed = true;
+                    }
 
                     // Print where we are
                     msg("$fraction: importing $file");
