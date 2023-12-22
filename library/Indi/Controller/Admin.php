@@ -2609,7 +2609,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                 } else if (file_exists($client = DOC . STD . VDR . '/client/index.html') && !isset(Indi::get()->classic)) {
 
                     // Flush client app's bootstrap file
-                    iexit(readfile($client));
+                    readfile($client);
+
+                    // Exit
+                    iexit();
 
                 // Else if user is trying to access server-app using usual way
                 } else {
