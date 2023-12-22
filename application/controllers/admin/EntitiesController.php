@@ -173,7 +173,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                             // Do backup
                             $this->backupAction([
-                                'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                                'dump' => "custom-$type.backup-before-migrate.sql.gz",
                                 'token' => explode(':', $this->git['auth']['value'])[1]
                             ]);
 
@@ -181,9 +181,15 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                             $backed = true;
                         }
 
-                        // Run migrations
-                        foreach ($actions as $action)
+                        // Foreach migration
+                        foreach ($actions as $action) {
+
+                            // Run
                             $this->exec("php indi migrate/$action");
+
+                            // Reload db meta
+                            db(true);
+                        }
 
                         // Setup $github flag to true
                         if ($actions) $github = true;

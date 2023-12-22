@@ -3734,9 +3734,6 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Get the field
             $fieldR = $this->model()->fields($column);
 
-            // If no field - skip
-            if (!$fieldR) continue;
-
             // Get the control element
             $elementR = $fieldR->foreign('elementId');
 
