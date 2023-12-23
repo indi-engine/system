@@ -1980,6 +1980,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // as otherwise this method will be called inside $this->maxwell()
         if (!ini()->rabbitmq->maxwell) $this->_afterDelete();
 
+        // Trigger dependent counters / summaries to be updated
+        $this->_inQtySum('delete');
+
         // Unset `id` prop
         $this->id = null;
 
@@ -2013,9 +2016,6 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Force false to be the result of all matches each separate notification's criteria,
         // and compare results with the results of previous check, that was made before any modifications
         $this->_noticesStep2();
-
-        // Trigger dependent counters / summaries to be updated
-        $this->_inQtySum('delete');
     }
 
     /**
@@ -7809,6 +7809,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $src   = $info['sourceField'];
             $where = $info['sourceWherePHP'] ?: $info['sourceWhereSQL'];
             $isPHPWhere = $info['sourceWherePHP'] !== false;
+            $method = 'save';
 
             // If new entry was inserted
             if ($event == 'insert') {
@@ -7816,8 +7817,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // If current target-record ID is non-zero
                 if ($this->$fgn) {
 
-                    // If current target-record still exists in DB
-                    if ($foreign = $this->foreign($fgn, true, 'original')) {
+                    // If current target-record is externally fetched from db and fed via
+                    // $this->_system["inQtySumTarget-$fgn"] or can it be still fetched right here
+                    if ($foreign = $this->_system["inQtySumTarget-$fgn"]
+                        ?? $this->foreign($fgn, true, 'original')) {
 
                         // If source-record match WHERE clause
                         if ($match['now'] = $this->match($where, 'original', $isPHPWhere)) {
@@ -7826,7 +7829,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to current target-record
-                            $foreign->save();
+                            $foreign->$method();
                         }
                     }
                 }
@@ -7837,8 +7840,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // If previous target-record ID was non-zero
                 if ($this->$fgn) {
 
-                    // If previous target-record still exists in DB
-                    if ($foreign = $this->foreign($fgn, true, 'original')) {
+                    // If previous target-record is externally fetched from db and fed via
+                    // $this->_system["inQtySumTarget-$fgn"] or can it be still fetched right here
+                    if ($foreign = $this->_system["inQtySumTarget-$fgn"]
+                        ?? $this->foreign($fgn, true, 'original')) {
 
                         // If source-record match WHERE clause
                         if ($match['was'] = $this->match($where, 'original', $isPHPWhere)) {
@@ -7847,7 +7852,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $foreign->$trg -= $type == 'qty' ? 1 : $this->original($src);
 
                             // Apply changes to previous target-record
-                            $foreign->save();
+                            $foreign->$method();
                         }
                     }
                 }
@@ -7871,7 +7876,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $foreign->$trg -= $type == 'qty' ? 1 : $this->aoo($src);
 
                                 // Apply changes to previous target-record
-                                $foreign->save();
+                                $foreign->$method();
                             }
                         }
                     }
@@ -7889,7 +7894,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $foreign->$trg += $type == 'qty' ? 1 : $this->original($src);
 
                                 // Apply changes to current target-record
-                                $foreign->save();
+                                $foreign->$method();
                             }
                         }
                     }
@@ -7927,7 +7932,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             }
 
                             // Apply changes to current target-record
-                            if ($foreign->isModified($trg)) $foreign->save();
+                            if ($foreign->isModified($trg)) $foreign->$method();
                         }
                     }
                 }

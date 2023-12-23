@@ -1862,20 +1862,20 @@ class Indi_Db_Table
     }
 
     /**
-     * Fetch entries by $limit per once, and pass each entry into $operation function as an arguments.
+     * Fetch entries by $limit per once, and pass each entry into $fn function as an arguments.
      * This is a workaround to avoid problems, caused by PHP ini's `memory_limit` configuration option
      *
-     * @param callable $operation
+     * @param callable $fn
      * @param null $where
      * @param null $order
      * @param int $limit
      * @param bool $rowset
      * @throws Exception
      */
-    public function batch($operation, $where = null, $order = null, $limit = 500, $rowset = false) {
+    public function batch($fn, $where = null, $order = null, $limit = 500, $rowset = false) {
 
-        // Check that $operation arg is callable
-        if (!is_callable($operation)) throw new Exception('$operation arg is not callable');
+        // Check that $fn arg is callable
+        if (!is_callable($fn)) throw new Exception('$fn arg is not callable');
 
         // Turn off limitations
         ignore_user_abort(1); set_time_limit(0);
@@ -1894,7 +1894,8 @@ class Indi_Db_Table
             // However here we need this as a flag indicating whether
             // we should fetch next page as planned, or fetch first page again
             // with understanding that despite it's a again the first page
-            // it will contain another results
+            // it will contain another results, because previous results are deleted or
+            // are not matching $where clause anymore
             $deduct = 0;
 
             // Fetch usages
@@ -1904,9 +1905,9 @@ class Indi_Db_Table
             if (!$rs->count()) return;
 
             // Update usages
-            if ($rowset) $operation($rs, $deduct); else foreach ($rs as $i => $r) $operation($r, $deduct, ($p - 1) * $limit + $i);
+            if ($rowset) $fn($rs, $deduct); else foreach ($rs as $i => $r) $fn($r, $deduct, ($p - 1) * $limit + $i);
 
-            // If now (e.g. after $operation() call completed) less entries match WHERE clause,
+            // If now (e.g. after $fn() call completed) less entries match WHERE clause,
             // it means that we need to fetch same page again rather than fetching next page
             if ($deduct) $p -= (int) !($deduct = 0);
         }
