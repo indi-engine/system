@@ -140,7 +140,7 @@ CREATE TABLE `alteredField` (
   CONSTRAINT `alteredField_ibfk_jumpSectionActionId` FOREIGN KEY (`jumpSectionActionId`) REFERENCES `section2action` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `alteredField_ibfk_jumpSectionId` FOREIGN KEY (`jumpSectionId`) REFERENCES `section` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `alteredField_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=285 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=288 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `alteredField` */
 
@@ -206,7 +206,10 @@ insert  into `alteredField`(`id`,`sectionId`,`fieldId`,`title`,`toggle`,`accessR
 (281,7,2634,'{\"en\":\"Field\",\"ru\":\"Поле\"}','y','all','','','inherit',NULL,'',6,11,''),
 (282,7,2635,'{\"en\":\"Further field\",\"ru\":\"Поле по ключу\"}','y','all','','','inherit',NULL,'',6,11,''),
 (283,407,2683,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y','all','','','inherit',NULL,'',5,7,''),
-(284,101,2683,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y','all','','','inherit',NULL,'',5,7,'');
+(284,101,2683,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y','all','','','inherit',NULL,'',5,7,''),
+(285,416,2721,'{\"en\":\"Foreign-key field pointing to target entry\",\"ru\":\"Поле внешнего ключа, указывающее на целевую запись\"}','y','all','','','inherit',NULL,'',6,11,''),
+(286,416,2722,'{\"en\":\"Target field to update value in\",\"ru\":\"Целевое поле для обновления значения\"}','y','all','','','inherit',NULL,'',6,11,''),
+(287,416,2724,'{\"en\":\"Source field to append\\/deduct to\\/from target field\",\"ru\":\"Поле источника для добавления\\/вычитания из суммы\"}','y','all','','','inherit',NULL,'',6,11,'');
 
 /*Table structure for table `changeLog` */
 
@@ -297,7 +300,7 @@ CREATE TABLE `consider` (
   CONSTRAINT `consider_ibfk_entityId` FOREIGN KEY (`entityId`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `consider_ibfk_fieldId` FOREIGN KEY (`fieldId`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `consider_ibfk_foreign` FOREIGN KEY (`foreign`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `consider` */
 
@@ -347,7 +350,10 @@ insert  into `consider`(`id`,`entityId`,`fieldId`,`consider`,`foreign`,`title`,`
 (67,313,2299,2300,1337,'{\"en\":\"Role\",\"ru\":\"Роль\"}','y',NULL),
 (68,9,2664,33,NULL,'{\"en\":\"Section\",\"ru\":\"Раздел\"}','y',NULL),
 (69,9,2665,33,19,'{\"en\":\"Section\",\"ru\":\"Раздел\"}','y',NULL),
-(70,91,476,2683,NULL,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y',NULL);
+(70,91,476,2683,NULL,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','y',NULL),
+(71,335,2721,2720,NULL,'{\"en\":\"Source entity\",\"ru\":\"Сущность\"}','y',6),
+(72,335,2722,2721,12,'{\"en\":\"Foreign-key field pointing to target entry\",\"ru\":\"Поле внешнего ключа, указывающее на целевую запись\"}','y',6),
+(73,335,2724,2720,NULL,'{\"en\":\"Source entity\",\"ru\":\"Сущность\"}','y',6);
 
 /*Table structure for table `element` */
 
@@ -418,7 +424,7 @@ CREATE TABLE `entity` (
   FULLTEXT KEY `title` (`title`),
   CONSTRAINT `entity_ibfk_filesGroupBy` FOREIGN KEY (`filesGroupBy`) REFERENCES `field` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `entity_ibfk_titleFieldId` FOREIGN KEY (`titleFieldId`) REFERENCES `field` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=335 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=336 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `entity` */
 
@@ -448,7 +454,8 @@ insert  into `entity`(`id`,`title`,`table`,`extends`,`fraction`,`titleFieldId`,`
 (314,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTask','Indi_Db_Table','system',2336,NULL,'none','','none',''),
 (315,'{\"ru\":\"Сегмент очереди\",\"en\":\"Queue chunk\"}','queueChunk','Indi_Db_Table','system',2359,NULL,'none','','none',''),
 (316,'{\"ru\":\"Элемент очереди\",\"en\":\"Queue item\"}','queueItem','Indi_Db_Table','system',NULL,NULL,'none','','none',''),
-(318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','Indi_Db_Table','system',2409,NULL,'none','','none','');
+(318,'{\"ru\":\"Рилтайм\",\"en\":\"Realtime\"}','realtime','Indi_Db_Table','system',2409,NULL,'none','','none',''),
+(335,'{\"en\":\"Count in Qty\\/Sum\",\"ru\":\"Учет в количестве\\/сумме\"}','inQtySum','Indi_Db_Table','system',2722,NULL,'none','','none','');
 
 /*Table structure for table `enumset` */
 
@@ -468,7 +475,7 @@ CREATE TABLE `enumset` (
   KEY `fieldId` (`fieldId`),
   FULLTEXT KEY `title` (`title`),
   CONSTRAINT `enumset_ibfk_fieldId` FOREIGN KEY (`fieldId`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1317 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1319 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `enumset` */
 
@@ -757,7 +764,9 @@ insert  into `enumset`(`id`,`fieldId`,`title`,`alias`,`move`,`boxIcon`,`boxColor
 (1313,2184,'{\"en\":\"No\",\"ru\":\"Нет\"}','0',1309,'','000#FFFFFF','',''),
 (1314,2184,'{\"en\":\"Yes\",\"ru\":\"Да\"}','1',0,'resources/images/icons/template-ignore.png','','',''),
 (1315,2656,'{\"en\":\"No\",\"ru\":\"Нет\"}','0',1309,'','000#FFFFFF','',''),
-(1316,2656,'{\"en\":\"Yes\",\"ru\":\"Да\"}','1',0,'resources/images/icons/btn-icon-multi-select.png','','','');
+(1316,2656,'{\"en\":\"Yes\",\"ru\":\"Да\"}','1',0,'resources/images/icons/btn-icon-multi-select.png','','',''),
+(1317,2723,'{\"en\":\"Qty\",\"ru\":\"Кол-во\"}','qty',1317,'','','',''),
+(1318,2723,'{\"en\":\"Sum\",\"ru\":\"Сумма\"}','sum',1318,'','','','');
 
 /*Table structure for table `field` */
 
@@ -796,7 +805,7 @@ CREATE TABLE `field` (
   CONSTRAINT `field_ibfk_elementId` FOREIGN KEY (`elementId`) REFERENCES `element` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `field_ibfk_entityId` FOREIGN KEY (`entityId`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `field_ibfk_relation` FOREIGN KEY (`relation`) REFERENCES `entity` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2720 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2728 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `field` */
 
@@ -1004,22 +1013,22 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`mode`,`storeRelati
 (2339,314,0,'{\"ru\":\"Процесс\",\"en\":\"Process\"}','proc','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2340),
 (2340,314,0,'{\"ru\":\"Начат\",\"en\":\"Started\"}','procSince','regular','none',NULL,'','-',19,'{\"ru\":\"\",\"en\":\"\"}',9,'0000-00-00 00:00:00','n',2341),
 (2341,314,0,'{\"ru\":\"PID\",\"en\":\"PID\"}','procID','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2342),
-(2342,314,0,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','stage','hidden','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'count','y',2343),
-(2343,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','state','hidden','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2344),
+(2342,314,0,'{\"ru\":\"Этап\",\"en\":\"Stage\"}','stage','hidden','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'count','y',2344),
+(2343,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','state','hidden','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2346),
 (2344,314,0,'{\"ru\":\"Сегменты\",\"en\":\"Chunks\"}','chunk','regular','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2339),
-(2345,314,0,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2346),
-(2346,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2347),
-(2347,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2348),
-(2348,314,0,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2349),
-(2349,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2350),
-(2350,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2351),
-(2351,314,0,'{\"en\":\"Chars\",\"ru\":\"Знаков\"}','itemsBytes','regular','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2352),
-(2352,314,0,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2353),
-(2353,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2354),
-(2354,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize','regular','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2355),
-(2355,314,0,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2357),
-(2356,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2382),
-(2357,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2599),
+(2345,314,0,'{\"ru\":\"Оценка\",\"en\":\"Estimation\"}','count','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2347),
+(2346,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','countState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2348),
+(2347,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','countSize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2349),
+(2348,314,0,'{\"ru\":\"Создание\",\"en\":\"Creating\"}','items','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2350),
+(2349,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','itemsState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2351),
+(2350,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','itemsSize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2352),
+(2351,314,0,'{\"en\":\"Chars\",\"ru\":\"Знаков\"}','itemsBytes','regular','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2353),
+(2352,314,0,'{\"ru\":\"Процессинг\",\"en\":\"Processing\"}','queue','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2354),
+(2353,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','queueState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2355),
+(2354,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','queueSize','regular','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2356),
+(2355,314,0,'{\"ru\":\"Применение\",\"en\":\"Applying\"}','apply','regular','none',NULL,'','-',16,'{\"ru\":\"\",\"en\":\"\"}',NULL,'','n',2382),
+(2356,314,0,'{\"ru\":\"Статус\",\"en\":\"Status\"}','applyState','readonly','one',6,'','RESTRICT',23,'{\"ru\":\"\",\"en\":\"\"}',10,'waiting','y',2599),
+(2357,314,0,'{\"ru\":\"Размер\",\"en\":\"Size\"}','applySize','readonly','none',NULL,'','-',18,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2684),
 (2358,315,0,'{\"ru\":\"Очередь задач\",\"en\":\"Queue task\"}','queueTaskId','regular','one',314,'','CASCADE',23,'{\"ru\":\"\",\"en\":\"\"}',3,'0','n',2358),
 (2359,315,0,'{\"en\":\"Source\",\"ru\":\"Источник\"}','location','regular','none',NULL,'','-',1,'{\"ru\":\"\",\"en\":\"\"}',1,'','n',2359),
 (2360,315,0,'{\"ru\":\"Условие выборки\",\"en\":\"Fetch condition\"}','where','regular','none',NULL,'','-',6,'{\"ru\":\"\",\"en\":\"\"}',4,'','n',2360),
@@ -1134,7 +1143,7 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`mode`,`storeRelati
 (2596,309,0,'{\"en\":\"Properties\",\"ru\":\"Свойства\"}','props','hidden','none',NULL,'','-',16,'',NULL,'','n',2596),
 (2597,309,0,'{\"ru\":\"Цвет\",\"en\":\"Color\"}','color','hidden','none',NULL,'','-',16,'',NULL,'','n',2597),
 (2598,309,0,'{\"en\":\"Trigger\",\"ru\":\"Триггер\"}','trigger','hidden','none',NULL,'','-',16,'',NULL,'','n',2598),
-(2599,314,0,'{\"ru\":\"Ошибка\",\"en\":\"Error\"}','error','regular','none',NULL,'','-',6,'',4,'','n',2356),
+(2599,314,0,'{\"ru\":\"Ошибка\",\"en\":\"Error\"}','error','regular','none',NULL,'','-',6,'',4,'','n',2357),
 (2600,20,0,'{\"en\":\"Set exactly\",\"ru\":\"Установить точный размер\"}','mode','regular','one',6,'','RESTRICT',5,'',10,'both','y',2702),
 (2609,171,0,'{\"en\":\"Toggle\",\"ru\":\"Статус\"}','toggle','regular','one',6,'','RESTRICT',23,'',10,'y','n',2134),
 (2610,4,27,'{\"en\":\"Directory\",\"ru\":\"Директория\"}','dir','regular','none',NULL,'','-',1,'',1,'resources/images/icons,/i/admin/icons','n',2610),
@@ -1210,9 +1219,9 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`mode`,`storeRelati
 (2681,9,0,'{\"en\":\"Gallery\",\"ru\":\"Галерея\"}','toggleTile','regular','one',6,'','RESTRICT',23,'',10,'n','y',2205),
 (2682,7,0,'{\"en\":\"Has window\",\"ru\":\"Есть окно\"}','hasView','regular','one',6,'','RESTRICT',5,'',10,'n','y',2612),
 (2683,91,0,'{\"en\":\"Entity\",\"ru\":\"Сущность\"}','entityId','readonly','one',2,'','CASCADE',23,'',3,'0','n',434),
-(2684,314,0,'{\"en\":\"Steps\",\"ru\":\"Шаги\"}','stages','hidden','none',NULL,'','-',16,'',NULL,'','n',2684),
-(2685,314,0,'{\"en\":\"Properties\",\"ru\":\"Свойства\"}','props','hidden','none',NULL,'','-',16,'',NULL,'','n',2685),
-(2686,314,0,'{\"en\":\"Settings\",\"ru\":\"Параметры\"}','config','hidden','none',NULL,'','-',16,'',NULL,'','n',2686),
+(2684,314,0,'{\"en\":\"Steps\",\"ru\":\"Шаги\"}','stages','hidden','none',NULL,'','-',16,'',NULL,'','n',2685),
+(2685,314,0,'{\"en\":\"Properties\",\"ru\":\"Свойства\"}','props','hidden','none',NULL,'','-',16,'',NULL,'','n',2686),
+(2686,314,0,'{\"en\":\"Settings\",\"ru\":\"Параметры\"}','config','hidden','none',NULL,'','-',16,'',NULL,'','n',2727),
 (2687,315,0,'{\"en\":\"Steps\",\"ru\":\"Шаги\"}','stages','hidden','none',NULL,'','-',16,'',NULL,'','n',2687),
 (2688,310,0,'{\"en\":\"Duplicate\",\"ru\":\"Дублировать\"}','method','regular','none',NULL,'','-',16,'',NULL,'','n',2284),
 (2689,310,0,'{\"en\":\"Requirement for recipients \\/ SQL WHERE\",\"ru\":\"Требование к получателям \\/ SQL WHERE\"}','getters','regular','none',NULL,'','-',16,'',NULL,'','n',2278),
@@ -1245,7 +1254,15 @@ insert  into `field`(`id`,`entityId`,`entry`,`title`,`alias`,`mode`,`storeRelati
 (2716,4,0,'{\"en\":\"Default MySQL column type\",\"ru\":\"Тип столбца по умолчанию\"}','defaultType','regular','one',1,'','CASCADE',23,'',3,'0','n',2460),
 (2717,NULL,0,'System-package: last commit which we did run migrations','migration-commit-system','regular','none',NULL,'','-',1,'',1,'','n',2717),
 (2718,NULL,0,'Custom-package: last commit which we did run migrations','migration-commit-custom','regular','none',NULL,'','-',1,'',1,'','n',2718),
-(2719,NULL,0,'In most cases can be either \"prod\", \"demo\" or \"bare\"','instance-type','regular','none',NULL,'','-',1,'',1,'','n',2719);
+(2719,NULL,0,'In most cases can be either \"prod\", \"demo\" or \"bare\"','instance-type','regular','none',NULL,'','-',1,'',1,'','n',2719),
+(2720,335,0,'{\"en\":\"Source entity\",\"ru\":\"Сущность\"}','sourceEntity','readonly','one',2,'','CASCADE',23,'',3,'0','n',2720),
+(2721,335,0,'{\"en\":\"Foreign-key field pointing to target entry\",\"ru\":\"Поле внешнего ключа, указывающее на целевую запись\"}','sourceTarget','required','one',5,'`storeRelationAbility` = \"one\" AND IFNULL(`relation`, 0) != \"0\" AND `entry` = \"0\"','CASCADE',23,'',3,'0','n',2721),
+(2722,335,0,'{\"en\":\"Target field to update value in\",\"ru\":\"Целевое поле для обновления значения\"}','targetField','required','one',5,'`entry` = \"0\" AND `id` NOT IN (SELECT `targetField` FROM `inQtySum`)','CASCADE',23,'',3,'0','n',2722),
+(2723,335,0,'{\"en\":\"Count type\",\"ru\":\"Тип подсчета\"}','type','regular','one',6,'','RESTRICT',5,'',10,'qty','y',2723),
+(2724,335,0,'{\"en\":\"Source field to append\\/deduct to\\/from target field\",\"ru\":\"Поле источника для добавления\\/вычитания из суммы\"}','sourceField','regular','one',5,'`elementId` IN (18,24,25)','CASCADE',23,'',3,'0','n',2724),
+(2725,335,0,'{\"en\":\"SQL WHERE that source entry should match\",\"ru\":\"Условие для записей источника через SQL WHERE\"}','sourceWhere','regular','none',NULL,'','-',1,'',1,'','n',2725),
+(2726,335,0,'{\"en\":\"Auto title\",\"ru\":\"Автоматическое название\"}','title','hidden','none',NULL,'','-',1,'',1,'','n',2726),
+(2727,314,0,'{\"en\":\"Duration\",\"ru\":\"Длительность\"}','procSpan','readonly','none',NULL,'','-',18,'',3,'0','n',2343);
 
 /*Table structure for table `filter` */
 
@@ -1391,7 +1408,7 @@ CREATE TABLE `grid` (
   CONSTRAINT `grid_ibfk_jumpSectionActionId` FOREIGN KEY (`jumpSectionActionId`) REFERENCES `section2action` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `grid_ibfk_jumpSectionId` FOREIGN KEY (`jumpSectionId`) REFERENCES `section` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `grid_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3042 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3048 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `grid` */
 
@@ -1765,7 +1782,40 @@ insert  into `grid`(`id`,`sectionId`,`fieldId`,`further`,`gridId`,`toggle`,`togg
 (3038,390,2690,NULL,NULL,'y','n','n',2415,'{\"en\":\"Features\",\"ru\":\"Функции\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
 (3039,390,2688,NULL,3038,'y','n','n',3039,'{\"en\":\"Duplicate\",\"ru\":\"Дублировать\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
 (3040,16,2716,NULL,NULL,'y','n','n',2657,'{\"en\":\"Default MySQL column type\",\"ru\":\"Тип столбца по умолчанию\"}','normal','','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
-(3041,392,2357,NULL,2886,'y','n','n',3041,'{\"en\":\"Size\",\"ru\":\"Размер\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','','');
+(3041,392,2357,NULL,2886,'y','n','n',3041,'{\"en\":\"Size\",\"ru\":\"Размер\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
+(3042,416,2721,NULL,NULL,'y','n','n',3042,'{\"en\":\"Foreign-key field pointing to target entry\",\"ru\":\"Поле внешнего ключа, указывающее на целевую запись\"}','normal','','','','0','n',0,'none','','all','',6,11,'','n','',NULL,0,'n','',''),
+(3043,416,2722,NULL,NULL,'y','n','n',3043,'{\"en\":\"Target field to update value in\",\"ru\":\"Целевое поле для обновления значения\"}','normal','','','','0','n',0,'none','','all','',6,11,'','n','',NULL,0,'n','',''),
+(3044,416,2723,NULL,NULL,'y','n','n',3044,'{\"en\":\"Count type\",\"ru\":\"Тип подсчета\"}','normal','','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
+(3045,416,2724,NULL,NULL,'y','n','n',3045,'{\"en\":\"Source field to append\\/deduct to\\/from target field\",\"ru\":\"Поле источника для добавления\\/вычитания из суммы\"}','normal','','{\"en\":\"Source field\",\"ru\":\"Поле источника\"}','','0','n',0,'none','','all','',6,11,'','n','',NULL,0,'n','',''),
+(3046,416,2725,NULL,NULL,'y','n','n',3046,'{\"en\":\"SQL WHERE that source entry should match\",\"ru\":\"Условие для записей источника через SQL WHERE\"}','normal','','','','1','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','',''),
+(3047,392,2727,NULL,2872,'y','n','n',3047,'{\"en\":\"Duration\",\"ru\":\"Длительность\"}','normal','resources/images/icons/plan-week.png','','','0','n',0,'none','','all','',NULL,NULL,'','n','',NULL,0,'n','','');
+
+/*Table structure for table `inQtySum` */
+
+DROP TABLE IF EXISTS `inQtySum`;
+
+CREATE TABLE `inQtySum` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sourceEntity` int DEFAULT NULL,
+  `sourceTarget` int DEFAULT NULL,
+  `targetField` int DEFAULT NULL,
+  `type` enum('qty','sum') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'qty',
+  `sourceField` int DEFAULT NULL,
+  `sourceWhere` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `sourceEntity` (`sourceEntity`),
+  KEY `sourceTarget` (`sourceTarget`),
+  KEY `targetField` (`targetField`),
+  KEY `type` (`type`),
+  KEY `sourceField` (`sourceField`),
+  CONSTRAINT `inQtySum_ibfk_sourceEntity` FOREIGN KEY (`sourceEntity`) REFERENCES `entity` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `inQtySum_ibfk_sourceField` FOREIGN KEY (`sourceField`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `inQtySum_ibfk_sourceTarget` FOREIGN KEY (`sourceTarget`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `inQtySum_ibfk_targetField` FOREIGN KEY (`targetField`) REFERENCES `field` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Data for the table `inQtySum` */
 
 /*Table structure for table `lang` */
 
@@ -2076,8 +2126,8 @@ insert  into `param`(`id`,`entityId`,`fieldId`,`title`,`cfgField`,`cfgValue`) va
 (192,171,2623,'{\"en\":\"Placeholder\",\"ru\":\"Плейсхолдер\"}',2691,'?filter[someProp]=someValue'),
 (193,195,2314,'{\"en\":\"Additionally pass fields (as html attributes)\",\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\"}',2440,'470'),
 (194,5,10,'{\"en\":\"Additionally pass fields (as html attributes)\",\"ru\":\"Дополнительно передавать параметры (в виде атрибутов)\"}',2440,'2716'),
-(195,NULL,NULL,'System-package: last commit which we did run migrations',2717,'070c2f88be898fa1f9586cfc6af827dd3f4576b3'),
-(196,NULL,NULL,'Custom-package: last commit which we did run migrations',2718,'c80de901b9abe3602d2241d84c2f782ef1b99107'),
+(195,NULL,NULL,'System-package: last commit which we did run migrations',2717,'1044511c47c9e76115d15f3e03b1dfd76a8ab205'),
+(196,NULL,NULL,'Custom-package: last commit which we did run migrations',2718,'6d06f0cbb2b354f2f6596ae9f0e9a58d550a9e0c'),
 (197,NULL,NULL,'In most cases can be either \"prod\", \"demo\" or \"bare\"',2719,'prod');
 
 /*Table structure for table `queueChunk` */
@@ -2112,9 +2162,12 @@ CREATE TABLE `queueChunk` (
   FULLTEXT KEY `where` (`where`),
   CONSTRAINT `queueChunk_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueChunk_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18673 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18674 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueChunk` */
+
+insert  into `queueChunk`(`id`,`queueTaskId`,`location`,`where`,`queueChunkId`,`fraction`,`countState`,`countSize`,`itemsState`,`itemsSize`,`queueState`,`queueSize`,`itemsBytes`,`applyState`,`applySize`,`move`) values 
+(18673,735,'enumset:title','`fieldId` = \"2723\"',NULL,'adminSystemUi','finished',2,'finished',2,'finished',2,6,'finished',2,18673);
 
 /*Table structure for table `queueItem` */
 
@@ -2136,9 +2189,13 @@ CREATE TABLE `queueItem` (
   FULLTEXT KEY `result` (`result`),
   CONSTRAINT `queueItem_ibfk_queueChunkId` FOREIGN KEY (`queueChunkId`) REFERENCES `queueChunk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `queueItem_ibfk_queueTaskId` FOREIGN KEY (`queueTaskId`) REFERENCES `queueTask` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=270143 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=270145 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueItem` */
+
+insert  into `queueItem`(`id`,`queueTaskId`,`queueChunkId`,`target`,`value`,`result`,`stage`) values 
+(270143,735,18673,'1317','Qty','{\"ru\":\"Кол-во\"}','apply'),
+(270144,735,18673,'1318','Sum','{\"ru\":\"Сумма\"}','apply');
 
 /*Table structure for table `queueTask` */
 
@@ -2152,6 +2209,7 @@ CREATE TABLE `queueTask` (
   `chunk` int NOT NULL DEFAULT '0',
   `procSince` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `procID` int NOT NULL DEFAULT '0',
+  `procSpan` int NOT NULL DEFAULT '0',
   `stage` enum('count','items','queue','apply') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'count',
   `state` enum('waiting','progress','finished') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
   `countState` enum('waiting','progress','finished') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'waiting',
@@ -2173,9 +2231,12 @@ CREATE TABLE `queueTask` (
   KEY `applyState` (`applyState`),
   FULLTEXT KEY `params` (`params`),
   FULLTEXT KEY `error` (`error`)
-) ENGINE=InnoDB AUTO_INCREMENT=735 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=736 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `queueTask` */
+
+insert  into `queueTask`(`id`,`title`,`datetime`,`params`,`chunk`,`procSince`,`procID`,`procSpan`,`stage`,`state`,`countState`,`countSize`,`itemsState`,`itemsSize`,`itemsBytes`,`queueState`,`queueSize`,`error`,`applyState`,`applySize`) values 
+(735,'L10n_FieldToggleL10n','2023-12-22 11:05:27','{\"field\":\"inQtySum:type\",\"source\":\"en\",\"target\":{\"adminSystemUi\":\"ru\"}}',1,'2023-12-22 11:05:27',151,2,'apply','finished','finished',2,'finished',2,6,'finished',2,'','finished',2);
 
 /*Table structure for table `realtime` */
 
@@ -2217,7 +2278,7 @@ CREATE TABLE `realtime` (
   CONSTRAINT `realtime_ibfk_realtimeId` FOREIGN KEY (`realtimeId`) REFERENCES `realtime` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_roleId` FOREIGN KEY (`roleId`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realtime_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4883 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4880 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `realtime` */
 
@@ -2348,7 +2409,7 @@ CREATE TABLE `section` (
   CONSTRAINT `section_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `section_ibfk_tileField` FOREIGN KEY (`tileField`) REFERENCES `field` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `section_ibfk_tileThumb` FOREIGN KEY (`tileThumb`) REFERENCES `resize` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=416 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=417 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section` */
 
@@ -2381,7 +2442,8 @@ insert  into `section`(`id`,`title`,`alias`,`toggle`,`fraction`,`sectionId`,`exp
 (403,'{\"ru\":\"Database\",\"en\":\"Database\"}','db','y','custom',NULL,'all','','Indi.lib.controller.Controller','Indi_Controller_Admin',NULL,NULL,408,'0','','no','auto',NULL,'ASC',25,'0','n','grid','12,1','{\"ru\":\"\",\"en\":\"\"}',NULL,NULL,'y',NULL,'n','month,week,day','n',NULL,NULL),
 (405,'{\"ru\":\"Возможные настройки\",\"en\":\"Possible params\"}','elementCfgField','y','system',16,'all','','Indi.lib.controller.Field','Indi_Controller_Admin_CfgField',5,2435,405,'0','','no','no',14,'ASC',100,'0','n','grid','1','{\"ru\":\"\",\"en\":\"\"}',NULL,NULL,'y',NULL,'n','month,week,day','n',NULL,NULL),
 (406,'{\"ru\":\"Возможные значения\",\"en\":\"Possible values\"}','elementCfgFieldEnumset','y','system',405,'all','','Indi.lib.controller.Controller','Indi_Controller_Admin_Enumset',6,NULL,406,'0','','no','no',377,'ASC',25,'0','n','grid','1','{\"ru\":\"\",\"en\":\"\"}',NULL,NULL,'y',NULL,'n','month,week,day','n',NULL,NULL),
-(407,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y','system',1,'all','','Indi.lib.controller.Controller','Indi_Controller_Admin_CfgValue',91,NULL,407,'0','','no','auto',NULL,'ASC',25,'0','n','grid','1','{\"ru\":\"\",\"en\":\"\"}',NULL,NULL,'y',2683,'n','month,week,day','n',NULL,NULL);
+(407,'{\"ru\":\"Все параметры\",\"en\":\"All params\"}','paramsAll','y','system',1,'all','','Indi.lib.controller.Controller','Indi_Controller_Admin_CfgValue',91,NULL,407,'0','','no','auto',NULL,'ASC',25,'0','n','grid','1','{\"ru\":\"\",\"en\":\"\"}',NULL,NULL,'y',2683,'n','month,week,day','n',NULL,NULL),
+(416,'{\"en\":\"Count in Qtys\\/Sums\",\"ru\":\"Учет в количествах\\/суммах\"}','inQtySum','y','system',5,'all','','Indi.lib.controller.Controller','Indi_Controller_Admin_Exportable',335,2720,416,'0','','no','no',NULL,'ASC',25,'0','n','grid','1','',NULL,NULL,'y',2721,'n','month,week,day','n',NULL,NULL);
 
 /*Table structure for table `section2action` */
 
@@ -2418,7 +2480,7 @@ CREATE TABLE `section2action` (
   FULLTEXT KEY `rename` (`rename`),
   CONSTRAINT `section2action_ibfk_actionId` FOREIGN KEY (`actionId`) REFERENCES `action` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `section2action_ibfk_sectionId` FOREIGN KEY (`sectionId`) REFERENCES `section` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1702 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1707 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `section2action` */
 
@@ -2592,7 +2654,12 @@ insert  into `section2action`(`id`,`sectionId`,`actionId`,`toggle`,`roleIds`,`fi
 (1697,2,36,'y','1','no','',1697,'{\"en\":\"Export\",\"ru\":\"Экспорт\"}','inherit','no','n','','na'),
 (1698,5,59,'y','1','no','',1700,'{\"en\":\"Update\",\"ru\":\"Обновить\"}','inherit','no','n','','na'),
 (1699,5,60,'y','1','no','',1698,'{\"en\":\"Backup\",\"ru\":\"Резервное копирование\"}','inherit','no','n','','na'),
-(1700,5,61,'y','1','no','',1699,'{\"en\":\"Restore\",\"ru\":\"Восстановить\"}','inherit','no','n','','na');
+(1700,5,61,'y','1','no','',1699,'{\"en\":\"Restore\",\"ru\":\"Восстановить\"}','inherit','no','n','','na'),
+(1702,416,1,'y','1','no','',1702,'{\"en\":\"List\",\"ru\":\"Список\"}','inherit','auto','y','','n'),
+(1703,416,2,'y','1','no','',1703,'{\"en\":\"Details\",\"ru\":\"Детали\"}','inherit','auto','y','','n'),
+(1704,416,3,'y','1','no','',1704,'{\"en\":\"Save\",\"ru\":\"Сохранить\"}','inherit','no','n','','na'),
+(1705,416,4,'y','1','no','',1705,'{\"en\":\"Delete\",\"ru\":\"Удалить\"}','inherit','no','n','','na'),
+(1706,416,36,'y','1','no','',1706,'{\"en\":\"Export\",\"ru\":\"Экспорт\"}','inherit','no','n','','na');
 
 /*Table structure for table `year` */
 
