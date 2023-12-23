@@ -349,16 +349,17 @@ class Indi_Db_Table
      * @param null $offset
      * @param null $split
      * @param bool $pgupLast
+     * @param string $postfix Can be used to add 'FOR UPDATE SKIP LOCKED' to the query
      * @return Indi_Db_Table_Rowset
      */
-    public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false) {
+    public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '') {
 
         // If $where arg is a comma-separated list of integers - assume we have to use '`id` IN (...)' expr
         if (is_string($where) && strlen($where) && Indi::rexm('int11list', $where))
             $where = "`id` IN ($where)";
 
         // Do fetch
-        return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast);
+        return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast, $postfix);
     }
 
     /**
@@ -371,9 +372,10 @@ class Indi_Db_Table
      * @param null|int $offset
      * @param bool $split
      * @param bool $pgupLast If `true` is given, previous page's last entry will be captured by decrementing OFFSET and incrementing LIMIT by 1
+     * @param string $postfix Can be used to add 'FOR UPDATE SKIP LOCKED' to the query
      * @return Indi_Db_Table_Rowset
      */
-    public function fetchAll($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false) {
+    public function fetchAll($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '') {
         // Build WHERE and ORDER clauses
         if (is_array($where) && count($where = un($where, [null, '']))) $where = implode(' AND ', $where);
         if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
@@ -422,6 +424,8 @@ class Indi_Db_Table
                 $union []= $su;
             }
             $sql = '(' . im($union, ') UNION (') . ')';
+        } else if ($postfix) {
+            $sql .= " $postfix";
         }
 
         // Fetch data
@@ -1898,8 +1902,11 @@ class Indi_Db_Table
             // are not matching $where clause anymore
             $deduct = 0;
 
+            // Begin transaction
+            db()->begin();
+
             // Fetch usages
-            $rs = $this->all($where, $order, $limit, $p);
+            $rs = $this->all($where, $order, $limit, $p, null, null, false, 'FOR UPDATE SKIP LOCKED');
 
             // If nothing found - return
             if (!$rs->count()) return;
@@ -1910,6 +1917,9 @@ class Indi_Db_Table
             // If now (e.g. after $fn() call completed) less entries match WHERE clause,
             // it means that we need to fetch same page again rather than fetching next page
             if ($deduct) $p -= (int) !($deduct = 0);
+
+            // Commit transaction
+            db()->commit();
         }
     }
 
