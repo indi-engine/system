@@ -1,5 +1,28 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function inqtysumtoggleAction() {
+        field('inQtySum', 'toggle', [
+            'title' => 'Статус',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'y',
+            'move' => 'title',
+        ]);
+        enumset('inQtySum', 'toggle', 'y', ['title' => 'Включен', 'move' => '', 'boxColor' => '120#00FF00']);
+        enumset('inQtySum', 'toggle', 'n', ['title' => 'Выключен', 'move' => 'y', 'boxColor' => '000#FF0000']);
+        grid('inQtySum', 'toggle', ['move' => 'sourceWhere']);
+        section2action('inQtySum','toggle', [
+            'roleIds' => 'dev',
+            'move' => 'export',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        die('ok');
+    }
     public function inqtysumAction() {
         entity('inQtySum', ['title' => 'Count in Qty/Sum', 'fraction' => 'system']);
         field('inQtySum', 'sourceEntity', [

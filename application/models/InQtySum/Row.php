@@ -72,7 +72,7 @@ class InQtySum_Row extends Indi_Db_Table_Row {
         $targetModel->batch(function(Indi_Db_Table_Row $targetEntry) use ($sourceTable, $sourceField, $targetField, $event) {
 
             // (Re)calc target value
-            $targetValue = $event === 'delete'
+            $targetValue = $event === 'delete' || $this->toggle === 'n'
                 ? 0
                 : ($this->type === 'qty'
                     ? $targetEntry->qty($sourceTable, $this->sourceWhere, $connector)

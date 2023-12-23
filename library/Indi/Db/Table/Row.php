@@ -7884,8 +7884,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If current target-record ID is non-zero
                     if ($this->$fgn) {
 
-                        // If current target-record still exists in DB
-                        if ($foreign = $this->foreign($fgn, true, 'original')) {
+                        // If current target-record is externally fetched from db and fed via
+                        // $this->_system["inQtySumTarget-$fgn"] or can it be still fetched right here
+                        if ($foreign = $this->_system["inQtySumTarget-$fgn"]
+                            ?? $this->foreign($fgn, true, 'original')) {
 
                             // If source-record match WHERE clause
                             if ($match['now'] = $this->match($where, 'original', $isPHPWhere)) {
@@ -7905,8 +7907,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If target-record ID is non-zero
                     if ($this->$fgn) {
 
-                        // If target-record still exists in DB
-                        if ($foreign = $this->foreign($fgn)) {
+                        // If target-record is externally fetched from db and fed via
+                        // $this->_system["inQtySumTarget-$fgn"] or can it be still fetched right here
+                        if ($foreign = $foreign = $this->_system["inQtySumTarget-$fgn"]
+                            ?? $this->foreign($fgn)) {
 
                             // Get flags indicating whether source-record match WHERE clause before and after change
                             $match['was'] = $this->match($where, 'affected', $isPHPWhere);

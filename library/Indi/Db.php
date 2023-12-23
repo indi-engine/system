@@ -243,7 +243,8 @@ class Indi_Db {
             // Prepare info about quantities and sums where entities instances are counted in
             $inQtySumA = [];
             if ($entityIdByTable['inQtySum']) {
-                foreach(self::$_instance->query('SELECT *  FROM `inQtySum`')->all() as $_inQtySumI) {
+                foreach(self::$_instance->query('SELECT * FROM `inQtySum`')->all() as $_inQtySumI) {
+                    if ($_inQtySumI['toggle'] === 'n') continue;
                     $inQtySumI = ['type' => $_inQtySumI['type']];
                     foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
                         $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
