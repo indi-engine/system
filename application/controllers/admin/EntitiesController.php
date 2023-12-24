@@ -510,7 +510,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $sql = preg_replace('~\.gz$~', '', $dump);
 
         // Create dump
-        $this->exec("mysqldump -h $host -u $user -p$pass -y $name -r sql/$sql");
+        $this->exec("mysqldump --single-transaction -h $host -u $user -p$pass -y $name -r sql/$sql");
 
         // Gzip dump
         if ($dump === "$sql.gz") $this->exec("gzip -f sql/$sql");
