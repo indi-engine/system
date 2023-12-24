@@ -1906,7 +1906,7 @@ class Indi_Db_Table
             db()->begin();
 
             // Fetch usages
-            $rs = $this->all($where, $order, $limit, $p, null, null, false, 'FOR UPDATE SKIP LOCKED');
+            $rs = $this->all($where, $order, $limit, $p, null, null, false);
 
             // If nothing found - return
             if (!$rs->count()) return;
