@@ -1903,7 +1903,7 @@ class Indi_Db_Table
             $deduct = 0;
 
             // Begin transaction
-            db()->begin();
+            //db()->begin();
 
             // Fetch usages
             $rs = $this->all($where, $order, $limit, $p, null, null, false);
@@ -1919,7 +1919,7 @@ class Indi_Db_Table
             if ($deduct) $p -= (int) !($deduct = 0);
 
             // Commit transaction
-            db()->commit();
+            //db()->commit();
         }
     }
 
