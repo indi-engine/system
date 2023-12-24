@@ -5567,7 +5567,9 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($cfg['toggle'] == 'none') {
 
                 // Make sure only except-fields are kept in $affected
-                $affected = []; foreach ($except as $exceptI) $affected[$exceptI] = $this->_affected[$exceptI];
+                $affected = []; foreach ($except as $exceptI)
+                    if (array_key_exists($exceptI, $this->_affected))
+                        $affected[$exceptI] = $this->_affected[$exceptI];
 
             // Else make sure except-fields are removed from $affected
             } else foreach($except as $exceptI) unset($affected[$exceptI]);
