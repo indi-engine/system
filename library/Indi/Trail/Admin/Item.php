@@ -777,6 +777,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             if ($fieldId = m()->fields($field->alias)->id) {
                 if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
                 if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
+                if ($head = t()->scope->head[$fieldId]) $renderCfg[$field->alias]['head'] = $head;
+                if ($val  = t()->scope->composeVal[$fieldId]) $renderCfg[$field->alias]['composeVal'] = $val;
+                if ($tip  = t()->scope->composeTip[$fieldId]) $renderCfg[$field->alias]['composeTip'] = $tip;
                 if (null !== ($color = t()->scope->color[$fieldId])) $renderCfg[$field->alias]['color'] = $color;
             }
         }
@@ -853,6 +856,41 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Return icons
         return $iconA ?? [];
+    }
+
+    /**
+     * Get array of [fieldId => column heading text] pairs
+     * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
+     *
+     * @return array
+     */
+    public function heads() {
+
+        // Get icons
+        foreach ($this->grid as $gridR)
+            $iconA[$gridR->further ?: $gridR->fieldId]
+                = $gridR->further
+                    ? $gridR->foreign('further')->title
+                    : $gridR->title;
+
+        // Return icons
+        return $iconA ?? [];
+    }
+
+    /**
+     * Get array of [fieldId => column value/tooltip compose template] pairs
+     * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
+     *
+     * @return array
+     */
+    public function composeTpl($for) {
+
+        // Get icons
+        foreach ($this->grid->select(': !=""', $for) as $gridR)
+            $tplA[$gridR->further ?: $gridR->fieldId] = $gridR->$for;
+
+        // Return icons
+        return $tplA ?? [];
     }
 
     /**

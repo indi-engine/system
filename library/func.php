@@ -3442,3 +3442,26 @@ function sql2phpWHERE($sqlWhere, $object = '$this') {
     // Return php
     return $phpWhere;
 }
+
+/**
+ * Detect color box within hiven $html. If detected, array returned with the following structure:
+ *
+ * Example1: ['box' => 'url(/path/to/some/icon.png)', 'tip' => 'Some title']
+ * Example2: ['box' => 'red',                         'tip' => 'Some title']
+ * Example3: ['box' => '#ff0000',                     'tip' => 'Some title']
+ * Example3: ['box' => '/path/to/some/icon.png',      'tip' => 'Some title']
+ *
+ *
+ * @param $html
+ * @return array|null
+ */
+function boxtip($html) {
+
+    // Detect
+    preg_match('~<span class="i-color-box" style="[^"]*background:\s*(?<box>[^;]+);" data-title="(?<tip>[^"]+)">~', $html, $info)
+    || preg_match('~<span class="i-color-box" style="[^"]*background:\s*(?<box>[^;]+);"><\/span>(?<tip>#[a-fA-F0-9]{6})~', $html, $info)
+    || preg_match('~<img src="(?<box>.+?)" class="i-cell-img">(?<tip>.+?)$~', $html, $info);
+
+    // Return match
+    return $info;
+}

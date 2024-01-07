@@ -884,6 +884,9 @@ class Indi_Controller {
             // Get grid data render config
             $renderCfg = t()->renderCfg();
 
+            // Pass format to render config
+            $renderCfg['_system']['format'] = uri()->format;
+
             // Build the grid data, based on current rowset
             $data = $this->rowset->toGridData($fields, $renderCfg);
 

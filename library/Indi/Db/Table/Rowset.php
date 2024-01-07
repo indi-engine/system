@@ -11,7 +11,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     /**
      * Sql query used to fetch this rowset
      *
-     * @var mixed (null,int)
+     * @var string
      */
     protected $_query = null;
 
@@ -705,6 +705,21 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if ($gridFieldR->elementId != $span) $columnA[] = $gridFieldR->alias;
         }
 
+        // Get format
+        $format = $renderCfg['_system']['format'] ?? 'json';
+
+        // Collect value/tooltip compose templates into separate arrays
+        $composeVal = $composeTip = [];
+        foreach ($renderCfg as $alias => $cfg) {
+            if ($cfg['composeTip']) $composeTip[$alias] = $cfg['composeTip'];
+            if ($cfg['composeVal']) $composeVal[$alias] = $cfg['composeVal'];
+        }
+
+        // Setup aliases fields that have data fetched
+        $gridhead = []; foreach ($columnA as $columnI) $gridhead[$columnI] = $renderCfg[$columnI]['head'];
+        uksort($gridhead, fn($a, $b) => strlen($a) < strlen($b));
+        Indi::store('gridhead', $gridhead);
+
         // Set up $titleProp variable as an indicator of that titleColumn is within grid fields
         if (in($titleColumn = $this->model()->titleColumn(), $columnA)) $titleProp = $titleColumn;
 
@@ -830,7 +845,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Render data for a column linked to icon-field
                 if (isset($typeA['icon'][$columnI]))
                     $data[$pointer]['_render'][$columnI] = $value
-                        ? '<span class="i-color-box" style="background: url(' . $value . ');" title="' . $value . '"></span>'
+                        ? '<span class="i-color-box" style="background: url(' . $value . ');" data-title="' . $value . '"></span>'
                         : '';
 
                 // Render data for a column linked to color-field
@@ -1024,6 +1039,30 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Unset '_foreign'
             unset($data[$pointer]['_foreign']);
+
+            // Compose column tooltips
+            foreach ($composeTip as $column => $template) {
+
+                // Get column value. Wrap into <span> if not yet wrapped
+                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column];
+                if (!preg_match('~<span[ >]~', $render)) $render = wrap($render, '<span>');
+
+                // Compose column value's tooltip
+                $data[$pointer]['_tooltip'][$column] = $this->_toGridData_compose($column, $template,$data[$pointer], $format, 'tip');
+
+                // Put tooltip into data-title attribute
+                $title = 'data-title="' . htmlspecialchars($data[$pointer]['_tooltip'][$column]) . '"';
+
+                // Add data-title attribute into <span> or update it's value if it already exist
+                $data[$pointer]['_render'][$column] = preg_match($rex = '~data-title=".*?"~', $render)
+                    ? preg_replace($rex, $title, $render)
+                    : preg_replace('~(<span)([ >])~', '$1 ' . $title . '$2', $render);
+            }
+
+            // Compose column values
+            foreach ($composeVal as $column => $template)
+                $data[$pointer]['_render'][$column]
+                    = $this->_toGridData_compose($column, $template,$data[$pointer], $format, 'val');
         }
 
         // If data should be grouped
@@ -1038,6 +1077,142 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Return grid data
         return $data;
+    }
+
+    /**
+     * Compose value for a grid cell for a given $column and based on the given $template
+     *
+     * @param string $column Name of field for which $template is defined
+     * @param string $template Template for value to be composed for. Can be '{someField1 }{someField2}{. SomeFiel2 I_MY_CONST}'
+     * @param array $data Primarily an array of [field => value] pairs, also having '_system', '_render' and other non-fieldname keys
+     * @param string $format If $format is 'excel' $data['_richtext'][$column] might be set up
+     * @param string $purpose Can be 'val' or 'tip
+     * @return array|string|string[]|null
+     */
+    protected function _toGridData_compose($column, $template, &$data, $format = 'json', $purpose = 'val') {
+
+        // If we're going to excel-export - setup $richtext as non-empty array, so that it can be used
+        // both - as a flag indicating whether we should append items containing info to be further used
+        // by \PhpOffice\PhpSpreadsheet\RichText\RichText as composed values may have different colors
+        // of different text strings within the same cell, - and asa storage for those items at the same time
+        // Note: this empty string item will be removed afterwards
+        $richtext = $format === 'excel' && $purpose === 'val' ? [''] : false;
+
+        // Regular expression to do initial parse of a given templates
+        // Example: {someProp1} - {someProp2}{. SomeProp3}
+        // Parsed:
+        // 1
+        //  before: ''
+        //  curly : '{someProp1}'
+        //  after : ' - '
+        // 2.
+        //  before: ''
+        //  curly : '{someProp2}'
+        //  after : ''
+        // 3.
+        //  before: ''
+        //  curly : '{. SomeProp3}'
+        //  after : ''
+        $outer = '~(?<before>[^{}]*)(?<curly>\{.+?\})(?<after>[^{}]*)~';
+
+        // Regular expression to parse the inner part (e.g. enclosed by curly brackets) of a given template
+        $heads = Indi::store('gridhead')->getArrayCopy();
+        $hkeys = im(array_keys($heads), '|');
+        $inner = "~(?<before>.*?)(?<field>$hkeys)~i";
+
+        // Start composing value based on given template
+        $composed = preg_replace_callback($outer, function($outer) use ($column, $data, &$richtext, $purpose, $inner, $heads) {
+
+            // Add richtext item, if need
+            if ($richtext && $outer['before']) $richtext []= $outer['before'];
+
+            // Check which fields are mentioned within the curly brackets
+            preg_match_all($inner, $outer['curly'], $which);
+
+            // Values of all fields should have non-zero length in order to
+            // proceed with parsing inner parts e.g enclosed by curly brackets
+            foreach ($which['field'] ?? [] as $field)
+                if (($field = lcfirst($field))
+                    && !strlen($data['_render'][$field] ?? $data[$field]))
+                    return '';
+
+            // Trim first and last curly brackets
+            $outer['curly'] = preg_replace('~^{|}$~', '', $outer['curly']);
+
+            // Get the ending that might be not captured by $inner-regex but still have to be added to richtext
+            $tail = preg_replace($inner, '', $outer['curly']);
+
+            // If template is using Indi Engine's system or custom constant names,
+            // for example I_SOME_CONSTANT_NAME - replace with actual values
+            $outer['curly'] = preg_replace_callback('~(?<const>I_[A-Z0-9_]+)~',
+                fn($m) => defined($m['const']) ? constant($m['const']) : $m['const'], $outer['curly']);
+
+            // Replace placeholders with actual values
+            $outer['curly'] = preg_replace_callback($inner, function ($inner) use ($column, $data, &$richtext, $purpose, $heads) {
+
+                // Get field name used in template
+                $alias = lcfirst($inner['field']);
+
+                // Get field value
+                $render = array_key_exists($alias, $data['_render']) ? $data['_render'][$alias] : $data[$alias];
+
+                // If it's a same field as host field, and we're composing tooltip template,
+                // and there is a color-box - prevent color-box html from being shown in the tooltip
+                // but show color-box title as tooltip instead
+                if ($alias === $column)
+                    if ($purpose === 'tip')
+                        if ($info = boxtip($render))
+                            $render = $info['tip'];
+
+                // If field name is specified with Uppercased letter - assume field label should be prepended
+                if ($alias !== $inner['field']) $render = rif($render, $heads[$alias] . ': $1');
+
+                // Add richtext items, if need
+                if ($richtext) {
+
+                    // Add inner-before item
+                    if ($inner['before']) $richtext []= $inner['before'];
+
+                    // Add inner-field item
+                    if ($render) $richtext []= [
+                        'debug' => $render,
+                        'value' => strip_tags($render),
+                        'style' => $data['_style'][$alias] ?: Indi::rexm('~style="(.+?)"~', $render, 1),
+                        'title' => strip_tags(html_entity_decode(Indi::rexm('~data-title="(.+?)"~', $render, 1)))
+                    ];
+                }
+
+                // Prepare attributes
+                $attr = " data-field=\"$alias\"";
+                if ($style = rif($data['_style'][$alias], ' style="$1"'))
+                    $attr .= $style;
+
+                // Return inner-before item plus inner-field item with field name replaced with value
+                return $inner['before'] . wrap($render, "<span$attr>", strlen($render));
+            }, $outer['curly']);
+
+            // Add richtext items, if need
+            if ($richtext) {
+                if ($tail) $richtext []= $tail;
+                if ($outer['after']) $richtext []= $outer['after'];
+            }
+
+            // Return composed value
+            return $outer['before'] . $outer['curly'] . $outer['after'];
+        }, $template);
+
+        // If we have richtext
+        if ($richtext) {
+
+            // Remove first item we've added initially
+            array_shift($richtext);
+
+            // Save into $data
+            $data['_richtext'][$column] = $richtext;
+        }
+
+        // Return composed value
+        return $composed;
     }
 
     /**

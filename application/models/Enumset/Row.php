@@ -555,8 +555,8 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 'textColor' => '<span style="color: %s;%s">%s</span>',
                 'cssStyle' =>  '<span style="%1$s">%3$s</span>'
             ] : [
-                'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s" title="%s"></span>',
-                'boxColor'  => '<span class="i-color-box" style="background: %s;%s" title="%s"></span>',
+                'boxIcon'   => '<span class="i-color-box" style="background: url(%s);%s" data-title="%s"></span>',
+                'boxColor'  => '<span class="i-color-box" style="background: %s;%s" data-title="%s"></span>',
                 'textColor' => '<font color="%s"%s>%s</font>',
                 'cssStyle' =>  '<span style="%1$s">%3$s</span>'
             ];

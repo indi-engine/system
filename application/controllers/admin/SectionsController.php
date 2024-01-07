@@ -143,27 +143,14 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         // Call parent
         $this->callParent();
     }
+
     /**
-     * Append sort direction clickable icon to the sort field
+     * Prepend 'ID' as title for value '-1' of defaultSortField
      *
      * @param $item
      */
     public function adjustGridDataItem(&$item) {
-
-        // Add icon for `defaultSortField` prop
-        if ($item['defaultSortField']
-            && $info = Indi::rexm('~<span (.*?)( title="(.*?)"|)></span>(.*)$~', $item['_render']['defaultSortDirection'])) {
-
-            // If defaultSortField is -1 - assume it's ID-column
-            if ($item['defaultSortField'] == -1) $item['_render']['defaultSortField'] = 'ID';
-
-            // Setup jump
-            $item['_system']['jump']['defaultSortField'] = [[
-                'href' => 'cell:defaultSortDirection',
-                'ibox' => $info[1],
-                'over' => $info[3] ?: $info[4]
-            ]];
-        }
+        if ($item['defaultSortField'] == -1) $item['_render']['defaultSortField']  = 'ID' . $item['_render']['defaultSortField'];
     }
 
     /**

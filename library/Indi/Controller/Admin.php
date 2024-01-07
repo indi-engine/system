@@ -235,6 +235,9 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
                             'icon' => t()->icons(),
                             'jump' => t()->jumps(),
+                            'head' => t()->heads(),
+                            'composeVal' => t()->composeTpl('composeVal'),
+                            'composeTip' => t()->composeTpl('composeTip'),
                             'color' => t()->scope->color,
                             'sum' => m()->fields()->select(
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
@@ -890,7 +893,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $rowHeight = 16;
 
         // Web => Excel sizing divider
-        $m = uri()->format == 'excel' ? 8.00 : 6.4;
+        $ratio = uri()->format == 'excel' ? 8.00 : 6.4;
 
         // Set up $noBorder variable, containing style definition to be used as an argument while applyFromArray() calls
         // in cases then no borders should be displayed
@@ -1013,8 +1016,8 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Html entities replacements
         $html = [
-            'code' => ['&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;','&sum;'],
-            'char' => [' ','«','»','—','"','<','>','∑']
+            'code' => ['&nbsp;','&laquo;','&raquo;','&mdash;','&quot;','&lt;','&gt;','&sum;', '&#39;'],
+            'char' => [' ','«','»','—','"','<','>','∑', '\'']
         ];
 
         // Get columns depth
@@ -1615,7 +1618,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $columnL = $cellSinceLetter;
 
                 // Setup column width
-                if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $m));
+                if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $ratio));
 
                 // Replace &nbsp;
                 $columnI['title'] = str_replace($html['code'], $html['char'], $columnI['title']);
@@ -1860,14 +1863,17 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Apply row color, if defined
             if (preg_match('~color: (.*);~', $data[$i]['_system']['style'], $m))
-                if ($rgb = trim(Indi::hexColor($m[1]), '#'))
-                    $sheet->getStyle($currentRowIndex)->getFont()->getColor()->setRGB($rgb);
+                if ($rowRGB = trim(Indi::hexColor($m[1]), '#'))
+                    $sheet->getStyle($currentRowIndex)->getFont()->getColor()->setRGB($rowRGB);
 
             // Foreach column
             foreach ($columnA as $n => $columnI) {
 
                 // Convert the column index to excel column letter
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
+
+                // Shortcut
+                $coord = "$columnL$currentRowIndex";
 
                 // Get the control element
                 $el = in($columnI['id'], 'id,rownumberer')
@@ -1879,81 +1885,68 @@ class Indi_Controller_Admin extends Indi_Controller {
                 else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
                 else $value = '';
 
-                // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
-                if (preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);" title="([^"]+)">/', $value, $c)
-                 || preg_match('/<span class="i-color-box" style="[^"]*background:\s*([^;]+);"><\/span>(#[a-fA-F0-9]{6})/', $value, $c)
-                 || preg_match('~<img src="(.+?)" class="i-cell-img">(.+?)$~', $value, $c)) {
+                // Strip data-title attributes having 'style=' as inner html-encoded contents
+                // to prevent tooltips' styles (if any) from being considered as values' styles
+                $value = preg_replace('~data-title=".*?style=.*?"~', '', $value);
 
-                    // If color was detected
-                    if ($h = trim(Indi::hexColor($c[1]), '#')) {
+                // If we have chunked contents for this column
+                if ($chunks = $data[$i]['_richtext'][$columnI['dataIndex']]) {
 
-                        // Create the GD image
-                        $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream', 1);
-                        imagefill($gdImage, 0, 0, imagecolorallocate(
-                            $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
-                        );
+                    // In order to support different styles for different chunks of text within the same
+                    // spreadsheet cell - we have to use richtext
+                    $value = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
-                        // Setup additional x-offset for color-box, for it to be centered within the cell
-                        $additionalOffsetX = $columnI['dataIndex'] == 'color'
-                            ? ($columnI['icon'] ? 8 : 5)
-                            : ceil(($columnI['width']-14)/2) + 0.5;
+                    // Cumulative length of text before drawing for use in drawing x-offset calculation
+                    $length = 0;
 
-                        //  Add the image to a worksheet
-                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
-                        $objDrawing->setCoordinates($columnL . $currentRowIndex);
-                        $objDrawing->setImageResource($gdImage);
-                        $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
-                        $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
-                        $objDrawing->setDescription($c[2]);
-                        $objDrawing->setName($c[2]);
-                        $objDrawing->setHeight(11);
-                        $objDrawing->setWidth(14);
-                        $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
-                        $objDrawing->setWorksheet($sheet);
+                    // Foreach chunk
+                    foreach ($chunks as $chunk) {
 
+                        // If chunk is a color-box
+                        if (is_array($chunk) && preg_match('~background: (?<box>.*?);~', $chunk['style'], $c)) {
 
-                    // Else if cell value contain icon image url
-                    } else if (preg_match('~^ ?url\(([^)]+)\)~', $c[1], $src)
-                            || preg_match('~^(resources.+?)$~' , $c[1], $src)) {
+                            // Setup text, alpha and RGB-color to indent further chunks, if any
+                            $text = '----';  $a = '00'; $color = 'FFFFFF';
 
-                        // Try to find image absolute path
-                        if (!$abs = Indi::abs(trim($src[1], '.')))
-                            if (file_exists($img = DOC . STD . VDR . '/client/' . $src[1]))
-                                $abs = $img;
+                            // Insert drawing into a spreadsheet
+                            $this->_renderColorBox(['box' => $c['box'], 'tip' => $chunk['title']], [
+                                'width' => $length * $ratio * 1.1 + 24
+                            ] + $columnI, $coord, $sheet);
 
-                        // If image exists
-                        if ($abs) {
+                        // Else just
+                        } else {
 
-                            // Setup additional x-offset for color-box, for it to be centered within the cell
-                            $additionalOffsetX = ceil(($columnI['width'] - 16) / 2);
+                            // Setup text and restore alpha
+                            $text = is_array($chunk) ? $chunk['value'] : $chunk;
+                            $text = str_replace($html['code'], $html['char'], $text);
+                            $a = 'FF';
 
-                            //  Add the image to a worksheet
-                            $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                            $objDrawing->setDescription($c[2]);
-                            $objDrawing->setName($c[2]);
-                            $objDrawing->setPath($abs);
-                            $objDrawing->setCoordinates($columnL . $currentRowIndex);
-                            $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
-                            $objDrawing->setWorksheet($sheet);
+                            // Get color from chunk style
+                            if (is_array($chunk) && preg_match('~color: (?<value>.*?);~', $chunk['style'], $c)) {
+                                $color = Indi::hexColor($c['value']);
+
+                            // Else get color from row style
+                            } else if (preg_match('~color: (?<value>.*?);~', $data[$i]['_system']['style'], $c)) {
+                                $color = Indi::hexColor($c['value']);
+
+                            // Else use default color
+                            } else $color = '04408C';
                         }
+
+                        // Create richtext chunk with a given color
+                        if ($text) $value->createTextRun($text)->getFont()
+                            ->setName($font)->setSize(8)
+                            ->getColor()->setARGB($a . trim($color, '#'));
+
+                        // Maintain length
+                        $length += strlen($text);
                     }
 
-                    // Use second capture group value
-                    $value = $c[2];
+                // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
+                } else if ($boxtip = boxtip($value)) {
 
-                    // If column's field underlying element is not 'color', or is, but header-icon is defined
-                    if ($el != 'color' || $columnI['icon']) {
-
-                        // Set text color same as row background to achieve 'transparency'-effect
-                        $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
-                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setARGB('ff' . $rgb);
-
-                    // Else if column's field underlying element IS 'color'
-                    } else if ($el == 'color') {
-
-                        // Set indent so that both color-box and #rrggbb-value to be displayed
-                        $sheet->getStyle($columnL . $currentRowIndex)->getAlignment()->setIndent(2);
-                    }
+                    // Insert drawing for a color-box
+                    $value = $this->_renderColorBox($boxtip, $columnI, $coord, $sheet);
 
                 // Else if cell value contain a color definition within 'color' attribute,
                 // or as a 'color: xxxxxxxx' expression within 'style' attribute, we extract that color definition
@@ -1963,11 +1956,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if ($hex = Indi::hexColor($c[1]))
 
                         // Set cell's color
-                        $sheet->getStyle($columnL . $currentRowIndex)
-                            ->getFont()->getColor()->setRGB(ltrim($hex, '#'));
+                        $sheet->getStyle($coord)->getFont()->getColor()->setRGB(ltrim($hex, '#'));
 
                 // Else if it's a disabled row - setup lightgray font color
-                } else if ($disabled) $sheet->getStyle($columnL . $currentRowIndex)->applyFromArray([
+                } else if ($disabled) $sheet->getStyle($coord)->applyFromArray([
                     'font' => [
                         'color' => [
                             'rgb' => 'cccccc'
@@ -2000,7 +1992,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         //  Add the image to a worksheet
                         $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                         $objDrawing->setPath($abs);
-                        $objDrawing->setCoordinates($columnL . $currentRowIndex);
+                        $objDrawing->setCoordinates($coord);
                         $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
                         $objDrawing->setHyperlink(new PHPExcel_Cell_Hyperlink($url));
                         $objDrawing->setWorksheet($sheet);
@@ -2013,55 +2005,56 @@ class Indi_Controller_Admin extends Indi_Controller {
                     } else {
 
                         // Set cell value as hyperlink
-                        $sheet->getCell($columnL . $currentRowIndex)->getHyperlink()->setUrl($url);
-                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->setUnderline(true);
+                        $sheet->getCell($coord)->getHyperlink()->setUrl($url);
+                        $sheet->getStyle($coord)->getFont()->setUnderline(true);
                     }
                 }
 
-                // Strip html content from $value
-                $value = strip_tags($value);
+                // If value is not a RichText object
+                if (is_string($value)) {
 
-                // Replace some special characters definitions to their actual symbols
-                $value = str_replace($html['code'], $html['char'], $value);
+                    // Strip html content from $value
+                    $value = strip_tags($value);
+
+                    // Replace some special characters definitions to their actual symbols
+                    $value = str_replace($html['code'], $html['char'], $value);
+                }
 
                 // Set right and bottom border, because cell fill will hide default Excel's ot OpenOffice Write's cell borders
-                $sheet
-                    ->getStyle($columnL . $currentRowIndex)
-                    ->applyFromArray([
-                        'borders' => [
-                            'right' => [
-                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                                'color' => [
-                                    'rgb' => 'D0D7E5'
-                                ]
-                            ],
-                            'bottom' => [
-                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                                'color' => [
-                                    'rgb' => 'D0D7E5'
-                                ]
+                $sheet->getStyle($coord)->applyFromArray([
+                    'borders' => [
+                        'right' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
+                                'rgb' => 'D0D7E5'
+                            ]
+                        ],
+                        'bottom' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
+                                'rgb' => 'D0D7E5'
                             ]
                         ]
-                    ]);
+                    ]
+                ]);
 
                 // Apply style for first cell within header row
-                if (!$n && uri()->format == 'pdf') $sheet->getStyle($columnL . $currentRowIndex)
-                    ->applyFromArray([
-                        'borders' => [
-                            'left' => [
-                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                                'color' => [
-                                    'rgb' => 'c5c5c5'
-                                ]
-                            ],
-                        ]
-                    ]);
+                if (!$n && uri()->format == 'pdf') $sheet->getStyle($coord)->applyFromArray([
+                    'borders' => [
+                        'left' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => [
+                                'rgb' => 'c5c5c5'
+                            ]
+                        ],
+                    ]
+                ]);
 
                 // If control element is 'price' or 'number'
                 if (in($el, 'price,number,decimal143')) {
 
                     // Set format
-                    $sheet->getStyle($columnL . $currentRowIndex)->getNumberFormat()->setFormatCode([
+                    $sheet->getStyle($coord)->getNumberFormat()->setFormatCode([
                         'number'     => '#,##0',
                         'price'      => '#,##0.00',
                         'decimal143' => '#,##0.000',
@@ -2069,24 +2062,24 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Apply color
                     if ($value == 0) {
-                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB('d3d3d3');
+                        $sheet->getStyle($coord)->getFont()->getColor()->setRGB('d3d3d3');
                     } else if (Indi::rexm('int11', $level = $columnI['color'])) {
-                        $sheet->getStyle($columnL . $currentRowIndex)->getFont()->getColor()->setRGB($value >= $level ? '32cd32' : 'ff0000');
+                        $sheet->getStyle($coord)->getFont()->getColor()->setRGB($value >= $level ? '32cd32' : 'ff0000');
                     }
                 }
 
                 // Set cell value
-                $sheet->setCellValue($columnL . $currentRowIndex, $value);
+                $sheet->setCellValue($coord, $value);
 
                 // Set odd-even rows background difference for all rows except cell in rownumberer-column
                 if ($columnI['id'] == 'rownumberer' || $i%2) $sheet
-                    ->getStyle($columnL . $currentRowIndex)
+                    ->getStyle($coord)
                     ->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setRGB($columnI['id'] == 'rownumberer' ? 'efefef' : 'fafafa');
 
                 // Cell style custom adjustments
-                $this->adjustExcelExportCellStyle($sheet->getStyle($columnL . $currentRowIndex), $columnI, $value, $i);
+                $this->adjustExcelExportCellStyle($sheet->getStyle($coord), $columnI, $value, $i);
             }
 
             // Increment current row index;
@@ -4248,5 +4241,92 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Make the call
         return call_user_func_array([$this, $method], $args);
+    }
+
+    /**
+     * Render color-box drawing into $sheet at $cellCoords
+     *
+     * @param $info
+     * @param $columnI
+     * @param $cellCoords
+     * @param $sheet
+     * @return string
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    protected function _renderColorBox($info, $columnI, $cellCoords, $sheet) {
+
+        // Use second capture group value
+        $tip = strip_tags(htmlspecialchars_decode($info['tip']));
+
+        // If color was detected
+        if ($h = trim(Indi::hexColor($info['box']), '#')) {
+
+            // Create the GD image
+            $gdImage = @imagecreatetruecolor(14, 11) or iexit('Cannot Initialize new GD image stream', 1);
+            imagefill($gdImage, 0, 0, imagecolorallocate(
+                $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
+            );
+
+            // Setup additional x-offset for color-box, for it to be centered within the cell
+            $additionalOffsetX = $columnI['dataIndex'] == 'color'
+                ? ($columnI['icon'] ? 8 : 5)
+                : ceil(($columnI['width']-14)/2) + 0.5;
+
+            //  Add the image to a worksheet
+            $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
+            $objDrawing->setCoordinates($cellCoords);
+            $objDrawing->setImageResource($gdImage);
+            $objDrawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG);
+            $objDrawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
+            $objDrawing->setDescription($tip);
+            $objDrawing->setName($tip);
+            $objDrawing->setHeight(11);
+            $objDrawing->setWidth(14);
+            $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
+            $objDrawing->setWorksheet($sheet);
+
+
+        // Else if cell value contain icon image url
+        } else if (preg_match('~^ ?url\(([^)]+)\)~', $info['box'], $src)
+            || preg_match('~^(resources.+?)$~' , $info['box'], $src)) {
+
+            // Try to find image absolute path
+            if (!$abs = Indi::abs(trim($src[1], '.')))
+                if (file_exists($img = DOC . STD . VDR . '/client/' . $src[1]))
+                    $abs = $img;
+
+            // If image exists
+            if ($abs) {
+
+                // Setup additional x-offset for color-box, for it to be centered within the cell
+                $additionalOffsetX = ceil(($columnI['width'] - 16) / 2);
+
+                //  Add the image to a worksheet
+                $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                $objDrawing->setDescription($tip);
+                $objDrawing->setName($tip);
+                $objDrawing->setPath($abs);
+                $objDrawing->setCoordinates($cellCoords);
+                $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
+                $objDrawing->setWorksheet($sheet);
+            }
+        }
+
+        // If column's field underlying element is not 'color', or is, but header-icon is defined
+        if ($el != 'color' || $columnI['icon']) {
+
+            // Set text color same as row background to achieve 'transparency'-effect
+            $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
+            $sheet->getStyle($cellCoords)->getFont()->getColor()->setARGB('ff' . $rgb);
+
+            // Else if column's field underlying element IS 'color'
+        } else if ($el == 'color') {
+
+            // Set indent so that both color-box and #rrggbb-value to be displayed
+            $sheet->getStyle($cellCoords)->getAlignment()->setIndent(2);
+        }
+
+        //
+        return $tip;
     }
 }

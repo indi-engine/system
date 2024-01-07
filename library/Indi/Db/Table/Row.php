@@ -752,6 +752,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $dataColumns[] = $field;
                 if ($icon = $scope['icon'][$fieldId]) $renderCfg[$field]['icon'] = $icon;
                 if ($jump = $scope['jump'][$fieldId]) $renderCfg[$field]['jump'] = $jump;
+                if ($head = $scope['head'][$fieldId]) $renderCfg[$field]['head'] = $head;
+                if ($val  = $scope['composeVal'][$fieldId]) $renderCfg[$field]['composeVal'] = $val;
+                if ($tip  = $scope['composeTip'][$fieldId]) $renderCfg[$field]['composeTip'] = $tip;
                 if (null !== ($color = $scope['color'][$fieldId])) $renderCfg[$field]['color'] = $color;
             }
 
