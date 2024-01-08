@@ -1,5 +1,41 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function composeTemplateAction() {
+        field('grid', 'compose', ['title' => 'Compose', 'elementId' => 'span', 'move' => 'tooltip']);
+        field('grid', 'composeVal', [
+            'title' => 'Value template',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'compose',
+        ]);
+        param('grid', 'composeVal', 'placeholder', '{someField1} - {$someField2}{. SomeField3}');
+        field('grid', 'composeTip', [
+            'title' => 'Tooltip template',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'composeVal',
+        ]);
+        grid('grid', 'fieldId', 'alias', ['gridId' => 'source', 'toggle' => 'h', 'move' => 'further']);
+        grid('grid', 'further', 'alias', ['gridId' => 'source', 'toggle' => 'h', 'move' => 'alias']);
+        grid('grid', 'compose', ['gridId' => 'features', 'move' => 'display', 'rename' => 'Value']);
+        grid('grid', 'editor', ['gridId' => 'compose']);
+        grid('grid', 'composeVal', [
+            'gridId' => 'compose',
+            'move' => 'editor',
+            'icon' => 'resources/images/icons/btn-icon-rename.png',
+            'rename' => 'Value compose template',
+            'editor' => '1',
+        ]);
+        grid('grid', 'composeTip', [
+            'gridId' => 'compose',
+            'move' => 'composeVal',
+            'icon' => 'resources/images/icons/btn-icon-tooltip.png',
+            'rename' => 'Tooltip compose template',
+            'editor' => '1',
+        ]);
+        grid('grid', 'tooltip', ['move' => 'rename']);
+        die('ok');
+    }
     public function inqtysumtoggleAction() {
         field('inQtySum', 'toggle', [
             'title' => 'Статус',

@@ -717,7 +717,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Setup aliases fields that have data fetched
         $gridhead = []; foreach ($columnA as $columnI) $gridhead[$columnI] = $renderCfg[$columnI]['head'];
-        uksort($gridhead, fn($a, $b) => strlen($a) < strlen($b));
+        uksort($gridhead, fn($a, $b) => strlen($a) < strlen($b)); unset($gridhead['id']);
         Indi::store('gridhead', $gridhead);
 
         // Set up $titleProp variable as an indicator of that titleColumn is within grid fields
@@ -908,11 +908,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // If color and/or jump are defined
                 if ($c || $j) {
 
-                    // If it's not enumset-column
-                    if (!$typeA['enumset'][$columnI]) {
+                    // If it's a multiple foreign keys field
+                    if ($typeA['foreign']['multiple'][$columnI]) {
 
-                        // If it's a multiple foreign keys field
-                        if ($typeA['foreign']['multiple'][$columnI]) {
+                        // If it's not enumset-column
+                        if (!$typeA['enumset'][$columnI]) {
 
                             // Define _render for a cell
                             $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];
@@ -932,33 +932,37 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                             // Join values by comma
                             $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
-
-                        // Else
-                        } else {
-
-                            // Get id to be used as replacement for '{id}'
-                            if ($typeA['foreign']['single'][$columnI]) {
-                                $id = $data[$pointer][$columnI];
-                            } else {
-                                $id = $data[$pointer]['id'];
-                            }
-
-                            // Wrap cell contents into a <span jump="someuri">
-                            $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
-                            if ($j) {
-                                $href = str_replace('{id}', $id, $j);
-                                $href = str_replace('{value}', $data[$pointer][$columnI], $href);
-                                $href = preg_replace_callback('~\{(?<alias>[a-z0-9_]+)\}~i', function($m) use ($r){
-                                    return $r->{$m['alias']};
-                                }, $href);
-                                $jump = rif($href, 'jump="$1"');
-                            } else {
-                                $jump = '';
-                            }
-                            $color = rif($c, 'style="color: $1;"');
-                            $with = "<span $jump $color>";
-                            $data[$pointer]['_render'][$columnI] = wrap($wrap, $with);
                         }
+
+                    // Else
+                    } else {
+
+                        // Get id to be used as replacement for '{id}'
+                        if ($typeA['foreign']['single'][$columnI]) {
+                            $id = $data[$pointer][$columnI];
+                        } else {
+                            $id = $data[$pointer]['id'];
+                        }
+
+                        // Wrap cell contents into a <span jump="someuri">
+                        $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
+                        if ($j) {
+                            $href = str_replace('{id}', $id, $j);
+                            $href = str_replace('{value}', $data[$pointer][$columnI], $href);
+                            $href = preg_replace_callback('~\{(?<alias>[a-z0-9_]+)\}~i', function($m) use ($r){
+                                return $r->{$m['alias']};
+                            }, $href);
+                            $jump = rif($href, ' jump="$1"');
+                        } else {
+                            $jump = '';
+                        }
+                        $color = rif($c, ' style="color: $1;"');
+                        if (preg_match('~^(<span)([ >])~', $wrap)) {
+                            $wrap = preg_replace('~(^|[^"])(<span)([ >])~', '$2' . "$jump$color" . '$3', $wrap);
+                        } else {
+                            $wrap = wrap($wrap, "<span$jump$color>");
+                        }
+                        $data[$pointer]['_render'][$columnI] = $wrap;
                     }
                 } else if (is_array($data[$pointer]['_render'][$columnI])) {
                     // Join values by comma
@@ -1118,7 +1122,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Regular expression to parse the inner part (e.g. enclosed by curly brackets) of a given template
         $heads = Indi::store('gridhead')->getArrayCopy();
         $hkeys = im(array_keys($heads), '|');
-        $inner = "~(?<before>.*?)(?<field>$hkeys)~i";
+        $inner = "~(?<before>.*?)(?<field>\\$?(?:$hkeys))~i";
 
         // Start composing value based on given template
         $composed = preg_replace_callback($outer, function($outer) use ($column, $data, &$richtext, $purpose, $inner, $heads) {
@@ -1131,10 +1135,24 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             // Values of all fields should have non-zero length in order to
             // proceed with parsing inner parts e.g enclosed by curly brackets
-            foreach ($which['field'] ?? [] as $field)
-                if (($field = lcfirst($field))
-                    && !strlen($data['_render'][$field] ?? $data[$field]))
-                    return '';
+            foreach ($which['field'] ?? [] as $field) {
+
+                // If there is a '$' char at the beginning of field name
+                // it means we should operate with raw value rather than rendered one
+                $raw = substr($field, 0, 1) === '$';
+
+                // Trim '$' from field name
+                if ($raw) $field = substr($field, 1);
+
+                // Lowercase first char of the field name
+                $field = lcfirst($field);
+
+                // Get value to be checked
+                $value = $raw ? $data[$field] : ($data['_render'][$field] ?? $data[$field]);
+
+                // If value is zero-length -return
+                if ($raw ? !$value : !strlen($value)) return '';
+            }
 
             // Trim first and last curly brackets
             $outer['curly'] = preg_replace('~^{|}$~', '', $outer['curly']);
@@ -1150,19 +1168,44 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Replace placeholders with actual values
             $outer['curly'] = preg_replace_callback($inner, function ($inner) use ($column, $data, &$richtext, $purpose, $heads) {
 
+                // If there is a '$' char at the beginning of field name
+                // it means we should operate with raw value rather than rendered one
+                $raw = substr($inner['field'], 0, 1) === '$';
+
+                // Trim '$' from field name
+                if ($raw) $inner['field'] = substr($inner['field'], 1);
+
                 // Get field name used in template
                 $alias = lcfirst($inner['field']);
 
-                // Get field value
-                $render = array_key_exists($alias, $data['_render']) ? $data['_render'][$alias] : $data[$alias];
+                // If raw value should be used
+                if ($raw) {
+
+                    // Get tooltip, if any
+                    $tip = rif(htmlspecialchars($data['_tooltip'][$alias]), ' data-title="$1"');
+
+                    // Get jump, if any
+                    $jump = preg_match('~ jump=".+?"~', $data['_render'][$alias], $j) ? $j[0] : '';
+
+                    // Spoof render
+                    $render = $tip || $jump
+                        ? wrap($data[$alias], "<span$jump$tip>")
+                        : $data[$alias];
+
+                // Else pick existing render or raw value
+                } else {
+                    $render = array_key_exists($alias, $data['_render']) ? $data['_render'][$alias]: $data[$alias];
+                }
 
                 // If it's a same field as host field, and we're composing tooltip template,
                 // and there is a color-box - prevent color-box html from being shown in the tooltip
                 // but show color-box title as tooltip instead
                 if ($alias === $column)
-                    if ($purpose === 'tip')
-                        if ($info = boxtip($render))
-                            $render = $info['tip'];
+                    if ($purpose === 'tip') {
+                        if ($info = boxtip($render)) $render = $info['tip'];
+                        $render = preg_replace('~(style=".*?)color:.+?;~','$1', $render);
+                        $render = preg_replace('~ jump=".*?"~','', $render);
+                    }
 
                 // If field name is specified with Uppercased letter - assume field label should be prepended
                 if ($alias !== $inner['field']) $render = rif($render, $heads[$alias] . ': $1');
@@ -1184,8 +1227,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Prepare attributes
                 $attr = " data-field=\"$alias\"";
-                if ($style = rif($data['_style'][$alias], ' style="$1"'))
-                    $attr .= $style;
+                if ($alias !== $column || $purpose !== 'tip')
+                    if ($style = rif($data['_style'][$alias], ' style="$1"'))
+                        $attr .= $style;
 
                 // Return inner-before item plus inner-field item with field name replaced with value
                 return $inner['before'] . wrap($render, "<span$attr>", strlen($render));

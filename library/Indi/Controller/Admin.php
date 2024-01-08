@@ -1806,7 +1806,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Foreach item in $data array
         for ($i = 0; $i < count($data); $i++) {
 
-            // If grouing is turned on, and current row is within a new group
+            // If grouping is turned on, and current row is within a new group
             if ($group && $prevGroup != $data[$i][$group['property']]) {
 
                 // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously setted default height
@@ -1821,8 +1821,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Setup indent
                 $indent = str_pad('', 6, ' ');
 
+                // Setup group name
+                $groupName = $data[$i]['_render'][$group['property']] ?? $data[$i][$group['property']];
+
                 // Set cell value
-                $sheet->SetCellValue($columnL . $currentRowIndex, $indent . $data[$i][$group['property']]);
+                $sheet->SetCellValue($columnL . $currentRowIndex, $indent . $groupName);
 
                 // Set style
                 $sheet
@@ -1897,7 +1900,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $value = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
 
                     // Cumulative length of text before drawing for use in drawing x-offset calculation
-                    $length = 0;
+                    $length = 0; $cumulativeText = '';
 
                     // Foreach chunk
                     foreach ($chunks as $chunk) {
@@ -1908,10 +1911,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                             // Setup text, alpha and RGB-color to indent further chunks, if any
                             $text = '----';  $a = '00'; $color = 'FFFFFF';
 
+                            // Get offsetX for color box drawing
+                            $offsetX = gettextsize($cumulativeText, 11)['textWidth'];
+
                             // Insert drawing into a spreadsheet
-                            $this->_renderColorBox(['box' => $c['box'], 'tip' => $chunk['title']], [
-                                'width' => $length * $ratio * 1.1 + 24
-                            ] + $columnI, $coord, $sheet);
+                            $this->_renderColorBox(['box' => $c['box'], 'tip' => $chunk['title']],$columnI, $coord, $sheet, $offsetX);
 
                         // Else just
                         } else {
@@ -1940,6 +1944,9 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                         // Maintain length
                         $length += strlen($text);
+
+                        // Maintain cumulative text
+                        $cumulativeText .= $text;
                     }
 
                 // If cell value contains a .i-color-box item or .i-cell-img item, we replace it with gd image
@@ -3805,6 +3812,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (t()->grid)
             foreach ($fieldRs as $fieldR) {
 
+                // If such a grid column is already there - skip
+                if (t()->grid->gb($fieldR->id, 'fieldId')) continue;
+
                 // Prepare original data
                 $original = $ctor + ['fieldId' => $fieldR->id, 'gridId' => 0];
 
@@ -4253,7 +4263,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @return string
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    protected function _renderColorBox($info, $columnI, $cellCoords, $sheet) {
+    protected function _renderColorBox($info, $columnI, $cellCoords, $sheet, $offsetX = null) {
 
         // Use second capture group value
         $tip = strip_tags(htmlspecialchars_decode($info['tip']));
@@ -4267,10 +4277,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $gdImage, hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2)))
             );
 
-            // Setup additional x-offset for color-box, for it to be centered within the cell
-            $additionalOffsetX = $columnI['dataIndex'] == 'color'
+            // Setup auto x-offset for color-box, for it to be centered within the cell, if not explicitly given by $offsetX arg
+            $offsetX = $offsetX ?? ($columnI['dataIndex'] == 'color'
                 ? ($columnI['icon'] ? 8 : 5)
-                : ceil(($columnI['width']-14)/2) + 0.5;
+                : ceil(($columnI['width']-14)/2) + 0.5);
 
             //  Add the image to a worksheet
             $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
@@ -4282,7 +4292,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $objDrawing->setName($tip);
             $objDrawing->setHeight(11);
             $objDrawing->setWidth(14);
-            $objDrawing->setOffsetY(5)->setOffsetX($additionalOffsetX);
+            $objDrawing->setOffsetY(5)->setOffsetX(max(3, $offsetX));
             $objDrawing->setWorksheet($sheet);
 
 
@@ -4298,8 +4308,8 @@ class Indi_Controller_Admin extends Indi_Controller {
             // If image exists
             if ($abs) {
 
-                // Setup additional x-offset for color-box, for it to be centered within the cell
-                $additionalOffsetX = ceil(($columnI['width'] - 16) / 2);
+                // Setup auto x-offset for color-box, for it to be centered within the cell, if not explicitly given by $offsetX arg
+                $offsetX = $offsetX ?? ceil(($columnI['width'] - 16) / 2);
 
                 //  Add the image to a worksheet
                 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
@@ -4307,7 +4317,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objDrawing->setName($tip);
                 $objDrawing->setPath($abs);
                 $objDrawing->setCoordinates($cellCoords);
-                $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
+                $objDrawing->setOffsetY(3)->setOffsetX(max(4, $offsetX));
                 $objDrawing->setWorksheet($sheet);
             }
         }
@@ -4319,7 +4329,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $rgb = $i % 2 && $columnI['id'] != 'rownumberer' ? 'fafafa' : 'ffffff';
             $sheet->getStyle($cellCoords)->getFont()->getColor()->setARGB('ff' . $rgb);
 
-            // Else if column's field underlying element IS 'color'
+        // Else if column's field underlying element IS 'color'
         } else if ($el == 'color') {
 
             // Set indent so that both color-box and #rrggbb-value to be displayed

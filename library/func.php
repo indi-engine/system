@@ -421,6 +421,24 @@ function getflashsize($path) {
 }
 
 /**
+ * Get text size using Imagick
+ * todo: make fonts dir configurable
+ *
+ * @param $text
+ * @param int $fontSize
+ * @param string $fontFile
+ * @return array|false
+ */
+function gettextsize($text, $fontSize = 8, $fontFile = 'Tahoma.TTF') {
+    $draw = new ImagickDraw();
+    $draw->setFont("/usr/share/fonts/$fontFile");
+    $draw->setFontSize($fontSize);
+    $size = (new Imagick())->queryFontMetrics($draw, $text);
+    $size['width'] = $size['textWidth'];
+    return $size;
+}
+
+/**
  * Detect if user agent is <user agent key>. Currently supported keys are 'ie8' and 'ipad' only.
  *
  * @param $uaK
@@ -3458,7 +3476,7 @@ function sql2phpWHERE($sqlWhere, $object = '$this') {
 function boxtip($html) {
 
     // Detect
-    preg_match('~<span class="i-color-box" style="[^"]*background:\s*(?<box>[^;]+);" data-title="(?<tip>[^"]+)">~', $html, $info)
+    preg_match('~<span.+?class="i-color-box" style="[^"]*background:\s*(?<box>[^;]+);" data-title="(?<tip>[^"]+)">~', $html, $info)
     || preg_match('~<span class="i-color-box" style="[^"]*background:\s*(?<box>[^;]+);"><\/span>(?<tip>#[a-fA-F0-9]{6})~', $html, $info)
     || preg_match('~<img src="(?<box>.+?)" class="i-cell-img">(?<tip>.+?)$~', $html, $info);
 

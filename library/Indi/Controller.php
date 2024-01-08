@@ -1220,14 +1220,20 @@ class Indi_Controller {
      */
     public function inclGridProp($propS) {
 
-        // Preliminary exclude those props, to prevent duplicates
-        $this->exclGridProp($propS);
-
         // Get `field` instances rowset with value of `alias` prop, mentioned in $propS arg
         $fieldRs = m()->fields(im(ar($propS)), 'rowset');
 
         // Merge existing grid fields with additional
-        if (t()->gridFields) t()->gridFields->merge($fieldRs);
+        if (t()->gridFields) {
+
+            // Exclude duplicated
+            foreach ($fieldRs as $fieldR)
+                if (t()->gridFields->gb($fieldR->id))
+                    $fieldRs->exclude($fieldR->id);
+
+            // Merge remaining
+            t()->gridFields->merge($fieldRs);
+        }
 
         // Return
         return $fieldRs;
