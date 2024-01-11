@@ -8,7 +8,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'columnTypeId' => 'VARCHAR(255)',
             'move' => 'compose',
         ]);
-        param('grid', 'composeVal', 'placeholder', '{someField1} - {$someField2}{. SomeField3}');
+        param('grid', 'composeVal', 'placeholder', '{someField1} - {someField2}{. SomeField3}');
         field('grid', 'composeTip', [
             'title' => 'Tooltip template',
             'elementId' => 'string',
@@ -33,7 +33,54 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'rename' => 'Tooltip compose template',
             'editor' => '1',
         ]);
-        grid('grid', 'tooltip', ['move' => 'rename']);
+        grid('sections', 'defaultSortField', [
+            'gridId' => 'load',
+            'move' => 'rowsetSeparate',
+            'composeVal' => '{defaultSortField defaultSortDirection}',
+            'editor' => '1',
+            'rowReqIfAffected' => 'n',
+        ]);
+        grid('sections', 'entityId', 'table', ['gridId' => 'data', 'toggle' => 'h', 'move' => 'entityId']);
+        grid('sections', 'entityId', ['composeTip' => '{EntityId_table}']);
+        grid('grid', 'fieldId', ['composeTip' => '{FieldId_alias}{_further_alias}']);
+        grid('alteredFields', 'fieldId', 'alias', ['toggle' => 'h', 'move' => 'fieldId']);
+        grid('alteredFields', 'fieldId', ['composeTip' => '{FieldId_alias}']);
+        grid('filter', 'fieldId', 'alias', ['gridId' => 'data', 'toggle' => 'h', 'move' => 'defaultValue']);
+        grid('filter', 'further', 'alias', ['gridId' => 'data', 'toggle' => 'h', 'move' => 'alias']);
+        grid('filter', 'fieldId', ['composeTip' => '{FieldId_alias}{_further_alias}']);
+        grid('sectionActions', 'actionId', 'alias', ['toggle' => 'h', 'move' => 'actionId']);
+        grid('sectionActions', 'actionId', ['composeTip' => '{ActionId_alias}']);
+        grid('entities', 'titleFieldId', 'alias', ['gridId' => 'features', 'toggle' => 'h', 'move' => 'titleFieldId']);
+        grid('entities', 'titleFieldId', ['composeTip' => '{TitleFieldId_alias}']);
+        grid('fields', 'relation', 'table', ['gridId' => 'fk', 'toggle' => 'h', 'move' => 'relation']);
+        grid('fields', 'relation', ['composeTip' => '{Relation_table}']);
+        grid('consider', 'consider', 'alias', ['toggle' => 'h', 'move' => 'consider']);
+        grid('consider', 'consider', ['composeTip' => '{Consider_alias}']);
+        grid('consider', 'foreign', 'alias', ['toggle' => 'h', 'move' => 'foreign']);
+        grid('consider', 'foreign', ['composeTip' => '{consider_alias » foreign_alias}']);
+        grid('consider', 'connector', 'alias', ['toggle' => 'h', 'move' => 'connector']);
+        grid('consider', 'required', ['rename' => '']);
+        grid('consider', 'connector', 'entityId', ['toggle' => 'h', 'move' => 'alias']);
+        grid('consider', 'connector', ['composeVal' => '{connector_entityId}: {connector}', 'composeTip' => '{connector_alias}']);
+        grid('inQtySum', 'sourceTarget', 'alias', ['toggle' => 'h', 'move' => 'sourceTarget']);
+        grid('inQtySum', 'targetField', 'alias', ['toggle' => 'h', 'move' => 'targetField']);
+        grid('inQtySum', 'targetField', ['composeTip' => '{sourceTarget_alias} » {targetField_alias}']);
+        grid('inQtySum', 'sourceField', 'alias', ['toggle' => 'h', 'move' => 'sourceField']);
+        grid('inQtySum', 'sourceField', ['composeTip' => '{SourceField_alias}']);
+        grid('role', 'entityId', 'table', ['gridId' => 'binding', 'toggle' => 'h', 'move' => 'entityId']);
+        grid('role', 'entityId', ['composeTip' => '{EntityId_table}']);
+        grid('elementCfgField', 'relation', 'table', ['gridId' => 'fk', 'toggle' => 'h', 'move' => 'relation']);
+        grid('elementCfgField', 'relation', ['composeTip' => '{Relation_table}']);
+        grid('fieldsAll', 'relation', 'table', ['gridId' => 'fk', 'toggle' => 'h', 'move' => 'relation']);
+        grid('fieldsAll', 'relation', ['composeTip' => '{Relation_table}']);
+        grid('paramsAll', 'entityId', 'table', ['toggle' => 'h', 'move' => 'cfgValue']);
+        grid('paramsAll', 'fieldId', 'alias', ['toggle' => 'h', 'move' => 'table']);
+        grid('paramsAll', 'entityId', ['move' => 'alias']);
+        grid('paramsAll', 'cfgField', 'alias', ['toggle' => 'h', 'move' => 'entityId']);
+        grid('paramsAll', 'fieldId', ['composeTip' => '{entityId_table}.{fieldId_alias}']);
+        grid('paramsAll', 'cfgField', ['composeTip' => '{CfgField_alias}']);
+        if ($_ = grid('paramsAll', 'title')) $_->delete();
+        field('grid', 'further', ['filter' => '`entry` = "0"']);
         die('ok');
     }
     public function inqtysumtoggleAction() {
