@@ -429,9 +429,9 @@ function getflashsize($path) {
  * @param string $fontFile
  * @return array|false
  */
-function gettextsize($text, $fontSize = 8, $fontFile = 'Tahoma.TTF') {
+function gettextsize($text, $fontSize = 8, $fontFile = 'Tahoma.ttf') {
     $draw = new ImagickDraw();
-    $draw->setFont("/usr/share/fonts/$fontFile");
+    $draw->setFont(DOC . VDR . "/system/font/$fontFile");
     $draw->setFontSize($fontSize);
     $size = (new Imagick())->queryFontMetrics($draw, $text);
     $size['width'] = $size['textWidth'];

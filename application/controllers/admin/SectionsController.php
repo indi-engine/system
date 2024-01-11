@@ -150,7 +150,12 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      * @param $item
      */
     public function adjustGridDataItem(&$item) {
-        if ($item['defaultSortField'] == -1) $item['_render']['defaultSortField']  = 'ID' . $item['_render']['defaultSortField'];
+        if ($item['defaultSortField'] == -1) {
+            $item['_render']['defaultSortField']  = 'ID' . $item['_render']['defaultSortField'];
+            if (isset($item['_richtext']['defaultSortField'][0])) {
+                $item['_richtext']['defaultSortField'][0] = 'ID';
+            }
+        }
     }
 
     /**
