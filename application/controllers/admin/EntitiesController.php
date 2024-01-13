@@ -2,6 +2,13 @@
 class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
     /**
+     * Flag indicating whether db backup steps should be skipped during update
+     *
+     * @var bool
+     */
+    protected $nobackup = false;
+
+    /**
      * Prompt for auth-string to be able to update current repository using `git pull` command
      */
     public function promptGitUserToken() {
@@ -16,6 +23,10 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             //'regex' => '/' . $this->git['auth']['rex']['self'] . '/',
             'width' => 250,
             'name' => $name = 'user:token'
+        ], [
+            'xtype' => 'checkbox',
+            'name'  => 'nobackup',
+            'boxLabel' => 'Skip db backup steps before and after migration'
         ]]);
 
         // Check prompt data
@@ -27,6 +38,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Assign as prop to be further accessible
         $this->git['auth']['value'] = $prompt[$name];
+
+        // Assing nobackup-flag to be further accessible
+        $this->nobackup = $prompt['nobackup'];
     }
 
     /**
@@ -169,7 +183,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                         $actions = array_reverse($actions);
 
                         // If there is really something to migrate
-                        if ($actions && !$backed) {
+                        if ($actions && !$backed && !$this->nobackup) {
 
                             // Do backup
                             $this->backupAction([
@@ -204,7 +218,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 if (in($l10n_meta = 'application/lang/ui.php', $files)) {
 
                     // If there is really something to migrate
-                    if (!$backed) {
+                    if (!$backed && !$this->nobackup) {
 
                         // Do backup
                         $this->backupAction([
@@ -245,7 +259,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 else foreach ($l10n_data as $lang => $file) {
 
                     // If there is really something to migrate
-                    if (!$backed) {
+                    if (!$backed && !$this->nobackup) {
 
                         // Do backup
                         $this->backupAction([
@@ -287,7 +301,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         }
 
         // If $github flag is true - export db dump and save as repo's latest-release asset
-        if ($github) {
+        if ($github && !$this->nobackup) {
 
             // Get instance type
             $type = param('instance-type')->cfgValue;
