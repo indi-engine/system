@@ -1055,7 +1055,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $data[$pointer]['_tooltip'][$column] = $this->_toGridData_compose($column, $template,$data[$pointer], $format, 'tip');
 
                 // Put tooltip into data-title attribute
-                $title = 'data-title="' . htmlspecialchars($data[$pointer]['_tooltip'][$column]) . '"';
+                $title = strlen($tip = $data[$pointer]['_tooltip'][$column])
+                    ? 'data-title="' . htmlspecialchars($tip) . '"'
+                    : '';
 
                 // Add data-title attribute into <span> or update it's value if it already exist
                 $data[$pointer]['_render'][$column] = preg_match($rex = '~data-title=".*?"~', $render)
