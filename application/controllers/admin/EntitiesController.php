@@ -107,7 +107,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Initial value for now is `false`, because there might be nothing to migrate, so no backup needed.
         // In case if further script detects there is something to be migrated - backup is made and flag is set to `true`,
         // so that backup is made once per $this->__migrate() call. As a result of a backup the file
-        // named as 'custom-$type-backup-before-migrate.sql.gz' appears locally (in sql/) and on github
+        // named as 'custom-$type.backup-before-migrate.sql.gz' appears locally (in sql/) and on github
         // and is kept there until overwritten
         $backed = false;
 
@@ -208,7 +208,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                         // Do backup
                         $this->backupAction([
-                            'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                            'dump' => "custom-$type.backup-before-migrate.sql.gz",
                             'token' => explode(':', $this->git['auth']['value'])[1]
                         ]);
 
@@ -249,7 +249,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
                         // Do backup
                         $this->backupAction([
-                            'dump' => "custom-$type-backup-before-migrate.sql.gz",
+                            'dump' => "custom-$type.backup-before-migrate.sql.gz",
                             'token' => explode(':', $this->git['auth']['value'])[1]
                         ]);
 
