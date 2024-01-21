@@ -1372,6 +1372,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // If toArray conversion mode is 'current' - restore $this->_compiled property
         if ($type == 'current') $this->_compiled = $compiled;
 
+        // Escape '}{' sequence here as we are using it to split json-responses in *_Admin
+        if ($return['params']['placeholder'] ?? 0)
+            $return['params']['placeholder']
+                = preg_replace('~\}\{~', '&rcub;&lcub;', $return['params']['placeholder']);
+
         // Return conversion result
         return $return;
     }

@@ -339,4 +339,22 @@ class Grid_Row extends Indi_Db_Table_Row {
     public function setTitle() {
         $this->_setTitle();
     }
+
+    /**
+     * Replace '}{' with '&rcub;&lcub;' for composeVal and composeTip
+     *
+     * @return array
+     */
+    public function toArray() {
+
+        // Call parent
+        $array = parent::toArray();
+
+        // Replace curly brackets with their html entities
+        foreach (['composeVal', 'composeTip'] as $prop)
+            $array[$prop] = preg_replace('~\}\{~', '&rcub;&lcub;', $array[$prop]);
+
+        // Return
+        return $array;
+    }
 }

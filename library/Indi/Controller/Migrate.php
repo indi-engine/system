@@ -1,5 +1,15 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function redirectMatchAction() {
+        $hta = file_get_contents('.htaccess');
+        $hta = preg_replace('~^RedirectMatch 404 .*$~m', 'RedirectMatch 404 /(\.git|sql|log)', $hta);
+        file_put_contents('.htaccess', $hta);
+        file_put_contents('data/upload/.htaccess', 'php_value engine off');
+        $this->exec('git add .htaccess');
+        $this->exec('git add data/upload/.htaccess');
+        $this->exec('git commit -m ".htaccess updated"');
+        die('ok');
+    }
     public function composeTemplateAction() {
         field('grid', 'compose', ['title' => 'Compose', 'elementId' => 'span', 'move' => 'tooltip']);
         field('grid', 'composeVal', [

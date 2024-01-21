@@ -117,8 +117,59 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Adjust action mode and view config.
             $this->adjustActionCfg();
 
-            // Setup view. This call will create an action-view object instance, especially for current trail item
+            // Setup view. This call will create an action-view object instance especially for current trail item
             t()->view();
+
+            // Get rowset containing selected rows
+            t()->rows = $this->getSelectedAsRowset();
+
+            // If current action has view and we've just entered batch-mode
+            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other) {
+
+                // Shortcut for current row id
+                $id = t()->action->selectionRequired == 'n' ? t(1)->row->id : t()->row->id;
+                $aix = uri()->aix;
+
+                // Append uris for other row ids
+                foreach (t()->rows as $idx => $row) {
+
+                    // Get aix
+                    $_aix = $row->system('index') + 1;
+
+                    // Get uri
+                    $uri = str_replace("/id/{$id}/", "/id/{$row->id}"  . "/other/1/", $_SERVER['REQUEST_URI']);
+                    $uri = str_replace("/aix/{$aix}", "/aix/{$_aix}", $uri);
+                    $uri = str_replace("/admin/", "/", $uri);
+
+                    // Prepare output
+                    $out = uri()->response($uri);
+                    if (preg_match('~\}\{~', $out)) {
+                        $out = explode('}{', $out)[0] . '}';
+                    }
+
+                    // Prepare stomp msg
+                    $msg = [
+                        'type' => 'load',
+                        'href' => $uri,
+                        'resp' => $out,
+                        'to' => CID,
+                        'batch' => [
+                            'index' => $idx,
+                            'total' => t()->rows->count()
+                        ]
+                    ];
+
+                    // Trigger Indi.load(...) call with predefined responseText-prop
+                    if (ini()->rabbitmq->enabled) {
+                        Indi::ws($msg);
+                    } else {
+                        $stomp []= $msg;
+                    }
+                }
+
+                // Flush success
+                jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
+            }
 
             // If action is 'index'
             if (t()->action->selectionRequired == 'n') {
@@ -292,56 +343,6 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Else if where is some another action
             } else {
 
-                // Get rowset containing selected rows
-                t()->rows = $this->getSelectedAsRowset();
-
-                // If current action has view and we'vejust entered batch-mode
-                if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other) {
-
-                    // Shortcut for current row id
-                    $id = t()->row->id;
-                    $aix = uri()->aix;
-
-                    // Append uris for other row ids
-                    foreach (t()->rows as $idx => $row) {
-
-                        // Get aix
-                        $_aix = $row->system('index') + 1;
-
-                        // Get uri
-                        $uri = str_replace("/id/{$id}/", "/id/{$row->id}"  . "/other/1/", $_SERVER['REQUEST_URI']);
-                        $uri = str_replace("/aix/{$aix}", "/aix/{$_aix}", $uri);
-                        $uri = str_replace("/admin/", "/", $uri);
-
-                        // Prepare output
-                        $out = uri()->response($uri);
-                        if (preg_match('~\}\{~', $out))
-                            $out = explode('}{', $out)[0] . '}';
-
-                        // Prepare stomp msg
-                        $msg = [
-                            'type' => 'load',
-                            'href' => $uri,
-                            'resp' => $out,
-                            'to' => CID,
-                            'batch' => [
-                                'index' => $idx,
-                                'total' => t()->rows->count()
-                            ]
-                        ];
-
-                        // Trigger Indi.load(...) call with predefined responseText-prop
-                        if (ini()->rabbitmq->enabled) {
-                            Indi::ws($msg);
-                        } else {
-                            $stomp []= $msg;
-                        }
-                    }
-
-                    // Flush success
-                    jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
-                }
-
                 // Props to be applied to scope
                 $applyA = [
                     'hash' => uri()->ph,
@@ -394,12 +395,18 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Pairs of [index => id] to be fetched
         $idA = [];
 
+        // Get trail item steps up index
+        $stepsUp = t()->level > 1 && t()->action->selectionRequired === 'n' ? 1 : 0;
+
+        // Get id of first selected record. This record may be at upper level than current section
+        $id = t($stepsUp)->row->id;
+
         // Append [index => $this->row->id] pairs
-        if ($this->row->id)
+        if ($id)
             $idA[Indi::rexm('int11', $aix = uri()->aix)
                 ? $aix - 1
                 : 0
-            ] = $this->row->id;
+            ] = $id;
 
         // Append others, if any
         if ($otherIdA = Indi::post()->others)
@@ -412,8 +419,8 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Fetch selected rows in correct order
         $rowset = $idA
-            ? m()->all(["`id` IN ($in)", t()->scope->WHERE], "FIND_IN_SET(`id`, '$in')")
-            : m()->createRowset();
+            ? t($stepsUp)->model->all(["`id` IN ($in)", t()->scope->WHERE], "FIND_IN_SET(`id`, '$in')")
+            : t($stepsUp)->model->createRowset();
 
         // Get indexes
         $indexByIdA = array_flip($idA);

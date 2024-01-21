@@ -408,8 +408,10 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Run migrations, if need
         $this->_migrate();
 
-        // Flush output printed by last command
-        jflush(true, 'Done');
+        // Flush 'Done' or command history in case of rabbitmq is not enabled
+        ini()->rabbitmq->enabled
+            ? jflush(true, 'Done')
+            : jtextarea(true, file_get_contents('log/update.log'));
     }
 
     /**

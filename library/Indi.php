@@ -1373,7 +1373,7 @@ class Indi {
         if (preg_match('/\.ini$/', $arg) && is_file($arg)) {
 
             // Parse ini file
-            $parsed = parse_ini_file($arg, true);
+            $parsed = parse_ini_file($arg, true, INI_SCANNER_TYPED);
 
             // Create empty instance of stdClass
             $ini = new stdClass();

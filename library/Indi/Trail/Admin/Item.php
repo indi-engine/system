@@ -701,7 +701,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             $actionParentClass = get_parent_class($actionClass);
 
             // If action-view parent class name contains mode definition
-            if (preg_match('/(Indi|Project)_View_Action_Admin_(Row|Rowset)/', $actionParentClass, $mode)) {
+            if (preg_match('/(Indi|Project)_View_Action_Admin_(Rowset|Row)/', $actionParentClass, $mode)) {
 
                 // Pick that mode and assing it as a property of trail item's action object
                 $this->action->mode = $mode[2];
@@ -778,8 +778,12 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
                 if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
                 if ($head = t()->scope->head[$fieldId]) $renderCfg[$field->alias]['head'] = $head;
-                if ($val  = t()->scope->composeVal[$fieldId]) $renderCfg[$field->alias]['composeVal'] = $val;
-                if ($tip  = t()->scope->composeTip[$fieldId]) $renderCfg[$field->alias]['composeTip'] = $tip;
+                if ($val  = t()->scope->composeVal[$fieldId])
+                    $renderCfg[$field->alias]['composeVal']
+                        = str_replace('&rcub;&lcub;', '}{', $val);
+                if ($tip  = t()->scope->composeTip[$fieldId])
+                    $renderCfg[$field->alias]['composeTip']
+                        = str_replace('&rcub;&lcub;', '}{', $tip);
                 if (null !== ($color = t()->scope->color[$fieldId])) $renderCfg[$field->alias]['color'] = $color;
             }
         }
@@ -887,7 +891,8 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Get icons
         foreach ($this->grid->select(': !=""', $for) as $gridR)
-            $tplA[$gridR->further ?: $gridR->fieldId] = $gridR->$for;
+            $tplA[$gridR->further ?: $gridR->fieldId]
+                = preg_replace('~\}\{~', '&rcub;&lcub;', $gridR->$for);
 
         // Return icons
         return $tplA ?? [];

@@ -168,7 +168,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
     }
 
     public function getField() {
-        return m()->fields($this->filter->further ?: $this->filter->fieldId)->set('mode', 'regular');
+        return (clone m()->fields($this->filter->further ?: $this->filter->fieldId))->set('mode', 'regular');
     }
 
     /**
