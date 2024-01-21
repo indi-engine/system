@@ -124,7 +124,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             t()->rows = $this->getSelectedAsRowset();
 
             // If current action has view and we've just entered batch-mode
-            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other) {
+            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other && !uri()->tab) {
 
                 // Shortcut for current row id
                 $id = t()->action->selectionRequired == 'n' ? t(1)->row->id : t()->row->id;
