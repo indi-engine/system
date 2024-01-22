@@ -52,7 +52,7 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
 
         // Build url, even if parent entry is non yet existing entry
         $url = '/' . $nested . '/index/id/' . (t()->row->id ?: 0)
-            . '/ph/' . uri('ph') . '/aix/' . uri('aix') . '/tab/1/';
+            . '/ph/' . uri('ph') . '/aix/' . (uri('aix') ?: 0) . '/tab/1/';
 
         // Get the response
         $out = uri()->response($url);
