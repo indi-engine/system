@@ -2,7 +2,7 @@
 class Indi_Controller_Migrate extends Indi_Controller {
     public function redirectMatchAction() {
         $hta = file_get_contents('.htaccess');
-        $hta = preg_replace('~^RedirectMatch 404 .*$~m', 'RedirectMatch 404 /(\.git|sql|log)', $hta);
+        $hta = preg_replace('~^RedirectMatch 404 .*$~m', 'RedirectMatch 404 /(\.git|sql|log)/', $hta);
         file_put_contents('.htaccess', $hta);
         file_put_contents('data/upload/.htaccess', 'php_value engine off');
         $this->exec('git add .htaccess');
