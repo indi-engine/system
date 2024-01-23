@@ -1005,9 +1005,11 @@ class Indi {
             // If current cms user was found not in 'admin' database table,  we explicilty setup foreign
             // data for 'roleId' foreign key, despite on in that other table may be not such a foreign key
             if ($table != 'admin') {
-                $adminR->foreign('roleId', m('Role')->row(
-                    '`entityId` = "' . m($table)->id() . '"'
-                ));
+                if (!$adminR->field('roleId')) {
+                    $adminR->foreign('roleId', m('Role')->row(
+                        '`entityId` = "' . m($table)->id() . '"'
+                    ));
+                }
                 $adminR->roleId = $adminR->foreign('roleId')->id;
             }
 

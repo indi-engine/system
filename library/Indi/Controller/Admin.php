@@ -2327,6 +2327,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $password = $switchTo->password;
         }
 
+        $roleIdWHERE = rif($roleId, ' AND `a`.`roleId` = "$1"');
         $roleId = m($place)->fields('roleId') ? '`a`.`roleId`' : '"' . $roleId . '"';
         $adminToggle = m($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
         return db()->query('
@@ -2334,19 +2335,19 @@ class Indi_Controller_Admin extends Indi_Controller {
                 `a`.*,
                 `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
                 '. $adminToggle . ' AS `adminToggle`,
-                IF(`p`.`entityId`, `p`.`entityId`, 11) as `mid`,
-                `p`.`toggle` = "y" AS `roleToggle`,
-                `p`.`title` AS `roleTitle`,
+                IF(`r`.`entityId`, `r`.`entityId`, 11) as `mid`,
+                `r`.`toggle` = "y" AS `roleToggle`,
+                `r`.`title` AS `roleTitle`,
                 COUNT(`sa`.`sectionId`) > 0 AS `atLeastOneSectionAccessible`
             FROM `' . $place . '` `a`
-                LEFT JOIN `role` `p` ON (`p`.`id` = ' . $roleId . ')
+                LEFT JOIN `role` `r` ON (`r`.`id` = ' . $roleId . ')
                 LEFT JOIN `section2action` `sa` ON (
                     FIND_IN_SET(' . $roleId . ', `sa`.`roleIds`)
                     AND `sa`.`actionId` = "1"
                     AND `sa`.`toggle` = "y"
                     AND FIND_IN_SET(`sa`.`sectionId`, "' . implode(',', $level1ToggledSectionIdA) . '")
                 )
-            WHERE `a`.`email` = :s
+            WHERE `a`.`email` = :s ' . $roleIdWHERE . '
             GROUP BY `a`.`id`
             LIMIT 1
         ', $password, $password, $username)->fetch();
@@ -2388,12 +2389,12 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Get the list of other possible places, there user with given credentials can be found
             $role2tableA = db()->query('
-                SELECT `e`.`table`, `p`.`id` AS `roleId`
-                FROM `entity` `e`, `role` `p`
-                WHERE IFNULL(`p`.`entityId`, 0) != "0"
-                    AND `p`.`entityId` = `e`.`id`
-                    AND `e`.`table` != "admin"
-            ')->fetchAll();
+                SELECT `e`.`table`, `r`.`id` AS `roleId`
+                FROM `entity` `e`, `role` `r`
+                WHERE IFNULL(`r`.`entityId`, 0) != "0"
+                  AND `r`.`entityId` = `e`.`id`
+                  AND `e`.`table` != "admin"
+            ')->all();
 
             // Foreach possible place - try to find
             foreach ($role2tableA as $role2tableI) {
