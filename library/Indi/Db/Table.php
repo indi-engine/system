@@ -1276,6 +1276,9 @@ class Indi_Db_Table
             // Setup row instance
             $row = $this->new();
 
+            // Convert null to 0 for ibfk-props
+            $event['data'] = $this->ibfkNullTo0($event['data']);
+
             // Setup localized value within $row->_language, recognized within given raw data, and return
             // data containing values for certain (current) language only in case of localized field
             $modified = $row->l10n($event['data']);
@@ -1305,8 +1308,8 @@ class Indi_Db_Table
             /** @var Indi_Db_Table_Row $row */
             $row = new $this->_rowClass([
                 'table'    => $this->_table,
-                'original' => $original,
-                'modified' => $modified
+                'original' => $this->ibfkNullTo0($original),
+                'modified' => $this->ibfkNullTo0($modified)
             ]);
 
             // Foreach localized prop
