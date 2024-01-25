@@ -272,7 +272,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
                     break;
 
         // Prevent recipients duplication
-        if ($model->table() == 'admin') $where[] = '`roleId` = "' . $this->roleId . '"';
+        if ($model->fields('roleId')) $where[] = '`roleId` = "' . $this->roleId . '"';
 
         // Make $event to me accessible during complication
         $this->event = $event;
