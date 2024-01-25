@@ -1248,7 +1248,7 @@ class Indi_Db_Table
     public function ibfkNullTo0($data) {
 
         // Foreach prop having foreign key constraint
-        foreach ($this->_ibfk as $field => $DELETE_RULE)
+        foreach (array_intersect_key($this->_ibfk, $data) as $field => $DELETE_RULE)
 
             // If it's value is null
             if ($data[$field] === null)
