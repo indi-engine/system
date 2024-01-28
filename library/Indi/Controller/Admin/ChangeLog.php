@@ -32,10 +32,31 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
 
         // If current changeLog-section is for operating on changeLog-entries,
         // nested under some single entry - exclude `entryId` grid column
-        if (t(1)->section->entityId) t()->grid('entryId')->toggle('n');
+        if (t(1)->section->entityId) {
 
-        // Else force `fieldId`-filter's combo-data to be grouped by `entityId`
-        else m()->fields('fieldId')->param('groupBy', 'entityId');
+            // Setup grouping template
+            $groupTpl = '{datetime}{ - adminId [roleId]}';
+
+            // Disable entryId-column
+            t()->grid('entryId')->toggle('n');
+        }
+
+        // Else
+        else {
+
+            // Setup grouping template
+            $groupTpl = '{datetime} - {entityId} {ID#$entryId} » {entryId}{ - adminId [roleId]}';
+
+            // Force `fieldId`-filter's combo-data to be grouped by `entityId`
+            m()->fields('fieldId')->param('groupBy', 'entityId');
+        }
+
+        // Setup composeVal for datetime-prop used for grouping
+        $datetime = t()->grid('datetime')->at(0);
+
+        // If no composeVal template is set so far - set it
+        if (!$datetime->composeVal)
+            $datetime->set('composeVal', $groupTpl)->save();
 
         // If Indi client app is used - make 'datetime' to be grouping field
         if (APP) t()->section->groupBy = 'datetime';
@@ -44,7 +65,7 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         t()->grid('adminId,roleId')->toggle('h');
 
         // Make sure whole record will be reloaded if adminId, roleId or datetime is changed
-        t()->grid('adminId,roleId,datetime')->rowReqIfAffected();
+        t()->grid('adminId,roleId,datetime')->rowReqIfAffected('n');
 
         // Set grid column titles
         m()->fields('fieldId')->title = I_CHANGELOG_FIELD;
@@ -91,17 +112,12 @@ class Indi_Controller_Admin_ChangeLog extends Indi_Controller_Admin {
         // Adjust data
         for ($i = 0; $i < count($data); $i++) {
 
-            // Build group title
-            $data[$i]['_render']['datetime'] = $data[$i]['datetime']
-                . rif($entryId, ' - ' . $data[$i]['_render']['entityId'] . ' » ' . $data[$i]['_render']['entryId'])
-                . rif($data[$i]['adminId'], ' - ' . $data[$i]['_render']['adminId'] . ' [' . $data[$i]['_render']['roleId'] . ']');
-
             // Encode <iframe> tag descriptors into html entities
             $data[$i]['was'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['was']);
             $data[$i]['now'] = preg_replace('~(<)(/?iframe)([^>]*)>~', '&lt;$2$3&gt;', $data[$i]['now']);
 
             // Unset props, that are not needed separately anymore
-            unset($data[$i]['entryId'], $data[$i]['entityId'], $data[$i]['adminId'], $data[$i]['roleId']);
+            unset($data[$i]['entityId'], $data[$i]['adminId'], $data[$i]['roleId']);
 
             // Shade private data
             if ($shade[$data[$i]['fieldId']]) {

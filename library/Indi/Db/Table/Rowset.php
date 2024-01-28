@@ -711,8 +711,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Collect value/tooltip compose templates into separate arrays
         $composeVal = $composeTip = [];
         foreach ($renderCfg as $alias => $cfg) {
-            if ($cfg['composeTip']) $composeTip[$alias] = $cfg['composeTip'];
-            if ($cfg['composeVal']) $composeVal[$alias] = $cfg['composeVal'];
+            if ($cfg['composeTip']) $composeTip[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeTip']);
+            if ($cfg['composeVal']) $composeVal[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeVal']);
         }
 
         // Setup aliases fields that have data fetched
@@ -787,8 +787,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // If field column type is a single foreign key, we use title of related foreign row
                 if (isset($typeA['foreign']['single'][$columnI]['title']) && $entry)
-                    $data[$pointer]['_render'][$columnI] = $entry->foreign($further ?: $columnI)
-                        ->{is_string($title = $typeA['foreign']['single'][$columnI]['title']) ? $title : 'title'};
+                    $data[$pointer]['_render'][$columnI] =
+                        ($foreign = $entry->foreign($further ?: $columnI))
+                            ? $foreign->title()
+                            : '';
 
                 // If field column type is a multiple foreign key, we use comma-separated titles of related foreign rows
                 if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry) {

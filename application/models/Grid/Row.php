@@ -290,23 +290,25 @@ class Grid_Row extends Indi_Db_Table_Row {
         // Build within-fields WHERE clause
         $wfw = [];
         foreach (ar($withinFields) as $withinField)
-            $wfw []= 'IFNULL(`' . $withinField . '`, 0) = "' . $this->$withinField . '"';
+            $wfw []= "IFNULL(`gr`.`$withinField`, 0) = '{$this->$withinField}'";
 
         // Get ordered fields aliases
-        $fieldA_alias = db()->query('
-            SELECT `g`.`id`, `f`.`alias` 
-            FROM `field` `f`, `grid` `g`
-            WHERE 1 
-                AND `f`.`id` = IF(IFNULL(`g`.`further`, 0) != "0", `g`.`further`, `g`.`fieldId`)
-                AND :p  
-            ORDER BY `g`.`move`
+        $among = db()->query('
+            SELECT 
+              `gr`.`id`,
+              CONCAT(`fd`.`alias`, IFNULL(CONCAT("_", `fu`.`alias`), "")) AS `alias`            
+            FROM `field` `fd`, `grid` `gr`
+              LEFT JOIN `field` `fu` ON (`gr`.`further` = `fu`.`id`)
+            WHERE `fd`.`id` = `gr`.`fieldId`
+              AND :p  
+            ORDER BY `gr`.`move`
         ', $within = im($wfw, ' AND '))->pairs();
 
         // Get current position
-        $currentIdx = array_flip(array_keys($fieldA_alias))[$this->id]; $fieldA_alias = array_values($fieldA_alias);
+        $currentIdx = array_flip(array_keys($among))[$this->id]; $among = array_values($among);
 
         // Do positioning
-        return $this->_position($after, $fieldA_alias, $currentIdx, $within);
+        return $this->_position($after, $among, $currentIdx, $within);
     }
 
     /**

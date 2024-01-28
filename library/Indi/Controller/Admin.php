@@ -597,7 +597,10 @@ class Indi_Controller_Admin extends Indi_Controller {
         $where = t()->scope->WHERE;
 
         // Get grouping field
-        if (t()->section->groupBy) $groupBy = t()->section->foreign('groupBy')->alias;
+        if (t()->section->groupBy) {
+            $groupBy_field = t()->section->foreign('groupBy')->alias;
+            $groupBy_value = Indi::post($groupBy_field);
+        }
 
         // Get tree-column, if exists
         $tree = m()->treeColumn();
@@ -606,23 +609,35 @@ class Indi_Controller_Admin extends Indi_Controller {
         // the one which is at the most bottom of selection is moved at first
         if ($direction === 'down') t()->rows->reverse();
 
-        // Move each row $shift times towards given $direction
-        foreach (t()->rows as $row)
-            for ($i = 0; $i < $shift; $i++) {
+        // If selected rows should be moved into another group
+        // Note: changing group and order at the same time is not currently supported
+        if (strlen($groupBy_value)) {
 
-                // Prepare within-clause
-                $within = [];
-                if ($where) $within []= "($where)";
-                if ($groupBy) $within []= "`$groupBy` = " . db()->quote($row->$groupBy);
-                $within = join(' AND ', $within);
+            // Do move
+            t()->rows->set($groupBy_field, $groupBy_value)->save();
 
-                // Setup $last flag, indicating whether it's a last move() call for $row
-                $last = $i === $shift - 1;
+        // Else
+        } else {
 
-                // Do move
-                if (!$row->move($direction, $within, $last) && !$tree)
-                    break 2;
-            }
+            // Move each row $shift times towards given $direction
+            foreach (t()->rows as $row)
+                for ($i = 0; $i < $shift; $i++) {
+
+                    // Prepare within-clause
+                    $within = [];
+                    if ($where) $within []= "($where)";
+                    if ($groupBy_field) $within []= "`$groupBy_field` = " . db()->quote($row->$groupBy_field);
+                    $within = join(' AND ', $within);
+
+                    // Setup $last flag, indicating whether it's a last move() call for $row
+                    $last = $i === $shift - 1;
+
+                    // Do move
+                    if (!$row->move($direction, $within, $last) && !$tree)
+                        break 2;
+                }
+        }
+
 
         // Get the page of results, that we were at
         $wasPage = t()->scope->page;
@@ -3087,7 +3102,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$this->row->id) $updateAix = true;
 
         // Prepare metadata, related to fileupload fields contents modifications
-        $this->row->files($filefields);
+        t()->row->files($filefields);
 
         // Do pre-save operations
         $this->preSave();
@@ -3823,11 +3838,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // If such a grid column is already there - skip
                 if (t()->grid->gb($fieldR->id, 'fieldId')) continue;
 
-                // Prepare original data
-                $original = $ctor + ['fieldId' => $fieldR->id, 'gridId' => 0];
-
                 // Create grid
-                $gridR = m('grid')->createRow(['original' => $original]);
+                $gridR = m('grid')->new();
+
+                // Prepare original data
+                $gridR->original(array_merge(
+                    $gridR->original(),
+                    $ctor + ['fieldId' => $fieldR->id, 'gridId' => 0]
+                ));
 
                 // Append
                 t()->grid->append($gridR);

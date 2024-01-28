@@ -2,7 +2,7 @@
 class Filter_Row extends Indi_Db_Table_Row {
 
     /**
-     * This method was redefined to provide ability for some filter
+     * This method was redefined to provide ability for some
      * props to be set using aliases rather than ids
      *
      * @param  string $columnName The column key.
@@ -11,10 +11,11 @@ class Filter_Row extends Indi_Db_Table_Row {
      */
     public function __set($columnName, $value) {
 
-        // Provide ability for some filter props to be set using aliases rather than ids
+        // Provide ability for some props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
+            else if ($columnName == 'move') return $this->_system['move'] = $value;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'accessExcept') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
@@ -48,7 +49,7 @@ class Filter_Row extends Indi_Db_Table_Row {
         $ctor = $this->_original;
 
         // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
-        unset($ctor['id'], $ctor['move']);
+        unset($ctor['id']);
 
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('sectionId,fieldId,further') as $arg) unset($ctor[$arg]);
@@ -60,13 +61,17 @@ class Filter_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $fieldR = $this->model()->fields($prop);
+            $fieldR = $this->field($prop);
 
             // Exclude prop, if it has value equal to default value
             if ($fieldR->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
+            // Else if $prop is 'move' - get alias of the filter, that current filter is after,
+            // among filters with same value of `sectionId` prop
+            else if ($prop == 'move') $value = $this->position();
+
             // Exclude `title` prop, if it was auto-created
-            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none'  && !in($prop, $certain))
+            else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
                 unset($ctor[$prop]);
 
             // Else if prop contains keys - use aliases instead
@@ -79,6 +84,42 @@ class Filter_Row extends Indi_Db_Table_Row {
 
         // Return stringified $ctor
         return _var_export($ctor);
+    }
+
+    /**
+     * Get the the alias of the `section2action` entry,
+     * that current `section2action` entry is positioned after
+     * among all `section2action` entries having same `sectionId`
+     * according to the values `move` prop
+     *
+     * @param null|string $after
+     * @param string $withinFields
+     * @return string|Indi_Db_Table_Row
+     */
+    public function position($after = null, $withinFields = 'sectionId') {
+
+        // Build within-fields WHERE clause
+        $wfw = [];
+        foreach (ar($withinFields) as $withinField)
+            $wfw []= "IFNULL(`$withinField`, 0) = '{$this->$withinField}'";
+
+        // Get ordered aliases
+        $among = db()->query('
+            SELECT
+              `fr`.`id`, 
+              CONCAT(`fd`.`alias`, IFNULL(CONCAT("_", `fu`.`alias`), "")) AS `alias`
+            FROM `field` `fd`, `filter` `fr`
+              LEFT JOIN `field` `fu` ON (`fr`.`further` = `fu`.`id`)
+            WHERE `fd`.`id` = `fr`.`fieldId`
+              AND :p  
+            ORDER BY `fr`.`move`
+        ', $within = im($wfw, ' AND '))->pairs();
+
+        // Get current position
+        $currentIdx = array_flip(array_keys($among))[$this->id]; $among = array_values($among);
+
+        // Do positioning
+        return $this->_position($after, $among, $currentIdx, $within);
     }
 
     /**
@@ -136,6 +177,22 @@ class Filter_Row extends Indi_Db_Table_Row {
 
             // Make sure those features are disabled
             $this->zero('allowZeroResult,denyClear,ignoreTemplate,multiSelect,filter', true);
+        }
+    }
+
+    /**
+     *
+     */
+    public function onSave() {
+
+        // Do positioning, if $this->_system['move'] is set
+        if (array_key_exists('move', $this->_system)) {
+
+            // Get entry, that current entry should be moved after
+            $after = $this->_system['move']; unset($this->_system['move']);
+
+            // Do position for current entry to be after entry, specified by $this->_system['move']
+            $this->position($after);
         }
     }
 }

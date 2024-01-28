@@ -52,13 +52,13 @@ class Section2action_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value) {
 
             // Get field
-            $fieldR = m('Section2action')->fields($prop);
+            $fieldR = $this->field($prop);
 
             // Exclude prop, if it has value equal to default value (unless it's `roleIds`)
             if ($fieldR->defaultValue == $value && $prop != 'roleIds' && !in($prop, $certain)) unset($ctor[$prop]);
 
-            // Else if $prop is 'move' - get alias of the field, that current field is after,
-            // among fields with same value of `entityId` prop
+            // Else if $prop is 'move' - get alias of the action, that current action is after,
+            // among actions with same value of `sectionId` prop
             else if ($prop == 'move') $value = $this->position();
 
             // Exclude `title` prop, if it was auto-created
@@ -92,23 +92,22 @@ class Section2action_Row extends Indi_Db_Table_Row {
         // Build within-fields WHERE clause
         $wfw = [];
         foreach (ar($withinFields) as $withinField)
-            $wfw []= '`' . $withinField . '` = "' . $this->$withinField . '"';
+            $wfw []= "IFNULL(`sa`.`$withinField`, 0) = '{$this->$withinField}'";
 
         // Get ordered action aliases
-        $actionA_alias = db()->query('
+        $among = db()->query('
             SELECT `sa`.`id`, `a`.`alias` 
             FROM `action` `a`, `section2action` `sa`
-            WHERE 1 
-                AND `a`.`id` = `sa`.`actionId`
-                AND :p  
+            WHERE `a`.`id` = `sa`.`actionId`
+              AND :p  
             ORDER BY `sa`.`move`
         ', $within = im($wfw, ' AND '))->pairs();
 
         // Get current position
-        $currentIdx = array_flip(array_keys($actionA_alias))[$this->id]; $actionA_alias = array_values($actionA_alias);
+        $currentIdx = array_flip(array_keys($among))[$this->id]; $among = array_values($among);
 
         // Do positioning
-        return $this->_position($after, $actionA_alias, $currentIdx, $within);
+        return $this->_position($after, $among, $currentIdx, $within);
     }
 
     /**
