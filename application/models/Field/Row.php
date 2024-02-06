@@ -457,6 +457,45 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $this->_enforceExistingValuesCompatibility($columnTypeR->type, $defaultValue, $enumsetA);
         }
 
+        // If field's column should be moved within table structure
+        if (array_key_exists('move', $this->_system)) {
+
+            // If system's move-prop is non-falsy
+            if ($after = $this->_system['move']) {
+
+                // Get [alias => columnTypeId] pairs
+                $columnTypeIdA = m($this->entityId)->fields()->col('columnTypeId', false, 'alias');
+
+                // If field, that we are going to move current field after - really exists in the entity
+                if (array_key_exists($after, $columnTypeIdA)) {
+
+                    // If field, that we are going to move current field after - does NOT really exist in the table
+                    if (!$columnTypeIdA[$after]) {
+
+                        // Field aliases array
+                        $aliasA = array_keys($columnTypeIdA);
+
+                        // Find closest field that DOES really exist in the table
+                        do $after = $aliasA[array_search($after, $aliasA) - 1] ?? false; while ($after && !$columnTypeIdA[$after]);
+                    }
+
+                // Else make sure no AFTER-expr is added to sql-query
+                } else $after = false;
+
+            // Else assume it should be added at the top
+            } else $after = 'id';
+
+            // If AFTER-expr should be added to sql query
+            if ($after) {
+
+                // Append AFTER-expr to sql query
+                $sql []= "AFTER $after";
+
+                // Setup system colAFTER-flag indicating that AFTER-expr was already executed within an ALTER TABLE query
+                $this->_system['colAFTER'] = true;
+            }
+        }
+
         // Implode the parts of sql query
         $sql = implode(' ', $sql);
 
@@ -1707,6 +1746,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // If current field does not have underlying db table column - return
         if (!$this->columnTypeId) return;
+
+        // If column have been already moved at the proper position within table structure - return
+        if ($this->_system['colAFTER'] === true) return;
 
         // Get entity, where current field is in
         $model = m($this->entityId); $table = $model->table(); $column = $this->alias;

@@ -812,8 +812,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             '`scope` != ""'
         ];
 
-        // If $event is 'update' or 'reload'
-        if ($event == 'update' || $event == 'reload') {
+        // If $event is 'update', 'reload' or 'delete'
+        if ($event == 'update' || $event == 'reload' || $event === 'delete') {
 
             // Append clause for `entries` column
             $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
@@ -7785,7 +7785,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // Do positioning
-            for ($i = 0; $i < $count; $i++) $this->move($direction, $within);
+            for ($i = 0; $i < $count; $i++) $this->move($direction, $within, $i === $count - 1);
 
             // Return this
             return $this;

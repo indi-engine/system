@@ -1836,7 +1836,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @param string $column
      * @param bool|string $imploded
-     * @param bool $unique
+     * @param bool|string $unique
      * @return array
      */
     public function col($column, $imploded = false, $unique = false) {
@@ -1860,7 +1860,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @param string $column
      * @param bool|string $imploded
-     * @param bool $unique
+     * @param bool|string $unique
      * @return array
      */
     public function column($column, $imploded = false, $unique = false) {
