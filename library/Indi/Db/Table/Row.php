@@ -2418,12 +2418,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Adjust WHERE clause so it surely match existing value
                 if (!$hasModifiedConsiderWHERE) $this->comboDataExistingValueWHERE($foundRowsWhere, $fieldR, $consistence);
 
-                //
-                $foundRowsWhere = $foundRowsWhere ? 'WHERE ' . $foundRowsWhere : '';
+                // Prepend WHERE clause with '`id` > 0' to improve performance as we're using InnoDB tables
+                $foundRowsWhere = '`id` > 0' . rif($foundRowsWhere, ' AND ($1)');
 
                 // Get number of total found rows
                 $found = db()->query(
-                    'SELECT COUNT(`id`) FROM `' . $relatedM->table() . '`' . $foundRowsWhere
+                    "SELECT COUNT(`id`) FROM `{$relatedM->table()}` WHERE $foundRowsWhere"
                 )->cell();
 
                 // If results should be started from selected value but total found rows number if not too great
