@@ -407,7 +407,7 @@ class Indi_Db_Table
         }
 
         // Build the query
-        $sql = 'SELECT ' . ($limit ? $calcFoundRows : '') . '* FROM `' . $this->_table . '`'
+        $sql = 'SELECT * FROM `' . $this->_table . '`'
             . ($where ? ' WHERE ' . $where : '')
             . ($order ? ' ORDER BY ' . $order : '')
             . ($limit ? ' LIMIT ' . $limit : '');
@@ -470,8 +470,11 @@ class Indi_Db_Table
             return max($found);
         }
         
+        // Prepend WHERE clause with '`id` > 0' to improve performance as we're using InnoDB tables
+        $where = "`id` > 0" . rif($where, ' AND ($1)');
+
         // Default logic
-        return db()->query('SELECT FOUND_ROWS()')->cell();
+        return db()->query("SELECT COUNT(*) FROM `$this->_table` WHERE $where")->cell();
     }
 
     /**
