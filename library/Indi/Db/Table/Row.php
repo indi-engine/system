@@ -2418,8 +2418,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Adjust WHERE clause so it surely match existing value
                 if (!$hasModifiedConsiderWHERE) $this->comboDataExistingValueWHERE($foundRowsWhere, $fieldR, $consistence);
 
-                // Prepend WHERE clause with '`id` > 0' to improve performance as we're using InnoDB tables
-                $foundRowsWhere = '`id` > 0' . rif($foundRowsWhere, ' AND ($1)');
+                // Use default WHERE if need - to improve performance as we're using InnoDB tables
+                if (!strlen($foundRowsWhere)) $foundRowsWhere = '`id` > 0';
 
                 // Get number of total found rows
                 $found = db()->query(

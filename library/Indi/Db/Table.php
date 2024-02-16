@@ -400,8 +400,6 @@ class Indi_Db_Table
             $div = $split ? $this->enumset($split)->count() : 1;
             $limit = ($offset / $div) . ($count ? ',' : '') . ($count / $div);
 
-            // the SQL_CALC_FOUND_ROWS flag
-            if (!is_null($page) || !is_null($count)) $calcFoundRows = 'SQL_CALC_FOUND_ROWS ';
         } else {
             $limit = $pgupLast = false;
         }
@@ -470,8 +468,8 @@ class Indi_Db_Table
             return max($found);
         }
         
-        // Prepend WHERE clause with '`id` > 0' to improve performance as we're using InnoDB tables
-        $where = "`id` > 0" . rif($where, ' AND ($1)');
+        // Use default WHERE if need - to improve performance as we're using InnoDB tables
+        if (!strlen($where)) $where = "`id` > 0";
 
         // Default logic
         return db()->query("SELECT COUNT(*) FROM `$this->_table` WHERE $where")->cell();
