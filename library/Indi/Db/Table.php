@@ -469,7 +469,7 @@ class Indi_Db_Table
         }
         
         // Use default WHERE if need - to improve performance as we're using InnoDB tables
-        if (!strlen($where)) $where = "`id` > 0";
+        if (!$where) $where = "`id` > 0";
 
         // Default logic
         return db()->query("SELECT COUNT(*) FROM `$this->_table` WHERE $where")->cell();
