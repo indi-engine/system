@@ -902,7 +902,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     if ($value != $this->model()->fields($columnI)->defaultValue || !$value) {
                         $tpl = '<img src="' . $_ . '" class="i-cell-img">$1';
                         if ($typeA['string'][$columnI]) {
-                            $data[$pointer]['_render'][$columnI] = rif($value, $tpl);
+                            $data[$pointer]['_render'][$columnI] = rif($data[$pointer][$columnI], $tpl);
                         } else if ($typeA['foreign']['single'][$columnI] && !$typeA['enumset'][$columnI]) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI], $tpl);
                         } else if ($typeA['upload'][$columnI]) {
