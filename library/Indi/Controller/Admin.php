@@ -2733,6 +2733,13 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Get grid columns aliases
         $cols = t()->gridFields->column('alias');
 
+        // Get shaded columns
+        $shade = [];
+        if (Indi::demo(false))
+            foreach (t()->gridFields as $field)
+                if ($field->param('shade'))
+                    $shade[$field->alias] = true;
+
         // Build an array containing sql-function calls for each column, that have a summary to be retrieved for
         foreach ($js2sql as $type => $fn)
             if ($summary[$type])
@@ -2768,6 +2775,12 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Convert to integer
         array_walk($summary, function(&$v) {$v += 0;});
+
+        // Apply shade to sensible numeric fields
+        if ($shade)
+            foreach ($summary as $field => $value)
+                if ($shade[$field])
+                    $summary->$field = 1234567;
 
         // Fetch and return calculated summaries
         return $summary;

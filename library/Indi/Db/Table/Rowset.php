@@ -878,8 +878,20 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
                 // If field should be shaded - prevent actual value from being assigned
-                if (isset($typeA['shade'][$columnI]))
-                    if ($value) $data[$pointer][$columnI] = I_PRIVATE_DATA;
+                if (isset($typeA['shade'][$columnI])) {
+                    if ($value) {
+                        if ($typeA['numeric'][$columnI]) {
+                            $data[$pointer]['_render'][$columnI] = number_format(
+                                $data[$pointer][$columnI] = 1234567,
+                                $typeA['price'][$columnI] ? 2 : 0,
+                                '.',
+                                ' '
+                            );
+                        } else {
+                            $data[$pointer][$columnI] = I_PRIVATE_DATA;
+                        }
+                    }
+                }
 
                 // Set _render to be empty if no value
                 if (isset($typeA['foreign']['single'][$columnI]['title']) && !isset($typeA['enumset'][$columnI]) && !$value)
