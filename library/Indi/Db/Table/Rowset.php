@@ -840,7 +840,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // '<a href="/url/for/file/download/">DOCX » 1.25mb</a>'
                 if (isset($typeA['upload'][$columnI])) {
                     $file = $entry->file($columnI);
-                    $data[$pointer]['_render'][$columnI] = $file->link;
+                    $data[$pointer]['_render'][$columnI] = $typeA['shade'][$columnI] ? $file->text : $file->link;
                     $data[$pointer]['_upload'][$columnI]['type'] = $file->type;
                 }
 
