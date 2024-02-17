@@ -162,8 +162,11 @@ class Indi_Trail_Item {
                     $array['row']['_original'][$prop] = $this->row->original($prop);
 
             // If demo-mode is turned On - unset value for each shaded field
-            if (Indi::demo(false)) foreach ($this->fields as $fieldR)
-                if ($fieldR->param('shade')) $array['row'][$fieldR->alias] = '';
+            if (Indi::demo(false))
+                foreach ($this->fields as $fieldR)
+                    if ($fieldR->param('shade'))
+                        if ($fieldR->foreign('elementId')->alias !== 'upload')
+                            $array['row'][$fieldR->alias] = '';
 
             // Collect aliases of all CKEditor-fields
             $ckeFieldA = [];

@@ -22,8 +22,21 @@ class Indi_View_Action_Admin_Row_Form extends Indi_View_Action_Admin_Row {
             if (in($element, 'combo,radio,multicheck,icon')) view()->formCombo($fieldR->alias);
 
             // Prepare file-data for 'upload' element
-            else if ($element == 'upload' && t()->row->abs($fieldR->alias))
-                t()->row->view($fieldR->alias, t()->row->file($fieldR->alias));
+            else if ($element == 'upload' && t()->row->abs($fieldR->alias)) {
+
+                // Get file meta
+                $file = t()->row->file($fieldR->alias);
+
+                // If file exists, but shading is enabled for this field in demo-mode
+                if ($file->src && $fieldR->param('shade') && Indi::demo(false)) {
+
+                    // Spoof file src with I_PRIVATE_DATA
+                    t()->row->{$fieldR->alias} = $file->src = I_PRIVATE_DATA;
+                }
+
+                // Assign into view. todo: rename 'view' to 'render'
+                t()->row->view($fieldR->alias, $file);
+            }
         }
 
         // Return parent's return-value

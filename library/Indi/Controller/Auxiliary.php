@@ -9,38 +9,44 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
      */
     public function downloadAction(){
 
+        // If user is not logged in - flush error
+        if (!admin()) jflush(false, 'Authentication required');
+
         // If 'id' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', uri('id'))) die(I_DOWNLOAD_ERROR_NO_ID);
+        if (!preg_match('/^[0-9]+$/', uri('id'))) jflush(false, I_DOWNLOAD_ERROR_NO_ID);
 
         // If 'field' param is not set or is not an integer
-        if (!preg_match('/^[0-9]+$/', uri('field'))) die(I_DOWNLOAD_ERROR_NO_FIELD);
+        if (!preg_match('/^[0-9]+$/', uri('field'))) jflush(false, I_DOWNLOAD_ERROR_NO_FIELD);
 
         // Get the field
         $fieldR = m('Field')->row(uri('field'));
 
         // If field was not found
-        if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
+        if (!$fieldR) jflush(false, I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
 
         // Get extended info about field
         $fieldR = m($fieldR->entityId)->fields($fieldR->alias);
 
         // If field was not found
-        if (!$fieldR) die(I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
+        if (!$fieldR) jflush(false, I_DOWNLOAD_ERROR_NO_SUCH_FIELD);
 
         // If field is not a file upload field, e.g does not deal with files
-        if ($fieldR->foreign('elementId')->alias != 'upload') die(I_DOWNLOAD_ERROR_FIELD_DOESNT_DEAL_WITH_FILES);
+        if ($fieldR->foreign('elementId')->alias != 'upload') jflush(false, I_DOWNLOAD_ERROR_FIELD_DOESNT_DEAL_WITH_FILES);
+
+        // Prevent download if we're in demo-mode and shade-param is enabled for this field
+        if ($fieldR->param('shade')) Indi::demo();
 
         // Get the row
         $r = m($fieldR->entityId)->row(uri('id'));
 
         // If row was not found
-        if (!$r) die(I_DOWNLOAD_ERROR_NO_SUCH_ROW);
+        if (!$r) jflush(false, I_DOWNLOAD_ERROR_NO_SUCH_ROW);
 
         // Get the file
         list($abs) = glob($r->dir() . $r->id . '_' . $fieldR->alias . '.*');
 
         // If there is no file
-        if (!$abs) die(I_DOWNLOAD_ERROR_NO_FILE);
+        if (!$abs) jflush(false, I_DOWNLOAD_ERROR_NO_FILE);
 
         // Declare an array, for containing downloading file title parts
         $title = [];
@@ -78,7 +84,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
             $type = finfo_file($finfo, $abs);
 
             // If there was an error while getting info about file
-            if (!$type) die(I_DOWNLOAD_ERROR_FILEINFO_FAILED);
+            if (!$type) jflush(false, I_DOWNLOAD_ERROR_FILEINFO_FAILED);
 
             // Close the fileinfo resource
             finfo_close($finfo);

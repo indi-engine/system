@@ -5474,8 +5474,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             'mime' => $mime = Indi::mime($abs),
             'type' => array_shift(explode('/', $mime)),
             'text' => $text = strtoupper($ext) . ' » ' . size2str($size),
-            'href' => $href = PRE . '/auxiliary/download/id/' . $this->id . '/field/' . $this->model()->fields($field)->id . '/',
-            'link' => '<a href="' . $href . '">' . $text . '</a>'
+            'href' => $href = PRE . "/auxiliary/download/id/{$this->id}/field/{$this->model()->fields($field)->id}/",
+            'link' => "<a href=\"$href\">$text</a>"
         ];
 
         // Get more info, using getimagesize/getflashsize functions
