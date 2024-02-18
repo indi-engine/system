@@ -145,20 +145,6 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
     }
 
     /**
-     * Prepend 'ID' as title for value '-1' of defaultSortField
-     *
-     * @param $item
-     */
-    public function adjustGridDataItem(&$item) {
-        if ($item['defaultSortField'] == -1) {
-            $item['_render']['defaultSortField']  = 'ID' . $item['_render']['defaultSortField'];
-            if (isset($item['_richtext']['defaultSortField'][0])) {
-                $item['_richtext']['defaultSortField'][0] = 'ID';
-            }
-        }
-    }
-
-    /**
      * 1.Hide default values for `extendsPhp` and `extendsJs` props, to prevent it from creating a mess in eyes
      * 2.Check php/js-controller files exist, and if yes, check whether it's actual parent class is
      *   as per specified in `extendsPhp`/`extendsJs` prop

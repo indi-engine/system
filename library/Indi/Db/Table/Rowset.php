@@ -790,7 +790,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_render'][$columnI] =
                         ($foreign = $entry->foreign($further ?: $columnI))
                             ? $foreign->title()
-                            : '';
+                            : ($entry->{$further ?: $columnI} == -1
+                                ? 'ID'
+                                : '');
 
                 // If field column type is a multiple foreign key, we use comma-separated titles of related foreign rows
                 if (isset($typeA['foreign']['multiple'][$columnI]['title']) && $entry) {

@@ -925,6 +925,11 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Get the columns, that need to be presented in a spreadsheet
         $_columnA = json_decode(Indi::get()->columns, true);
 
+        // Exclude certain column from export, if need
+        foreach ($_columnA as $idx => $column)
+            if (t()->grid->gb($column['id'])->skipExcel === 'y')
+                unset($_columnA[$idx]);
+
         // Get dataIndex-es
         $dataIndexA = []; $alignA = [];
         foreach (t()->grid->select(array_column($_columnA, 'id')) as $gridR) {

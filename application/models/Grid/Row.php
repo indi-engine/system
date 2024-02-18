@@ -160,9 +160,6 @@ class Grid_Row extends Indi_Db_Table_Row {
             }
         }
 
-        // Unset `width` if current `grid` entry has nested entries
-        if ($this->nested('grid')->count()) unset($ctor['width']);
-
         // Return stringified $ctor
         return _var_export($ctor);
     }
@@ -312,17 +309,9 @@ class Grid_Row extends Indi_Db_Table_Row {
     }
 
     /**
-     * Make sure parent gridcol's width will be adjusted if need
+     * Apply order change
      */
     public function onSave() {
-
-        // If `width` was not affected, or this gridcol is a top-level gridcol
-        if ($this->affected('width') && $this->gridId) {
-
-            // Affect parent gridcol's width
-            $this->foreign('gridId')->width += $this->adelta('width');
-            $this->foreign('gridId')->save();
-        }
 
         // Do positioning, if $this->_system['move'] is set
         if (array_key_exists('move', $this->_system)) {
@@ -332,6 +321,15 @@ class Grid_Row extends Indi_Db_Table_Row {
 
             // Position field for it to be after field, specified by $this->_system['move']
             $this->position($after);
+        }
+
+        // If skipExcel-prop was changed
+        if ($this->affected('skipExcel')) {
+
+            // Apply that change to child entries, recursively
+            foreach ($this->nested('grid') as $nested)
+                if (!$nested->system('disabled'))
+                    $nested->set('skipExcel', $this->skipExcel)->save();
         }
     }
 
