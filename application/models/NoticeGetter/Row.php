@@ -136,7 +136,6 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         Indi::ws([
             'type' => 'notice',
             'mode' => 'menu-qty',
-            'qtyReload' => $this->foreign('noticeId')->qtyReload,
             'noticeId' => $this->noticeId,
             'diff' => $diff,
             'row' => $this->row->id,

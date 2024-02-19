@@ -1,5 +1,49 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function gridNoClipSkipExcelAction() {
+        field('grid', 'sizing', [
+            'title' => 'Width calculation',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'auto',
+            'move' => 'features',
+        ]);
+        enumset('grid', 'sizing', 'auto', ['title' => 'Auto', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('grid', 'sizing', 'noClip', ['title' => 'Not less than cell content', 'move' => 'auto', 'boxIcon' => 'resources/images/icons/fit.png']);
+        field('grid', 'skipExcel', [
+            'title' => 'Exclude from Excel export',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'rowReqIfAffected',
+        ]);
+        enumset('grid', 'skipExcel', 'n', ['title' => 'No', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('grid', 'skipExcel', 'y', ['title' => 'Yes', 'move' => 'n', 'boxIcon' => 'resources/images/icons/excel-deny.png']);
+        field('grid', 'editor', ['move' => 'compose']);
+        if ($_ = field('grid', 'width')) $_->delete();
+        grid('grid', 'sizing', ['gridId' => 'features', 'move' => 'display', 'icon' => 'resources/images/icons/fit.png']);
+        grid('grid', 'skipExcel', ['gridId' => 'features', 'move' => 'jump', 'icon' => 'resources/images/icons/excel-deny.png']);
+        grid('grid', 'rowReqIfAffected', ['move' => 'compose']);
+        if ($_ = field('notice', 'qtyReload')) $_->delete();
+        grid('paramsAll', 'entityId', ['toggle' => 'h', 'move' => '']);
+        grid('paramsAll', 'entityId', ['move' => '']);
+        grid('paramsAll', 'entityId', 'table', ['move' => 'entityId']);
+        grid('paramsAll', 'fieldId', ['move' => 'entityId_table']);
+        grid('paramsAll', 'fieldId', 'alias', ['move' => 'fieldId']);
+        grid('paramsAll', 'cfgField', ['move' => 'fieldId_alias']);
+        grid('paramsAll', 'cfgField', 'alias', ['move' => 'cfgField']);
+        grid('paramsAll', 'cfgValue', ['move' => 'cfgField_alias']);
+        filter('paramsAll', 'entityId', 'fraction', ['move' => '']);
+        filter('paramsAll', 'entityId', ['move' => 'entityId_fraction']);
+        filter('paramsAll', 'fieldId', ['move' => 'entityId']);
+        die('ok');
+    }
     public function redirectMatchAction() {
         $hta = file_get_contents('.htaccess');
         $hta = preg_replace('~^RedirectMatch 404 .*$~m', 'RedirectMatch 404 /(\.git|sql|log)/', $hta);
