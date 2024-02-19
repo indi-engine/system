@@ -240,6 +240,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                     // Run php file to turn on l10n
                     require_once rif($folder, '$1/') . $l10n_meta;
 
+                    // Todo: make fieldToggleL10n calls syncronous
+                    sleep(10);
+
                     // Setup $github flag to true
                     $github = true;
 
