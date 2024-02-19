@@ -1971,21 +1971,15 @@ function grid($section, $field, $ctor = false) {
     // Build WHERE clause
     $w = ['`sectionId` = "' . $sectionId . '"', '`fieldId` = "' . $fieldId . '"'];
 
-    // If $field arg points to existing `field` entry
-    if ($fieldId) {
-
-        // Detect $further
-        if (func_num_args() > 3) {
-            $further = $ctor;
-            $ctor = func_get_arg(3);
-        } else if (func_num_args() == 3 && is_string($ctor)) {
-            $further = $ctor;
-            $ctor = false;
-        }
-
-        // Mind `further` field
-        if ($further) $w [] = 'IFNULL(`further`, 0) = "' . $fieldR->rel()->fields($further)->id . '"';
+    // Detect $further
+    if (func_num_args() > 3) {
+        $further = $ctor; $ctor = func_get_arg(3);
+    } else if (func_num_args() == 3 && is_string($ctor)) {
+        $further = $ctor; $ctor = false;
     }
+
+    // Mind `further` field
+    $w [] = 'IFNULL(`further`, 0) = "' . (isset($further) ? $fieldR->rel()->fields($further)->id : 0) . '"';
 
     // Try to find `grid` entry
     $gridR = m('Grid')->row($w);
@@ -1998,7 +1992,7 @@ function grid($section, $field, $ctor = false) {
     // If `sectionId` and/or `fieldId` prop are not defined within $ctor arg
     // - use values given by $section and $fields args
     if (!is_array($ctor)) $ctor = [];
-    foreach (ar('sectionId,fieldId,alias,further') as $prop)
+    foreach (ar('sectionId,fieldId,further') as $prop)
         if (!array_key_exists($prop, $ctor) && isset($$prop))
             $ctor[$prop] = $$prop;
 
