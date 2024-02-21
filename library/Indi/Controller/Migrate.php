@@ -51,7 +51,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         file_put_contents('data/upload/.htaccess', 'php_value engine off');
         $this->exec('git add .htaccess');
         $this->exec('git add data/upload/.htaccess');
-        $this->exec('git commit -m ".htaccess updated"');
+        $this->exec('git commit -m ".htaccess updated"', '', 'nothing added to commit');
         die('ok');
     }
     public function composeTemplateAction() {
