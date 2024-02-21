@@ -1212,7 +1212,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Else pick existing render or raw value
                 } else {
-                    $render = array_key_exists($alias, $data['_render']) ? $data['_render'][$alias]: $data[$alias];
+                    $render = array_key_exists($alias, $data['_render'] ?? []) ? $data['_render'][$alias]: $data[$alias];
                 }
 
                 // If it's a same field as host field, and we're composing tooltip template,

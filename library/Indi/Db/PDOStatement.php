@@ -57,4 +57,13 @@ class Indi_Db_PDOStatement extends PDOStatement {
     public function groups() {
         return $this->fetchAll(PDO::FETCH_GROUP);
     }
+
+    /**
+     * Shortcut to fetchAll(PDO::FETCH_UNIQUE)
+     *
+     * @return array
+     */
+    public function byid() {
+        return $this->fetchAll(PDO::FETCH_UNIQUE);
+    }
 }

@@ -142,6 +142,15 @@ class Indi_Db_Table
     protected $_setFields = null;
 
     /**
+     * Array of names of tables, that store data physically separated from current table for performance reasons
+     * Each of those tables should have `id` column having one-to-one relationship with `id` column of current table
+     * Currently only very basic support is implemented
+     *
+     * @var string[]
+     */
+    public $_verticalPartitions = [];
+
+    /**
      * Scheme of how any instance of current model/entity can be used as a 'space' within the calendar/schedule
      *
      * @var array
@@ -428,6 +437,27 @@ class Indi_Db_Table
 
         // Fetch data
         $data = db()->query($sql)->fetchAll();
+
+        // Get ids
+        if ($this->_verticalPartitions && ($idA = array_column($data, 'id'))) {
+
+            // Foreach table that is vertical partition for current table
+            foreach ($this->_verticalPartitions as $table) {
+
+                // Itself check
+                if ($table === $this->_table)
+                    throw new Exception("Table $table cannot be the vertical partition for itself");
+
+                // Get data to be used in case if there is no row exists in the partition-table for the current row
+                $blank = m($table)->new()->original();
+
+                // Get [id => [...data...]] pairs
+                $parts = db()->query("SELECT * FROM $table WHERE `id` IN (" . im($idA) .")")->byid();
+
+                // Append partitioned data
+                foreach ($idA as $idx => $id) $data[$idx] += $parts[$id] ?? $blank;
+            }
+        }
 
         // Prepare data for Indi_Db_Table_Rowset object construction
         $data = [
@@ -1077,6 +1107,10 @@ class Indi_Db_Table
                 // For each field check whether it have columnTypeId != 0, and if so, append field alias to columns array
                 foreach ($this->_fields as $field) if ($field->columnTypeId) $columnA[] = $field->alias;
 
+                // Append vertically partitioned columns
+                foreach ($this->_verticalPartitions as $table)
+                    $columnA = array_merge($columnA, m($table)->fields('', 'columns'));
+
                 // Return columns array
                 return $columnA;
             }
@@ -1217,6 +1251,20 @@ class Indi_Db_Table
             // Release memory
             unset($where, $order, $offset);
 
+            // Foreach tables that are vertical partitions for current table
+            foreach ($this->_verticalPartitions as $table) {
+
+                // Itself check
+                if ($table === $this->_table)
+                    throw new Exception("Table $table cannot be the vertical partition for itself");
+
+                // Get part
+                $part = m($table)->row($data['id']) ?? m($table)->new();
+
+                // Append part
+                $data += $part->original();
+            }
+
             // Prepare data for Indi_Db_Table_Row object construction
             $constructData = [
                 'table'    => $this->_table,
@@ -1279,6 +1327,17 @@ class Indi_Db_Table
 
             // Convert null to 0 for ibfk-props
             $event['data'] = $this->ibfkNullTo0($event['data']);
+
+            // Foreach tables that are vertical partitions for current table
+            foreach ($this->_verticalPartitions as $table) {
+
+                // Itself check
+                if ($table === $this->_table)
+                    throw new Exception("Table $table cannot be the vertical partition for itself");
+
+                // Append part
+                $event['data'] += m($table)->row($event['data']['id'])->original();
+            }
 
             // Setup localized value within $row->_language, recognized within given raw data, and return
             // data containing values for certain (current) language only in case of localized field
@@ -1392,9 +1451,25 @@ class Indi_Db_Table
         // If $constructData['original'] is an empty array, we setup it according to model structure
         if (count($constructData['original']) == 0) {
             $constructData['original']['id'] = null;
+
+            // Get partitioned data
+            $part = [];
+
+            // Foreach tables that are vertical partitions for current table
+            foreach ($this->_verticalPartitions as $table) {
+
+                // Itself check
+                if ($table === $this->_table)
+                    throw new Exception("Table $table cannot be the vertical partition for itself");
+
+                // Append part
+                $part += m($table)->new()->original();
+            }
+
+            // Prepare original data
             foreach ($this->fields() as $fieldR)
-                if ($fieldR->columnTypeId)
-                    $constructData['original'][$fieldR->alias] = $fieldR->defaultValue;
+                     if ($fieldR->columnTypeId)                   $constructData['original'][$fieldR->alias] = $fieldR->defaultValue;
+                else if (array_key_exists($fieldR->alias, $part)) $constructData['original'][$fieldR->alias] = $part[$fieldR->alias];
         }
 
         // Get row class name
@@ -1571,11 +1646,24 @@ class Indi_Db_Table
         // Append imploded values from $set array to sql query, or append `id` = NULL expression, if no items in $set
         $sql .= count($setA) ? implode(', ', $setA) : '`id` = NULL';
 
+        // If current table is vertically partitioned it means we'll have to make
+        // multiple INSERTs here, so that we have to wrap those in transaction for data integrity
+        if ($this->_verticalPartitions) db()->begin();
+
         // Run the query
         db()->query($sql);
 
         // Return the id of inserted row
-        return db()->getPDO()->lastInsertId();
+        $data['id'] = db()->getPDO()->lastInsertId();
+
+        // Foreach tables that are vertical partitions for current table - do INSERT as well
+        foreach ($this->_verticalPartitions as $table) m($table)->insert($data);
+
+        // Commit transaction
+        if ($this->_verticalPartitions) db()->commit();
+
+        // Return
+        return $data['id'];
     }
 
     /**
@@ -1642,8 +1730,31 @@ class Indi_Db_Table
             $sql .= ' WHERE ' . $where;
         }
 
-        // Execute query and return number of affected rows
-        return db()->query($sql);
+        // If current table has vertical partitions and WHERE clause is just having `id`
+        if ($this->_verticalPartitions && preg_match('~^`id` = "([0-9]+)"$~', $where, $m)) {
+
+            // We'll have to make multiple UPDATEs here, so that we have to wrap those in transaction for data integrity
+            db()->begin();
+
+            // Run the query
+            if ($setA) $affectedQty = db()->query($sql);
+
+            // Foreach tables that are vertical partitions for current table - do UPDATEs as well
+            foreach ($this->_verticalPartitions as $table)
+                $affectedQty = m($table)->update($data, "`id` = '{$m[1]}'") ?: $affectedQty;
+
+            // Commit transaction
+            db()->commit();
+
+            // Return
+            return $affectedQty;
+
+        // Else
+        } else {
+
+            // Execute query and return number of affected rows
+            return $setA ? db()->query($sql) : false;
+        }
     }
 
     /**
