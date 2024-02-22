@@ -939,7 +939,7 @@ class Indi_Controller {
                 foreach (t()->filters ?: [] as $filter) {
 
                     // If `allowZeroResult` flag is On - skip
-                    if ($filter->allowZeroResult) continue;
+                    if ($filter->allowZeroResult && !$filter->allowZeroResultExceptPrefilteredWith) continue;
 
                     // Filter-field shortcut
                     $field = t()->fields->gb($filter->further ?: $filter->fieldId);

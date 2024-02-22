@@ -81,7 +81,9 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
     public function getConsistence() {
 
         // If filter combo data options are allowed to have zero results - return
-        if ($this->filter->allowZeroResult && $this->filter->allowZeroResult != 2) return;
+        if ($this->filter->allowZeroResult
+            && $this->filter->allowZeroResult != 2
+            && !$this->filter->allowZeroResultExceptPrefilteredWith) return;
 
         // Field shortcut
         $field = $this->getField();
@@ -100,13 +102,24 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
             $primaryWHERE = $this->primaryWHERE();
 
             // Get finalWHERE as array
-            $sw = $this->getController()->finalWHERE($primaryWHERE, null, false);
+            $finalWHERE = $this->getController()->finalWHERE($primaryWHERE, null, false);
 
             // Exclude WHERE clause part, related to current filter
-            unset($sw['filters'][$alias]); if (!$sw['filters']) unset($sw['filters']);
+            unset($finalWHERE['filters'][$alias]); if (!$finalWHERE['filters']) unset($finalWHERE['filters']);
 
-            // Force $finalWHERE to be single-dimension array
-            foreach ($sw as $p => $w) if (is_array($w)) $sw[$p] = im($w, ' AND '); $sw = implode(' AND ', $sw);
+            // Flatten $finalWHERE
+            foreach ($finalWHERE as $p => $w) if (is_array($w)) $finalWHERE[$p] = im($w, ' AND ');
+
+            // Convert to a string
+            $finalWHERE = im($finalWHERE, ' AND ');
+
+            // If filter's values leading to zero results - are allowed except cases when some others
+            // filters are in use, this means it may not be that expensive to calculate values leading
+            // to non-zero results only - so make sure all filters that are required to be in use - are really in use
+            if ($this->filter->allowZeroResult && $this->filter->allowZeroResultExceptPrefilteredWith)
+                foreach ($this->filter->foreign('allowZeroResultExceptPrefilteredWith')->column('alias') as $columnName)
+                    if (!preg_match("~`$columnName`~", $finalWHERE))
+                        return;
 
             // If further-field defined for this filter
             if ($this->filter->further) {
@@ -130,10 +143,11 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
                 )->col();
 
             // Else get the distinct list of possibilities using usual approach
-            } else $in = db()->query('
-              SELECT DISTINCT IFNULL(`'. $alias . '`, 0) FROM `' . $this->distinctFrom($alias, $tbl) .'`' .  (strlen($sw) ? 'WHERE ' . $sw : '')
-            )->col();
-
+            } else {
+                $from = $this->distinctFrom($alias, $tbl);
+                $where = strlen($finalWHERE) ? "WHERE $finalWHERE" : '';
+                $in = db()->query("SELECT DISTINCT IFNULL(`$alias`, 0) FROM `$from` $where")->col();
+            }
             // Setup $m flag/shortcut, indicating whether field is really multi-key,
             // because current value of `storeRelationAbility` may be not same as original,
             // due to filter's single/multi-value mode inversion checkbox
