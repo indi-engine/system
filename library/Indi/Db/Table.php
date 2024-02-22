@@ -1325,9 +1325,6 @@ class Indi_Db_Table
             // Setup row instance
             $row = $this->new();
 
-            // Convert null to 0 for ibfk-props
-            $event['data'] = $this->ibfkNullTo0($event['data']);
-
             // Foreach tables that are vertical partitions for current table
             foreach ($this->_verticalPartitions as $table) {
 
@@ -1336,8 +1333,12 @@ class Indi_Db_Table
                     throw new Exception("Table $table cannot be the vertical partition for itself");
 
                 // Append part
-                $event['data'] += m($table)->row($event['data']['id'])->original();
+                $event['data'] += db()->query("SELECT * FROM $table WHERE `id` = '{$event['data']['id']}'")->fetch() ?: [];
+                //$event['data'] += m($table)->row($event['data']['id'])->original();
             }
+
+            // Convert null to 0 for ibfk-props
+            $event['data'] = $this->ibfkNullTo0($event['data']);
 
             // Setup localized value within $row->_language, recognized within given raw data, and return
             // data containing values for certain (current) language only in case of localized field

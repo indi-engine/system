@@ -567,7 +567,10 @@ class Indi_Controller {
                         )->col();
 
                         // Set up WHERE clause according to value of $multiSelect flag
-                        $where[$found->alias] = db()->sql('FIND_IN_SET(`' . $foreign . '`, :s)', im($idA));
+                        $where[$found->alias] = db()->sql($multiSelect
+                            ? "FIND_IN_SET(`$foreign`, :s)"
+                            : "`$foreign` IN (:p)"
+                        , im($idA));
 
                     // Else set up WHERE clause according to value of $multiSelect flag
                     } else $where[$found->alias] = db()->sql(
