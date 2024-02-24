@@ -413,7 +413,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Flush 'Done' or command history in case of rabbitmq is not enabled
         ini()->rabbitmq->enabled
-            ? jflush(true, 'Done')
+            ? (msg('Done') || jflush(true))
             : jtextarea(true, file_get_contents('log/update.log'));
     }
 

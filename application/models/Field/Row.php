@@ -668,7 +668,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                     : ($storeRelationAbility == 'many'
                         ? 'SET NULL'
                         : 'CASCADE');
-            
+
             return;
         }
 
@@ -700,7 +700,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $this->onDelete = '-';
 
         // Else if it was modified to some other value, which means it's single- or multi-value foreign key
-        } else {
+        } else if ($this->onDelete === '-') {
 
             // Setup onDelete-rule accordingly
             $this->onDelete = $columnTypeR->isEnumset()
