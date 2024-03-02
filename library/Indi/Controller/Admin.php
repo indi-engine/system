@@ -522,6 +522,12 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Do rename
             $_['indiId']->set([$rename[$ui] => Indi::post()->tooltip])->save();
 
+        // If $_POST['after'] is given for a field
+        } else if (isset(Indi::post()->after) && $ui == 'field') {
+
+            // Do field positioning
+            $_['indiId']->set('move', Indi::post()->after)->save();
+
         // Else if editing type if not rename
         } else {
 
