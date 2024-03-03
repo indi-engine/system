@@ -350,3 +350,6 @@ define('I_SCHED_UNABLE_SET_REST', 'スケジュール内に勤務時間外のス
 define('I_MDL_ADMIN_VK_1', 'ページのアドレスは https://vk.com/ で始まる必要があります');
 define('I_MDL_ADMIN_VK_2', 'このページは VK に存在しません');
 define('I_MDL_ADMIN_VK_3', 'VK のこのページはユーザー ページではありません');
+
+define('I_FIELD_DRAG_CLICK', 'ドラッグで並び替え／クリックで詳細表示');
+define('I_ACTION_FORM', '詳細');

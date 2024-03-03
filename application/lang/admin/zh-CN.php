@@ -350,3 +350,6 @@ define('I_SCHED_UNABLE_SET_REST', '无法在时间表内创建非工作时间空
 define('I_MDL_ADMIN_VK_1', '页面地址应以 https://vk.com/ 开头');
 define('I_MDL_ADMIN_VK_2', 'VK中不存在该页面');
 define('I_MDL_ADMIN_VK_3', 'VK 中的此页面不是用户页面');
+
+define('I_FIELD_DRAG_CLICK', '拖动重新排序 / 点击查看详情');
+define('I_ACTION_FORM', '详细信息');

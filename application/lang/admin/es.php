@@ -350,3 +350,6 @@ define('I_SCHED_UNABLE_SET_REST', 'No se puede crear espacio fuera del horario l
 define('I_MDL_ADMIN_VK_1', 'La dirección de la página debe comenzar con https://vk.com/');
 define('I_MDL_ADMIN_VK_2', 'Esta página no existe en VK.');
 define('I_MDL_ADMIN_VK_3', 'Esta página en VK no es una página de usuario.');
+
+define('I_FIELD_DRAG_CLICK', 'Arrastrar para reordenar / Hacer clic para ver detalles');
+define('I_ACTION_FORM', 'Detalles');

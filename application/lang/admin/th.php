@@ -350,3 +350,6 @@ define('I_SCHED_UNABLE_SET_REST', 'ไม่สามารถสร้างพ
 define('I_MDL_ADMIN_VK_1', 'ที่อยู่เพจควรขึ้นต้นด้วย https://vk.com/');
 define('I_MDL_ADMIN_VK_2', 'หน้านี้ไม่มีอยู่ใน VK');
 define('I_MDL_ADMIN_VK_3', 'หน้านี้ใน VK ไม่ใช่หน้าผู้ใช้');
+
+define('I_FIELD_DRAG_CLICK', 'ลากเพื่อเรียงลำดับใหม่/คลิกเพื่อดูรายละเอียด');
+define('I_ACTION_FORM', 'รายละเอียด');

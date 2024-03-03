@@ -351,4 +351,5 @@ define('I_MDL_ADMIN_VK_1', 'Page address should start with https://vk.com/');
 define('I_MDL_ADMIN_VK_2', 'This page does not exist in VK');
 define('I_MDL_ADMIN_VK_3', 'This page in VK is not a user-page');
 
-define('I_FIELD_DRAG_CLICK', 'Drag to reorder / Click to edit');
+define('I_FIELD_DRAG_CLICK', 'Drag to reorder / Click to see details');
+define('I_ACTION_FORM', 'Details');

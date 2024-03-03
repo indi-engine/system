@@ -350,3 +350,6 @@ define('I_SCHED_UNABLE_SET_REST', 'Innerhalb des Zeitplans kann kein Bereich au√
 define('I_MDL_ADMIN_VK_1', 'Die Seitenadresse sollte mit https://vk.com/ beginnen.');
 define('I_MDL_ADMIN_VK_2', 'Diese Seite existiert nicht in VK');
 define('I_MDL_ADMIN_VK_3', 'Diese Seite in VK ist keine Benutzerseite');
+
+define('I_FIELD_DRAG_CLICK', 'Ziehen, um neu zu ordnen / Klicken, um Details zu sehen');
+define('I_ACTION_FORM', 'Details');
