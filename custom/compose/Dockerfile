@@ -49,8 +49,8 @@ COPY composer.json composer.lock .
 RUN chown -R $user:$user ..
 USER $user
 RUN composer install && \
-  sed -i 's~\tpushurl\s*=\s*.*~~' vendor/indi-engine/system/.git/config && \
-  sed -i 's~\tpushurl\s*=\s*.*~~' vendor/indi-engine/client/.git/config && \
+  sed -iE 's~\t(filemode|pushurl)\s*=\s*.*~~I' vendor/indi-engine/client/.git/config && \
+  sed -iE 's~\t(filemode|pushurl)\s*=\s*.*~~I' vendor/indi-engine/system/.git/config && \
   mv vendor ../vendor && \
   mv .idea  ../.idea
 ### </Composer> ##

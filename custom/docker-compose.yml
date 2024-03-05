@@ -29,8 +29,10 @@ services:
       --sql_mode=ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
-      --innodb_buffer_pool_size=2147483648
+      --innodb_buffer_pool_size=4294967296
       --wait_timeout=31536000
+      --max_execution_time=20000
+      --slow_query_log=ON
     ports:
       - "3306:3306"
     environment:
