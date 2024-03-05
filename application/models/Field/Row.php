@@ -994,7 +994,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (preg_match('/INT|SET|ENUM|VARCHAR/', $columnTypeR->type))
             if (!db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias'")->obj()->Key_name)
                 if ($original['storeRelationAbility'] == 'none' && $this->storeRelationAbility != 'none')
-                    sqlIndex($table, $this->alias, ['type' => 'KEY']);
+                    $table === 'sqlIndex'
+                        ? db()->query("ALTER TABLE  `$table` ADD INDEX (`$this->alias`)")
+                        : sqlIndex($table, $this->alias, ['type' => 'KEY']);
 
         // Check if where was a relation, and these was an index, but now there is no relation, - we remove an INDEX index
         if ($original['storeRelationAbility'] != 'none' && $this->storeRelationAbility == 'none')
