@@ -3707,7 +3707,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
-     * Validate all modified fields to ensure all of them have values, convenient with their data-types,
+     * Validate all modified fields to ensure all of them have values, compatible with their data-types,
      * collect their errors in $this->_mismatch array, with field names as keys and return it
      *
      * If there is a need to immediately flush data-types error (if detected) - pass `true` as $mflush arg
@@ -4591,6 +4591,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // If current row relates to an account-model - do additional validation
         $this->_ifRole();
 
+        // If there is UNIQUE index defined for the current table - do additional validation
+        $this->_ifUnique();
+
         // Check each file's type and size
         foreach ($this->_files as $field => $meta) {
             $errorA = [];
@@ -4787,6 +4790,46 @@ class Indi_Db_Table_Row implements ArrayAccess
                 break;
             }
         }
+    }
+
+    /**
+     * Check whether UNIQUE index is set up, and if so - check uniqueness and setup mismatch message
+     * if need here on PHP level, so the step at which that error would occur on MySQL level - is not reached
+     */
+    protected function _ifUnique() {
+
+        // If no index of type UNIQUE defined for the current table - return
+        if (!$unique = $this->model()->unique()) return;
+
+        // If duplication detected - we attach error message at the last modified column among covered by UNIQUE index
+        $msgTarget = '';
+
+        // Foreach column covered by UNIQUE index
+        foreach ($unique as $column) {
+
+            // Prepare WHERE clause
+            $where []= $this->model()->ibfk($column) && !$this->$column
+                ? "`$column` IS NULL"
+                : "`$column` = " . db()->quote($this->$column);
+
+            // If this is a modified column - use it to attach error message for
+            if ($this->isModified($column)) {
+                $msgTarget = $column;
+            }
+        }
+
+        // If no columns (covered by current UNIQUE index) are modified - return
+        if (!$msgTarget) return;
+
+        // If current entry is an existing entry - make sure it will be skipped by duplicates-search
+        if ($this->id) $where []= "`id` != '$this->id'";
+
+        // Stringify WHERE clause for searching duplicates
+        $where = im($where, ' AND ');
+
+        // If same already existing values detected - setup mismatch messages
+        if ($this->model()->row($where))
+            $this->_mismatch[$msgTarget] = sprintf(I_MCHECK_UNQ, $this->$msgTarget, $this->field($msgTarget)->title);
     }
 
     /**

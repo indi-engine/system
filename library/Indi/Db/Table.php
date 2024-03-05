@@ -106,6 +106,13 @@ class Indi_Db_Table
     protected $_refs = [];
 
     /**
+     * Array of column names covered by MySQL UNIQUE index, if defined for current table
+     *
+     * @var array
+     */
+    protected $_unique = [];
+
+    /**
      * Store array of fields, that current model consists from
      *
      * @var array
@@ -261,6 +268,9 @@ class Indi_Db_Table
 
         // Set array of references
         $this->_refs = $config['refs'];
+
+        // Set comma-separated list of columns covered by UNIQUE index, if defined for current table
+        $this->_unique = ar($config['unique']);
 
         // Set info about sums and quantities where instances of current entity should be counted in
         $this->_inQtySum = $config['inQtySum'];
@@ -2680,5 +2690,23 @@ class Indi_Db_Table
 
         // Make the call
         return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+    }
+
+    /**
+     * Get mysql table definition returned by SHOW CREATE TABLE query
+     *
+     * @return string
+     */
+    public function def() {
+        return db()->query("SHOW CREATE TABLE `$this->_table`")->cell(1);
+    }
+
+    /**
+     * Getter function for $this->_unique
+     *
+     * @return array
+     */
+    public function unique() {
+        return $this->_unique;
     }
 }

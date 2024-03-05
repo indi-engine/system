@@ -1744,6 +1744,55 @@ function field($table, $alias, array $ctor = []) {
 }
 
 /**
+ * Short-hand function that allows to manipulate `sqlIndex` entry, identified by $table and $alias args.
+ * If only two args given - function will fetch and return appropriate `sqlIndex` entry (or null, if not found)
+ * If $ctor arg is given and it's a non-empty array - function will create new `sqlIndex` entry, or update existing if found
+ *
+ * @param string|int $table Entity ID or table name
+ * @param string $alias Index name
+ * @param array|bool $ctor Props to be involved in insert/update
+ * @return Field_Row|null
+ */
+function sqlIndex($table, $alias, $ctor = []) {
+
+    // Get `entityId` according to $table arg
+    $entityId = entity($table)->id;
+
+    // If $alias arg is an integer - assume it's a `sqlIndex` entry's `id`, otherwise it's a `alias`
+    $byprop = Indi::rexm('int11', $alias) ? 'id' : 'alias';
+
+    // Try to find `sqlIndex` entry
+    $entry = m('sqlIndex')->row("`entityId` = '$entityId' AND `$byprop` = '$alias'");
+
+    // If $ctor arg is non-false and is not and empty array - return found entry, or null otherwise
+    // This part of this function differs from such part if other similar functions, for example field() function,
+    // because presence of $table and $alias args - is minimum enough for `sqlIndex` entry to be created
+    if (!$ctor && !is_array($ctor)) return $entry;
+
+    // If `entityId` and/or `alias` prop are not defined within $ctor arg
+    // - use values given by $table and $alias args
+    if (!is_array($ctor)) $ctor = [];
+    foreach (ar('entityId,alias') as $prop)
+        if (!array_key_exists($prop, $ctor))
+            $ctor[$prop] = $$prop;
+
+    // If entry was not found - create it
+    $entry ??= m('sqlIndex')->new();
+
+    // Assign `entityId` prop first
+    if ($ctor['entityId'] && $entry->entityId = $ctor['entityId']) unset($ctor['entityId']);
+
+    // If 'columns' is not given by $ctor - use $alias, as there is usable value of comma-separated list of columns
+    if (!$ctor['columns']) $ctor['columns'] = $ctor['alias'];
+
+    // Assign other props and save
+    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+
+    // Return `sqlIndex` entry (newly created, or existing but updated)
+    return $entry;
+}
+
+/**
  * Short-hand function that allows to manipulate `notice` entry, identified by $table and $alias args.
  * If only two args given - function will fetch and return appropriate `notice` entry (or null, if not found)
  * If $ctor arg is given and it's a non-empty array - function will create new `notice` entry, or update existing if found

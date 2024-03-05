@@ -986,30 +986,26 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Check if where was no relation and index, but now relation is exist, - we add an INDEX index
         if (preg_match('/INT|SET|ENUM|VARCHAR/', $columnTypeR->type))
-            if (!db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
-                ->fetch(PDO::FETCH_OBJ)->Key_name)
+            if (!db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias'")->obj()->Key_name)
                 if ($original['storeRelationAbility'] == 'none' && $this->storeRelationAbility != 'none')
-                    db()->query('ALTER TABLE  `' . $table .'` ADD INDEX (`' . $this->alias . '`)');
+                    sqlIndex($table, $this->alias, ['type' => 'KEY']);
 
         // Check if where was a relation, and these was an index, but now there is no relation, - we remove an INDEX index
         if ($original['storeRelationAbility'] != 'none' && $this->storeRelationAbility == 'none')
-            if ($index = db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"')
-                ->fetch(PDO::FETCH_OBJ)->Key_name)
-                db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
+            if ($index = db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias'")->obj()->Key_name)
+                sqlIndex($table, $index)->delete();
 
         // Check if is was not a TEXT column, and it had no FULLTEXT index, but now it is a TEXT column, - we add a FULLTEXT index
         if (m('ColumnType')->row($original['columnTypeId'])->type != 'TEXT')
-            if (!db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
-                AND `Index_type` = "FULLTEXT"')->fetch())
+            if (!db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias' AND `Index_type` = 'FULLTEXT'")->fetch())
                 if ($columnTypeR->type == 'TEXT')
-                    db()->query('ALTER TABLE  `' . $table .'` ADD FULLTEXT (`' . $this->alias . '`)');
+                    sqlIndex($table, $this->alias, ['type' => 'FULLTEXT']);
 
         // Check if is was a TEXT column, and it had a FULLTEXT index, but now it is not a TEXT column, - we remove a FULLTEXT index
         if (m('ColumnType')->row($original['columnTypeId'])->type == 'TEXT')
-            if ($index = db()->query('SHOW INDEXES FROM `' . $table .'` WHERE `Column_name` = "' . $this->alias . '"
-                AND `Index_type` = "FULLTEXT"')->fetch(PDO::FETCH_OBJ)->Key_name)
+            if ($index = db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias' AND `Index_type` = 'FULLTEXT'")->obj()->Key_name)
                 if ($columnTypeR->type != 'TEXT')
-                    db()->query('ALTER TABLE  `' . $table .'` DROP INDEX `' . $index . '`');
+                    sqlIndex($table, $index)->delete();
     }
 
     /**

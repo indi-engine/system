@@ -66,4 +66,11 @@ class Indi_Db_PDOStatement extends PDOStatement {
     public function byid() {
         return $this->fetchAll(PDO::FETCH_UNIQUE);
     }
+
+    /**
+     * Shortcut to fetch(PDO::FETCH_OBJECT)
+     */
+    public function obj() {
+        return $this->fetch(PDO::FETCH_OBJ);
+    }
 }

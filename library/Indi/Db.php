@@ -306,6 +306,17 @@ class Indi_Db {
                     ORDER BY `move`
                 ')->pairs();
 
+            // Get [table => columns] pairs, where columns is a comma-separated list of columns covered by a single
+            // first MySQL UNIQUE index. Sure, there might be multiple UNIQUE indexes defined for a table, each covering
+            // it's own list of columns, but i haven't seen usecases for that so far, so just single UNIQUE index per table
+            // is currently supported by Indi Engine
+            $unique = db()->query('
+                SELECT `TABLE_NAME`, GROUP_CONCAT(`column_name` ORDER BY `seq_in_index`) 
+                FROM `INFORMATION_SCHEMA`.`STATISTICS`
+                WHERE `table_schema` = DATABASE() AND `non_unique` = 0 AND `index_name` != "PRIMARY"
+                GROUP BY `table_name`, `index_name`        
+            ')->pairs();
+
             // Get info about existing control elements
             $elementA = self::$_instance->query('SELECT * FROM `element`')->all();
             $iElementA = []; foreach ($elementA as $elementI)
@@ -537,6 +548,7 @@ class Indi_Db {
                     'fraction' => $entityI['fraction'],
                     'ibfk' => $ibfk[$entityI['table']] ?: [],
                     'refs' => $refs[$entityI['table']] ?: [],
+                    'unique' => $unique[$entityI['table']] ?: '',
                     'inQtySum' => $inQtySumA[$entityI['id']] ?? [],
                     'changeLog' => [
                         'toggle' => $entityI['changeLogToggle'],
