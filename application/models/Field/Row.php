@@ -128,13 +128,16 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     public function delete() {
 
         // Get `enumset`.`fieldId` field
-        $ref = m('enumset')->fields('fieldId');
+        $skip []= m('enumset')->fields('fieldId');
+
+        // Get `sqlIndex`.`columns` field
+        $skip []= m('sqlIndex')->fields('columns');
 
         // Get current refs
         $refs = $this->model()->refs();
 
-        // Setup skip-flag for enumset-ref
-        $refs[$ref->onDelete][$ref->id]['skip'] = true;
+        // Setup skip-flag on each ref we need to skip
+        foreach ($skip as $ref) $refs[$ref->onDelete][$ref->id]['skip'] = true;
 
         // Spoof refs
         $this->model()->refs($refs);
@@ -143,7 +146,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $return = parent::delete();
 
         // Unset skip-flag
-        unset($refs[$ref->onDelete][$ref->id]['skip']);
+        foreach ($skip as $ref) unset($refs[$ref->onDelete][$ref->id]['skip']);
 
         // Restore refs back
         $this->model()->refs($refs);
@@ -171,8 +174,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Delete db table associated column
         $this->deleteColumn();
 
+        // Delete indexes
+        m('sqlIndex')->all("FIND_IN_SET('{$this->_original['id']}', `columns`)")->delete();
+
         // Delete current field from model's fields
-        m($this->entityId)->fields()->exclude($this->id);
+        m($this->entityId)->fields()->exclude($this->_original['id']);
     }
 
     /**

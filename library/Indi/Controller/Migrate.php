@@ -1,5 +1,178 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function sqlindexesAction() {
+        entity('sqlIndex', ['title' => 'MySQL Index', 'fraction' => 'system']);
+        field('sqlIndex', 'entityId', [
+            'title' => 'Entity',
+            'mode' => 'readonly',
+            'storeRelationAbility' => 'one',
+            'relation' => 'entity',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => '',
+        ]);
+        field('sqlIndex', 'columns', [
+            'title' => 'Covered fields',
+            'mode' => 'required',
+            'storeRelationAbility' => 'many',
+            'relation' => 'field',
+            'filter' => 'IFNULL(`columnTypeId`, 0) != 0 AND `entry` = 0',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'entityId',
+        ]);
+        param('sqlIndex', 'columns', 'optionAttrs', 'alias');
+        consider('sqlIndex', 'columns', 'entityId', ['required' => 'y']);
+        field('sqlIndex', 'alias', [
+            'title' => 'Index name',
+            'mode' => 'readonly',
+            'elementId' => 'string',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'columns',
+        ]);
+        field('sqlIndex', 'type', [
+            'title' => 'Index type',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'KEY',
+            'move' => 'alias',
+        ]);
+        enumset('sqlIndex', 'type', 'KEY', ['title' => 'KEY', 'move' => '']);
+        enumset('sqlIndex', 'type', 'UNIQUE', ['title' => 'UNIQUE', 'move' => 'KEY']);
+        enumset('sqlIndex', 'type', 'FULLTEXT', ['title' => 'FULLTEXT', 'move' => 'UNIQUE']);
+        field('sqlIndex', 'visibility', [
+            'title' => 'Visibility',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'VISIBLE',
+            'move' => 'type',
+        ]);
+        enumset('sqlIndex', 'visibility', 'VISIBLE', ['title' => 'VISIBLE', 'move' => '']);
+        enumset('sqlIndex', 'visibility', 'INVISIBLE', ['title' => 'INVISIBLE', 'move' => 'VISIBLE']);
+        entity('sqlIndex', ['titleFieldId' => 'alias']);
+        section('sqlIndexes', [
+            'title' => 'MySQL Indexes',
+            'fraction' => 'system',
+            'sectionId' => 'entities',
+            'extendsPhp' => 'Indi_Controller_Admin_Exportable',
+            'extendsJs' => 'Indi.lib.controller.SqlIndex',
+            'entityId' => 'sqlIndex',
+            'move' => 'inQtySum',
+            'roleIds' => 'dev',
+        ]);
+        section2action('sqlIndexes','index', ['roleIds' => 'dev', 'move' => '']);
+        section2action('sqlIndexes','form', ['roleIds' => 'dev', 'move' => 'index']);
+        section2action('sqlIndexes','save', [
+            'roleIds' => 'dev',
+            'move' => 'form',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('sqlIndexes','delete', [
+            'roleIds' => 'dev',
+            'move' => 'save',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('sqlIndexes','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        grid('sqlIndexes', 'columns', ['move' => '']);
+        grid('sqlIndexes', 'alias', ['move' => 'columns']);
+        grid('sqlIndexes', 'type', ['move' => 'alias']);
+        grid('sqlIndexes', 'visibility', ['move' => 'type', 'editor' => 1]);
+        alteredField('sqlIndexes', 'entityId', ['jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('sqlIndexes', 'columns', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        section('sqlIndexesAll', [
+            'title' => 'All indexes',
+            'fraction' => 'system',
+            'sectionId' => 'configuration',
+            'extendsPhp' => 'Indi_Controller_Admin_Exportable',
+            'extendsJs' => 'Indi.lib.controller.SqlIndex',
+            'entityId' => 'sqlIndex',
+            'move' => 'paramsAll',
+            'roleIds' => 'dev',
+            'groupBy' => 'entityId',
+        ]);
+        section2action('sqlIndexesAll','index', ['roleIds' => 'dev', 'move' => '']);
+        section2action('sqlIndexesAll','form', ['roleIds' => 'dev', 'move' => 'index']);
+        section2action('sqlIndexesAll','save', [
+            'roleIds' => 'dev',
+            'move' => 'form',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('sqlIndexesAll','delete', [
+            'roleIds' => 'dev',
+            'move' => 'save',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        section2action('sqlIndexesAll','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        grid('sqlIndexesAll', 'entityId', ['move' => '']);
+        grid('sqlIndexesAll', 'columns', ['move' => 'entityId']);
+        grid('sqlIndexesAll', 'alias', ['move' => 'columns']);
+        grid('sqlIndexesAll', 'type', ['move' => 'alias']);
+        grid('sqlIndexesAll', 'visibility', ['move' => 'type', 'editor' => 1]);
+        alteredField('sqlIndexesAll', 'entityId', ['mode' => 'required', 'jumpSectionId' => 'entities', 'jumpSectionActionId' => 'form']);
+        alteredField('sqlIndexesAll', 'columns', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        filter('sqlIndexesAll', 'entityId', 'fraction', ['move' => '']);
+        filter('sqlIndexesAll', 'entityId', ['move' => 'entityId_fraction']);
+        filter('sqlIndexesAll', 'type', ['move' => 'entityId']);
+        filter('sqlIndexesAll', 'visibility', ['move' => 'type']);
+
+        foreach (m('entity')->all() as $entityR) {
+            $def = m($entityR->table)->def();
+            preg_match_all('~^\s+(?<type>UNIQUE|FULLTEXT|KEY|)(?: KEY)? `(?<name>[^`]+)` \(`(?<columns>[^)]+)`\)~m', $def, $idxA, PREG_SET_ORDER);
+            foreach ($idxA as $m) {
+                sqlIndex($entityR->table, $m['name'], [
+                    'type' => $m['type'],
+                    'columns' => str_replace('`', '', $m['columns'])
+                ]);
+            }
+        }
+
+        sqlIndex('columnType', 'type', ['type' => 'UNIQUE']);
+        sqlIndex('entity', 'table', ['type' => 'UNIQUE']);
+        sqlIndex('section', 'alias', ['type' => 'UNIQUE']);
+        sqlIndex('element', 'alias', ['type' => 'UNIQUE']);
+        sqlIndex('enumset', 'fieldId,alias', ['type' => 'UNIQUE']);
+        sqlIndex('action', 'alias', ['type' => 'UNIQUE']);
+        sqlIndex('role', 'alias', ['type' => 'UNIQUE']);
+        sqlIndex('admin', 'email', ['type' => 'UNIQUE']);
+        sqlIndex('resize', 'fieldId,alias', ['type' => 'UNIQUE']);
+        sqlIndex('lang', 'alias', ['type' => 'UNIQUE']);
+        sqlIndex('notice', 'entityId,alias', ['type' => 'UNIQUE']);
+        sqlIndex('year', 'title', ['type' => 'UNIQUE']);
+        sqlIndex('month', 'yearId,month', ['type' => 'UNIQUE']);
+        sqlIndex('sqlIndex', 'entityId,alias', ['type' => 'UNIQUE']);
+        sqlIndex('field', 'entityId,entry,alias', ['type' => 'UNIQUE']);
+        sqlIndex('noticeGetter', 'noticeId,roleId', ['type' => 'UNIQUE']);
+        die('ok');
+    }
     public function gridNoClipSkipExcelAction() {
         field('grid', 'sizing', [
             'title' => 'Width calculation',
