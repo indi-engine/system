@@ -85,8 +85,11 @@ class SqlIndex_Row extends Indi_Db_Table_Row {
         // Setup index name
         $this->alias = im($columnA);
 
+        // Setup visibility only if INVISIBLE as it's non-default
+        $visible = rif($this->visibility === 'INVISIBLE', $this->visibility);
+
         // Run query
-        db()->query("ALTER TABLE `$table` ADD $this->type `$this->alias` (`$columns`) $this->visibility");
+        db()->query("ALTER TABLE `$table` ADD $this->type `$this->alias` (`$columns`) $visible");
 
         // Fluent interface
         return $this;
