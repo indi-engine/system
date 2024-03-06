@@ -2353,7 +2353,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $password = $switchTo->password;
         }
 
-        $roleIdWHERE = rif($roleId, ' AND `a`.`roleId` = "$1"');
+        $roleIdWHERE = m($place)->fields('roleId') ? rif($roleId, ' AND `a`.`roleId` = "$1"') : '';
         $roleId = m($place)->fields('roleId') ? '`a`.`roleId`' : '"' . $roleId . '"';
         $adminToggle = m($place)->fields('toggle') ? '`a`.`toggle` = "y"' : '1';
         return db()->query('
