@@ -1,5 +1,15 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function missing1Action(){
+        section2action('fieldsAll','export', [
+            'roleIds' => 'dev',
+            'move' => 'delete',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+        die('ok');
+    }
     public function sqlindexesAction() {
         entity('sqlIndex', ['title' => 'MySQL Index', 'fraction' => 'system']);
         field('sqlIndex', 'entityId', [
