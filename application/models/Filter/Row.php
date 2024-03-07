@@ -178,6 +178,13 @@ class Filter_Row extends Indi_Db_Table_Row {
             // Make sure those features are disabled
             $this->zero('allowZeroResult,denyClear,ignoreTemplate,multiSelect,filter', true);
         }
+
+        // Maintain values
+        if ($this->fieldIsUnzeroed('allowZeroResultExceptPrefilteredWith')) {
+            $this->allowZeroResult = '1';
+        } else if (!$this->allowZeroResult) {
+            $this->zero('allowZeroResultExceptPrefilteredWith', true);
+        }
     }
 
     /**

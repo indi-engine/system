@@ -46,19 +46,30 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'defaultValue' => '0',
             'move' => 'measure',
         ]);
+        field('filter', 'allowZeroResult', ['move' => 'defaultValue']);
         field('filter', 'allowZeroResultExceptPrefilteredWith', [
-            'title' => 'except when filters are in use for fields',
+            'title' => 'If yes, except when filters are in use for fields',
             'storeRelationAbility' => 'many',
             'relation' => 'field',
             'onDelete' => 'RESTRICT',
             'elementId' => 'combo',
             'columnTypeId' => 'VARCHAR(255)',
-            'move' => 'allowZeroResult',
+            'move' => 'defaultValue',
         ]);
         consider('filter', 'allowZeroResultExceptPrefilteredWith', 'sectionId', ['foreign' => 'entityId', 'required' => 'y']);
-        enumset('filter', 'allowZeroResult', 'exceptPrefiltered', ['title' => 'Yes, except when filters are in use for fields', 'move' => '1', 'boxIcon' => 'resources/images/icons/zero-result-ok-except-prefiltered.png']);
-        grid('filter', 'allowZeroResultExceptPrefilteredWith', ['gridId' => 'flags', 'toggle' => 'h', 'move' => 'allowZeroResult']);
-        grid('filter', 'allowZeroResult', ['composeTip' => '{allowZeroResult}{, AllowZeroResultExceptPrefilteredWith}']);
+        grid('filter', 'allowZeroResult', [
+            'gridId' => 'data',
+            'move' => 'defaultValue',
+            'icon' => 'resources/images/icons/zero-result-ok.png',
+            'rename' => 'Показывать все опции, в том числе<br>с пустыми результатами поиска',
+        ]);
+        grid('filter', 'allowZeroResultExceptPrefilteredWith', [
+            'gridId' => 'data',
+            'move' => 'allowZeroResult',
+            'icon' => 'resources/images/icons/zero-result-ok-except-prefiltered.png',
+            'rename' => 'Если да, то кроме случаев когда<br> используются фильтры для полей',
+            'editor' => '1',
+        ]);
         die('ok');
     }
     public function missing1Action(){
