@@ -176,7 +176,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                     $diff = $this->exec("git diff $commit -- $detect", $folder);
 
                     // If new migration-actions detected
-                    if ($actions = Indi::rexma('~<br>\+\s+public function ([a-zA-Z_]+)Action\(~', $diff)[1]) {
+                    if ($actions = Indi::rexma('~<br>\+\s+public function ([a-zA-Z_0-9]+)Action\(~', $diff)[1]) {
 
                         // Reverse list of migrations, as new ones are added at the top of migrations controller class
                         // just to prevent developer to scrolling to the bottom of file having thousands of lines
