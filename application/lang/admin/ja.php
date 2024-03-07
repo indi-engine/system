@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', '画像');
 define('I_FORM_UPLOAD_ASOFF', 'オフィスの文書');
 define('I_FORM_UPLOAD_ASDRW', '絵');
 define('I_FORM_UPLOAD_ASARC', 'アーカイブ');
+define('I_FORM_UPLOAD_ASAUD', 'オーディオ');
 define('I_FORM_UPLOAD_OFEXT', 'タイプがある');
 define('I_FORM_UPLOAD_INFMT', 'フォーマットで');
 define('I_FORM_UPLOAD_HSIZE', 'サイズがある');

@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', '一个图像');
 define('I_FORM_UPLOAD_ASOFF', '办公室文件');
 define('I_FORM_UPLOAD_ASDRW', '一幅画');
 define('I_FORM_UPLOAD_ASARC', '档案');
+define('I_FORM_UPLOAD_ASAUD', '音频');
 define('I_FORM_UPLOAD_OFEXT', '有类型');
 define('I_FORM_UPLOAD_INFMT', '格式上');
 define('I_FORM_UPLOAD_HSIZE', '有尺寸');

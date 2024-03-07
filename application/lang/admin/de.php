@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', 'ein Bild');
 define('I_FORM_UPLOAD_ASOFF', 'ein Bürodokument');
 define('I_FORM_UPLOAD_ASDRW', 'eine Zeichnung');
 define('I_FORM_UPLOAD_ASARC', 'ein Archiv');
+define('I_FORM_UPLOAD_ASAUD', 'ein Audiodateien');
 define('I_FORM_UPLOAD_OFEXT', 'Typ haben');
 define('I_FORM_UPLOAD_INFMT', 'im Format');
 define('I_FORM_UPLOAD_HSIZE', 'Größe haben');

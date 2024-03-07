@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', 'รูปภาพ');
 define('I_FORM_UPLOAD_ASOFF', 'เอกสารสำนักงาน');
 define('I_FORM_UPLOAD_ASDRW', 'ภาพวาด');
 define('I_FORM_UPLOAD_ASARC', 'ที่เก็บถาวร');
+define('I_FORM_UPLOAD_ASAUD', 'เสียง');
 define('I_FORM_UPLOAD_OFEXT', 'มีประเภท');
 define('I_FORM_UPLOAD_INFMT', 'ในรูปแบบ');
 define('I_FORM_UPLOAD_HSIZE', 'มีขนาด');

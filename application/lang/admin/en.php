@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', 'an image');
 define('I_FORM_UPLOAD_ASOFF', 'an office document');
 define('I_FORM_UPLOAD_ASDRW', 'a drawing');
 define('I_FORM_UPLOAD_ASARC', 'an archive');
+define('I_FORM_UPLOAD_ASAUD', 'an audio');
 define('I_FORM_UPLOAD_OFEXT', 'have type');
 define('I_FORM_UPLOAD_INFMT', 'in format');
 define('I_FORM_UPLOAD_HSIZE', 'have size');

@@ -152,6 +152,7 @@ define('I_FORM_UPLOAD_ASIMG', 'изображением');
 define('I_FORM_UPLOAD_ASOFF', 'документом');
 define('I_FORM_UPLOAD_ASDRW', 'графическим макетом');
 define('I_FORM_UPLOAD_ASARC', 'архивом');
+define('I_FORM_UPLOAD_ASAUD', 'аудио');
 define('I_FORM_UPLOAD_OFEXT', 'иметь расширение');
 define('I_FORM_UPLOAD_INFMT', 'в формате');
 define('I_FORM_UPLOAD_HSIZE', 'иметь размер');

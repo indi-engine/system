@@ -4689,6 +4689,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             'office'    => ['txt' => I_FORM_UPLOAD_ASOFF, 'ext' => 'doc,pdf,docx,xls,xlsx,txt,odt,ppt,pptx'],
             'draw'      => ['txt' => I_FORM_UPLOAD_ASDRW, 'ext' => 'psd,ai,cdr'],
             'archive'   => ['txt' => I_FORM_UPLOAD_ASARC, 'ext' => 'zip,rar,7z,gz,tar'],
+            'audio'     => ['txt' => I_FORM_UPLOAD_ASAUD, 'ext' => 'wav,mp3,m4a,flac,wma,aac,aiff,ogg,pcm,cda,mp4,m4'],
         ];
 
         // Get the array of type-groups

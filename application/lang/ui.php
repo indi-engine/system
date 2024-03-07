@@ -70,6 +70,7 @@ field('notice', 'tplEvtSubj')->toggleL10n('qy', $lang, false);
 field('notice', 'tplEvtBody')->toggleL10n('qy', $lang, false);
 field('noticeGetter', 'toggle')->toggleL10n('qy', $lang, false);
 field('noticeGetter', 'criteriaRelyOn')->toggleL10n('qy', $lang, false);
+field('noticeGetter', 'wsmsg')->toggleL10n('qy', $lang, false);
 field('role', 'title')->toggleL10n('qy', $lang, false);
 field('noticeGetter', 'email')->toggleL10n('qy', $lang, false);
 field('noticeGetter', 'vk')->toggleL10n('qy', $lang, false);

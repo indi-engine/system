@@ -1,5 +1,66 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function missing2Action() {
+        field('notice', 'tplIncAudio', ['title' => 'Звук', 'elementId' => 'upload', 'move' => 'tplIncBody']);
+        param('notice', 'tplIncAudio', 'allowTypes', 'audio');
+        field('noticeGetter', 'wsmsg', [
+            'title' => 'Сообщение сбоку / WebSocket',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'y',
+            'move' => 'method',
+        ]);
+        enumset('noticeGetter', 'wsmsg', 'y', ['title' => 'Да', 'move' => '', 'boxColor' => '120#00FF00']);
+        enumset('noticeGetter', 'wsmsg', 'n', ['title' => 'Нет', 'move' => 'y', 'boxColor' => '000#D3D3D3']);
+        field('noticeGetter', 'noticeId', ['move' => '']);
+        field('noticeGetter', 'roleId', ['move' => 'noticeId']);
+        field('noticeGetter', 'toggle', ['move' => 'roleId']);
+        field('noticeGetter', 'getters', ['move' => 'toggle']);
+        field('noticeGetter', 'criteriaRelyOn', ['move' => 'getters']);
+        field('noticeGetter', 'criteriaInc', ['move' => 'criteriaRelyOn']);
+        field('noticeGetter', 'criteriaEvt', ['move' => 'criteriaInc']);
+        field('noticeGetter', 'criteriaDec', ['move' => 'criteriaEvt']);
+        field('noticeGetter', 'method', ['move' => 'criteriaDec']);
+        field('noticeGetter', 'wsmsg', ['move' => 'method']);
+        field('noticeGetter', 'title', ['move' => 'wsmsg']);
+        field('noticeGetter', 'email', ['move' => 'title']);
+        field('noticeGetter', 'vk', ['move' => 'email']);
+        field('noticeGetter', 'sms', ['move' => 'vk']);
+        field('noticeGetter', 'http', ['move' => 'sms']);
+        field('noticeGetter', 'features', ['move' => 'http']);
+        field('noticeGetter', 'getters2', ['move' => 'features']);
+        grid('noticeGetters', 'features', ['move' => 'getters']);
+        grid('noticeGetters', 'http', ['gridId' => 'features', 'move' => 'method', 'editor' => '1']);
+        grid('noticeGetters', 'method', ['gridId' => 'features', 'move' => 'wsmsg', 'rename' => 'Дублировать']);
+        grid('noticeGetters', 'email', ['gridId' => 'method', 'move' => '']);
+        grid('noticeGetters', 'vk', ['gridId' => 'method', 'move' => 'email']);
+        grid('noticeGetters', 'sms', ['gridId' => 'method', 'move' => 'vk']);
+        grid('noticeGetters', 'wsmsg', ['gridId' => 'features', 'move' => '', 'rename' => 'WS']);
+        cfgField('element', 'number', 'shade', [
+            'title' => 'Shade',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'measure',
+        ]);
+        field('filter', 'allowZeroResultExceptPrefilteredWith', [
+            'title' => 'except when filters are in use for fields',
+            'storeRelationAbility' => 'many',
+            'relation' => 'field',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'allowZeroResult',
+        ]);
+        consider('filter', 'allowZeroResultExceptPrefilteredWith', 'sectionId', ['foreign' => 'entityId', 'required' => 'y']);
+        enumset('filter', 'allowZeroResult', 'exceptPrefiltered', ['title' => 'Yes, except when filters are in use for fields', 'move' => '1', 'boxIcon' => 'resources/images/icons/zero-result-ok-except-prefiltered.png']);
+        grid('filter', 'allowZeroResultExceptPrefilteredWith', ['gridId' => 'flags', 'toggle' => 'h', 'move' => 'allowZeroResult']);
+        grid('filter', 'allowZeroResult', ['composeTip' => '{allowZeroResult}{, AllowZeroResultExceptPrefilteredWith}']);
+        die('ok');
+    }
     public function missing1Action(){
         section2action('fieldsAll','export', [
             'roleIds' => 'dev',
