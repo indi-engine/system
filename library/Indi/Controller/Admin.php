@@ -3094,7 +3094,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $data[$possibleI] = Indi::post($possibleI);
 
         // Unset 'move' key from data, because 'move' is a system field, and it's value will be set up automatically
-        unset($data['move']);
+        if (!is_a($this, 'Indi_Controller_Admin_Exportable') || !$data['move']) unset($data['move']);
 
         // If there was disabled fields defined for current section, we check if default value was additionally set up
         // and if so - assign that default value under that disabled field alias in $data array, or, if default value
