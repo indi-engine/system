@@ -491,7 +491,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $type = param('instance-type')->cfgValue;
 
         // Prompt for filename
-        $prompt = $prompt ?? $this->prompt('Please specify db dump filename to be created in sql/ directory', [[
+        $prompt = $prompt ?? $this->prompt('Please specify db dump filename to be <strong>exported</strong> in sql/ directory', [[
             'xtype' => 'textfield',
             'name' => 'dump',
             'value' => "custom-$type.sql.gz"
@@ -562,7 +562,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $type = param('instance-type')->cfgValue;
 
         // Prompt for filename
-        $prompt = $this->prompt('Please specify db dump filename to be imported from sql/ directory', [[
+        $prompt = $this->prompt('Please specify db dump filename to be <strong>imported</strong> from sql/ directory', [[
             'xtype' => 'textfield',
             'name' => 'dump',
             'value' => "custom-$type.sql.gz"
