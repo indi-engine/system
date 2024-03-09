@@ -1575,7 +1575,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Else
             } else if (!array_key_exists($mlfI, $batch))
                 foreach ($json[$mlfI] as $lang => &$holder)
-                    $holder = $lang == ini('lang')->admin ? $data[$mlfI] : $this->_language[$mlfI][$lang];
+                    $holder = $lang == ini('lang')->admin ? $data[$mlfI] : ($this->_language[$mlfI][$lang] ?? '');
 
             // Get JSON
             $data[$mlfI] = json_encode($json[$mlfI], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT);
