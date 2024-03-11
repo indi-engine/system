@@ -7715,7 +7715,20 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (func_num_args() == 0) return $this->_language;
 
         // If only $prop arg given - return existing translations for certain prop
-        if (func_num_args() == 1) return $this->_language[$prop];
+        if (func_num_args() == 1) {
+
+            // If $prop as is array
+            if (is_array($prop)) {
+
+                // Just spoof the value of $this->_language
+                $this->_language = $prop;
+
+                // Fluent interface
+                return $this;
+
+            // Else return translations for the given $prop
+            } else return $this->_language[$prop];
+        }
 
         // If $prop and $lang args given - return certain translation for certain prop
         if (func_num_args() == 2) {

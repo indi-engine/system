@@ -1384,7 +1384,7 @@ class Indi_Db_Table
             ]);
 
             // Get value of $row->_language based on localized props found within original data
-            $language['original'] = $row->language();
+            $language['original'] = $row->language(); $row->language([]);
 
             // Modified data can also contain json-encoded translations for modified fields, and if so
             // we append those translations into $row->_language along with getting return value containing
@@ -1393,14 +1393,14 @@ class Indi_Db_Table
 
             // Detect translations coming with modified data and missing in original data
             // by excluding original translations from current translations
-            $language['modified'] = array_diff_key($row->language(), $language['original']);
+            $language['modified'] = $row->language(); $row->language($language['original']);
 
             // If detected, setup empty translations for modified fields inside $row->_language
             // to correctly compare modified translations with original to detect the language
             // for which translation was set up at least
             foreach($language['modified'] as $mlf => $l10n)
                 foreach (array_keys($l10n) as $lang)
-                    $row->language($mlf, $lang, '');
+                    $row->language($mlf, $lang,$language['original'][$mlf][$lang] ?? '');
 
             // Foreach localized prop
             if ($modified) foreach ($row->language() as $prop => $byLang_original) {
