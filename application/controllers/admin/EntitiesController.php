@@ -487,6 +487,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Check sql/ directory is writable
         if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
 
+        // Temporarily set HOME env, if not set or not writable
+        if (!getenv('HOME') || !is_writable(getenv('HOME'))) putenv('HOME=' . DOC);
+
         // Get instance type
         $type = param('instance-type')->cfgValue;
 
