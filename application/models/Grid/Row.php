@@ -32,7 +32,7 @@ class Grid_Row extends Indi_Db_Table_Row {
                 if ($value && !Indi::rexm('int11list', $value)) {
 
                     // Get comma-separated list of fields ids
-                    $fieldIds = m(section($this->sectionId)->entityId)->fields($value)->fis();
+                    $fieldIds = m(section($this->sectionId)->entityId)->fields($value, 'rowset')->fis();
 
                     // Get comma-separated list of corresponding grid-cols ids
                     $value = $this->model()->all([
@@ -43,7 +43,7 @@ class Grid_Row extends Indi_Db_Table_Row {
             }
             else if ($columnName == 'formNotHideFieldIds') {
                 if ($value && !Indi::rexm('int11list', $value)) {
-                    $value = m(section($this->sectionId)->entityId)->fields($value)->fis();
+                    $value = m(section($this->sectionId)->entityId)->fields($value, 'rowset')->fis();
                 }
             }
         }
