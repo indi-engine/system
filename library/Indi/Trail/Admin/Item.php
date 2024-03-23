@@ -882,6 +882,24 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
     }
 
     /**
+     * Get array of [fieldId => further / JOINed column data index] pairs
+     * Keys are picked from `grid`.`further` and values are combined as <fieldId-alias>_<further_alias>
+     *
+     * @return array
+     */
+    public function joins() {
+
+        // Get aliases
+        foreach ($this->grid as $gridR)
+            if ($gridR->further)
+                $joinA[$gridR->further]
+                    = $gridR->foreign('fieldId')->alias . '_' . $gridR->foreign('further')->alias;
+
+        // Return joins
+        return $joinA ?? [];
+    }
+
+    /**
      * Get array of [fieldId => column value/tooltip compose template] pairs
      * Keys are picked from `grid`.`further` (if non-zero) or `grid`.`fieldId`
      *

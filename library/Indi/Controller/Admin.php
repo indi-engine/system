@@ -287,6 +287,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'icon' => t()->icons(),
                             'jump' => t()->jumps(),
                             'head' => t()->heads(),
+                            'join' => t()->joins(),
                             'composeVal' => t()->composeTpl('composeVal'),
                             'composeTip' => t()->composeTpl('composeTip'),
                             'color' => t()->scope->color,

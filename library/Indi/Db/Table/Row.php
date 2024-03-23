@@ -748,7 +748,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get aliases of affected fields involved by context
         $dataColumns = []; $renderCfg = ['_system' => []];
         foreach (ar($fieldIds) as $fieldId)
-            if ($field = $this->field($fieldId)->alias) {
+            if ($field = $this->field($fieldId)->alias ?: $scope['join'][$fieldId]) {
                 $dataColumns[] = $field;
                 if ($icon = $scope['icon'][$fieldId]) $renderCfg[$field]['icon'] = $icon;
                 if ($jump = $scope['jump'][$fieldId]) $renderCfg[$field]['jump'] = $jump;
@@ -827,6 +827,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Append clause for `fields` column
                 $where []= 'CONCAT(",", `fields`, ",") REGEXP ",(' . im($fieldIdA_affected, '|') . '),"';
             }
+
+        // Else if $event is 'insert'
+        } else if ($event == 'insert') {
+
+            // Process only rowset panels
+            $where []= '`mode` = "rowset"';
         }
 
         // Fetch matching `realtime` entries
