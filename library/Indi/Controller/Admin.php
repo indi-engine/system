@@ -3218,7 +3218,9 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function affected($phantom = false) {
 
         // Wrap row in a rowset, process it by $this->adjustGridDataRowset(), and unwrap back
-        $this->rowset = m()->createRowset(['rows' => [t()->row ?? m()->new()]]);
+        $row = t()->row ?? m()->new();
+        if ($phantom) $row->set((array) Indi::post());
+        $this->rowset = m()->createRowset(['rows' => [$row]]);
         $this->adjustGridDataRowset();
         $this->row = $this->rowset->at(0);
 
@@ -3518,7 +3520,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->{$action . 'Action'}();
 
             // If new entry is going to be created via grid rather than via form - flush entry template
-            if ($action == 'form' && !t()->row->id && uri()->phantom)
+            if ($action == 'form' && uri()->phantom)
                 jflush(['success' => true, 'phantom' => $this->affected(true)]);
 
         // Else flush an error message
