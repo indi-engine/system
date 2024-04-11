@@ -3219,7 +3219,18 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Wrap row in a rowset, process it by $this->adjustGridDataRowset(), and unwrap back
         $row = t()->row ?? m()->new();
-        if ($phantom) $row->set((array) Indi::post());
+
+        // If $phantom arg is true
+        if ($phantom) {
+
+            // Setup modified data
+            $row->set((array) Indi::post());
+
+            // Setup system index
+            $row->system('index', t()->scope->aix - 1);
+        }
+
+        // Prepare row with adjustments, if need
         $this->rowset = m()->createRowset(['rows' => [$row]]);
         $this->adjustGridDataRowset();
         $this->row = $this->rowset->at(0);
