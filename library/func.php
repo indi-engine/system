@@ -3526,3 +3526,13 @@ function boxtip($html) {
     // Return match
     return $info;
 }
+
+/**
+ * Decode jwt-token
+ *
+ * @param string $jwt_token
+ * @return mixed
+ */
+function jwt_decode(string $jwt_token) {
+    return json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $jwt_token)[1]))));
+}
