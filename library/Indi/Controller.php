@@ -1583,8 +1583,22 @@ class Indi_Controller {
         // Prepare stderr-file path
         $err = "log/$out.stderr";
 
+        // Get temp dir
+        $dir = ini_get('upload_tmp_dir')
+            ?: explode(':', ini_get('open_basedir'))[0]
+            ?? sys_get_temp_dir();
+
+        // Create temporary file
+        $env = tempnam($dir, 'pipe');
+
+        // Fill temporary file with current state
+        file_put_contents($env, json_encode([
+            '_SERVER' => $_SERVER,
+            '_COOKIE' => $_COOKIE,
+        ]));
+
         // Prepare command
-        $cmd = "php indi -d $uri 2> $err";
+        $cmd = "php indi -d $uri \"$env\" 2> $err";
 
         // Start service
         $out = WIN ? pclose(popen($cmd, "r")) : `$cmd &`;
