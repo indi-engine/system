@@ -3593,5 +3593,5 @@ function refresh(string $panel, ...$args) {
     foreach ($args as $index => $value) $where = str_replace('{' . $index . '}', $value, $where);
 
     // Refresh data and publish via websocket into recipients' UIs identified by $where clause
-    ws([$panel => forward_static_call_array(['panel', $panel], $args)], $where);
+    ws(['panel' => forward_static_call_array(['panel', $panel], $args)], $where);
 }
