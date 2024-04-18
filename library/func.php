@@ -3536,3 +3536,62 @@ function boxtip($html) {
 function jwt_decode(string $jwt_token) {
     return json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $jwt_token)[1]))));
 }
+
+/**
+ * Publish given $data over websocket to users' UIs contexts identified by $target
+ *
+ * @param array $data Data to be published
+ * @param string $target WHERE clause to identify `realtime`-entries
+ */
+function ws(array $data, string $target) {
+
+    // If rabbitmq is not enabled
+    if (!ini()->rabbitmq->enabled) return;
+
+    // Start building WHERE clause
+    $where = ['`type` = "context"', $target];
+
+    // Fetch matching `realtime` entries
+    $realtimeRs = m('realtime')->all($where);
+
+    // Pull foreign data for `realtimeId` key
+    $realtimeRs->foreign('realtimeId');
+
+    // Foreach
+    foreach ($realtimeRs as $realtimeR) {
+
+        // Get channel
+        $channel = $realtimeR->foreign('realtimeId')->token;
+
+        // Get context
+        $context = $realtimeR->token;
+
+        // Setup data to be picked by certain context (e.g. controller's action) within a certain channel (e.g. browser tab)
+        $byChannel[$channel][$context] = $data;
+    }
+
+    // Send data to each channel
+    if ($byChannel) foreach ($byChannel as $channel => $byContext) Indi::ws([
+        'type' => 'realtime',
+        'to' => $channel,
+        'data' => $byContext
+    ]);
+}
+
+/**
+ * Prepare fresh data for the given $panel and publish via websocket into recipients' UIs
+ *
+ * @param string $panel
+ * @param ...$args
+ */
+function refresh(string $panel, ...$args) {
+
+    // Get WHERE clause for the panel
+    $where = panel::$location[$panel];
+
+    // If WHERE clause contains {0}, {1}, {2} etc. placeholders - replace with args
+    foreach ($args as $index => $value) $where = str_replace('{' . $index . '}', $value, $where);
+
+    // Refresh data and publish via websocket into recipients' UIs identified by $where clause
+    ws([$panel => forward_static_call_array(['panel', $panel], $args)], $where);
+}
