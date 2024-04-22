@@ -155,8 +155,10 @@ class Grid_Row extends Indi_Db_Table_Row {
                 else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
 
                 // Export other things
-                else if (in($prop, 'formMoreGridIds,formNotHideFieldIds'))
-                    $value = $this->foreign($prop)->col('alias', true);
+                else if (in($prop, 'formMoreGridIds,formNotHideFieldIds')) {
+                    $foreign = $value = $this->foreign($prop);
+                    $value = $foreign ? $foreign->col('alias', true) : '';
+                }
             }
         }
 
