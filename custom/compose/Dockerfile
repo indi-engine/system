@@ -1,7 +1,7 @@
-FROM debian:11-slim
+FROM debian:12-slim
 
 ## <Misc> ##
-RUN apt-get update && apt-get install -fy mc curl wget lsb-release
+RUN apt-get update && apt-get install -fy mc curl wget lsb-release cron
 ## </Misc> ##
 
 ## <User> ##
@@ -44,7 +44,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 ## </GitHub CLI>
 
 ## <Composer> ##
-RUN apt -y install composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+  php composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=2.0.9 && \
+  php -r "unlink('composer-setup.php');"
 COPY composer.json composer.lock .
 RUN chown -R $user:$user ..
 USER $user
