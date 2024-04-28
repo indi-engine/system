@@ -49,7 +49,7 @@ cp /usr/bin/mysql_client_binaries/* /usr/bin/
 # Setup crontab
 env | grep -E "(MYSQL|RABBITMQ)_HOST|GIT_COMMIT_(NAME|EMAIL)|DOC" >> /etc/environment
 jobs='compose/crontab'
-sed -i "s~\$DOC~$DOC~" $jobs && crontab -u $user $jobs && $run 'git checkout $jobs'
+sed -i "s~\$DOC~$DOC~" $jobs && crontab -u $user $jobs && $run 'git checkout '$jobs
 service cron start
 
 # Start apache process
