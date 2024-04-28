@@ -10,10 +10,12 @@ RUN usermod -s /bin/bash $user
 ## </User> ##
 
 ## <Apache> ##
+ARG DOC
+ENV DOC $DOC
 RUN apt-get install -y apache2
 WORKDIR /etc/apache2
 RUN echo "ServerName indi-engine"      >> apache2.conf  && \
-    echo "<Directory /var/www/html>"   >> apache2.conf  && \
+    echo "<Directory $DOC>"            >> apache2.conf  && \
     echo "  AllowOverride All"         >> apache2.conf  && \
     echo "</Directory>"                >> apache2.conf  && \
     cp mods-available/rewrite.load        mods-enabled/ && \
@@ -22,7 +24,7 @@ RUN echo "ServerName indi-engine"      >> apache2.conf  && \
     cp mods-available/proxy_http.load     mods-enabled/ && \
     cp mods-available/proxy_wstunnel.load mods-enabled/ && \
     echo "export HOME=/var/www"        >> envvars
-WORKDIR /var/www/html
+WORKDIR $DOC
 ## </Apache> ##
 
 ## <PHP> ##
@@ -63,5 +65,5 @@ COPY . .
 RUN chown -R $user .
 ## </IndiEngine> ##
 
-ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
+ENTRYPOINT ["$DOC/docker-entrypoint.sh"]
 EXPOSE 80

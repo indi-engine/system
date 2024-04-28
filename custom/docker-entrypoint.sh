@@ -46,5 +46,10 @@ if [ -f "$pid_file" ]; then rm "$pid_file" && echo "Apache old pid-file removed"
 # Copy 'mysql' and 'mysqldump' binaries to /usr/bin, to make it possible to restore/backup the whole database as sql-file
 cp /usr/bin/mysql_client_binaries/* /usr/bin/
 
+# Install crontab
+env | grep -E "(MYSQL|RABBITMQ)_HOST|GIT_COMMIT_(NAME|EMAIL)|DOC" >> /etc/environment
+crontab -u $user compose/crontab
+service cron start
+
 # Start apache process
 echo "Apache started" && apachectl -D FOREGROUND

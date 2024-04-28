@@ -5,6 +5,8 @@ services:
   apache:
     build:
       dockerfile: compose/Dockerfile
+      args:
+        - DOC=${DOC}
     ports:
       - "80:80"
     depends_on:
@@ -14,12 +16,13 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      DOC: ${DOC}
       MYSQL_HOST: mysql
       RABBITMQ_HOST: rabbitmq
       GIT_COMMIT_NAME: ${GIT_COMMIT_NAME:-}
       GIT_COMMIT_EMAIL: ${GIT_COMMIT_EMAIL:-}
     volumes:
-      - ./:/var/www/html/
+      - ./:${DOC}/
       - mysql_client_binaries:/usr/bin/mysql_client_binaries
 
   mysql:
