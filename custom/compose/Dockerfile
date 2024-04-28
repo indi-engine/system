@@ -65,5 +65,5 @@ COPY . .
 RUN chown -R $user .
 ## </IndiEngine> ##
 
-ENTRYPOINT ["$DOC/docker-entrypoint.sh"]
+ENTRYPOINT $DOC/docker-entrypoint.sh
 EXPOSE 80
