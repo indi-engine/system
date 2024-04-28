@@ -1,7 +1,7 @@
 FROM debian:12-slim
 
 ## <Misc> ##
-RUN apt-get update && apt-get install -fy mc curl wget lsb-release cron
+RUN apt-get update && apt-get install -fy mc curl wget lsb-release cron certbot python3-certbot-apache
 ## </Misc> ##
 
 ## <User> ##
