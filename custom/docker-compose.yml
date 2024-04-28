@@ -20,6 +20,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       GIT_COMMIT_NAME: ${GIT_COMMIT_NAME:-}
       GIT_COMMIT_EMAIL: ${GIT_COMMIT_EMAIL:-}
+      LETS_ENCRYPT_DOMAIN: ${LETS_ENCRYPT_DOMAIN:-}
     volumes:
       - ./:${DOC}/
       - mysql_client_binaries:/usr/bin/mysql_client_binaries

@@ -46,6 +46,18 @@ if [ -f "$pid_file" ]; then rm "$pid_file" && echo "Apache old pid-file removed"
 # Copy 'mysql' and 'mysqldump' binaries to /usr/bin, to make it possible to restore/backup the whole database as sql-file
 cp /usr/bin/mysql_client_binaries/* /usr/bin/
 
+# Obtain Let's Encrypt certificate, if LE_DOMAIN env is given:
+# 1.Start apache in background to make certbot challenge possible
+# 2.Obtain certificate
+# 3.Stop apache in backgrond
+# 4.Setup cron job for certificate renewal check
+if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
+  service apache2 start
+  certbot --apache -n -d $LETS_ENCRYPT_DOMAIN -m $GIT_COMMIT_EMAIL --agree-tos
+  service apache2 stop
+  echo "0 */12 * * * certbot renew" | crontab -
+fi
+
 # Setup crontab
 env | grep -E "(MYSQL|RABBITMQ)_HOST|GIT_COMMIT_(NAME|EMAIL)|DOC" >> /etc/environment
 jobs='compose/crontab'
