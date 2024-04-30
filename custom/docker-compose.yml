@@ -23,6 +23,7 @@ services:
       LETS_ENCRYPT_DOMAIN: ${LETS_ENCRYPT_DOMAIN:-}
     volumes:
       - ./:${DOC}/
+      - mysql_server_data:/var/lib/mysql
       - mysql_client_binaries:/usr/bin/mysql_client_binaries
 
   mysql:
@@ -50,6 +51,7 @@ services:
       - ./compose/mysql/docker-entrypoint.sh:/usr/local/bin/custom-entrypoint.sh:ro
       - ./sql/:/docker-entrypoint-initdb.d/custom/
       - ./.git/config:/docker-entrypoint-initdb.d/.gitconfig:ro
+      - mysql_server_data:/var/lib/mysql
       - mysql_client_binaries:/usr/bin/volumed
     healthcheck:
       test: mysqladmin ping && [ -f /var/lib/mysql/init.done ]
@@ -71,4 +73,5 @@ services:
     command: rabbitmq-server
 
 volumes:
+  mysql_server_data:
   mysql_client_binaries:
