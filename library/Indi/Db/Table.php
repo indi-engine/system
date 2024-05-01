@@ -1470,12 +1470,12 @@ class Indi_Db_Table
         // Prepare data for construction
         $constructData = [
             'table'   => $this->_table,
-            'original'     => is_array($input['original']) ? $input['original'] : [],
-            'modified' => is_array($input['modified']) ? $input['modified'] : [],
-            'system' => is_array($input['system']) ? $input['system'] : [],
-            'temporary' => is_array($input['temporary']) ? $input['temporary'] : [],
-            'foreign' => is_array($input['foreign']) ? $input['foreign'] : [],
-            'nested' => is_array($input['nested']) ? $input['nested'] : [],
+            'original'  => is_array($input['original']  ?? null) ? $input['original']  : [],
+            'modified'  => is_array($input['modified']  ?? null) ? $input['modified']  : [],
+            'system'    => is_array($input['system']    ?? null) ? $input['system']    : [],
+            'temporary' => is_array($input['temporary'] ?? null) ? $input['temporary'] : [],
+            'foreign'   => is_array($input['foreign']   ?? null) ? $input['foreign']   : [],
+            'nested'    => is_array($input['nested']    ?? null) ? $input['nested']    : [],
         ];
 
         // If $constructData['original'] is an empty array, we setup it according to model structure
@@ -1619,7 +1619,7 @@ class Indi_Db_Table
      * @param array $data
      * @return string
      */
-    public function insert($data) {
+    public function insert(array $data) {
 
         // Get existing fields
         $fieldRs = $this->fields();
@@ -1632,7 +1632,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
+        if ($data['id'] ?? null) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
@@ -1720,7 +1720,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
+        if ($data['id'] ?? null) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {

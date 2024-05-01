@@ -16,8 +16,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Pull params
         if (!array_key_exists('params', $this->_temporary)) $this->_temporary['params'] = array_merge(
-            Indi_Db::$_cfgValue['default']['element'][$this->elementId] ?: [],
-            Indi_Db::$_cfgValue['certain']['field'][$this->id] ?: []
+            Indi_Db::$_cfgValue['default']['element'][$this->elementId] ?? [],
+            Indi_Db::$_cfgValue['certain']['field'][$this->id] ?? []
         );
     }
 
@@ -196,7 +196,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Delete all files, that were created by usage of current field
      */
-    public function deleteFiles() {
+    public function deleteFiles($field = '') {
 
         // If field has column in db table it means it's not an upload-field, so return
         if ($this->columnTypeId) return;
@@ -1397,7 +1397,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @param bool $deep
      * @return array
      */
-    public function toArray($type = 'current', $deep = true) {
+    public function toArray($type = 'current', $deep = true, $purp = null) {
 
         // If toArray conversion mode is 'current'
         if ($type == 'current') {

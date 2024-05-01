@@ -299,7 +299,6 @@ define('I_ENT_TOGGLE_Y', '打开');
 define('I_ENT_TOGGLE_N', '关掉');
 define('I_ENT_EXTENDS_OTHER', '存在 php-model 的文件，但 %s 被指定为父类');
 
-define('I_GAPI_KEY_REQUIRED', '请在此处指定 API 密钥..');
 define('I_SELECT_CFGFIELD', '选择您要为此字段添加的配置参数');
 define('I_SELECT_PLEASE', '请选择');
 define('I_L10N_TOGGLE_ACTION_Y', '如果您想对操作“%s”进行 %s 本地化，请按“%s”。');

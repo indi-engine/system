@@ -2360,7 +2360,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         return db()->query('
             SELECT
                 `a`.*,
-                `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
+                `a`.`password` IN (IF(' . ($_SESSION['admin'] ?? $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
                 '. $adminToggle . ' AS `adminToggle`,
                 IF(`r`.`entityId`, `r`.`entityId`, 11) as `mid`,
                 `r`.`toggle` = "y" AS `roleToggle`,
@@ -2454,7 +2454,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         else if (!$data['atLeastOneSectionAccessible']) $error = I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS;
 
         // Return error or signin-data
-        return $error ?: $data;
+        return $error ?? $data;
     }
 
     /**
@@ -2566,7 +2566,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // If visitor is a visitor, e.g. he has not signed in yet
-        if (!$_SESSION['admin']) {
+        if ( ! ($_SESSION['admin'] ?? null) ) {
 
             // If 'consider' param is passed within the uri
             if (uri('consider')) {
@@ -2584,7 +2584,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             } else {
 
                 // If he is trying to do that
-                if (Indi::post()->enter && uri('section') == 'index' && uri('action') == 'index') {
+                if (Indi::post('enter') && uri('section') == 'index' && uri('action') == 'index') {
 
                     // If no username given
                     if (!Indi::post()->username) $data = I_LOGIN_ERROR_ENTER_YOUR_USERNAME;
@@ -2600,7 +2600,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Else start a session for user and report that sing-in was ok
                     $allowedA = ['id', 'title', 'email', 'password', 'roleId', 'roleTitle', 'alternate', 'mid'];
-                    foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
+                    foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI] ?? null;
 
                     // Create `realtime` record having `type` = session_id(), if not exists so far
                     Realtime::session();
@@ -2611,7 +2611,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // If user was thrown out from the system, assign a throwOutMsg to view() object, for this message
                 // to be available for picking up and usage as Ext.MessageBox message, as a reason of throw out
-                if ($_SESSION['indi']['throwOutMsg']) {
+                if ($_SESSION['indi']['throwOutMsg'] ?? null) {
                     view()->throwOutMsg = $_SESSION['indi']['throwOutMsg'];
                     unset($_SESSION['indi']['throwOutMsg']);
                 }
@@ -3821,7 +3821,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($menu as &$item) {
 
             // If $item relates to 0-level section, or is not linked to some entity - return
-            if (!$qtyA[$item['id']]) continue;
+            if ( ! ($qtyA[$item['id']] ?? null) ) continue;
 
             // Append each qty to menu item's title
             foreach (array_reverse($qtyA[$item['id']]) as $qtyI)
@@ -4148,7 +4148,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $langA = db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
 
         // Get default/current language
-        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
+        $lang = in($_COOKIE['lang'] ?? null, array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
 
         // Get all languages' versions for 4 constants
         foreach ($langA as &$langI) {
@@ -4183,13 +4183,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($langI['alias'] == $lang && admin(true)) {
                     $const = Indi::rexma('~define\(\'(.*?)\', ?\'(.*?)\'\);~', $php);
                     foreach ($const[2] as &$value) $value = stripslashes($value);
-                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?: []);
+                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?? []);
                 }
             }
         }
 
         // Setup list of possible translations and current/last chosen one
-        return view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?: []);
+        return view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?? []);
     }
 
     /**

@@ -146,12 +146,12 @@ class Indi_Db_Table_Row implements ArrayAccess
     protected function _init(array $config = []) {
         $this->_table = $config['table'];
         $this->_original = $config['original'];
-        $this->_modified = is_array($config['modified']) ? $config['modified'] : [];
-        $this->_affected = is_array($config['affected']) ? $config['affected'] : [];
-        $this->_system = is_array($config['system']) ? $config['system'] : [];
-        $this->_temporary = is_array($config['temporary']) ? $config['temporary'] : [];
-        $this->_foreign = is_array($config['foreign']) ? $config['foreign'] : [];
-        $this->_nested = is_array($config['nested']) ? $config['nested'] : [];
+        $this->_modified  = is_array($config['modified']  ?? null) ? $config['modified']  : [];
+        $this->_affected  = is_array($config['affected']  ?? null) ? $config['affected']  : [];
+        $this->_system    = is_array($config['system']    ?? null) ? $config['system']    : [];
+        $this->_temporary = is_array($config['temporary'] ?? null) ? $config['temporary'] : [];
+        $this->_foreign   = is_array($config['foreign']   ?? null) ? $config['foreign']   : [];
+        $this->_nested    = is_array($config['nested']    ?? null) ? $config['nested']    : [];
 
         // Pick translation
         $this->_original = $this->l10n($this->_original);
@@ -178,7 +178,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         ];
 
         // Pull tarnslations from `queueItem` entries if need
-        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: [] as $field => $l10n)
+        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?? [] as $field => $l10n)
             if (array_key_exists($field, $data))
                 if ($this->_language[$field] = json_decode($l10n[$this->id], true))
                     $data[$field] = $this->_language[$field][ini('lang')->admin];
@@ -562,8 +562,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Backup original data
         $original = $this->_original;
 
-        // Setup $orderAutoSet flag if need
-        if (!$this->_original['id'] && array_key_exists('move', $this->_original) && !$this->move) $orderAutoSet = true;
+        // Setup $orderAutoSet flag
+        $orderAutoSet = !$this->_original['id'] && array_key_exists('move', $this->_original) && !$this->move;
 
         // If current row is an existing row
         if ($this->_original['id']) {
@@ -597,10 +597,13 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup $return variable as a number of affected rows, e.g 1 or 0
             $return = $affected;
 
+            // Set up a $new flag as false, indicating that this is an existing row
+            $new = false;
+
         // Else current row is a new row
         } else {
 
-            // Set up a $new flag, indicating that this will be a new row
+            // Set up a $new flag as true, indicating that this will be a new row
             $new = true;
 
             // Do some needed operations that are required to be done right before row insertion into a database table
@@ -637,7 +640,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Update $this->_language
         foreach ($this->_modified as $prop => $value)
-            if ($this->_language[$prop]) $this->_language[$prop][ini('lang')->admin] = $value;
+            if ($this->_language[$prop] ?? null) $this->_language[$prop][ini('lang')->admin] = $value;
 
         // Empty $this->_modified and $this->_mismatch arrays
         $this->_modified = $this->_mismatch = [];
@@ -1454,7 +1457,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $json[$mlfI] = $jtpl; $json[$mlfI][ini('lang')->admin] = $data[$mlfI];
 
             // Check whether setter-method exists and if yes - remember that
-            if (method_exists($this, $setter = 'set' . ucfirst($mlfI)) && !ini()->lang->migration) $setterA[$mlfI] = $setter;
+            if (method_exists($this, $setter = 'set' . ucfirst($mlfI)) && !(ini()->lang->migration ?? null)) $setterA[$mlfI] = $setter;
 
             // Else if value should be translated - collect such values for further batch translate
             else if (!$this->id || $this->field($mlfI)->param('refreshL10nsOnUpdate')) $batch[$mlfI] = $data[$mlfI];
@@ -1549,8 +1552,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Temporary spoof values within $this->_modified for localized fields, as they may be involved by setters
                     $this->_modified = array_merge(
                         $modified,
-                        $resultByLang[$lang] ?: [],
-                        $resultBySetter[$lang] ?: []
+                        $resultByLang[$lang] ?? [],
+                        $resultBySetter[$lang] ?? []
                     );
 
                     // If current language is not the same we're going to call setter for - spoof modified with existing translation
@@ -1944,7 +1947,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function delete() {
 
         // If deletion of this entry is restricted - throw Indi_Db_DeleteException
-        if (!$this->_system['skipDeletionRESTRICTedCheck']
+        if (!($this->_system['skipDeletionRESTRICTedCheck'] ?? null)
             && $ref = $this->isDeletionRESTRICTed()) {
 
             // Prepare msg
@@ -3015,7 +3018,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // Save foreign row within a current row under key name, and return it
-            return $aux ? $foreign : $this->_foreign[$key] = $foreign;
+            return isset($aux) ? $foreign : $this->_foreign[$key] = $foreign;
         }
     }
 
@@ -3453,7 +3456,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // Convert $where to array
-            $where = isset($where) && is_array($where) ? $where : (strlen($where) ? [$where] : []);
+            $where = (isset($where) && is_array($where)) ? $where : (strlen($where) ? [$where] : []);
 
             // If connector field store relation ability is multiple
             if (m($table)->fields($connector)->storeRelationAbility == 'many')
@@ -3850,7 +3853,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             } else if ($elementR->alias == 'radio' || ($elementR->alias == 'combo' && $fieldR->storeRelationAbility == 'one')) {
 
                 // If field deals with values from 'enumset' table
-                if ($entityR->table == 'enumset') {
+                if (($entityR->table ?? null) == 'enumset') {
 
                     // Get the possible field values
                     $possible = $fieldR->nested('enumset')->column('alias');
@@ -4550,7 +4553,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $tc = $this->model()->treeColumn();
 
         // If current model has a tree-column, and current row is an existing row and tree column value was modified
-        if ($tc && $this->id && ($parentId_new = $this->_modified[$tc])) {
+        if ($tc && $this->id && ($parentId_new = $this->_modified[$tc] ?? null)) {
 
             // Get the tree column field row object
             $fieldR = $this->model()->fields($tc);

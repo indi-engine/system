@@ -105,7 +105,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Assign values for special properties within $rowConfig variable
                 foreach ($specialA as $specialI) {
-                    $rowConfig[$specialI] = $item['_' . $specialI];
+                    $rowConfig[$specialI] = $item['_' . $specialI] ?? null;
                     unset($item['_' . $specialI]);
                 }
 
@@ -126,7 +126,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (isset($config['query'])) $this->_query = $config['query'];
 
         // If prev-page-last flag is `true` - shift first row for it to be that prev-page-last row
-        if ($config['pgupLast']) $this->_pgupLast = array_shift($this->_rows);
+        if ($config['pgupLast'] ?? null) $this->_pgupLast = array_shift($this->_rows);
 
         $this->_count = count($this->_rows);
     }
@@ -2245,7 +2245,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         }
 
         // Return
-        return [$keys, $expr];
+        return [$keys, $expr ?? null];
     }
 
     /**

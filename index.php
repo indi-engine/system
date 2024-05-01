@@ -18,6 +18,9 @@ if(isset($_GET['info'])){phpinfo();die();}
 error_reporting(version_compare(PHP_VERSION, '5.4.0', 'ge') ? E_ALL ^ E_NOTICE ^ E_STRICT : E_ALL ^ E_NOTICE);
 ini_set('display_errors', 'On');
 
+// PHP 8.x compatiblity
+$_SERVER['STD'] ??= null; $_SERVER['REDIRECT_STD'] ??=null; $GLOBALS['last'] = null;
+
 // Set up STD server variable in case if multiple IndiEngine projects
 // are running within same document root, and there is one project that
 // is located in DOCUMENT_ROOT and others are in subfolders, so STD server
@@ -89,7 +92,7 @@ if (function_exists('geoip_country_code_by_name')
 if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
     if ($_[0]) $_COOKIE['PHPSESSID'] = $_[0];
     if ($_[1]) setcookie('i-language', $_COOKIE['i-language'] = $_[1]);
-    define('CID', $_[2] ?: false);
+    define('CID', $_[2] ?? false);
 }
 
 // Spoof hosts for mysql and rabbitmq services if given by environment variables

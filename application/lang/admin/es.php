@@ -299,7 +299,6 @@ define('I_ENT_TOGGLE_Y', 'encendido');
 define('I_ENT_TOGGLE_N', 'Apagado');
 define('I_ENT_EXTENDS_OTHER', 'El archivo con el modelo php existe, pero %s está especificado como clase principal allí');
 
-define('I_GAPI_KEY_REQUIRED', 'Especifique la clave API aquí.');
 define('I_SELECT_CFGFIELD', 'Seleccione el parámetro de configuración que desea agregar para este campo');
 define('I_SELECT_PLEASE', 'Por favor seleccione');
 define('I_L10N_TOGGLE_ACTION_Y', 'Si desea localizar %s para la acción "%s", presione "%s".');

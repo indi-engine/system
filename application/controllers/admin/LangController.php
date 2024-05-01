@@ -10,7 +10,32 @@ class Admin_LangController extends Indi_Controller_Admin {
         $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->pairs();
 
         // Check if [lang]->gapi.key is given in application/config.ini
-        if (!ini('lang')->gapi->key) jflush(false, I_GAPI_KEY_REQUIRED);
+        if (!ini('lang')->gapi->key) {
+
+            // Setup ini-prop name
+            $name = 'lang.gapi.key';
+
+            // Prepare message
+            $msg = __(I_GAPI_RESPONSE, t()->row->error);
+
+            // Prompt for valid Google Cloud Translate API key
+            $prompt = $this->prompt($msg, [[
+                'xtype' => 'textfield',
+                'emptyText' => I_GAPI_KEY_REQUIRED,
+                'width' => 250,
+                'name' => $name
+            ]]);
+
+            // Check prompt data
+            jcheck([
+                $name => [
+                    'rex' => '~^[a-zA-Z0-9]+$~'
+                ]
+            ], $prompt);
+
+            // Write into ini-file
+            ini($name, $prompt[$name]);
+        }
 
         // Create Google Cloud Translation PHP API
         $gapi = new Google\Cloud\Translate\V2\TranslateClient(['key' => ini('lang')->gapi->key]);

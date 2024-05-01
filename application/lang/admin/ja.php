@@ -299,7 +299,6 @@ define('I_ENT_TOGGLE_Y', 'オン');
 define('I_ENT_TOGGLE_N', 'オフになっています');
 define('I_ENT_EXTENDS_OTHER', 'php-modelを含むファイルは存在しますが、親クラスとして%sが指定されています');
 
-define('I_GAPI_KEY_REQUIRED', 'ここに API キーを指定してください。');
 define('I_SELECT_CFGFIELD', 'このフィールドに追加する構成パラメータを選択してください');
 define('I_SELECT_PLEASE', '選んでください');
 define('I_L10N_TOGGLE_ACTION_Y', 'アクション「%s」を %s ローカライズする場合は、「%s」を押してください。');

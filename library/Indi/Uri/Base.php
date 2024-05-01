@@ -17,7 +17,7 @@ class Indi_Uri_Base {
         // Include l10n constants
         foreach (['', VDR . '/public', VDR . '/system'] as $fraction)
             foreach (['', '/admin'] as $_)
-                if (file_exists($file = DOC . STD . $fraction . '/application/lang' . $_ . '/' . ini('lang')->{trim($_, '/') ?: 'front'} . '.php'))
+                if (file_exists($file = DOC . STD . $fraction . '/application/lang' . $_ . '/' . (ini('lang')->{trim($_, '/') ?: 'front'} ?? null) . '.php'))
                     include_once($file);
 
         // Parse the existing $_SERVER['REQUEST_URI']
@@ -88,7 +88,7 @@ class Indi_Uri_Base {
             else if (count($uri) > $i && strlen($uri[$i])) {
 
                 // Shortcuts
-                $param = $uri[$i]; $value = $uri[$i + 1];
+                $param = $uri[$i]; $value = $uri[$i + 1] ?? null;
 
                 // Do setup
                 $this->$param = $value;
@@ -136,7 +136,7 @@ class Indi_Uri_Base {
 
             // If section was found, and it has non-empty `extends` property - set $controllerParentClass as the value
             // of that property, or set it as 'Project_Controller_Admin'
-            $controllerParentClass = $sectionR->extendsPhp ?: 'Project_Controller_Admin';
+            $controllerParentClass = $sectionR->extendsPhp ?? 'Project_Controller_Admin';
 
             // If such controller parent class does not exist - set it as 'Indi_Controller_Admin' by default
             if (!class_exists($controllerParentClass)) $controllerParentClass = 'Indi_Controller_Admin';
@@ -261,7 +261,10 @@ class Indi_Uri_Base {
     public function trailingSlash() {
 
         // If current uri end with no slash
-        if ($_SERVER['REQEST_URI'] != '/' && !preg_match('~/$~', $_SERVER['REQUEST_URI']) && !preg_match('/\?/', $_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+        if (($_SERVER['REQEST_URI'] ?? null) != '/'
+            && !preg_match('~/$~', $_SERVER['REQUEST_URI'])
+            && !preg_match('/\?/', $_SERVER['REQUEST_URI'])
+            && $_SERVER['REQUEST_METHOD'] == 'GET') {
 
             // Setup 301 header
             header('HTTP/1.1 301 Moved Permanently');

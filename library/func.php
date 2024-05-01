@@ -900,7 +900,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
 
     // Merge the additional data to the $flush array
     if ($mrg1) $flush = array_merge($flush, $mrg1);
-    if ($mrg2) $flush = array_merge($flush, $mrg2);
+    if ($mrg2 ?? 0) $flush = array_merge($flush, $mrg2);
 
     // Check if redirect should be performed
     $redir = func_num_args() == 4 ? is_string($die) && Indi::rex('url', $die) : ($_ = Indi::$jfr) && $die = $_;
@@ -1454,7 +1454,7 @@ function l10n_dataI($dataI, $props) {
 
     // Localize needed props within data item
     foreach(ar($props) as $prop)
-        if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop]))
+        if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop] ?? ''))
             if ($json = json_decode($dataI[$prop], true))
             $dataI[$prop] = $json[array_key_exists(ini('lang')->admin, $json) ? ini('lang')->admin : key($json)];
 

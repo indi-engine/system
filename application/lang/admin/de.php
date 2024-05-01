@@ -299,7 +299,6 @@ define('I_ENT_TOGGLE_Y', 'Eingeschaltet');
 define('I_ENT_TOGGLE_N', 'Ausgeschaltet');
 define('I_ENT_EXTENDS_OTHER', 'Datei mit PHP-Modell existiert, aber %s ist dort als übergeordnete Klasse angegeben');
 
-define('I_GAPI_KEY_REQUIRED', 'Bitte geben Sie hier den API-Schlüssel an.');
 define('I_SELECT_CFGFIELD', 'Wählen Sie den Konfigurationsparameter aus, den Sie für dieses Feld hinzufügen möchten');
 define('I_SELECT_PLEASE', 'Bitte auswählen');
 define('I_L10N_TOGGLE_ACTION_Y', 'Wenn Sie %s Lokalisierung für Aktion „%s“ wünschen, drücken Sie „%s“.');

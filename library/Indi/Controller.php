@@ -65,7 +65,7 @@ class Indi_Controller {
         $admin = admin() ? admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
-        if (ini()->general->seoUri) ini()->design = [];
+        if (ini()->general->seoUri ?? 0) ini()->design = [];
 
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
@@ -86,7 +86,7 @@ class Indi_Controller {
             }
 
         // If more than 1 designs detected for current domain
-        if (count((array) ini()->design) > 1) {
+        if (count((array) (ini()->design ?? null)) > 1) {
 
             // Views dir shortcut
             $dir = DOC . STD . '/application/views/';
@@ -131,7 +131,7 @@ class Indi_Controller {
             }
 
         // Else use first
-        } else ini()->design = ini()->design[0];
+        } else ini()->design = ini()->design[0] ?? null;
 
         // Do paths setup twice: first for module-specific paths, second for general-paths
         for ($i = 0; $i < 2; $i++) {
@@ -187,7 +187,7 @@ class Indi_Controller {
 
         // Here we provide an ability for operations, required for
         // a certain item to be performed, instead actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider ?? null)) {
 
             // Call the function, that will do these operations
             $this->{uri()->action . 'ActionI' . ucfirst(uri()->consider)}(Indi::post());
@@ -198,7 +198,7 @@ class Indi_Controller {
         }
 
         // Here we provide an ability for a combo options data to be fetched instead of actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata ?? null)) {
 
             // Fetch the combo options data
             $this->{uri()->action . 'ActionOdata'}(uri()->odata, Indi::post());

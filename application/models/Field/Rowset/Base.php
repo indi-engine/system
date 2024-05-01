@@ -109,9 +109,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      * @return mixed
      */
     public function field($aliasOrId) {
-        return $this->_rows[isset($this->_aliases[$aliasOrId])
-            ? $this->_aliases[$aliasOrId]
-            : $this->_ids[$aliasOrId]];
+        return $this->_rows[$this->_aliases[$aliasOrId] ?? $this->_ids[$aliasOrId] ?? null] ?? null;
     }
 
     /**
@@ -256,7 +254,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      * @param Field_Rowset_Base $rowset
      * @return Field_Rowset_Base|Indi_Db_Table_Rowset
      */
-    public function merge(Field_Rowset_Base $rowset) {
+    public function merge(Indi_Db_Table_Rowset $rowset) {
 
         // Call parent
         $this->callParent();

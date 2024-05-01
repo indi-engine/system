@@ -17,7 +17,7 @@ class Indi_Db_Table_Row_Noeval extends Indi_Db_Table_Row {
      *
      * @param $prop
      */
-    public function compileDefaultValue($prop) {
+    public function compileDefaultValue($prop, $level = 'model') {
 
     }
 }
