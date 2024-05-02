@@ -3,7 +3,7 @@
     "description": "Indi Engine system package, should be used as composer dependency only",
     "type": "package",
     "require": {
-        "php-amqplib/php-amqplib": "2.12.0",
+        "php-amqplib/php-amqplib": "3.6.2",
         "google/cloud-translate": "1.6.0",
         "phpoffice/phpspreadsheet": "^1.21",
         "phpoffice/phpword": "^0.18.2",
