@@ -10,7 +10,7 @@ class Consider_Row extends Indi_Db_Table_Row {
      * @param $cValue
      * @return mixed|void
      */
-    protected function _comboDataConsiderWHERE(&$where, Field_Row $field, Field_Row $cField, $cValue) {
+    protected function _comboDataConsiderWHERE(&$where, Field_Row $field, Field_Row $cField, $cValue, $required, $cValueForeign = null) {
 
         // Spoof column name
         if ($cField->alias == 'relation') $cField->alias = 'entityId';
@@ -68,7 +68,7 @@ class Consider_Row extends Indi_Db_Table_Row {
      * @param $field
      * @return Indi_Db_Table_Rowset|mixed
      */
-    public function getComboData($field) {
+    public function getComboData($field, $page = null, $selected = null, $selectedTypeIsKeyword = false, $where = null, $fieldR = null, $order = null, $dir = 'ASC', $offset = null, $consistence = null, $multiSelect = null) {
 
         // Call parent
         $dataRs = $this->callParent();

@@ -777,10 +777,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Add panel type
-        $renderCfg['_system']['panel'] = $scope['panel'] ?: 'grid';
+        $renderCfg['_system']['panel'] = $scope['panel'] ?? 'grid';
 
         // DEBUG
-        if (!$scope['panel']) {
+        if (! ($scope['panel'] ?? null)) {
             Indi::log('no-scope-panel', ['scope' => $scope, 'renderCfg' => $renderCfg], false);
         }
 
@@ -952,7 +952,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // which is the next page's first record to be added to the list of current page's records
                         if ($last
                             && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
-                            && !in($last, $scope['overpage'])) {
+                            && !in($last, $scope['overpage'] ?? null)) {
 
                             // Get next record after $last
                             $next = db()
@@ -1500,7 +1500,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 foreach ($mlfA as $mlfI) {
 
                     // If $mlfI-field has no setter method - call it
-                    if (!$setterA[$mlfI]) {
+                    if (!($setterA[$mlfI] ?? null)) {
 
                         // Build localized values
                         foreach ($json[$mlfI] as $lang => &$holder) {
@@ -1541,7 +1541,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($mlfA as $mlfI) {
 
             // If $mlfI-field has setter method - call it
-            if ($setter = $setterA[$mlfI]) {
+            if ($setter = $setterA[$mlfI] ?? null) {
 
                 // Build localized values
                 foreach ($json[$mlfI] as $lang => &$holder) {
@@ -2257,7 +2257,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$relatedM) return new Indi_Db_Table_Rowset(['titleColumn' => 'title', 'rowClass' => __CLASS__]);
 
         // Get title column
-        $titleColumn = $fieldR->params['titleColumn'] ?: $relatedM->titleColumn();
+        $titleColumn = $fieldR->params['titleColumn'] ?? $relatedM->titleColumn();
 
         // Get tree column
         $treeColumn = $relatedM->treeColumn();
@@ -2271,9 +2271,9 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Set ORDER clause for combo data
         if (is_null($order)) {
-            if ($relatedM->comboDataOrder) {
+            if ($relatedM->comboDataOrder ?? null) {
                 $order = $relatedM->comboDataOrder;
-                if (!@func_get_arg(7) && $relatedM->comboDataOrderDirection) $dir = $relatedM->comboDataOrderDirection;
+                if (func_num_args() > 7 && !func_get_arg(7) && $relatedM->comboDataOrderDirection) $dir = $relatedM->comboDataOrderDirection;
                 if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
             } else if ($relatedM->fields('move')) {
                 $order = 'move';
@@ -2310,9 +2310,12 @@ class Indi_Db_Table_Row implements ArrayAccess
             // todo: implement proper handling of $selected
             $selectedR = $relatedM->row('`id` IN (' . ($selected ?: 0) . ')');
 
+            // Define $orderColumn, if need
+            $orderColumn ??= null;
+
             // Setup current value of a sorting field as start point
             if (!is_array($order) && $order && !preg_match('/[\(,]/', $orderColumn ?: $order))
-                $keyword = $selectedR->{trim($orderColumn ?: $order, '`')};
+                $keyword = $selectedR->{trim($orderColumn ?: $order, '`')} ?? null;
         }
 
         // Owner WHERE
@@ -2397,7 +2400,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         : '`' . $titleColumn . '` LIKE "%' . str_replace('"', '\"', $keyword) . '%"';
 
                 // Else we should get results started from selected value only if consider-fields were not modified
-                } else if (!$hasModifiedConsiderWHERE) {
+                } else if (! ($hasModifiedConsiderWHERE ?? null)) {
 
                     // If $order is a name of a column, and not an SQL expression (except l10n-expression)
                     // we setup results start point as current row's column's value
@@ -2425,7 +2428,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $foundRowsWhere = im($selectedTypeIsKeyword ? $where : $whereBackup, ' AND ');
 
                 // Adjust WHERE clause so it surely match existing value
-                if (!$hasModifiedConsiderWHERE) $this->comboDataExistingValueWHERE($foundRowsWhere, $fieldR, $consistence);
+                if (!($hasModifiedConsiderWHERE ?? null)) $this->comboDataExistingValueWHERE($foundRowsWhere, $fieldR, $consistence);
 
                 // Use default WHERE if need - to improve performance as we're using InnoDB tables
                 if (!strlen($foundRowsWhere)) $foundRowsWhere = '`id` > 0';
@@ -2476,11 +2479,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $order .= ' ' . ($dir == 'DESC' ? 'DESC' : 'ASC');
 
                     // Adjust WHERE clause so it surely match existing value
-                    if (!$selectedTypeIsKeyword && !$hasModifiedConsiderWHERE) $this->comboDataExistingValueWHERE($where, $fieldR, $consistence);
+                    if (!$selectedTypeIsKeyword && !($hasModifiedConsiderWHERE ?? null))
+                        $this->comboDataExistingValueWHERE($where, $fieldR, $consistence);
                 }
 
                 // Append additional ORDER clause, for grouping
-                if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'], 'alias'))
+                if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'] ?? null, 'alias'))
                     if ($groupByFieldOrder = $groupByField->order($dir, $where))
                         $order = [$groupByFieldOrder, $order];
 
@@ -2497,7 +2501,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // Reverse results if we were getting upper page results
-                if ($upper) $dataRs->reverse();
+                if ($upper ?? null) $dataRs->reverse();
 
             // If we don't have neither initially selected options, nor keyword
             } else {
@@ -2515,12 +2519,15 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                     $order .= ' ' . ($dir == 'DESC' ? 'DESC' : 'ASC');
 
+                    // PHP 8.x compatibility
+                    $hasModifiedConsiderWHERE ??= null;
+
                     // Adjust WHERE clause so it surely match consistence values
                     if (is_null($page) && !$selectedTypeIsKeyword && !$hasModifiedConsiderWHERE)
                         $this->comboDataExistingValueWHERE($where, $fieldR, $consistence);
 
                     // Append additional ORDER clause, for grouping
-                    if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'], 'alias'))
+                    if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'] ?? null, 'alias'))
                         if ($groupByFieldOrder = $groupByField->order($dir, $where))
                             $order = [$groupByFieldOrder, $order];
 
@@ -2531,7 +2538,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // If results should be grouped (similar way as <optgroup></optgroup> do)
-        if ($fieldR->params['groupBy']) {
+        if ($fieldR->params['groupBy'] ?? null) {
 
             // Get distinct values
             $distinctGroupByFieldValues = [];
@@ -2654,7 +2661,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // If additional params should be passed as each option attributes, setup list of such params
-        if ($fieldR->params['optionAttrs']) {
+        if ($fieldR->params['optionAttrs'] ?? null) {
             $dataRs->optionAttrs = explode(',', $fieldR->params['optionAttrs']);
         }
 
@@ -2717,7 +2724,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $dataRs->titleColumn = $titleColumn;
 
         // If foreign data should be fetched
-        if ($fieldR->params['foreign']) $dataRs->foreign($fieldR->params['foreign']);
+        if ($fieldR->params['foreign'] ?? null) $dataRs->foreign($fieldR->params['foreign']);
 
         // Return combo data rowset
         return $dataRs;
@@ -4905,7 +4912,9 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function modified() {
         if (func_num_args() == 0) return $this->_modified;
-        else if (func_num_args() == 1) return is_array(func_get_arg(0)) ? $this->_modified = func_get_arg(0) : $this->_modified[func_get_arg(0)];
+        else if (func_num_args() == 1) return is_array(func_get_arg(0))
+            ? $this->_modified = func_get_arg(0)
+            : ($this->_modified[func_get_arg(0)] ?? null);
         else return $this->_modified[func_get_arg(0)] = func_get_arg(1);
     }
 
@@ -6250,7 +6259,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Else if single prop name is given as $prop arg - detect whether or not it is in the list of affected props
             } else if (is_string($prop) && $prop) {
-                return $prev ? $this->_affected[$prop] : array_key_exists($prop, $this->_affected);
+                return $prev ? ($this->_affected[$prop] ?? null) : array_key_exists($prop, $this->_affected);
 
             } else if ($prop === true) {
                 $prev = true;
@@ -6413,7 +6422,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function compileDefaultValue($prop, $level = 'model') {
 
         // If compile expr is empty - return
-        if (!strlen($expr = $this->{$level == 'trail' ? '_modified' : '_original'}[$prop])) return;
+        if (!strlen($expr = $this->{$level == 'trail' ? '_modified' : '_original'}[$prop] ?? null)) return;
 
         // Compile and assign
         Indi::$cmpTpl = $expr; eval(Indi::$cmpRun); $this->$prop = Indi::cmpOut();
@@ -7582,7 +7591,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $exploded = explode(',', $selected['value']);
             $attrs = [];
             for ($i = 0; $i < count($exploded); $i++) {
-                if ($options[$exploded[$i]]['attrs']) {
+                if ($options[$exploded[$i]]['attrs'] ?? null) {
                     foreach ($options[$exploded[$i]]['attrs'] as $k => $v) {
                         $attrs[] = $k . '-' . $exploded[$i] . '="' . $v . '"';
                     }

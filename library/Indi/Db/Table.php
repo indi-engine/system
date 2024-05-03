@@ -2384,7 +2384,7 @@ class Indi_Db_Table
      */
     public function ibfk() {
         if (func_num_args() == 0) return $this->_ibfk;
-        else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)];
+        else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)] ?? null;
         else if (func_get_arg(1) === null) unset($this->_ibfk[func_get_arg(0)]);
         else return $this->_ibfk[func_get_arg(0)] = func_get_arg(1);
     }

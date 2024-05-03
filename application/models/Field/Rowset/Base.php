@@ -279,7 +279,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      */
     public function append($original, $before = null) {
 
-        $id = $original instanceof Field_Row ? $original->id : $original['id'];
+        $id = $original instanceof Field_Row ? $original->id : ($original['id'] ?? null);
         $alias = $original instanceof Field_Row ? $original->alias : $original['alias'];
 
         // Prevent duplicates

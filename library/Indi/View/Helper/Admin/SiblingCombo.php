@@ -19,16 +19,14 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
         return parent::formCombo('sibling');
     }
 
+    /**
+     * If current row does not exist, combo will use field's default value as selected value
+     */
     public function getSelected() {
-
-        // If current row does not exist, combo will use field's default value as selected value
-        if ($this->getRow()->id) $selected = $this->getRow()->id;
-
-        // Return
-        return $selected;
+        return $this->getRow()->id ?? null;
     }
 
-    public function getField($name) {
+    public function getField($name = null) {
         $pseudoFieldR = m('Field')->new();
         $pseudoFieldR->entityId = t()->section->entityId;
         $pseudoFieldR->alias = $name;

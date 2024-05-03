@@ -124,7 +124,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             t()->rows = $this->getSelectedAsRowset();
 
             // If current action has view and we've just entered batch-mode
-            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other && !uri()->tab) {
+            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !(uri()->other ?? null) && !(uri()->tab ?? null)) {
 
                 // Shortcut for current row id
                 $id = t()->action->selectionRequired == 'n' ? t(1)->row->id : t()->row->id;
@@ -185,7 +185,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
                 if (uri()->ph ?? 0) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix ?? 0) $applyA['upperAix'] = uri()->aix;
-                $applyA['tree'] = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'];
+                $applyA['tree'] = m()->treeColumn() && !($this->actionCfg['misc']['index']['ignoreTreeColumn'] ?? null);
                 if (Indi::get()->stopAutosave ?? 0) $applyA['toggledSave'] = false;
                 $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
 
@@ -347,19 +347,19 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Props to be applied to scope
                 $applyA = [
                     'hash' => uri()->ph,
-                    'aix' => uri()->aix,
+                    'aix' => uri()->aix ?? null,
                     'lastIds' => t()->rows->column('id'),
                 ];
 
                 // Manage autosave-mode
-                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
-                else if (Indi::get()->startAutosave) $applyA['toggledSave'] = true;
+                if (Indi::get()->stopAutosave ?? null) $applyA['toggledSave'] = false;
+                else if (Indi::get()->startAutosave ?? null) $applyA['toggledSave'] = true;
 
                 // Apply scope params
                 t()->scope->apply($applyA);
 
                 // If we are here for just check of row availability, do it
-                if (uri()->check) jflush(true, $this->checkRowIsInScope());
+                if (uri()->check ?? null) jflush(true, $this->checkRowIsInScope());
 
                 // Set last accessed rows
                 $this->setScopeRow(false, null, t()->rows->column('id'));
@@ -369,7 +369,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 else if ($channel = Realtime::channel()) {
 
                     // Get context where request came from, if possible
-                    $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid)
+                    $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid ?? null)
                         ? m('realtime')->row([
                             '`realtimeId` = "' . $channel->id . '"',
                             '`token` = "' . $ctx . '"'
@@ -2955,7 +2955,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$location) {
 
             // Setup parentness
-            if (t(1)->row) $id = t(1)->row->id;
+            $id = t(1)->row->id ?? null;
 
             // Get scope data
             if (uri()->ph) $scope = $_SESSION['indi']['admin'][uri('section')][uri()->ph];
@@ -3034,7 +3034,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $name = 'lang.gapi.key';
 
             // Get message
-            $msg = __(I_GAPI_RESPONSE, json_decode($e->getMessage())->error->message);
+            $msg = __(I_GAPI_RESPONSE, json_decode($e->getMessage())->error->message ?? $e->getMessage());
 
             // Prompt for valid Google Cloud Translate API key
             $prompt = $this->prompt($msg, [[
@@ -3076,7 +3076,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->callPanel('preSaveAction', false);
 
         // If 'ref' or 'cell' uri-param given
-        if (($ref = uri()->ref) || $cell = uri()->cell) {
+        if (($ref = uri()->ref ?? null) || $cell = (uri()->cell ?? null)) {
 
             // Assign 'ref' it into entry's system props
             $this->row->system('ref', $ref ?: 'rowset');
@@ -3095,7 +3095,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $data[$possibleI] = Indi::post($possibleI);
 
         // Unset 'move' key from data, because 'move' is a system field, and it's value will be set up automatically
-        if (!is_a($this, 'Indi_Controller_Admin_Exportable') || !$data['move']) unset($data['move']);
+        if (!is_a($this, 'Indi_Controller_Admin_Exportable') || !($data['move'] ?? null)) unset($data['move']);
 
         // If there was disabled fields defined for current section, we check if default value was additionally set up
         // and if so - assign that default value under that disabled field alias in $data array, or, if default value
@@ -3144,7 +3144,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->_save();
 
         // If current row has been just successfully created
-        if ($updateAix && $this->row->id) {
+        if (($updateAix ?? null) && $this->row->id) {
 
             // Update uri('aix')
             $this->updateAix($this->row);
@@ -3531,7 +3531,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->{$action . 'Action'}();
 
             // If new entry is going to be created via grid rather than via form - flush entry template
-            if ($action == 'form' && uri()->phantom)
+            if ($action == 'form' && (uri()->phantom ?? null))
                 jflush(['success' => true, 'phantom' => $this->affected(true)]);
 
         // Else flush an error message
@@ -4068,7 +4068,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $answerIdx = rif(Indi::$answer, count(Indi::$answer) + 1);
 
         // Get answer
-        $answer = Indi::get()->{'answer' . $answerIdx};
+        $answer = Indi::get()->{'answer' . $answerIdx} ?? null;
 
         // Build meta
         $meta = []; foreach($cfg as $field) $meta[$field['name']] = $field;

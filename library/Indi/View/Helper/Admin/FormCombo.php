@@ -133,7 +133,7 @@ class Indi_View_Helper_Admin_FormCombo {
             $this->getConsistence(), $this->isMultiSelect());
 
         // Prepare combo options data
-        $comboDataA = $comboDataRs->toComboData($params, $this->ignoreTemplate);
+        $comboDataA = $comboDataRs->toComboData($params, $this->ignoreTemplate ?? null);
 
         $options = $comboDataA['options'];
         $this->titleMaxLength = $comboDataA['titleMaxLength'];
@@ -167,12 +167,18 @@ class Indi_View_Helper_Admin_FormCombo {
             }
 
             // Make sure color box to be rendered if need
-            if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
+            if ($options[$key]['system']['boxColor'] ?? null)
+                $selected['boxColor'] = $options[$key]['system']['boxColor'];
 
         // Else if current field column type is ENUM or SET, and current row have no selected value, we use first
         // option to get default info about what title should be displayed in input keyword field and what value
         // should have hidden field
-        } else if ($this->field->storeRelationAbility == 'one' && ($this->filter ? !$this->filter->multiSelect() : true)) {
+        } else if ($this->field->storeRelationAbility == 'one' && (
+            ($this->filter ?? null)
+                ? !$this->filter->multiSelect()
+                : true
+        )
+        ) {
 
             // Setup a key
             if (($this->getRow()->id && !$comboDataRs->enumset) || !is_null($this->getRow()->$name)) {
@@ -199,7 +205,7 @@ class Indi_View_Helper_Admin_FormCombo {
 
             // Setup css color property for input, if original title of selected value contained a color definition
             if ($options[$selected['value']]['system']['color'] ?? null)
-                $selected['style'] =  " style=\"color: {$options[$selected['value']]['system']['color']};{$selected['cssStyle']}\"";
+                $selected['style'] =  " style=\"color: {$options[$selected['value']]['system']['color']};" . ($selected['cssStyle'] ?? null);
 
             // Set up html attributes for hidden input, if optionAttrs param was used
             if ($options[$selected['value']]['attrs'] ?? null) {
@@ -248,7 +254,7 @@ class Indi_View_Helper_Admin_FormCombo {
         // Setup option height. Current context does not have a $this->ignoreTemplate member,but inherited class *_FilterCombo
         // does, so option height that is applied to form combo will not be applied to filter combo, unless $this->ignoreTemplate
         // in *_FilterCombo is set to false
-        $options['optionHeight'] = ($params['optionHeight'] ?? null) && !$this->ignoreTemplate ? $params['optionHeight'] : 14;
+        $options['optionHeight'] = ($params['optionHeight'] ?? null) && !($this->ignoreTemplate ?? null) ? $params['optionHeight'] : 14;
 
         // Setup groups for options
         if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
@@ -335,22 +341,25 @@ class Indi_View_Helper_Admin_FormCombo {
         ($i = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\((.*)\).*?);[^"]*"[^>]*>/', $option['title'], $color));
 
         // If color was detected somewhere
-        if ($v || $t || $s || $b || $i ||
-            ($option['boxColor'] ?? null) ?? $option['textColor'] ?? $option['boxIcon'] ?? $option['cssStyle'] ?? null) {
+        if ($v || $t || $s || $b || $i
+            || ($option['boxColor' ] ?? null)
+            || ($option['textColor'] ?? null)
+            || ($option['boxIcon'  ] ?? null)
+            || ($option['cssStyle' ] ?? null)) {
 
             // Setup color
-            $option['color'] = isset($color[1]) ? $color[1] : ($option['textColor'] ?: $option['boxColor'] ?: '');
+            $option['color'] = ($color[1] ?? null) ? $color[1] : (($option['textColor'] ?? null) ?: $option['boxColor'] ?: '');
 
             // If color was detected in 'title' property, and found as 'color' or 'background' css property
             // - strip tags from title
             if ($s || $b || $i) $option['title'] = strip_tags($option['title']);
 
             // If color was detected in 'title' property as 'color' css property
-            if ($s || $option['textColor'] ?? $option['cssStyle'] ?? null) {
+            if ($s || ($option['textColor'] ?? null) || ($option['cssStyle'] ?? null)) {
 
                 // If there is no 'style' property within $option variable -
                 // set it as 'color' and 'font' css properties specification
-                if (!$option['style']) $option['style'] = ' style="color: ' . $option['color'] . '; ' . $option['cssStyle'] . '"';
+                if (!($option['style'] ?? null)) $option['style'] = ' style="color: ' . $option['color'] . '; ' . ($option['cssStyle'] ?? null) . '"';
                 if (!$option['textColor']) $option['textColor'] = $option['color'];
 
             // Else if color was not detected in 'title' property as 'color' css property - we assume that color should
@@ -361,7 +370,7 @@ class Indi_View_Helper_Admin_FormCombo {
                 if ($t) $option['input'] = $option['color'];
 
                 // Setup style values
-                if ($option['boxIcon']) $option['color'] = 'url(' . $option['boxIcon'] . ');';
+                if ($option['boxIcon'] ?? null) $option['color'] = 'url(' . $option['boxIcon'] . ');';
                 if ($i && !$option['boxIcon']) $option['boxIcon'] = $color[2];
                 if ($b && !$option['boxColor']) $option['boxColor'] = $color[1];
 

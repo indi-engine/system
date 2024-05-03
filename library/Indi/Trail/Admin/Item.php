@@ -680,7 +680,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Detect view and save into trail
-            if ($view = ucfirst($actionCfg['view'][$action])) {
+            if ($view = ucfirst($actionCfg['view'][$action] ?? null)) {
                 $actionParentClass .= '_' . $view;
                 $this->action->view = $view;
             }

@@ -197,7 +197,7 @@ class Indi_Trail_Admin_Item_Scope {
 
         // Update session
         $_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash]
-            = is_array($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash])
+            = is_array($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash] ?? null)
                 ? array_merge($_SESSION['indi']['admin'][t($this->_level)->section->alias][$this->hash], $data)
                 : $this->toArray();
 

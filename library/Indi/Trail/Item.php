@@ -226,7 +226,7 @@ class Indi_Trail_Item {
                 foreach ($this->grid as $gridR)
                     if (is_array($gridR->editor))
                         foreach ($gridR->editor['store']['data'] as $option)
-                            if ($option['system']['boxColor'] || $option['system']['boxIcon'])
+                            if (($option['system']['boxColor'] ?? null) || ($option['system']['boxIcon'] ?? null))
                                 if (!$gridR->editor = 0)
                                     break;
 
