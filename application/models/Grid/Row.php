@@ -347,10 +347,10 @@ class Grid_Row extends Indi_Db_Table_Row {
      *
      * @return array
      */
-    public function toArray() {
+    public function toArray($type = 'current', $deep = true, $purp = null) {
 
         // Call parent
-        $array = parent::toArray();
+        $array = parent::toArray($type, $deep, $purp);
 
         // Replace curly brackets with their html entities
         foreach (['composeVal', 'composeTip'] as $prop)

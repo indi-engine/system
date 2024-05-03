@@ -1373,13 +1373,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             } else array_unshift($where, '0');
 
             // Fetch rowset containing rows, that are nested to at least one row of current rowset
-            $nestedRs = m($table)->all($where, $order, $count, $page, $offset);
+            $nestedRs = m($table)->all($where, $order ?? null, $count ?? null, $page ?? null, $offset ?? null);
 
             // Setup foreign data for nested rowset, if need
-            if ($foreign) $nestedRs->foreign($foreign);
+            if ($foreign ?? null) $nestedRs->foreign($foreign);
 
             // Setup nested data for nested rowset, if need
-            if ($nested) {
+            if ($nested ?? null) {
                 if (is_array($nested)) $nestedRs->nested($nested[0], $nested[1], $nested[2], $nested[3], $nested[4]);
                 else $nestedRs->nested($nested);
             }
@@ -1406,7 +1406,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Assign
                 $r->nested($key, m($table)->createRowset(
-                    $cNested[$r->id] && count($cNested[$r->id]) ? ['rows' => $cNested[$r->id]] : []
+                    ($cNested[$r->id] ?? null) && count($cNested[$r->id]) ? ['rows' => $cNested[$r->id]] : []
                 ));
 
                 // Setup a flag indicating that there is a nested data for $key key within rows in current rowset
@@ -1636,7 +1636,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // If there are already items exist within group, representing keys that are related
                         // to related entity id - we use this group as array which will be a first array in list
                         // of merged arrays, otherwise we use empty array to aviod php warning messages
-                        is_array($distinctA[$fieldR->relation]) ? $distinctA[$fieldR->relation] : [],
+                        is_array($distinctA[$fieldR->relation] ?? null) ? $distinctA[$fieldR->relation] : [],
 
                         // If foreign key field store relation ability is 'many', and foreign key value of
                         // current row is not empty, we convert it to array by exploding by comma, and append
@@ -1693,6 +1693,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                         // Set the name of column, that will be involved in sql ' IN() ' statement
                         $col = 'id';
+
+                        // No quotation
+                        $q = '';
                     }
 
                     // If foreign model's `preload` flag was turned On
@@ -1719,7 +1722,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $this->_adjustForeignRowset($key, $foreignRs[$entityId]);
 
                 // Call a user-defined method for foreign data rowset, if need
-                if ($call) eval('$foreignRs[$entityId]->' . $call . ';');
+                if ($call ?? null) eval('$foreignRs[$entityId]->' . $call . ';');
 
                 // Setup a foreign and nested data for just fetched foreign data, by a recursive logic
                 if (is_array($subs)) {

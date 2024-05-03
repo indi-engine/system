@@ -400,7 +400,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $stepsUp = t()->level > 1 && t()->action->selectionRequired === 'n' ? 1 : 0;
 
         // Get id of first selected record. This record may be at upper level than current section
-        $id = t($stepsUp)->row->id;
+        $id = t($stepsUp)->row->id ?? null;
 
         // Append [index => $this->row->id] pairs
         if ($id)
@@ -410,7 +410,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             ] = $id;
 
         // Append others, if any
-        if ($otherIdA = Indi::post()->others)
+        if ($otherIdA = Indi::post()->others ?? null)
             foreach ($otherIdA as $index => $id)
                 if (Indi::rexm('int11', $id) && Indi::rexm('int11', $index))
                     $idA[$index] = $id;
@@ -440,7 +440,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function uiedit() {
 
         // If uri's 'uiedit' param is not given - return
-        if (!$ui = uri()->uiedit) return;
+        if (!$ui = (uri()->uiedit ?? null)) return;
 
         // If current user is not allowed to edit ui - flush failure
         if (admin()->uiedit != 'y') jflush(false);
@@ -2546,7 +2546,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // If $error was set - return error, or return $data otherwise
-        return $error ? $error : $data;
+        return $error ?? $data;
     }
 
     /**
@@ -3446,7 +3446,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         setcookie('i-language', null);
 
         // Unset session
-        if ($_SESSION['admin']['id'])  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
+        if ($_SESSION['admin']['id'] ?? null)  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
 
         // If `realtime` entry of `type` = "session" exists
         if ($_ = m('Realtime')->row([
@@ -3482,7 +3482,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'vdr' => VDR,
             'uri' => uri()->toArray(),
             'title' => ini('general')->title ?: 'Indi Engine',
-            'throwOutMsg' => $_SESSION['indi']['throwOutMsg'],
+            'throwOutMsg' => $_SESSION['indi']['throwOutMsg'] ?? null,
             'lang' => $this->lang(),
             'logo' => ini('general')->logo
         ]);

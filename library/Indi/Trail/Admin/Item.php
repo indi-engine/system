@@ -81,7 +81,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $subsection->disableAdd = 1;
 
         // Exclude inaccessible sections
-        $this->sections->exclude($exclude);
+        $this->sections->exclude($exclude ?? null);
 
         // If current trail item will be a first item
         if (count(Indi_Trail_Admin::$items) == 0) {
@@ -137,7 +137,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             $excludeA []= $gridR->id;
 
                 // Exclude unneeded cols
-                $sectionR->nested('grid')->exclude($excludeA);
+                $sectionR->nested('grid')->exclude($excludeA ?? null);
             }
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
@@ -950,7 +950,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Unset empty values
-            if (!strlen($colorA[$fieldId])) unset($colorA[$fieldId]);
+            if (!strlen($colorA[$fieldId] ?? null)) unset($colorA[$fieldId]);
         }
 
         // Return columns colors
@@ -1005,7 +1005,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $enabled []= $panel;
 
         // At first, check whether panel is an explicitly specified in $_GET['panel']
-        if ($panel = Indi::get()->panel)
+        if ($panel = Indi::get()->panel ?? null)
             if (in_array($panel, $enabled))
                 $this->section->panel = $panel;
 

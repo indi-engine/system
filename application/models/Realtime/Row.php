@@ -69,7 +69,7 @@ class Realtime_Row extends Indi_Db_Table_Row {
             // we're in attempt to login on behalf some other admin via *_Admin->loginAction()
             // and this mean we need to reload all other browser tabs which are currently opened
             // by that current admin who clicked 'Login on behalf...' button in one of those tabs
-            if ($this->_system['unlink'] === false) $type = 'F5'; else {
+            if (($this->_system['unlink'] ?? null) === false) $type = 'F5'; else {
 
                 // Get session files dir
                 $session = ini_get('session.save_path') ?: sys_get_temp_dir();

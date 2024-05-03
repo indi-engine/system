@@ -2050,7 +2050,7 @@ class Indi {
         if (!count(Indi_Db::$DELETEQueryA)) return;
 
         // If DELETE queries logging is notturned On - return
-        if (!ini('db')->log->DELETE) return;
+        if (! (ini('db')->log->DELETE ?? null)) return;
 
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';

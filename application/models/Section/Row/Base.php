@@ -17,7 +17,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
      * @param $field
      * @return Indi_Db_Table_Rowset|mixed
      */
-    public function getComboData($field) {
+    public function getComboData($field, $page = null, $selected = null, $selectedTypeIsKeyword = false, $where = null, $fieldR = null, $order = null, $dir = 'ASC', $offset = null, $consistence = null, $multiSelect = null) {
 
         // Call parent
         $dataRs = $this->callParent();

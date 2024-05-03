@@ -61,7 +61,7 @@ class Field_Base extends Indi_Db_Table {
 
         // Provide special 'aliases' and 'ids' construction property to be set up
         foreach (['aliases' => 'alias', 'ids' => 'id'] as $ctor => $prop) {
-            if ($input[$ctor] && is_array($input[$ctor])) $data[$ctor] = $input[$ctor];
+            if (($input[$ctor] ?? null) && is_array($input[$ctor])) $data[$ctor] = $input[$ctor];
             else foreach($input[$index] as $item) {
                 $data[$ctor][$index == 'rows' ? $item->$prop : $item[$prop]] = count($data[$ctor] ?: []);
             }

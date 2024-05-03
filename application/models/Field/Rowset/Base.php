@@ -37,7 +37,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         // Foreach indexed prop - setup indexes
         foreach (['aliases' => 'alias', 'ids' => 'id'] as $index => $prop) {
             $this->{'_' . $index} = array_flip(
-                $config[$index] ?: parent::column($prop)
+                $config[$index] ?? parent::column($prop)
             );
         }
     }

@@ -115,6 +115,7 @@ class Indi_Trail_Admin {
         $sectionRs->nested('grid',         ['where' => $_nestedWHERE, 'order' => '`group` = "locked" DESC, `move`']);
 
         // Setup initial set of properties
+        $i = null;
         foreach ($sectionRs as $sectionR)
             self::$items[] = new Indi_Trail_Admin_Item($sectionR, $sectionRs->count() - ++$i);
 

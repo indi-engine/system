@@ -474,7 +474,7 @@ class Indi_Db_Table
             'table'   => $this->_table,
             'data' => $data,
             'rowClass' => $this->_rowClass,
-            'found'=> $limit ? $this->_found($where, $union) : count($data),
+            'found'=> $limit ? $this->_found($where, $union ?? null) : count($data),
             'page' => $page,
             'pgupLast' => $pgupLast,
             'query' => $sql
@@ -728,7 +728,7 @@ class Indi_Db_Table
                         $level[$id] = $tree[$id][1];
 
                         // We shift end point because disabled items should be ignored
-                        if ($disabledA[$id] && (is_null($page) || $page > 0)) $end++;
+                        if (($disabledA[$id] ?? null) && (is_null($page) || $page > 0)) $end++;
 
                         // If we have not yet reached start point but faced a disabled option
                         // we shift both start and end points because disabled items should be ignored
@@ -889,7 +889,7 @@ class Indi_Db_Table
                 $parentId = $return[$id][0];
                 while ($parentId) {
                     // We mark branch as disabled only if it is not primary
-                    if (!$primary[$parentId]) {
+                    if (! ($primary[$parentId] ?? null)) {
                         $disabled[$parentId] = true;
                     }
                     $parentId = $return[$parentId][0];
@@ -899,7 +899,7 @@ class Indi_Db_Table
 
             // Get final tree
             $tmp = [];
-            foreach ($return as $id => $data) if ($primary[$id] || $disabled[$id]) {
+            foreach ($return as $id => $data) if ($primary[$id] ?? $disabled[$id] ?? null) {
                 $tmp[$id] = $data;
                 unset($id, $data);
             }
@@ -928,7 +928,7 @@ class Indi_Db_Table
      * @return mixed
      */
     protected function _append($parentId, $data, $nested, $level = 0, $recursive = true) {
-        if (is_array($nested[$parentId])) foreach ($nested[$parentId] as $item) {
+        if (is_array($nested[$parentId] ?? null)) foreach ($nested[$parentId] as $item) {
             $item['level'] = $level;
             $id = $item['id'];
             $data[] = $item;
@@ -1536,11 +1536,11 @@ class Indi_Db_Table
         // Prepare data for Indi_Db_Table_Rowset object construction
         $data = [
             'table'   => $this->_table,
-            $index     => is_array($input[$index]) ? $input[$index] : [],
+            $index     => is_array($input[$index] ?? null) ? $input[$index] : [],
             'rowClass' => $this->_rowClass,
             'found'=> isset($input['found'])
                 ? $input['found']
-                : (is_array($input[$index]) ? count($input[$index]) : 0)
+                : (is_array($input[$index] ?? null) ? count($input[$index]) : 0)
         ];
 
         // Construct and return Indi_Db_Table_Rowset object
@@ -2577,7 +2577,7 @@ class Indi_Db_Table
                     // we should not go deeper for deletion of same-table child-entries here,
                     // because we have already collected $ids of all-levels child-entries to be deleted
                     // and such a deletion will be done at most upper possible level of nesting
-                    if ($ref['skip']) continue;
+                    if ($ref['skip'] ?? null) continue;
 
                     // If there are usages ids found by that ref
                     if ($ids = im(array_keys($ref['ids'] ?? []))) {

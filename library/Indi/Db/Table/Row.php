@@ -1385,7 +1385,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Update $this->_language
         foreach ($this->_modified as $prop => $value)
-            if ($this->_language[$prop]) $this->_language[$prop][ini('lang')->admin] = $value;
+            if ($this->_language[$prop] ?? null) $this->_language[$prop][ini('lang')->admin] = $value;
 
         // Empty $this->_modified, $this->_mismatch and $this->_affected arrays
         $this->_modified = $this->_mismatch = [];
@@ -3456,7 +3456,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // Convert $where to array
-            $where = (isset($where) && is_array($where)) ? $where : (strlen($where) ? [$where] : []);
+            $where = (isset($where) && is_array($where)) ? $where : (strlen($where ?? null) ? [$where] : []);
 
             // If connector field store relation ability is multiple
             if (m($table)->fields($connector)->storeRelationAbility == 'many')
@@ -3475,14 +3475,14 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Fetch nested rowset, assign it under $key key within $this->_nested array
             $method = m($table)->treeColumn() ? 'fetchTree' : 'fetchAll';
-            $this->_nested[$key] = m($table)->$method($where, $order, $count, $page, $offset);
+            $this->_nested[$key] = m($table)->$method($where, $order ?? null, $count ?? null, $page ?? null, $offset ?? null);
 
             // Setup foreign data for nested rowset, if need
-            if ($foreign) $this->_nested[$key]->foreign($foreign);
+            if ($foreign ?? null) $this->_nested[$key]->foreign($foreign);
 
             // Setup nested data for nested rowset, if need
-            if (is_string($nested)) $this->_nested[$key]->nested($nested);
-            else if (is_array($nested))
+            if (is_string($nested ?? null)) $this->_nested[$key]->nested($nested);
+            else if (is_array($nested ?? null))
                 foreach ($nested as $args)
                     $this->_nested[$key]->nested($args[0], $args[1], $args[2], $args[3], $args[4]);
 
