@@ -45,7 +45,7 @@ class Indi_Uri_Base {
         if (STD) $_SERVER['REQUEST_URI'] = preg_replace('!^' . STD . '!', '', $_SERVER['REQUEST_URI']);
 
         // If 'cms-only' mode is turned on, we prepend $_SERVER['REQUEST_URI'] with '/admin'
-        if (COM) $_SERVER['REQUEST_URI'] = '/admin' . $_SERVER['REQUEST_URI'];
+        if (COM) $_SERVER['REQUEST_URI'] = '/admin' . ($_SERVER['REQUEST_URI'] ?? null);
 
         // Build the full url by prepending protocol and hostname, and parse it by parse_url() function
         $uri = parse_url('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
@@ -201,7 +201,7 @@ class Indi_Uri_Base {
         $this->setCookieDomain();
 
         // If 'Indi-Auth' header given - use it's value as session id
-        if (!session_id()) if ($id = $_COOKIE['PHPSESSID']) session_id($id);
+        if (!session_id()) if ($id = $_COOKIE['PHPSESSID'] ?? null) session_id($id);
 
         // Start session
         session_start();
@@ -217,9 +217,10 @@ class Indi_Uri_Base {
     public function setCookieDomain(){
         
         // Get current host name without port number
-        $hostname = $_SERVER['SERVER_NAME'];
+        $hostname = $_SERVER['SERVER_NAME'] ?? null;
 
         // Detect domain
+        $domain = null;
         $domainA = explode(' ', ini()->general->domain);
         foreach ($domainA as $domainI) 
             if (preg_match('/' . preg_quote($domainI) . '$/', $hostname))
@@ -245,7 +246,7 @@ class Indi_Uri_Base {
     public function no3w() {
 
         // If current domain name starts with 'www.'
-        if (preg_match('/^www\./', $_SERVER['SERVER_NAME'])) {
+        if (preg_match('/^www\./', $_SERVER['SERVER_NAME'] ?? null)) {
 
             // Setup 301 header
             header('HTTP/1.1 301 Moved Permanently');

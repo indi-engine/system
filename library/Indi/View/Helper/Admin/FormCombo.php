@@ -83,7 +83,7 @@ class Indi_View_Helper_Admin_FormCombo {
      * @param $name
      * @return Field_Row
      */
-    public function getField($name) {
+    public function getField($name = null) {
         return m()->fields($name);
     }
 

@@ -181,7 +181,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
         return $this->getDefaultValue();
     }
 
-    public function getField() {
+    public function getField($name = null) {
         return (clone m()->fields($this->filter->further ?: $this->filter->fieldId))->set('mode', 'regular');
     }
 

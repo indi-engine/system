@@ -1850,7 +1850,7 @@ class Indi_Db_Table
      * @return string
      */
     public function filesGroupBy($alias = false) {
-        return $alias ? $this->_fields->field($this->_filesGroupBy)->alias : $this->_filesGroupBy;
+        return $alias ? ($this->_fields->field($this->_filesGroupBy)->alias ?? null) : $this->_filesGroupBy;
     }
 
     /**

@@ -753,17 +753,17 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach (ar($fieldIds) as $fieldId)
             if ($field = $this->field($fieldId)->alias ?: $scope['join'][$fieldId]) {
                 $dataColumns[] = $field;
-                if ($icon = $scope['icon'][$fieldId]) $renderCfg[$field]['icon'] = $icon;
-                if ($jump = $scope['jump'][$fieldId]) $renderCfg[$field]['jump'] = $jump;
-                if ($head = $scope['head'][$fieldId]) $renderCfg[$field]['head'] = $head;
-                if ($val  = $scope['composeVal'][$fieldId]) $renderCfg[$field]['composeVal'] = $val;
-                if ($tip  = $scope['composeTip'][$fieldId]) $renderCfg[$field]['composeTip'] = $tip;
-                if (null !== ($color = $scope['color'][$fieldId])) $renderCfg[$field]['color'] = $color;
+                if ($icon = $scope['icon'][$fieldId] ?? null) $renderCfg[$field]['icon'] = $icon;
+                if ($jump = $scope['jump'][$fieldId] ?? null) $renderCfg[$field]['jump'] = $jump;
+                if ($head = $scope['head'][$fieldId] ?? null) $renderCfg[$field]['head'] = $head;
+                if ($val  = $scope['composeVal'][$fieldId] ?? null) $renderCfg[$field]['composeVal'] = $val;
+                if ($tip  = $scope['composeTip'][$fieldId] ?? null) $renderCfg[$field]['composeTip'] = $tip;
+                if (null !== ($color = $scope['color'][$fieldId] ?? null)) $renderCfg[$field]['color'] = $color;
             }
 
         // Prepare row color config
         foreach (ar('colorField,colorFurther') as $prop)
-            if ($scope[$prop])
+            if ($scope[$prop] ?? null)
                 $renderCfg['_system'][$prop]
                     = $scope[$prop];
 
@@ -848,7 +848,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($realtimeRs as $realtimeR) {
 
             // Get channel
-            $channel = $realtimeR->foreign('realtimeId')->token;
+            $channel = $realtimeR->foreign('realtimeId')->token ?? null;
 
             // Get context
             $context = $realtimeR->token;
@@ -1293,7 +1293,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Send data to each channel
-        if ($byChannel) foreach ($byChannel as $channel => $byContext) Indi::ws([
+        if ($byChannel ?? null) foreach ($byChannel as $channel => $byContext) Indi::ws([
             'type' => 'realtime',
             'to' => $channel,
             'data' => $byContext
@@ -3898,7 +3898,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $valueA = explode(',', $value);
 
                     // If field deals with values from 'enumset' table
-                    if ($entityR->table == 'enumset') {
+                    if (($entityR->table ?? null) == 'enumset') {
 
                         // Get the possible field values
                         $possible = $fieldR->nested('enumset')->column('alias');

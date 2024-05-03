@@ -288,7 +288,7 @@ class Indi_Db {
 
             // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
-            if (($lang = $_COOKIE['i-language']) && ini('lang')->admin != $lang
+            if (($lang = $_COOKIE['i-language'] ?? null) && ini('lang')->admin != $lang
                 && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->col()))
                 ini('lang')->admin = $_COOKIE['i-language'];
 

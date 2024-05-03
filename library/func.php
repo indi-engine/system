@@ -15,8 +15,11 @@ function autoloader($class) {
     // Get the filename, by replacing '_' to '/' in $class, and appending '.php'
     $cf = str_replace('_', '/', $class) . '.php';
 
-    // If file inclusion failed
-    if (!@include_once($cf)) {
+    // Get absolute file path is it exists in include_path
+    $abs = stream_resolve_include_path($cf);
+
+    // If file exists - include it, else
+    if ($abs) include_once $abs; else {
 
         // Check if we are in 'admin' module
         if (COM || preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI)) {
@@ -36,8 +39,8 @@ function autoloader($class) {
             // Else if $class is some other class, we assume it's a model class
             } else $cf = '..' . VDR . '/public/application/models/' . $cf;
 
-            // Include class file
-            @include_once($cf);
+            // Get absolute file path is it exists in include_path
+            if ($abs = stream_resolve_include_path($cf)) include_once $abs;
         }
     }
 }
@@ -56,6 +59,21 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
     // If arguments are given, we assume that we are here because of
     // a set_error_handler() usage, e.g current error is not a fatal error
     if (func_num_args()) {
+
+        // If this is a error related to what's have beed E_NOTICE in php7.4
+        if (   (strpos($message, 'Undefined array key') !== false)
+            || (strpos($message, 'Undefined variable' ) !== false)
+            || (strpos($message, 'Undefined property' ) !== false)
+            || (preg_match('~Trying to access array offset on value of type null~', $message) !== false)
+            || (preg_match('~Attempt to read property "[^"]*" on null~', $message) !== false)
+        ) {
+
+            // Log this
+            i([$type, $message, $file, $line], 'a', 'toBeFixed.txt');
+
+            // Proceed with execution
+            return;
+        }
 
         // If current error is not in a list of ignored errors - return
         if(!(error_reporting() & $type)) return;
