@@ -183,20 +183,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Set 'hash' scope param at least. Additionally, set scope info about primary hash and row index,
                 // related to parent section, if these params are passed within the uri.
                 $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
-                if (uri()->ph) $applyA['upperHash'] = uri()->ph;
-                if (uri()->aix) $applyA['upperAix'] = uri()->aix;
+                if (uri()->ph ?? 0) $applyA['upperHash'] = uri()->ph;
+                if (uri()->aix ?? 0) $applyA['upperAix'] = uri()->aix;
                 $applyA['tree'] = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'];
-                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
+                if (Indi::get()->stopAutosave ?? 0) $applyA['toggledSave'] = false;
                 $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
 
-                if (is_array($f = Indi::get()->filter) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
+                if (is_array($f = Indi::get()->filter ?? null) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
                 else if ($f == '[]') $applyA['filters'] = $f;
 
                 t()->scope->apply($applyA);
 
                 // If there was no 'format' param passed within the uri
                 // we extract all fetch params from current scope
-                if (!uri()->format && !$this->_isRowsetSeparate) {
+                if (!(uri()->format ?? null) && !$this->_isRowsetSeparate) {
 
                     // Prepare search data for $this->filtersWHERE()
                     Indi::get()->filter = t()->scope->filters == '[]'
@@ -219,20 +219,20 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // If a rowset should be fetched
-                if (uri()->format || uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(uri('single'))) {
+                if ((uri()->format ?? null) || uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(uri('single'))) {
 
                     // Get final WHERE clause, that will implode primaryWHERE, filterWHERE and keywordWHERE
                     $finalWHERE = $this->finalWHERE($primaryWHERE);
 
                     // If $_GET['group'] is an json-encoded object rather than array containing that object
-                    if (json_decode(Indi::get()->group) instanceof stdClass)
+                    if (json_decode(Indi::get()->group ?? null) instanceof stdClass)
 
                         // Prepend it to the list of sorters, to provide compatibility with ExtJS 6.7 behaviour,
                         // because ExtJS 4.1 auto-added grouping to the list of sorters but ExtJS 6.7 does not do that
                         Indi::get()->sort = preg_replace('~^\[~', '$0' . Indi::get()->group . ',', Indi::get()->sort);
 
                     // Get final ORDER clause, built regarding column name and sorting direction
-                    $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort);
+                    $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort ?? null);
 
                     // Build fetch method name
                     $fetchMethod = t()->scope->tree ? 'fetchTree' : 'fetchAll';
@@ -278,10 +278,10 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                         // Scope params
                         $scope = [
-                            'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword,
-                            'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
+                            'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword ?? null,
+                            'order' => Indi::get()->sort ?? null, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
                             'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
-                            'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
+                            'pgupLast' => $this->rowset->pgupLast()->id ?? null, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
                             'icon' => t()->icons(),
@@ -295,7 +295,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ','),
                             'filterOwner' => t()->filterOwner('section'),
-                            'groupBy' => t()->section->foreign('groupBy')->alias,
+                            'groupBy' => t()->section->foreign('groupBy')->alias ?? null,
                             'panel' => t()->section->panel
                         ];
 
@@ -337,7 +337,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // If channel detected and referer context detected - update spaceUntil timestamp
                 if (!ini()->rabbitmq->enabled) Realtime::session()->save();
                 else if ($channel = Realtime::channel())
-                    if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
+                    if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid ?? null, 0))
                         if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
                             $context->set('spaceUntil', date('Y-m-d H:i:s'))->save();
 
@@ -4200,7 +4200,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function createContextIfNeed($scope) {
 
         // Prevent `realtime` entry from being created in case of excel-export or jumping
-        if (uri()->format == 'excel' || Indi::get()->jump || t()->action->hasView === 'n') return;
+        if (uri()->format == 'excel' || (Indi::get()->jump ?? null) || t()->action->hasView === 'n') return;
 
         // Track involved entries
         if ($_ = Realtime::context()) $_->set([
@@ -4292,8 +4292,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function callPanel($function = '', $elseParent = true) {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 1, 1);
+
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $call = array_pop($trace);
 
         // Method name
         $method = $function ?: $call['function'];

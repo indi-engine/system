@@ -126,8 +126,11 @@ class Indi_View_Helper_Admin_FormCombo {
 
         // Get initial combo options rowset
         $comboDataRs = $this->getRow()->getComboData($name, null, $selected, null,
-            $this->where, $this->field, $this->comboDataOrderColumn,
-            $this->comboDataOrderDirection, $this->comboDataOffset, $this->getConsistence(), $this->isMultiSelect());
+            $this->where, $this->field,
+            $this->comboDataOrderColumn  ?? null,
+            $this->comboDataOrderDirection ?? null,
+            $this->comboDataOffset       ?? null,
+            $this->getConsistence(), $this->isMultiSelect());
 
         // Prepare combo options data
         $comboDataA = $comboDataRs->toComboData($params, $this->ignoreTemplate);
@@ -187,19 +190,19 @@ class Indi_View_Helper_Admin_FormCombo {
 
             // Setup an info about selected value
             $selected = [
-                'title' => $options[$key]['title'],
+                'title' => $options[$key]['title'] ?? null,
                 'value' => $key
             ];
 
-            if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
-            if ($options[$key]['system']['cssStyle']) $selected['cssStyle'] = $options[$key]['system']['cssStyle'];
+            if ($options[$key]['system']['boxColor'] ?? null) $selected['boxColor'] = $options[$key]['system']['boxColor'];
+            if ($options[$key]['system']['cssStyle'] ?? null) $selected['cssStyle'] = $options[$key]['system']['cssStyle'];
 
             // Setup css color property for input, if original title of selected value contained a color definition
-            if ($options[$selected['value']]['system']['color'])
+            if ($options[$selected['value']]['system']['color'] ?? null)
                 $selected['style'] =  " style=\"color: {$options[$selected['value']]['system']['color']};{$selected['cssStyle']}\"";
 
             // Set up html attributes for hidden input, if optionAttrs param was used
-            if ($options[$selected['value']]['attrs']) {
+            if ($options[$selected['value']]['attrs'] ?? null) {
                 $attrs = [];
                 foreach ($options[$selected['value']]['attrs'] as $k => $v) {
                     $attrs[] = $k . '="' . $v . '"';
@@ -240,21 +243,21 @@ class Indi_View_Helper_Admin_FormCombo {
         if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
 
         // Setup groups for options
-        if ($comboDataRs->optgroup) $options['optgroup'] = $comboDataRs->optgroup;
+        if ($comboDataRs->optgroup ?? null) $options['optgroup'] = $comboDataRs->optgroup;
 
         // Setup option height. Current context does not have a $this->ignoreTemplate member,but inherited class *_FilterCombo
         // does, so option height that is applied to form combo will not be applied to filter combo, unless $this->ignoreTemplate
         // in *_FilterCombo is set to false
-        $options['optionHeight'] = $params['optionHeight'] && !$this->ignoreTemplate ? $params['optionHeight'] : 14;
+        $options['optionHeight'] = ($params['optionHeight'] ?? null) && !$this->ignoreTemplate ? $params['optionHeight'] : 14;
 
         // Setup groups for options
-        if ($comboDataRs->optionAttrs) $options['attrs'] = $comboDataRs->optionAttrs;
+        if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
 
         // If combo-field of current row currently does not have a value, we should disable paging up
         $this->pageUpDisabled = $this->getRow()->$name ? 'false' : 'true';
 
         // Assign local variables to public class variables
-        foreach (['name', 'selected', 'params', 'attrs', 'comboDataRs', 'keyProperty'] as $var) $this->$var = $$var;
+        foreach (['name', 'selected', 'params', 'attrs', 'comboDataRs', 'keyProperty'] as $var) $this->$var = $$var ?? null;
 
         // Prepare a data object containing all involved info
         $this->extjs($options);
@@ -332,17 +335,18 @@ class Indi_View_Helper_Admin_FormCombo {
         ($i = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: (url\((.*)\).*?);[^"]*"[^>]*>/', $option['title'], $color));
 
         // If color was detected somewhere
-        if ($v || $t || $s || $b || $i || $option['boxColor'] || $option['textColor'] || $option['boxIcon'] || $option['cssStyle']) {
+        if ($v || $t || $s || $b || $i ||
+            ($option['boxColor'] ?? null) ?? $option['textColor'] ?? $option['boxIcon'] ?? $option['cssStyle'] ?? null) {
 
             // Setup color
-            $option['color'] = $color[1] ? $color[1] : ($option['textColor'] ?: $option['boxColor'] ?: '');
+            $option['color'] = isset($color[1]) ? $color[1] : ($option['textColor'] ?: $option['boxColor'] ?: '');
 
             // If color was detected in 'title' property, and found as 'color' or 'background' css property
             // - strip tags from title
             if ($s || $b || $i) $option['title'] = strip_tags($option['title']);
 
             // If color was detected in 'title' property as 'color' css property
-            if ($s || $option['textColor'] || $option['cssStyle']) {
+            if ($s || $option['textColor'] ?? $option['cssStyle'] ?? null) {
 
                 // If there is no 'style' property within $option variable -
                 // set it as 'color' and 'font' css properties specification
@@ -364,7 +368,7 @@ class Indi_View_Helper_Admin_FormCombo {
                 // Setup color box
                 $option['box'] = sprintf('<span class="i-combo-color-box" style="background: %s;%s"></span>',
                     $option['color'],
-                    rif($option['cssStyle'], ' $1')
+                    rif($option['cssStyle'] ?? null, ' $1')
                 );
             }
         }

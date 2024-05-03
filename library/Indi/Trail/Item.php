@@ -123,7 +123,7 @@ class Indi_Trail_Item {
     public function toArray() {
         $array = [];
         if ($this->section) {
-            if ($this->action->selectionRequired == 'y') $this->section->rownumberer = false;
+            if (($this->action->selectionRequired ?? null) == 'y') $this->section->rownumberer = false;
             $array['section'] = $this->section->toArray();
             $array['section']['multiSelect'] = $this->actions->select('1,separate', 'multiSelect')->count();
             if ($this->section->defaultSortField)
@@ -312,8 +312,11 @@ class Indi_Trail_Item {
      */
     public function fields($names = '', $format = 'rowset') {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 0, 1);
+
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 0, 1));
+        $call = array_pop($trace);
 
         // Make the call
         return call_user_func_array(

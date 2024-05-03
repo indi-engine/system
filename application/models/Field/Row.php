@@ -1709,7 +1709,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         else if (func_num_args() == 0) return (object) $this->_temporary['params'];
 
         // Else just return it
-        else return $this->_temporary['params'][$name];
+        else return $this->_temporary['params'][$name] ?? null;
     }
 
     /**

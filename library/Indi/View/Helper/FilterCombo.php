@@ -105,7 +105,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
             $finalWHERE = $this->getController()->finalWHERE($primaryWHERE, null, false);
 
             // Exclude WHERE clause part, related to current filter
-            unset($finalWHERE['filters'][$alias]); if (!$finalWHERE['filters']) unset($finalWHERE['filters']);
+            unset($finalWHERE['filters'][$alias]); if (!count($finalWHERE['filters'] ?? null)) unset($finalWHERE['filters']);
 
             // Flatten $finalWHERE
             foreach ($finalWHERE as $p => $w) if (is_array($w)) $finalWHERE[$p] = im($w, ' AND ');

@@ -4874,7 +4874,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         } else {
 
             // Apply language version, if key is an alias of a localized fields
-            if ($this->_language[func_get_arg(0)])
+            if ($this->_language[func_get_arg(0)] ?? null)
                 $this->_language[func_get_arg(0)][ini('lang')->admin] = func_get_arg(1);
 
             // Assign original value for a given key and return it
@@ -7557,14 +7557,14 @@ class Indi_Db_Table_Row implements ArrayAccess
             ];
 
             // Add box color
-            if ($options[$key]['system']['boxColor']) $selected['boxColor'] = $options[$key]['system']['boxColor'];
+            if ($options[$key]['system']['boxColor'] ?? null) $selected['boxColor'] = $options[$key]['system']['boxColor'];
 
             // Setup css color property for input, if original title of selected value contained a color definition
-            if ($options[$selected['value']]['system']['color'])
+            if ($options[$selected['value']]['system']['color'] ?? null)
                 $selected['style'] =  ' style="color: ' . $options[$selected['value']]['system']['color'] . ';"';
 
             // Set up html attributes for hidden input, if optionAttrs param was used
-            if ($options[$selected['value']]['attrs']) {
+            if ($options[$selected['value']]['attrs'] ?? null) {
                 $attrs = [];
                 foreach ($options[$selected['value']]['attrs'] as $k => $v) {
                     $attrs[] = $k . '="' . $v . '"';
@@ -7604,15 +7604,15 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
 
         // Setup groups for options
-        if ($comboDataRs->optgroup) $options['optgroup'] = $comboDataRs->optgroup;
+        if ($comboDataRs->optgroup ?? null) $options['optgroup'] = $comboDataRs->optgroup;
 
         // Setup option height. Current context does not have a $this->ignoreTemplate member,but inherited class *_FilterCombo
         // does, so option height that is applied to form combo will not be applied to filter combo, unless $this->ignoreTemplate
         // in *_FilterCombo is set to false
-        $options['optionHeight'] = $params['optionHeight'] && !$fieldR->param('ignoreTemplate') ? $params['optionHeight'] : 14;
+        $options['optionHeight'] = ($params['optionHeight'] ?? null) && !$fieldR->param('ignoreTemplate') ? $params['optionHeight'] : 14;
 
         // Setup groups for options
-        if ($comboDataRs->optionAttrs) $options['attrs'] = $comboDataRs->optionAttrs;
+        if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
 
         // If store arg is given - return only store data
         if ($store) return $options;

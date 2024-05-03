@@ -1153,7 +1153,7 @@ class Indi_Db_Table
         $array['title'] = $this->_title;
         $array['titleFieldId'] = $this->_titleFieldId;
         $array['space'] = $this->_space;
-        if ($this->_space['fields'])
+        if ($this->_space['fields'] ?? null)
             foreach (ar('owners,coords,relyOn') as $group)
                 $array['space']['fields'][$group]
                     = array_keys($array['space']['fields'][$group]);

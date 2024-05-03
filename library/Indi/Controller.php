@@ -954,8 +954,11 @@ class Indi_Controller {
                     // Setup combo data
                     view()->filterCombo($filter);
 
+                    // Prepare render
+                    $render = t()->filtersSharedRow->view($field->alias);
+
                     // Pick combo data
-                    $metaData['filter'][$field->alias] = array_pop(t()->filtersSharedRow->view($field->alias));
+                    $metaData['filter'][$field->alias] = array_pop($render);
                 }
 
                 // If current request was made using Indi Engine standalone
@@ -1068,7 +1071,7 @@ class Indi_Controller {
     public function keywordWHERE($keyword = '') {
 
         // If $keyword param is not passed we pick Indi::get()->keyword as $keyword
-        if (strlen($keyword) == 0) $keyword = Indi::get()->keyword;
+        if (strlen($keyword) == 0) $keyword = Indi::get()->keyword ?? null;
 
         // Exclusions array - we will be not trying to find a keyword in columns, that will be involved in search process
         // in $this->filtersWHERE() function, so one column can be used to find either selected-grid-filter-value or keyword,

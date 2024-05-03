@@ -424,7 +424,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Append notices info
         $array['notices'] = m('notice')->info(
             admin(),
-            [$this->section->id => $this->scope->primary]
+            [$this->section->id => $this->scope->primary ?? null]
         )[$this->section->id] ?? [];
 
         //
@@ -439,7 +439,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Setup scope
         if (array_key_exists('scope', $array)) {
-            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'])) {
+            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'] ?? null)) {
                 $tabA = array_unique(ar($tabs));
                 if ($tabIdA = array_filter($tabA)) {
                     $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
@@ -775,16 +775,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Prepare render config for fields
         foreach ($this->gridFields ? $this->gridFields : [] as $field) {
             if ($fieldId = m()->fields($field->alias)->id) {
-                if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
-                if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
-                if ($head = t()->scope->head[$fieldId]) $renderCfg[$field->alias]['head'] = $head;
-                if ($val  = t()->scope->composeVal[$fieldId])
+                if ($icon = t()->scope->icon[$fieldId] ?? null) $renderCfg[$field->alias]['icon'] = $icon;
+                if ($jump = t()->scope->jump[$fieldId] ?? null) $renderCfg[$field->alias]['jump'] = $jump;
+                if ($head = t()->scope->head[$fieldId] ?? null) $renderCfg[$field->alias]['head'] = $head;
+                if ($val  = t()->scope->composeVal[$fieldId] ?? null)
                     $renderCfg[$field->alias]['composeVal']
                         = str_replace('&rcub;&lcub;', '}{', $val);
-                if ($tip  = t()->scope->composeTip[$fieldId])
+                if ($tip  = t()->scope->composeTip[$fieldId] ?? null)
                     $renderCfg[$field->alias]['composeTip']
                         = str_replace('&rcub;&lcub;', '}{', $tip);
-                if (null !== ($color = t()->scope->color[$fieldId])) $renderCfg[$field->alias]['color'] = $color;
+                if (null !== ($color = t()->scope->color[$fieldId] ?? null)) $renderCfg[$field->alias]['color'] = $color;
             }
         }
 
@@ -926,6 +926,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      */
     public function colors() {
 
+        // Array of [fieldId => color_definition] pairs
+        $colorA = [];
+
         // Get icons
         foreach ($this->grid as $gridR) {
 
@@ -954,7 +957,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         }
 
         // Return columns colors
-        return $colorA ?? [];
+        return $colorA;
     }
 
     /**

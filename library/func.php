@@ -61,17 +61,21 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
     if (func_num_args()) {
 
         // If this is a error related to what's have beed E_NOTICE in php7.4
-        if (   (strpos($message, 'Undefined array key') !== false)
-            || (strpos($message, 'Undefined variable' ) !== false)
-            || (strpos($message, 'Undefined property' ) !== false)
-            || (preg_match('~Trying to access array offset on value of type null~', $message) !== false)
-            || (preg_match('~Attempt to read property "[^"]*" on null~', $message) !== false)
+        if (   strpos($message, 'Undefined array key') !== false
+            || strpos($message, 'Undefined variable' ) !== false
+            || strpos($message, 'Undefined property' ) !== false
+            || preg_match('~Trying to access array offset on value of type null~', $message)
+            || preg_match('~Attempt to read property "[^"]*" on null~', $message)
         ) {
 
             // Log this
             i([$type, $message, $file, $line], 'a', 'toBeFixed.txt');
 
             // Proceed with execution
+            return;
+
+        // Todo: fix this problem
+        } else if (strpos($message, 'Indi_Controller::adjustGridData(): Argument #1 ($data) must be passed by reference, value given') !== false) {
             return;
         }
 
@@ -917,7 +921,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
             : (is_array($msg2) ? $msg2 : ['msg' => $msg2]);
 
     // Merge the additional data to the $flush array
-    if ($mrg1) $flush = array_merge($flush, $mrg1);
+    if ($mrg1 ?? 0) $flush = array_merge($flush, $mrg1);
     if ($mrg2 ?? 0) $flush = array_merge($flush, $mrg2);
 
     // Check if redirect should be performed
@@ -1507,13 +1511,20 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
         $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : [];
         
         // Get label, or use $prop if label/meta is not given
-        $label = $meta['fieldLabel'] ?: $prop;
+        $label = $meta['fieldLabel'] ?? $prop;
         
         // Flush fn
         $flushFn = $fn == 'mflush' ? 'mflush' : 'jflush';
 
         // First arg for flush fn
         $arg1 = $flushFn == 'mflush' ? $prop : false;
+
+        // Explicitly set up the rule-type keys for which not exist
+        foreach (['req', 'rex', 'ext', 'unq', 'key', 'fis', 'dis', 'min', 'max'] as $type) {
+            if (! isset($rule[$type])) {
+                $rule[$type] = '';
+            }
+        }
 
         // Constant name
         $c = 'I_' . ($flushFn == 'mflush' ? 'M' : 'J') . 'CHECK_';
