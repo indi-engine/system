@@ -66,7 +66,7 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
     /**
      * Apply colorField-param for variable-entity field `colorEntry` on form load
      */
-    public function adjustTrailingRowAccess() {
+    public function adjustTrailingRowAccess(Indi_Db_Table_Row $row) {
         $this->_color(t()->row->colorField);
     }
 

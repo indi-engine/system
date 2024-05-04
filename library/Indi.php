@@ -1148,7 +1148,7 @@ class Indi {
         $columnA = $model->fields(null, 'aliases');
 
         // Determine title column name
-        if ($titleColumn = $model->comboDataOrder ?: current(array_intersect($columnA, ['title', '_title']))) {
+        if ($titleColumn = ($model->comboDataOrder ?? null) ?: current(array_intersect($columnA, ['title', '_title']))) {
 
             // Check whether $titleColumn contains some expression rather than just some column name,
             // and if so - use it as is but strip '$dir' from it or replace with actual direction ($dir)

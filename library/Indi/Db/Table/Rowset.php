@@ -869,7 +869,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                     // Process color boxes
                     if ($typeA['enumset'][$columnI] ?? null) {
-                        if ($typeA['foreign']['single'][$columnI]['title']) {
+                        if ($typeA['foreign']['single'][$columnI]['title'] ?? null) {
                             $data[$pointer]['_render'][$columnI] = !$further || $entry
                                 ? ($entry->foreign($further ?: $columnI)
                                     ? $entry->foreign($further ?: $columnI)->styled()

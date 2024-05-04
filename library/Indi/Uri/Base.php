@@ -325,4 +325,14 @@ class Indi_Uri_Base {
     public function toArray() {
         return (array) $this;
     }
+
+    /**
+     * Prevent 'Undefined property' errors
+     *
+     * @param $prop
+     * @return null
+     */
+    public function __get($prop) {
+        return null;
+    }
 }

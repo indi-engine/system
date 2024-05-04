@@ -783,7 +783,7 @@ class Indi_Db_Table
         unset($assocDataA);
 
         // Set 'disabled' system property for results that should have such a property
-        if (is_array($disabledA)) {
+        if (is_array($disabledA ?? null)) {
             // Here we replace $disabledA values with it's keys, as we have no more need
             // to store info about disabled in array keys instead of store it in array values
             // We need to do this replacement only if we are not running keyword-search, because

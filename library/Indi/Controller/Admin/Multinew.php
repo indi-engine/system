@@ -35,7 +35,7 @@ class Indi_Controller_Admin_Multinew extends Indi_Controller_Admin_Exportable {
     /**
      * Handle cases when comma-separated list is given within $_POST['fieldId']
      */
-    public function saveAction() {
+    public function saveAction($redirect = true, $return = false) {
 
         // If we operate on existing entry - call parent
         if (!$this->field || $this->row->id) return $this->callParent();

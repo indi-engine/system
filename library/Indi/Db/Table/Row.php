@@ -2933,7 +2933,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If field is able to store single key, or able to store multiple, but current key's value isn't empty
-                if ($fieldR->original('storeRelationAbility') == 'one' || strlen($val) || $aux) {
+                if ($fieldR->original('storeRelationAbility') == 'one' || strlen($val) || ($aux ?? null)) {
 
                     // Determine a model, for foreign row to be got from. If consider type is 'variable entity',
                     // then model is a value of consider-field, or it's foreign field. Otherwise model is field's `relation` property
@@ -3023,6 +3023,9 @@ class Indi_Db_Table_Row implements ArrayAccess
             } else {
                 throw new Exception('Field with alias `' . $key . '` does not exists within entity with table name `' . $this->_table .'`');
             }
+
+            // PHP 8.x compat
+            $foreign ??= null;
 
             // Save foreign row within a current row under key name, and return it
             return isset($aux) ? $foreign : $this->_foreign[$key] = $foreign;
@@ -3193,7 +3196,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $lang = '-' . $_;
 
         // Build the filename pattern for using in glob() php function
-        $pat = DOC . $src . $this->filesGroup() . $this->id . ($alias ? '_' . $alias : '') . ($copy ? ',' . $copy : '') . $lang . '.' ;
+        $pat = DOC . $src . $this->filesGroup() . $this->id . ($alias ? '_' . $alias : '') . ($copy ? ',' . $copy : '') . ($lang ?? null) . '.' ;
 
         // Get the files, matching $pat pattern
         $files = glob($pat . '*');

@@ -250,6 +250,9 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // If variable-entity field was zeroed - do zero for jumpSectionActionId-field
         if ($this->fieldIsZeroed('jumpSectionId')) $this->zero('jumpSectionActionId', true);
+
+        // Pick parent entry's group, if parent entry is going to be changed
+        if ($this->modified('gridId')) $this->group = $this->foreign('gridId')->group;
     }
 
     /**
