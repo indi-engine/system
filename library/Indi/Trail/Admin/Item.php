@@ -166,25 +166,29 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     $originalDefaults[$fieldR->alias] = $fieldR->original('defaultValue');
 
                 // Setup field's altered data. Currently only jump-data is stored here
-                if ($_->jumpSectionId && $_->jumpSectionActionId) {
-                    $fieldR->altered = [
-                        'jump' => [
-                            'text' => $_->foreign('jumpSectionActionId')->title,
-                            'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
-                            'href' => '/' . $_->foreign('jumpSectionId')->alias
-                                . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
-                                . '/id/{value}/' . $_->jumpArgs
-                        ]
+                $lbar = [];
+                if ($_->jumpSectionId) {
+                    if ($_->jumpSectionActionId) $lbar['jump'] = [
+                        'text' => $_->foreign('jumpSectionActionId')->title,
+                        'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
+                        'href' => '/' . $_->foreign('jumpSectionId')->alias
+                            . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
+                            . '/id/{value}/' . $_->jumpArgs
                     ];
-                } else if ($_->jumpArgs) {
-                    $fieldR->altered = [
-                        'jump' => [
-                            'text' => 'Goto',
-                            'icon' => 'resources/images/icons/btn-icon-goto.png',
-                            'href' => $_->jumpArgs
-                        ]
+                    if ($_->jumpCreate === 'y') $lbar['make'] = [
+                        'text' => I_CREATE,
+                        'icon' => 'resources/images/icons/btn-icon-create.png',
+                        'href' => '/' . $_->foreign('jumpSectionId')->alias . '/form/' . $_->jumpArgs
                     ];
-                }
+
+                } else if ($_->jumpArgs) $lbar['jump'] = [
+                    'jump' => [
+                        'text' => 'Goto',
+                        'icon' => 'resources/images/icons/btn-icon-goto.png',
+                        'href' => $_->jumpArgs
+                    ]
+                ];
+                if ($lbar) $fieldR->altered = $lbar;
             }
 
             // Save save those pairs under 'originalDefaults' key within section's system data

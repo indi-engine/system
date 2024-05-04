@@ -101,4 +101,16 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
     public function setTitle() {
         $this->_setTitle();
     }
+
+    /**
+     * Assign zero-value to `summaryText` prop, if need
+     */
+    public function onBeforeSave() {
+
+        // If jumpSectionId-prop was zeroed - do zero for jumpSectionActionId and jumpCreate fields
+        if ($this->fieldIsZeroed('jumpSectionId')) $this->zero('jumpSectionActionId,jumpCreate', true);
+
+        // Pick parent entry's group, if parent entry is going to be changed
+        if ($this->modified('gridId')) $this->group = $this->foreign('gridId')->group;
+    }
 }

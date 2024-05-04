@@ -12,6 +12,7 @@ field('admin', 'uiedit')->toggleL10n('qy', $lang, false);
 field('field', 'title')->toggleL10n('qy', $lang, false);
 field('alteredField', 'accessRoles')->toggleL10n('qy', $lang, false);
 field('alteredField', 'mode')->toggleL10n('qy', $lang, false);
+field('alteredField', 'jumpCreate')->toggleL10n('qy', $lang, false);
 field('columnType', 'canStoreRelation')->toggleL10n('qy', $lang, false);
 field('consider', 'required')->toggleL10n('qy', $lang, false);
 field('element', 'title')->toggleL10n('qy', $lang, false);

@@ -63,8 +63,14 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         // Trim everything except relative path
         $file = str_replace(DOC . STD . '/', '', $file);
 
-        // Log this
-        i([$type, $message, $file, $line], 'a', 'toBeFixed.txt');
+        // Get data to be logged as file
+        $data = [$type, $message, $file, $line];
+
+        // Prepare path to thatfile
+        $path = "log/" . str_replace('/', '-', $file) . "-$line.txt";
+
+        // If that file does not already exist - create it
+        if (!is_file($path)) i($data, 'a', $path);
 
         // If this is a error related to what's have beed E_NOTICE in php7.4
         if (   strpos($message, 'Undefined array key') !== false
@@ -73,7 +79,6 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
             || preg_match('~Trying to access array offset on value of type null~', $message)
             || preg_match('~Attempt to read property "[^"]*" on null~', $message)
         ) {
-
 
             // Proceed with execution
             return;

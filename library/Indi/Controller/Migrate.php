@@ -1,5 +1,19 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function makeAction() {
+        field('alteredField', 'jumpCreate', [
+            'title' => '\'Create new\' button',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'jumpSectionActionId',
+        ]);
+        enumset('alteredField', 'jumpCreate', 'n', ['title' => 'Disabled', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('alteredField', 'jumpCreate', 'y', ['title' => 'Enabled', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-create.png']);
+    }
     public function missing2Action() {
         field('notice', 'tplIncAudio', ['title' => 'Звук', 'elementId' => 'upload', 'move' => 'tplIncBody']);
         param('notice', 'tplIncAudio', 'allowTypes', 'audio');
