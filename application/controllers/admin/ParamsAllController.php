@@ -5,7 +5,7 @@ class Admin_ParamsAllController extends Indi_Controller_Admin_CfgValue {
      * Apply special behaviour for entityId and fieldId fields
      * as we're unable to pick their values from upper trail items
      */
-    public function adjustCreatingRowAccess(&$row) {
+    public function adjustCreatingRowAccess(Indi_Db_Table_Row $row) {
 
         // For those two fields
         foreach (ar('entityId,fieldId') as $prop) {
@@ -30,7 +30,7 @@ class Admin_ParamsAllController extends Indi_Controller_Admin_CfgValue {
      * @param $row
      * @return array[]|mixed
      */
-    public function promptCfgField(Indi_Db_Table_Row &$row) {
+    public function promptCfgField(Indi_Db_Table_Row $row) {
 
         // Shared cfg
         $sharedCfg = ['width' => 400];

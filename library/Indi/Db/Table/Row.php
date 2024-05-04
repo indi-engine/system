@@ -2191,6 +2191,9 @@ class Indi_Db_Table_Row implements ArrayAccess
             // if it constains no elements ( - zero-length array), in this case
             if (is_string($consistence) && strlen($consistence)) $where[] = $consistence;
 
+        //
+        $hasModifiedConsiderWHERE = null;
+
         // Foreach field, defined as a consider-field for current field
         foreach ($fieldR->nested('consider') as $considerR) {
 

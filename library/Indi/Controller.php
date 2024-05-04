@@ -743,7 +743,7 @@ class Indi_Controller {
             $this->$method(json_decode(Indi::post('consider'), true));
 
         // Prepare and flush json-encoded combo options data
-        $this->_odata($for, $post, $field, null, $order, $dir, $offset);
+        $this->_odata($for, $post, $field, null, $order ?? null, $dir ?? null, $offset ?? null);
     }
 
     /**
@@ -831,10 +831,10 @@ class Indi_Controller {
         if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
 
         // Setup groups for options
-        if ($comboDataRs->optgroup) $options['optgroup'] = $comboDataRs->optgroup;
+        if ($comboDataRs->optgroup ?? null) $options['optgroup'] = $comboDataRs->optgroup;
 
         // Setup additional attributes names list
-        if ($comboDataRs->optionAttrs) $options['attrs'] = $comboDataRs->optionAttrs;
+        if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
 
         // Setup `titleMaxLength` property
         $options['titleMaxLength'] = $titleMaxLength;
@@ -1288,7 +1288,7 @@ class Indi_Controller {
      *
      * @param $item
      */
-    public function adjustGridDataItem(&$item, $r) {
+    public function adjustGridDataItem(&$item, Indi_Db_Table_Row $row) {
 
     }
 

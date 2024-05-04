@@ -910,7 +910,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         } else if ($typeA['upload'][$columnI] ?? null) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI], $tpl);
                         }
-                    } else if (!$data[$pointer]['_render'][$columnI]) {
+                    } else if (!($data[$pointer]['_render'][$columnI] ?? null)) {
                         if (!$typeA['numeric'][$columnI]) {
                             $data[$pointer]['_render'][$columnI] = '';
                         }
@@ -1247,7 +1247,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Prepare attributes
                 $attr = " data-field=\"$alias\"";
                 if ($alias !== $column || $purpose !== 'tip')
-                    if ($style = rif($data['_style'][$alias], ' style="$1"'))
+                    if ($style = rif($data['_style'][$alias] ?? null, ' style="$1"'))
                         $attr .= $style;
 
                 // Return inner-before item plus inner-field item with field name replaced with value

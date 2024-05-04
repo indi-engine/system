@@ -548,7 +548,7 @@ class Admin_LangController extends Indi_Controller_Admin {
      *
      * @return array|void
      */
-    public function deleteAction() {
+    public function deleteAction($flush = true) {
 
         // If current entry is the last remaining `lang` entry - flush error
         if (db()->query('SELECT COUNT(*) FROM `lang`')->cell() == 1)
