@@ -652,13 +652,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Foreign keys (single and multiple)
             if ($gridFieldR->original('storeRelationAbility') == 'one') {
                 $typeA['foreign']['single'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->param('titleColumn') ?: m($gridFieldR->relation)->titleColumn())
                     : true;
             }
 
             else if ($gridFieldR->original('storeRelationAbility') == 'many')
                 $typeA['foreign']['multiple'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->param('titleColumn') ?: m($gridFieldR->relation)->titleColumn())
                     : true;
 
             // Boolean values
@@ -760,7 +760,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $entry = $r->foreign($m[1]);
 
                     // Spoof value
-                    $value = $entry->{$further = $m[2]};
+                    $value = $entry->{$further = $m[2]} ?? null;
                 }
 
                 // Get value as is
@@ -905,13 +905,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $tpl = '<img src="' . $_ . '" class="i-cell-img">$1';
                         if ($typeA['string'][$columnI] ?? null) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer][$columnI], $tpl);
-                        } else if (($typeA['foreign']['single'][$columnI] ?? null) && !$typeA['enumset'][$columnI]) {
+                        } else if (($typeA['foreign']['single'][$columnI] ?? null) && !($typeA['enumset'][$columnI] ?? null)) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI], $tpl);
                         } else if ($typeA['upload'][$columnI] ?? null) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI], $tpl);
                         }
                     } else if (!($data[$pointer]['_render'][$columnI] ?? null)) {
-                        if (!$typeA['numeric'][$columnI]) {
+                        if (!($typeA['numeric'][$columnI] ?? null)) {
                             $data[$pointer]['_render'][$columnI] = '';
                         }
                     }
@@ -925,10 +925,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if ($c || $j) {
 
                     // If it's a multiple foreign keys field
-                    if ($typeA['foreign']['multiple'][$columnI]) {
+                    if ($typeA['foreign']['multiple'][$columnI] ?? null) {
 
                         // If it's not enumset-column
-                        if (!$typeA['enumset'][$columnI]) {
+                        if (!($typeA['enumset'][$columnI] ?? null)) {
 
                             // Define _render for a cell
                             $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];

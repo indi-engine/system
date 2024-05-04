@@ -1250,7 +1250,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Get the format
                     foreach (t()->fields as $fieldR) {
                         if ($fieldR->alias == $alias) {
-                            $dformat = $fieldR->params['display' . ($fieldR->elementId == 12 ? '' : 'Date') . 'Format'];
+                            $dformat = $fieldR->param('display' . ($fieldR->elementId == 12 ? '' : 'Date') . 'Format');
                         }
                     }
 

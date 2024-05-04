@@ -2103,7 +2103,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $data = []; $groups = [];
 
             // Foreach directory
-            foreach (ar($fieldR->params['dir']) as $dir) {
+            foreach (ar($fieldR->param('dir')) as $dir) {
 
                 // Get absolute directory path with no trailing slash
                 $pre = DOC . STD . rif(!preg_match('~^/~', $dir), VDR . '/client/');
@@ -2260,7 +2260,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$relatedM) return new Indi_Db_Table_Rowset(['titleColumn' => 'title', 'rowClass' => __CLASS__]);
 
         // Get title column
-        $titleColumn = $fieldR->params['titleColumn'] ?? $relatedM->titleColumn();
+        $titleColumn = $fieldR->param('titleColumn') ?: $relatedM->titleColumn();
 
         // Get tree column
         $treeColumn = $relatedM->treeColumn();
@@ -2322,7 +2322,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Owner WHERE
-        if (admin() && admin()->table() != 'admin' && ($fieldR->filterOwner || $fieldR->params['filterOwner'])
+        if (admin() && admin()->table() != 'admin' && ($fieldR->filterOwner || $fieldR->param('filterOwner'))
             && ($ownerField = $relatedM->ownerField(admin()))
             && !array_key_exists('consider:' . $ownerField->alias, $where))
             $where['owner'] = $relatedM->ownerWHERE(admin());
@@ -2347,7 +2347,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($selectedTypeIsKeyword) {
 
                 // Append additional ORDER clause, for grouping
-                if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'], 'alias'))
+                if ($groupByField = $relatedM->fields()->gb($fieldR->param('groupBy'), 'alias'))
                     if ($groupByFieldOrder = $groupByField->order($dir, $where))
                         $order = [$groupByFieldOrder, $order];
 
@@ -2361,7 +2361,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (!is_array($order)) $order .= ' ' . ($dir == 'DESC' ? 'DESC' : 'ASC');
 
                 // Append additional ORDER clause, for grouping
-                if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'], 'alias'))
+                if ($groupByField = $relatedM->fields()->gb($fieldR->param('groupBy'), 'alias'))
                     if ($groupByFieldOrder = $groupByField->order($dir, $where))
                         $order = [$groupByFieldOrder, $order];
 
@@ -2487,7 +2487,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // Append additional ORDER clause, for grouping
-                if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'] ?? null, 'alias'))
+                if ($groupByField = $relatedM->fields()->gb($fieldR->param('groupBy'), 'alias'))
                     if ($groupByFieldOrder = $groupByField->order($dir, $where))
                         $order = [$groupByFieldOrder, $order];
 
@@ -2530,7 +2530,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $this->comboDataExistingValueWHERE($where, $fieldR, $consistence);
 
                     // Append additional ORDER clause, for grouping
-                    if ($groupByField = $relatedM->fields()->gb($fieldR->params['groupBy'] ?? null, 'alias'))
+                    if ($groupByField = $relatedM->fields()->gb($fieldR->param('groupBy'), 'alias'))
                         if ($groupByFieldOrder = $groupByField->order($dir, $where))
                             $order = [$groupByFieldOrder, $order];
 
@@ -2541,18 +2541,18 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // If results should be grouped (similar way as <optgroup></optgroup> do)
-        if ($fieldR->params['groupBy'] ?? null) {
+        if ($fieldR->param('groupBy')) {
 
             // Get distinct values
             $distinctGroupByFieldValues = [];
             foreach ($dataRs as $dataR)
-                if (!$distinctGroupByFieldValues[$dataR->{$fieldR->params['groupBy']}])
-                    $distinctGroupByFieldValues[$dataR->{$fieldR->params['groupBy']}] = true;
+                if (!$distinctGroupByFieldValues[$dataR->{$fieldR->param('groupBy')}])
+                    $distinctGroupByFieldValues[$dataR->{$fieldR->param('groupBy')}] = true;
 
             // Get group field
             $groupByFieldR = $fieldM->row([
                 '`entityId` = "' . $fieldR->relation . '"',
-                '`alias` = "' . $fieldR->params['groupBy'] . '"'
+                '`alias` = "' . $fieldR->param('groupBy') . '"'
             ]);
 
             // If groupBy-field is not a foreign-key field
@@ -2664,8 +2664,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // If additional params should be passed as each option attributes, setup list of such params
-        if ($fieldR->params['optionAttrs'] ?? null) {
-            $dataRs->optionAttrs = explode(',', $fieldR->params['optionAttrs']);
+        if ($attrs = $fieldR->param('optionAttrs')) {
+            $dataRs->optionAttrs = explode(',', $attrs);
         }
 
         // Set `enumset` property as false, because without definition it will have null value while passing
@@ -2727,7 +2727,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $dataRs->titleColumn = $titleColumn;
 
         // If foreign data should be fetched
-        if ($fieldR->params['foreign'] ?? null) $dataRs->foreign($fieldR->params['foreign']);
+        if ($fieldR->param('foreign')) $dataRs->foreign($fieldR->param('foreign'));
 
         // Return combo data rowset
         return $dataRs;
@@ -3810,12 +3810,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $i += 2;
 
                         // Else if chunk is not a php expression - make it safe and append to filtered value
-                        } else  $value .= self::safeHtml($chunk[$i], $fieldR->params['allowedTags']);
+                        } else  $value .= self::safeHtml($chunk[$i], $fieldR->param('allowedTags'));
                     }
 
                 // Else field is not in list of eval fields, make it's value safe by stripping restricted html tags,
                 // and by stripping event attributes from allowed tags
-                } else $value = self::safeHtml($value, $fieldR->params['allowedTags']);
+                } else $value = self::safeHtml($value, $fieldR->param('allowedTags'));
 
             // If element is 'move'
             } else if ($elementR->alias == 'move') {
@@ -4003,7 +4003,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $mismatch = false; $value = '0000-00-00';
 
                     // Else if $value is a non-zero date, and field has a 'displayFormat' param
-                    } else if ($fieldR->params['displayFormat']) {
+                    } else if ($fieldR->param('displayFormat')) {
 
                         // Try to get a unix-timestamp of a date stored in $value variable
                         $utime = strtotime($value);
@@ -4011,7 +4011,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If date, built from $utime and formatted according to 'displayFormat' param
                         // is equal to initial value of $value variable - this will mean that date, stored
                         // in $value is a valid date, so we
-                        if (date($fieldR->params['displayFormat'], $utime) == $value) {
+                        if (date($fieldR->param('displayFormat'), $utime) == $value) {
 
                             // Set $mismatch flag to false
                             $mismatch = false;
@@ -4149,7 +4149,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $mismatch = false; $value['date'] = '0000-00-00';
 
                         // Else if $value is a non-zero date, and field has a 'displayFormat' param
-                    } else if ($fieldR->params['displayDateFormat']) {
+                    } else if ($fieldR->param('displayDateFormat')) {
 
                         // Try to get a unix-timestamp of a date stored in $value variable
                         $utime = strtotime($value['date']);
@@ -4157,7 +4157,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If date, builded from $utime and formatted according to 'displayFormat' param
                         // is equal to initial value of $value variable - this will mean that date, stored
                         // in $value is a valid date, so we
-                        if (date($fieldR->params['displayDateFormat'], $utime) == $value['date']) {
+                        if (date($fieldR->param('displayDateFormat'), $utime) == $value['date']) {
 
                             // Set $mismatch flag to false
                             $mismatch = false;

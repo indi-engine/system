@@ -52,17 +52,17 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         $title = [];
 
         // Append entity title to filename parts array, if needed
-        //if ($fieldR->params['prependEntityTitle'] == 'true') $title[] = m($fieldR->entityId)->title() . ',';
+        //if ($fieldR->param('prependEntityTitle') == 'true') $title[] = m($fieldR->entityId)->title() . ',';
 
         // Append row title to filename parts array
-        if ($fieldR->params['rowTitle'] != 'false') $title[] = $r->dftitle($fieldR->alias);
+        if ($fieldR->param('rowTitle') != 'false') $title[] = $r->dftitle($fieldR->alias);
 
         // Append entity title to filename parts array, if needed
-        if ($fieldR->params['appendFieldTitle'] != 'false') $title[] = '- ' . $fieldR->title;
+        if ($fieldR->param('appendFieldTitle') != 'false') $title[] = '- ' . $fieldR->title;
 
         // Append entity title to filename parts array, if needed
-        if (strlen($fieldR->params['postfix'])) {
-            Indi::$cmpTpl = $fieldR->params['postfix']; eval(Indi::$cmpRun); $title[] = Indi::cmpOut();
+        if (strlen($fieldR->param('postfix'))) {
+            Indi::$cmpTpl = $fieldR->param('postfix'); eval(Indi::$cmpRun); $title[] = Indi::cmpOut();
         }
 
         // Get the extension of the file
