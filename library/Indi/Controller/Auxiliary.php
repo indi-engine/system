@@ -129,7 +129,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         $dirs = [];
 
         // If lang is given in uri
-        if ($lang = uri()->lang ?? 0) {
+        if ($lang = uri()->lang) {
 
             // Replace dash with underscore to comply with ExtJS locale files naming
             $lang = str_replace('-', '_', uri()->lang);

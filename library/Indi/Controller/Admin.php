@@ -124,7 +124,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             t()->rows = $this->getSelectedAsRowset();
 
             // If current action has view and we've just entered batch-mode
-            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !(uri()->other ?? null) && !(uri()->tab ?? null)) {
+            if (t()->action->hasView == 'y' && t()->rows->count() > 1 && !uri()->other && !uri()->tab) {
 
                 // Shortcut for current row id
                 $id = t()->action->selectionRequired == 'n' ? t(1)->row->id : t()->row->id;
@@ -183,8 +183,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Set 'hash' scope param at least. Additionally, set scope info about primary hash and row index,
                 // related to parent section, if these params are passed within the uri.
                 $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
-                if (uri()->ph ?? 0) $applyA['upperHash'] = uri()->ph;
-                if (uri()->aix ?? 0) $applyA['upperAix'] = uri()->aix;
+                if (uri()->ph) $applyA['upperHash'] = uri()->ph;
+                if (uri()->aix) $applyA['upperAix'] = uri()->aix;
                 $applyA['tree'] = m()->treeColumn() && !($this->actionCfg['misc']['index']['ignoreTreeColumn'] ?? null);
                 if (Indi::get()->stopAutosave ?? 0) $applyA['toggledSave'] = false;
                 $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
@@ -196,7 +196,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // If there was no 'format' param passed within the uri
                 // we extract all fetch params from current scope
-                if (!(uri()->format ?? null) && !$this->_isRowsetSeparate) {
+                if (!uri()->format && !$this->_isRowsetSeparate) {
 
                     // Prepare search data for $this->filtersWHERE()
                     Indi::get()->filter = t()->scope->filters == '[]'
@@ -219,7 +219,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 }
 
                 // If a rowset should be fetched
-                if ((uri()->format ?? null) || uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(uri('single'))) {
+                if (uri()->format || uri('action') != 'index' || !$this->_isRowsetSeparate || strlen(uri('single'))) {
 
                     // Get final WHERE clause, that will implode primaryWHERE, filterWHERE and keywordWHERE
                     $finalWHERE = $this->finalWHERE($primaryWHERE);
@@ -347,7 +347,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Props to be applied to scope
                 $applyA = [
                     'hash' => uri()->ph,
-                    'aix' => uri()->aix ?? null,
+                    'aix' => uri()->aix,
                     'lastIds' => t()->rows->column('id'),
                 ];
 
@@ -359,7 +359,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 t()->scope->apply($applyA);
 
                 // If we are here for just check of row availability, do it
-                if (uri()->check ?? null) jflush(true, $this->checkRowIsInScope());
+                if (uri()->check) jflush(true, $this->checkRowIsInScope());
 
                 // Set last accessed rows
                 $this->setScopeRow(false, null, t()->rows->column('id'));
@@ -440,7 +440,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function uiedit() {
 
         // If uri's 'uiedit' param is not given - return
-        if (!$ui = (uri()->uiedit ?? null)) return;
+        if (!$ui = uri()->uiedit) return;
 
         // If current user is not allowed to edit ui - flush failure
         if (admin()->uiedit != 'y') jflush(false);
@@ -3076,7 +3076,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->callPanel('preSaveAction', false);
 
         // If 'ref' or 'cell' uri-param given
-        if (($ref = uri()->ref ?? null) || $cell = (uri()->cell ?? null)) {
+        if (($ref = uri()->ref) || $cell = uri()->cell) {
 
             // Assign 'ref' it into entry's system props
             $this->row->system('ref', $ref ?: 'rowset');
@@ -3531,7 +3531,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->{$action . 'Action'}();
 
             // If new entry is going to be created via grid rather than via form - flush entry template
-            if ($action == 'form' && (uri()->phantom ?? null))
+            if ($action == 'form' && uri()->phantom)
                 jflush(['success' => true, 'phantom' => $this->affected(true)]);
 
         // Else flush an error message

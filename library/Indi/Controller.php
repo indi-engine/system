@@ -187,7 +187,7 @@ class Indi_Controller {
 
         // Here we provide an ability for operations, required for
         // a certain item to be performed, instead actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider ?? null)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->consider)) {
 
             // Call the function, that will do these operations
             $this->{uri()->action . 'ActionI' . ucfirst(uri()->consider)}(Indi::post());
@@ -198,7 +198,7 @@ class Indi_Controller {
         }
 
         // Here we provide an ability for a combo options data to be fetched instead of actual action call
-        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata ?? null)) {
+        if (preg_match('/^[A-Za-z_][A-Za-z_0-9]*$/', uri()->odata)) {
 
             // Fetch the combo options data
             $this->{uri()->action . 'ActionOdata'}(uri()->odata, Indi::post());
