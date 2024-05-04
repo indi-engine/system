@@ -60,6 +60,12 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
     // a set_error_handler() usage, e.g current error is not a fatal error
     if (func_num_args()) {
 
+        // Trim everything except relative path
+        $file = str_replace(DOC . STD . '/', '', $file);
+
+        // Log this
+        i([$type, $message, $file, $line], 'a', 'toBeFixed.txt');
+
         // If this is a error related to what's have beed E_NOTICE in php7.4
         if (   strpos($message, 'Undefined array key') !== false
             || strpos($message, 'Undefined variable' ) !== false
@@ -68,8 +74,6 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
             || preg_match('~Attempt to read property "[^"]*" on null~', $message)
         ) {
 
-            // Log this
-            i([$type, $message, $file, $line], 'a', 'toBeFixed.txt');
 
             // Proceed with execution
             return;
@@ -1421,7 +1425,7 @@ function xml2ar($xml, $options = []) {
         foreach ($xml->children($namespace) as $childXml) {
             //recurse into child nodes
             $childArray = xml2ar($childXml, $options);
-            list($childTagName, $childProperties) = each($childArray);
+            list($childTagName, $childProperties) = $childArray;
 
             //replace characters in tag name
             if ($options['keySearch']) $childTagName =
@@ -3600,7 +3604,7 @@ function ws(array $data, string $target) {
     }
 
     // Send data to each channel
-    if ($byChannel) foreach ($byChannel as $channel => $byContext) Indi::ws([
+    if ($byChannel ?? null) foreach ($byChannel as $channel => $byContext) Indi::ws([
         'type' => 'realtime',
         'to' => $channel,
         'data' => $byContext

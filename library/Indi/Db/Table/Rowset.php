@@ -1328,6 +1328,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Determine the field, that is a connector between current row and nested rowset
             $connector = $field ? $field : $this->_table . 'Id';
 
+            // Define $where
+            $where = null;
+
             // If $fetch argument is array
             if (is_array($fetch)) {
 
@@ -1342,7 +1345,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             }
 
             // Convert $where to array
-            $where = isset($where) && is_array($where) ? $where : (strlen($where) ? [$where] : []);
+            $where = is_array($where) ? $where : (strlen($where) ? [$where] : []);
 
             // Get all the ids of rows within current rowset
             $idA = []; foreach ($this as $i) $idA[] = $i->id;

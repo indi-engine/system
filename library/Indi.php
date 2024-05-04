@@ -2106,7 +2106,7 @@ class Indi {
         ob_implicit_flush($flag);
 
         // Flush
-        if ($flag) ob_end_flush();
+        if ($flag && ob_get_contents()) ob_end_flush();
     }
 
     /**
@@ -2148,7 +2148,7 @@ class Indi {
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
         $msg .= 'HOST: ' . $_SERVER['HTTP_HOST'] . '<br>';
         $msg .= 'URI: ' . URI . '<br>';
-        $msg .= 'Remote IP: ' . $_SERVER['REMOTE_ADDR'] . '<br>';
+        $msg .= 'Remote IP: ' . ($_SERVER['REMOTE_ADDR'] ?? null) . '<br>';
 
         // Who?
         if (admin()->id ?? 0) $msg .= 'Admin [id#' . admin()->id . ']: ' . admin()->title . '<br>';
