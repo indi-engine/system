@@ -25,7 +25,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'jumpSectionActionId' => 'form',
         ]);
         grid('entities', 'titleFieldId', 'alias', ['gridId' => 'special', 'toggle' => 'h', 'move' => 'titleFieldId']);
-        grid('entities', 'monthFieldId', ['gridId' => 'special', 'move' => 'titleFieldId_alias', 'icon' => 'resources/images/icons/monthId-5.png']);
+        grid('entities', 'monthFieldId', ['gridId' => 'special', 'move' => 'titleFieldId_alias', 'icon' => 'resources/images/icons/monthId.png']);
         alteredField('grid', 'fieldId', ['jumpCreate' => 'y']);
     }
     public function makeAction() {
