@@ -26,7 +26,6 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         grid('entities', 'titleFieldId', 'alias', ['gridId' => 'special', 'toggle' => 'h', 'move' => 'titleFieldId']);
         grid('entities', 'monthFieldId', ['gridId' => 'special', 'move' => 'titleFieldId_alias', 'icon' => 'resources/images/icons/monthId.png']);
-        alteredField('grid', 'fieldId', ['jumpCreate' => 'y']);
         grid('entities', 'filesGroupBy', ['move' => 'monthFieldId', 'gridId' => 'special']);
     }
     public function makeAction() {
@@ -42,6 +41,8 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         enumset('alteredField', 'jumpCreate', 'n', ['title' => 'Disabled', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('alteredField', 'jumpCreate', 'y', ['title' => 'Enabled', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-create.png']);
+        grid('alteredFields', 'jumpCreate', ['gridId' => 'jump', 'move' => 'jumpSectionActionId', 'icon' => 'resources/images/icons/btn-icon-create.png']);
+        alteredField('grid', 'fieldId', ['jumpCreate' => 'y']);
     }
     public function missing2Action() {
         field('notice', 'tplIncAudio', ['title' => 'Звук', 'elementId' => 'upload', 'move' => 'tplIncBody']);
