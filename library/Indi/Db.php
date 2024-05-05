@@ -547,6 +547,7 @@ class Indi_Db {
                     'title' => $entityI['title'],
                     'extends' => $entityI['extends'],
                     'titleFieldId' => $entityI['titleFieldId'],
+                    'monthFieldId' => $entityI['monthFieldId'],
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
                     'fraction' => $entityI['fraction'],

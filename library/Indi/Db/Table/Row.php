@@ -583,7 +583,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!$mflush && $this->_mismatch) return false;
 
             // If foreign-key-titleField defined - set `title`
-            $this->_setTitle();
+            $this->_setTitle(); $this->_setMonthId();
 
             // Backup modified data
             $modified = $update = $this->_modified;
@@ -616,7 +616,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!$mflush && $this->_mismatch) return false;
 
             // If foreign-key-titleField defined - set `title`
-            $this->_setTitle();
+            $this->_setTitle(); $this->_setMonthId();
 
             // Backup modified data
             $modified = $insert = $this->_modified;
@@ -8183,5 +8183,20 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Use others to init new entry
         return $this->model()->new($ctor);
+    }
+
+    /**
+     * Setup new value for monthId-field, if need
+     */
+    protected function _setMonthId() {
+
+        // If monthFieldId is not defined for the entity that current entry belongs to - return
+        if (!$source = $this->model()->monthField()) return;
+
+        // If based field is not modified - return
+        if (!$this->isModified($source->alias)) return;
+
+        // Setup monthId
+        $this->monthId = monthId($this->{$source->alias});
     }
 }

@@ -1,5 +1,33 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function monthFieldIdAction() {
+        field('entity', 'special', ['title' => 'Special fields', 'elementId' => 'span', 'move' => 'changeLogExcept']);
+        field('entity', 'titleFieldId', ['move' => 'special']);
+        field('entity', 'monthFieldId', [
+            'title' => 'Field to setup and derive \'Month\' field from',
+            'storeRelationAbility' => 'one',
+            'relation' => 'field',
+            'filter' => '`entityId` = "<?=$this->id?>" AND `columnTypeId` IN (6,9)',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'titleFieldId',
+        ]);
+        field('entity', 'filesGroupBy', ['move' => 'monthFieldId']);
+        alteredField('entities', 'monthFieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('entities', 'special', ['gridId' => 'features', 'move' => '']);
+        grid('entities', 'titleFieldId', [
+            'gridId' => 'special',
+            'move' => '',
+            'composeTip' => '{TitleFieldId_alias}',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('entities', 'titleFieldId', 'alias', ['gridId' => 'special', 'toggle' => 'h', 'move' => 'titleFieldId']);
+        grid('entities', 'monthFieldId', ['gridId' => 'special', 'move' => 'titleFieldId_alias', 'icon' => 'resources/images/icons/monthId-5.png']);
+        alteredField('grid', 'fieldId', ['jumpCreate' => 'y']);
+    }
     public function makeAction() {
         field('alteredField', 'jumpCreate', [
             'title' => '\'Create new\' button',

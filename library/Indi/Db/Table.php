@@ -285,7 +285,7 @@ class Indi_Db_Table
         $this->_treeColumn = $config['fields']->field($this->_table . 'Id') ? $this->_table . 'Id' : '';
 
         // Setup title field id
-        $this->_titleFieldId = $config['titleFieldId'] ?: 0;
+        $this->_titleFieldId = $config['titleFieldId'] ?: 0; $this->_monthFieldId = $config['monthFieldId'] ?: 0;
 
         // Setup filesGroupBy field id
         $this->_filesGroupBy = $config['filesGroupBy'] ?: 0;
@@ -2727,5 +2727,21 @@ class Indi_Db_Table
      */
     public function unique() {
         return $this->_unique;
+    }
+
+    /**
+     * Id of field, that is used as title-field
+     *
+     * @var boolean
+     */
+    protected $_monthFieldId = 0;
+
+    /**
+     * Return Field_Row object of a field, that is used as title-field
+     *
+     * @return Field_Row
+     */
+    public function monthField() {
+        return $this->_monthFieldId ? $this->_fields->field($this->_monthFieldId) : null;
     }
 }

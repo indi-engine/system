@@ -169,6 +169,9 @@ class Entity_Row extends Indi_Db_Table_Row {
         // Apply fileGroupBy changes, if any
         $this->_filesGroupBy();
 
+        // Apply monthFieldId changes, if any
+        $this->_monthFieldId();
+
         // Reload the model, that current entity row is representing
         if (count($this->_affected)) {
 
@@ -591,6 +594,77 @@ class Entity_Row extends Indi_Db_Table_Row {
 
             // Remove group-dir
             rmdir($group);
+        }
+    }
+
+    /**
+     * Check if monthFieldId was set up, and if yes:
+     *  - add 'Month'-field to that entity's data-structure
+     *  - setup values for that field for already existing entries of that entity
+     *  - new records in `month` table are created if necessary
+     *  - add 'Month'-filter to all level-1 sections having this entity as data-source
+     */
+    protected function _monthFieldId() {
+
+        // If monthFieldId was changed from 0 to non-0
+        if ($this->fieldWasUnzeroed('monthFieldId')) {
+
+            // Create monthId-field within current entity data-structure
+            field($this->table, 'monthId', [
+                'title' => 'Month',
+                'mode' => 'readonly',
+                'storeRelationAbility' => 'one',
+                'relation' => 'month',
+                'onDelete' => 'RESTRICT',
+                'elementId' => 'combo',
+                'columnTypeId' => 'INT(11)',
+                'defaultValue' => '0',
+                'move' => '',
+            ]);
+            param($this->table, 'monthId', 'groupBy', 'yearId');
+            param($this->table, 'monthId', 'optionTemplate', '<?=$o->foreign(\'month\')->title?>');
+
+            // Get alias of date field to calculate values for monthId-field
+            $source = $this->foreign('monthFieldId')->alias;
+
+            // Setup value of monthId-field for existing entries
+            m($this->table)->batch(fn($r) => $r->set(['monthId' => monthId($r->$source)])->basicUpdate());
+
+            // Get comma-separated ids of sections used as groups of left menu items
+            $level0 = db()->query('
+                SELECT `id`
+                FROM `section`
+                WHERE IFNULL(`sectionId`, 0) = "0" AND `toggle` = "y"
+                ORDER BY `move`
+            ')->in();
+
+            // Get ids of sections used as left menu items
+            $level1 = db()->query("
+                SELECT `id`
+                FROM `section`
+                WHERE `entityId` = '$this->id'
+                  AND `sectionId` IN ($level0)
+                  AND `toggle` = 'y'
+                ORDER BY `move`
+            ")->col();
+
+            // For each section - append filter for monthId-field
+            foreach ($level1 as $sectionId) filter($sectionId, 'monthId', ['move' => '']);
+
+        // Else if monthFieldId was changed to 0
+        } else if ($this->fieldWasZeroed('monthFieldId')) {
+
+            // Delete monthId-field from current entity structure
+            if ($monthId = field($this->table, 'monthId')) $monthId->delete();
+
+        // Else if source field was changed from one to another
+        } else if ($this->affected('monthFieldId')) {
+
+            // Get alias of date field to calculate values for monthId-field
+            $source = $this->foreign('monthFieldId')->alias;
+
+            // Re-setup value of monthId-field for existing entries
+            m($this->table)->batch(fn($r) => $r->set(['monthId' => monthId($r->$source)])->basicUpdate());
         }
     }
 }
