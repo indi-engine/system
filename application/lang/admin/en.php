@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'Your account is of type, that had just been s
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Now there is no sections remaining accessible for you');
 define('I_THROW_OUT_SESSION_EXPIRED', 'You session is no longer available. Proceed to re-login?');
 
+define('I_WS_CONNECTED', 'Connected in %s ms');
+define('I_WS_DISCONNECTED', 'Disconnected');
+define('I_WS_RECONNECTING', 'Reconnecting...');
+define('I_WS_RECONNECTED', 'Reconnected in %s ms');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Such section does not exist');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'Section is switched off');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'Such action does not exist');

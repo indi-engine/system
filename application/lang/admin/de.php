@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'Es handelt sich bei Ihrem Konto um einen Kont
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Jetzt sind keine Abschnitte mehr für Sie verfügbar');
 define('I_THROW_OUT_SESSION_EXPIRED', 'Ihre Sitzung ist nicht mehr verfügbar. Mit der erneuten Anmeldung fortfahren?');
 
+define('I_WS_CONNECTED', 'Verbunden in %s ms');
+define('I_WS_DISCONNECTED', 'Getrennt');
+define('I_WS_RECONNECTING', 'Verbindung wiederhergestellt...');
+define('I_WS_RECONNECTED', 'Wiederverbunden in %s ms');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Ein solcher Abschnitt existiert nicht');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'Abschnitt ist ausgeschaltet');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'Eine solche Aktion gibt es nicht');

@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', '您的帐户类型刚刚被关闭');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', '现在没有可供您访问的部分');
 define('I_THROW_OUT_SESSION_EXPIRED', '您的会话不再可用。继续重新登录吗？');
 
+define('I_WS_CONNECTED', '在 %s 毫秒内连接');
+define('I_WS_DISCONNECTED', '断开连接');
+define('I_WS_RECONNECTING', '正在重新连接...');
+define('I_WS_RECONNECTED', '在 %s 毫秒内重新连接');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', '该部分不存在');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', '部分已关闭');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', '这样的动作不存在');

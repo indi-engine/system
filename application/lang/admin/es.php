@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'Su cuenta es del tipo que acaba de ser desact
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Ahora ya no hay secciones accesibles para usted.');
 define('I_THROW_OUT_SESSION_EXPIRED', 'Tu sesión ya no está disponible. ¿Continuar para volver a iniciar sesión?');
 
+define('I_WS_CONNECTED', 'Conectado en %s ms');
+define('I_WS_DISCONNECTED', 'Desconectado');
+define('I_WS_RECONNECTING', 'Reconectando...');
+define('I_WS_RECONNECTED', 'Reconectado en %s ms');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Tal sección no existe.');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'La sección está apagada');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'Tal acción no existe.');
