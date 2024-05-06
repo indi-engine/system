@@ -42,7 +42,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         enumset('alteredField', 'jumpCreate', 'n', ['title' => 'Disabled', 'move' => '', 'boxColor' => '000#FFFFFF']);
         enumset('alteredField', 'jumpCreate', 'y', ['title' => 'Enabled', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-create.png']);
         grid('alteredFields', 'jumpCreate', ['gridId' => 'jump', 'move' => 'jumpSectionActionId', 'icon' => 'resources/images/icons/btn-icon-create.png']);
-        alteredField('grid', 'fieldId', ['jumpCreate' => 'y']);
+        alteredField('grid', 'fieldId', ['jumpCreate' => 'y', 'jumpArgs' => 'parent/{parent.entityId}/']);
     }
     public function missing2Action() {
         field('notice', 'tplIncAudio', ['title' => 'Звук', 'elementId' => 'upload', 'move' => 'tplIncBody']);
