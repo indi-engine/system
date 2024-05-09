@@ -3368,7 +3368,7 @@ function msg($msg, $success = true, $to = null) {
             // Get destination channge tokens
             $to = db()->query("SELECT `token` FROM `realtime` WHERE `id` IN ($in)")->col();
         }
-    }
+    } else $fn = false;
 
     // Prepare msg
     $msg = [
@@ -3632,4 +3632,126 @@ function refresh(string $panel, ...$args) {
 
     // Refresh data and publish via websocket into recipients' UIs identified by $where clause
     ws(['panel' => forward_static_call_array(['panel', $panel], $args)], $where);
+}
+
+/**
+ * Show and update progress via websockets.
+ *
+ * Usage:
+ *  1.progress('Some operation', $total = 20);
+ *    // $total is written to Indi::$progress[$pid]['total']
+ *    // Progressbar is initially shown in UI with that message and zero progress
+ *  2.progress(2, 'Processing: {percent}%');
+ *    // 'Processing: 15%'-message will be shown in progress bar
+ *    // value for {percent} is calculated based on $total remembered on prev step and '2' which is an 0-based index
+ *    // which is also available for use in message as {index} and saved and updated in Indi::$progress[$pid]['index']
+ *    // but keep in mind that {index} is 1-based and is '3' in oppose to Indi::$progress[$pid]['index'] which is 0-based
+ *    // Also, {total} is available for use in message
+ *  3.progress(false, 'Some problem happened');
+ *    // Make progressbar div to be red with a given message
+ *    // If operation needs to be resumed - call as per point #2
+ *
+ * @param $percent
+ */
+function progress(mixed $arg1, mixed $arg2 = null) {
+
+    // Get PID of current process
+    $pid = getmypid();
+
+    // Basic params
+    $data = [
+        'type' => 'progress',
+        'to' => CID,
+        'process' => getmypid(),
+    ];
+
+    // If first argument is a string and 2nd arg is an integer - assume it's
+    // an operation title and the total count of iterations to be processed
+    if (is_string($arg1) && is_int($arg2)) {
+
+        // Indicate the very beginning of a process
+        $data += [
+            'message' => $arg1,
+            'percent' => 0,
+        ];
+
+        // Remember index, percent and total
+        Indi::$progress[$pid]['index'] = 0;
+        Indi::$progress[$pid]['percent'] = 0;
+        Indi::$progress[$pid]['total'] = $arg2;
+
+    // Else if just an iteration index is given
+    } else if (is_numeric($arg1)) {
+
+        // Calc percent of total
+        $data['percent'] = round(($arg1 + 1) / Indi::$progress[$pid]['total'] * 100, 1);
+
+        // Update iteration index
+        Indi::$progress[$pid]['index'] = $arg1;
+
+        // If progress was now really changed - return
+        if ((Indi::$progress[$pid]['percent'] ?? 0) === $data['percent']) return;
+
+        // Remember last progress
+        Indi::$progress[$pid]['percent'] = $data['percent'];
+
+        // If there was some failure last time but we reached this line, it means progress was resumed
+        if ((Indi::$progress[$pid]['success'] ?? 0) === false) {
+
+            // So we make sure the last message shown before the failure - is shown back
+            // unless the message is explicitly given in $arg2
+            $data['message'] = $arg2 ?? Indi::$progress[$pid]['message'];
+
+            // Forget failure
+            unset(Indi::$progress[$pid]['success']);
+
+        // Else if message is explicitly given with $arg2
+        } else if ($arg2) {
+
+            // Use it and remember
+            $data['message'] = $arg2;
+        }
+
+    // Else if process should be indicated as failed or completed
+    } else if (is_bool($arg1)) {
+
+        // Setup success-flag
+        Indi::$progress[$pid]['success'] = $arg1;
+
+        // Setup message
+        $data['message'] = $arg2;
+
+        // If it's failure indication
+        if (Indi::$progress[$pid]['success'] === false) {
+
+            // Append red background color
+            $data += [
+                'bg' => '#e3495a'
+            ];
+        }
+    }
+
+    // If message is set
+    if ($data['message'] ?? 0) {
+
+        // Prepare values to replace variable names if any in message
+        $tpl = [
+            'index'   => Indi::$progress[$pid]['index'] + 1,
+            'total'   => Indi::$progress[$pid]['total'],
+            'percent' => round(Indi::$progress[$pid]['percent'])
+        ];
+
+        // Do replace if any in message
+        $data['message'] = preg_replace_callback(
+            '~{(?<var>index|percent|total)}~',
+            fn($m) => $tpl[$m['var']],
+            $data['message']
+        );
+
+        // Remember message
+        Indi::$progress[$pid]['message'] = $data['message'];
+    }
+
+    // Send via websockets
+    Indi::ws($data);
 }

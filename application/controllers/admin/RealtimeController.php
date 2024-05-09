@@ -589,9 +589,31 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // as command 'php indi realtime/example --instance=$dbname'
         $this->pipe();
 
-        // Make sure process will run at least 10 seconds
-        for ($i = 0; $i < 10; $i++) {
-            sleep(1);
+        // Show progressbar with initial text
+        progress('Processing...', $total = 1000);
+
+        // Run the $total number of iterations
+        for ($index = 0; $index < $total; $index ++) {
+
+            // Delay 20ms
+            usleep(20000);
+
+            // Update progress
+            progress($index, "Processing: {percent}%");
+
+            // Imitate error
+            if ($index === 50) {
+
+                // Make progress to be red with error message
+                progress(false, 'Some error happened');
+
+                // Wait a sec, then change to initial color and last message
+                // before error, if new message is not given explicitly
+                sleep(1);
+            }
         }
+
+        // Indicate that process is done. Optional
+        // progress(true, 'Completed');
     }
 }

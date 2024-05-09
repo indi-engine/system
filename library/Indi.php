@@ -70,6 +70,13 @@ class Indi {
     public static $answer = [];
 
     /**
+     * Array of [pid => info] pairs, where info is an array containing 'total', 'index', 'percent' and other keys
+     *
+     * @var array
+     */
+    public static $progress = [];
+
+    /**
      * Rabbitmq-channel instance
      *
      * @var \PhpAmqpLib\Channel\AMQPChannel

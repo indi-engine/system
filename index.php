@@ -28,7 +28,7 @@ $_SERVER['STD'] ??= null; $_SERVER['REDIRECT_STD'] ??=null; $GLOBALS['last'] = n
 if (!$_SERVER['STD'] && $_SERVER['REDIRECT_STD']) $_SERVER['STD'] = $_SERVER['REDIRECT_STD'];
 
 // Setup WIN constant, indicating whether we're on Windows
-define('WIN', preg_match('~^WIN~', PHP_OS));
+if (!defined('WIN')) define('WIN', preg_match('~^WIN~', PHP_OS));
 
 // Setup DEV constant, indicating whether we're on localhost
 define('DEV', preg_match('~local~', $_SERVER['HTTP_HOST']));
@@ -54,7 +54,7 @@ define('URI', $_SERVER['REQUEST_URI'] == '/' ? '/' : rtrim($_SERVER['REQUEST_URI
 // Setup CMD constant, indicating that this execution was not started via Indi::cmd()
 // In case if execution WAS started via Indi::cmd(), this constant will be already defined,
 // so constant's value won't be overwritten by below-line definition
-define('CMD', false);
+if (!defined('CMD')) define('CMD', false);
 
 // Setup APP constant, indicating that this execution was initiated using Indi Engine standalone client-app
 define('APP', array_key_exists('HTTP_INDI_AUTH', $_SERVER));
