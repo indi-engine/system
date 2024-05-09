@@ -3653,7 +3653,7 @@ function refresh(string $panel, ...$args) {
  *
  * @param $percent
  */
-function progress(mixed $arg1, mixed $arg2 = null) {
+function progress($arg1, $arg2 = null) {
 
     // Get PID of current process
     $pid = getmypid();
