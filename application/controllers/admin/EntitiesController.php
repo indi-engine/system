@@ -385,7 +385,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         if ($isOutdated || $this->exec('git status --porcelain composer.lock')) {
 
             // Run composer update
-            if ($isOutdated) $this->exec('composer update indi-engine/*');
+            if ($isOutdated) $this->exec('composer update -W indi-engine/*');
 
             // Add to commit
             $this->exec('git add composer.lock');
