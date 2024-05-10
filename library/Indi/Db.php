@@ -245,7 +245,7 @@ class Indi_Db {
 
             // Prepare info about quantities and sums where entities instances are counted in
             $inQtySumA = [];
-            if ($entityIdByTable['inQtySum']) {
+            if ($entityIdByTable['inQtySum'] ?? 0) {
                 foreach(self::$_instance->query('SELECT * FROM `inQtySum`')->all() as $_inQtySumI) {
                     if ($_inQtySumI['toggle'] === 'n') continue;
                     $inQtySumI = ['type' => $_inQtySumI['type']];
@@ -417,9 +417,9 @@ class Indi_Db {
                 if ($fieldI['original']['relation'] == '6') {
                     $fieldI['nested']['enumset'] = new Indi_Db_Table_Rowset([
                         'table' => 'enumset',
-                        'rows' => $fEnumsetA[$fieldI['original']['id']],
+                        'rows' => $fEnumsetA[$fieldI['original']['id']] ?? [],
                         'rowClass' => 'Enumset_Row',
-                        'found' => count($fEnumsetA[$fieldI['original']['id']] ?: [])
+                        'found' => count($fEnumsetA[$fieldI['original']['id']] ?? [])
                     ]);
                     unset($fEnumsetA[$fieldI['id'] ?? null]);
                 }
@@ -830,8 +830,11 @@ class Indi_Db {
                 // Set error code
                 $errcode = 0;
 
+                // Get trace
+                $trace = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1);
+
                 // Get line and file
-                extract(array_pop(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1)));
+                extract(array_pop($trace));
             }
         }
 

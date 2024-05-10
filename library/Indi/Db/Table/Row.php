@@ -900,7 +900,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If scope's tree-flag is true
-                if ($scope['tree']) {
+                if ($scope['tree'] ?? null) {
 
                     // Get raw tree
                     $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
@@ -912,13 +912,13 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
 
                 // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
+                } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
                 // Get offset
-                $offset = $scope['rowsOnPage'] * $scope['page'];
+                $offset = $scope['rowsOnPage'] * ($scope['page'] ?? null);
 
                 // Build usable WHERE clause
-                $where = rif($scope['WHERE'], 'WHERE $1');
+                $where = rif($scope['WHERE'] ?? null, 'WHERE $1');
 
                 // Build usable ORDER BY clause
                 $order = rif($order, 'ORDER BY $1');
@@ -927,7 +927,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    if ($scope['found'] > $offset) {
+                    if (($scope['found'] ?? null) > $offset) {
 
                         // Get id of current page's last record
                         $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
@@ -1004,10 +1004,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                     ];
 
                     // Decrement found
-                    $scope['found'] --;
+                    $scope['found'] ??= null; $scope['found'] --;
 
                     // Adjust summary if need
-                    foreach (ar($scope['sum']) as $sumCol)
+                    foreach (ar($scope['sum'] ?? null) as $sumCol)
                         $byChannel[$channel][$context]['sum'][$sumCol]
                             = -$this->$sumCol;
 
@@ -2220,7 +2220,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $cEntryR = m($cField->relation)->row($cValue);
 
                 // Get it's value
-                $cValueForeign = $cEntryR->{$cField_foreign->alias};
+                $cValueForeign = $cEntryR->{$cField_foreign->alias} ?? null;
 
                 // If current field itself is not linked to any entity, it mean that this entity would be identified by
                 // the value of consider-entry's foreign field's value, and in this case there may be a need to anyway
@@ -2244,7 +2244,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if ($this->_comboDataConsiderWHERE($where, $fieldR, $cField, $cValue, $considerR->required)
                     && array_key_exists($cField_alias, $this->_modified)
                     && $this->_modified[$cField_alias] != $this->_original[$cField_alias]
-                    && ($this->id || (!$this->_system['consider'] && $this->_system['consider'][$cField_alias])))
+                    && ($this->id || (!($this->_system['consider'] ?? null) && ($this->_system['consider'][$cField_alias] ?? null))))
                     $hasModifiedConsiderWHERE = true;
 
             // Else it mean that current-field is linked to variable entity, and that entity is identified by $cValue, so
@@ -2276,7 +2276,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_null($order)) {
             if ($relatedM->comboDataOrder ?? null) {
                 $order = $relatedM->comboDataOrder;
-                if (func_num_args() > 7 && !func_get_arg(7) && $relatedM->comboDataOrderDirection) $dir = $relatedM->comboDataOrderDirection;
+                if (func_num_args() > 7 && !func_get_arg(7) && ($relatedM->comboDataOrderDirection ?? null)) $dir = $relatedM->comboDataOrderDirection;
                 if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
             } else if ($relatedM->fields('move')) {
                 $order = 'move';
@@ -2376,7 +2376,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             foreach ($dataRs as $dataR) $dataR->system('indent', indent($dataR->system('level')));
 
             // Unset found rows to prevent disabling of paging up
-            if ($unsetFoundRows) $dataRs->found('unset');
+            if ($unsetFoundRows ?? null) $dataRs->found('unset');
 
         // Otherwise
         } else {
@@ -2407,12 +2407,12 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                     // If $order is a name of a column, and not an SQL expression (except l10n-expression)
                     // we setup results start point as current row's column's value
-                    if (!preg_match('/\(/', $order) || $l10n) {
-                        if (preg_match('~/span>~', $keyword)) {
+                    if (!preg_match('/\(/', $order) || ($l10n ?? null)) {
+                        if (preg_match('~/span>~', $keyword ?? null)) {
                             $order = 'SUBSTRING_INDEX(' . $order . ', "/span>", -1)';
                             $keyword = strip_tags($keyword);
                         }
-                        $where['lookup'] = $order . ' '. (is_null($page) || $page > 0 ? ($dir == 'DESC' ? '<=' : '>=') : ($dir == 'DESC' ? '>' : '<')).' "' . str_replace('"', '\"', $keyword) . '"';
+                        $where['lookup'] = $order . ' '. (is_null($page) || $page > 0 ? ($dir == 'DESC' ? '<=' : '>=') : ($dir == 'DESC' ? '>' : '<')).' "' . str_replace('"', '\"', $keyword ?? null) . '"';
                     }
 
                     // We set this flag to true, because the fact that we are in the body of current 'else if' operator
@@ -2445,7 +2445,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // we will not use selected value as start point for results, because there will be a sutiation
                 // that PgUp or PgDn should be pressed to view all available options in combo, instead of being
                 // available all initially
-                if ($resultsShouldBeStartedFromSelectedValue && $found <= $limit) {
+                if (($resultsShouldBeStartedFromSelectedValue ?? null) && $found <= $limit) {
                     unset($where['lookup']);
                 }
 
@@ -2546,7 +2546,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Get distinct values
             $distinctGroupByFieldValues = [];
             foreach ($dataRs as $dataR)
-                if (!$distinctGroupByFieldValues[$dataR->{$fieldR->param('groupBy')}])
+                if (!($distinctGroupByFieldValues[$dataR->{$fieldR->param('groupBy')}] ?? null))
                     $distinctGroupByFieldValues[$dataR->{$fieldR->param('groupBy')}] = true;
 
             // Get group field
@@ -2647,10 +2647,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $system = [];
 
                 // If color was detected as a box, append $system['boxColor'] property
-                if ($info['box']) $system['boxColor'] = $info['color'];
+                if ($info['box'] ?? 0) $system['boxColor'] = $info['color'];
 
                 // If non-box color was detected - setup a 'color' property
-                if ($info['style']) $system['color'] = $info['color'];
+                if ($info['style'] ?? 0) $system['color'] = $info['color'];
 
                 // Setup primary option data
                 $groupByOptions [$groupByR->$keyProperty]= [
@@ -2961,7 +2961,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $cEntryR = m($cField->relation)->row($cValue);
 
                             // Spoof model
-                            $model = $cValue = $cEntryR->{$cField_foreign->alias};
+                            $model = $cValue = $cEntryR->{$cField_foreign->alias} ?? null;
                         }
                     }
 
@@ -4775,7 +4775,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!$this->model()->hasRole()) return;
 
         // If current entry already has a mismatch-message for 'email' field - return
-        if ($this->_mismatch['email']) return;
+        if ($this->_mismatch['email'] ?? 0) return;
 
         // If `email` prop became empty
         if (!$this->email) {
@@ -4788,7 +4788,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Get the list of entities, that should be skipped while checking username unicity
-        $exclude = $this->model()->_roleFrom;
+        $exclude = $this->model()->_roleFrom ?? null;
 
         // For each account model
         foreach (Indi_Db::role() as $entityId) {
@@ -6693,7 +6693,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If $flush arg is not explicitly given, override it's default value `true` - to `false`,
         // for cases when immediate flushing is turned off for current *_Row instance
-        if (func_num_args() < 3 && $this->_system['mflush'] === false) $flush = false;
+        if (func_num_args() < 3 && ($this->_system['mflush'] ?? null) === false) $flush = false;
 
         // Foreach prop having mismatch rules
         foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
@@ -6705,22 +6705,22 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($fieldR = $this->field($prop)) {
 
                 // If prop is required, but has empty/null/zero value - flush error
-                if ($rule['req'] && ($this->zero($prop) || !$this->$prop)) $flush
+                if (($rule['req'] ?? 0) && ($this->zero($prop) || !$this->$prop)) $flush
                     ? mflush($prop, sprintf(I_MCHECK_REQ, $fieldR->title))
                     : $this->_mismatch[$prop] = sprintf(I_MCHECK_REQ, $fieldR->title);
 
                 // If prop's value should match certain regular expression, but it does not - flush error
-                else if ($rule['rex'] && !$this->zero($prop) && !Indi::rexm($rule['rex'], $this->$prop)) $flush
+                else if (($rule['rex'] ?? 0) && !$this->zero($prop) && !Indi::rexm($rule['rex'], $this->$prop)) $flush
                     ? mflush($prop, sprintf(I_MCHECK_REG, $this->$prop, $fieldR->title))
                     : $this->_mismatch[$prop] = sprintf(I_MCHECK_REG, $this->$prop, $fieldR->title);
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
-                else if ($rule['key'] && !$this->zero($prop) && !$this->foreign($prop)) $flush
+                else if (($rule['key'] ?? 0) && !$this->zero($prop) && !$this->foreign($prop)) $flush
                     ? mflush($prop, sprintf(I_MCHECK_KEY, ucfirst(m($fieldR->relation)->table()), $this->$prop))
                     : $this->_mismatch[$prop] = sprintf(I_MCHECK_KEY, ucfirst(m($fieldR->relation)->table()), $this->$prop);
 
                 // If prop's value should be unique within the whole database table, but it's not - flush error
-                else if ($rule['unq'] && !$this->zero($prop) && $this->model()->row([
+                else if (($rule['unq'] ?? 0) && !$this->zero($prop) && $this->model()->row([
                     '`' . $prop . '` = "' . $this->$prop . '"', '`id` != "' . $this->id . '"'
                     ])) $flush
                     ? mflush($prop, sprintf(I_MCHECK_UNQ, $this->$prop, $fieldR->title))
@@ -7638,7 +7638,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Prepare view params
         $view = [
             'subTplData' => [
-                'attrs' => $attrs,
+                'attrs' => $attrs ?? null,
                 'pageUpDisabled' => $this->$name ? 'false' : 'true',
             ],
             'store' => $options
@@ -7770,7 +7770,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 return $this;
 
             // Else get value of a given $prop for a given $lang
-            } else return $this->_language[$prop][$lang];
+            } else return $this->_language[$prop][$lang] ?? null;
         }
 
         // If $prop, $lang and $value args given

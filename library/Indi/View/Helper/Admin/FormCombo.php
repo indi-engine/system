@@ -156,7 +156,7 @@ class Indi_View_Helper_Admin_FormCombo {
             // Setup an info about selected value
             if (strlen($key)) {
                 $selected = [
-                    'title' => $options[$key]['title'],
+                    'title' => $options[$key]['title'] ?? null,
                     'value' => $key
                 ];
             } else {
@@ -181,7 +181,7 @@ class Indi_View_Helper_Admin_FormCombo {
         ) {
 
             // Setup a key
-            if (($this->getRow()->id && !$comboDataRs->enumset) || !is_null($this->getRow()->$name)) {
+            if (($this->getRow()->id && !($comboDataRs->enumset ?? 0)) || !is_null($this->getRow()->$name)) {
 
                 if (preg_match('/Sibling/', get_class($this))) {
                     $key = $this->getRow()->id;
@@ -226,7 +226,7 @@ class Indi_View_Helper_Admin_FormCombo {
             $exploded = explode(',', $selected['value']);
             $attrs = [];
             for ($i = 0; $i < count($exploded); $i++) {
-                if ($options[$exploded[$i]]['attrs']) {
+                if ($options[$exploded[$i]]['attrs'] ?? 0) {
                     foreach ($options[$exploded[$i]]['attrs'] as $k => $v) {
                         $attrs[] = $k . '-' . $exploded[$i] . '="' . $v . '"';
                     }
@@ -241,7 +241,7 @@ class Indi_View_Helper_Admin_FormCombo {
             'data' => array_values($options),
             'found' => $comboDataRs->found(),
             'page' => $comboDataRs->page(),
-            'enumset' => $comboDataRs->enumset,
+            'enumset' => $comboDataRs->enumset ?? null,
             'titleMaxLength' => $this->titleMaxLength
         ];
 
@@ -334,7 +334,7 @@ class Indi_View_Helper_Admin_FormCombo {
     public static function detectColor($option, $flag = false) {
 
         // Color detection in different places within one certain option
-        ($v = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', is_string($option['value']) ? $option['value'] : '', $color)) ||
+        ($v = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', is_string($option['value'] ?? 0) ? $option['value'] : '', $color)) ||
         ($t = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', $option['title'], $color)) ||
         ($s = preg_match('/color[:=][ ]*[\'"]{0,1}([#a-zA-Z0-9]+)/i', $option['title'], $color)) ||
         ($b = preg_match('/<span[^>]*\sclass="[^"]*i-color-box[^"]*"[^>]*\sstyle="background: ([#0-9a-zA-Z]{3,20});[^"]*"[^>]*>/', $option['title'], $color)) ||
@@ -360,7 +360,7 @@ class Indi_View_Helper_Admin_FormCombo {
                 // If there is no 'style' property within $option variable -
                 // set it as 'color' and 'font' css properties specification
                 if (!($option['style'] ?? null)) $option['style'] = ' style="color: ' . $option['color'] . '; ' . ($option['cssStyle'] ?? null) . '"';
-                if (!$option['textColor']) $option['textColor'] = $option['color'];
+                if (!($option['textColor'] ?? 0)) $option['textColor'] = $option['color'];
 
             // Else if color was not detected in 'title' property as 'color' css property - we assume that color should
             // be represented as a color-box

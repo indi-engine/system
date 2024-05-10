@@ -941,7 +941,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             // Apply jump markup for each value
                             foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
                                 $jump = rif($j, 'jump="'. str_replace('{id}', $id, $j) . '"');
-                                $color = rif($rgb[$id], 'style="color: $1;"');
+                                $color = rif($rgb[$id] ?? 0, 'style="color: $1;"');
                                 $with = "<span $jump $color>";
                                 $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
                             }
@@ -954,7 +954,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     } else {
 
                         // Get id to be used as replacement for '{id}'
-                        if ($typeA['foreign']['single'][$columnI]) {
+                        if ($typeA['foreign']['single'][$columnI] ?? 0) {
                             $id = $data[$pointer][$columnI];
                         } else {
                             $id = $data[$pointer]['id'];
@@ -988,9 +988,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Provide icon overflow feature for columns representing multiple foreign key fields
                 if ($src = $renderCfg[$columnI]['icon'] ?? null)
                     if (($typeA['foreign']['multiple'][$columnI] ?? null)
-                        && !$typeA['enumset'][$columnI])
+                        && !($typeA['enumset'][$columnI] ?? null))
                         $data[$pointer]['_render'][$columnI] = rif(
-                            $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI],
+                            $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI],
                             '<img src="' . $src . '" class="i-cell-img">$1');
 
                 // Make sure numeric values to be have really numeric type
@@ -1009,7 +1009,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $color = $r->$columnI ? $r->foreign($columnI)->rgb($m[1]) : '';
 
                     // If it's a numeric column
-                    if ($typeA['numeric'][$columnI]) {
+                    if ($typeA['numeric'][$columnI] ?? 0) {
                         // Get floating value
                         $value = (float) $data[$pointer][$columnI];
 
@@ -1065,7 +1065,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($composeTip as $column => $template) {
 
                 // Get column value. Wrap into <span> if not yet wrapped
-                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column];
+                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column] ?? null;
                 if (!preg_match('~<span[ >]~', $render)) $render = wrap($render, '<span>');
 
                 // Compose column value's tooltip
@@ -1593,7 +1593,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $cEntryR = m($cField->relation)->row($cValue);
 
                         // Get it's value
-                        $cValueForeign = $cEntryR->{$cField_foreign->alias};
+                        $cValueForeign = $cEntryR->{$cField_foreign->alias} ?? null;
 
                         // Add mapping
                         $entityIdByConsiderFieldA[$cValue] = $cValueForeign;
@@ -1613,7 +1613,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // If there are already items exist within group, representing keys that are related
                         // to certain entity id (entity id is a consider as per 'Variable entity' concept),
                         // - we use this group as array which will be a first array in list of merged arrays
-                        is_array($distinctA[$entityId]) ? $distinctA[$entityId] : [],
+                        is_array($distinctA[$entityId] ?? null) ? $distinctA[$entityId] : [],
 
                         // If foreign key field store relation ability is 'many', and foreign key value of
                         // current row is not empty, we convert it to array by exploding by comma, and append
@@ -1736,7 +1736,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         if (is_string($subs['foreign'])) {
                             $foreignRs[$entityId]->foreign($subs['foreign']);
                         } else if (is_array($subs['foreign']) && (key($subs['foreign']) == '0')) {
-                            $foreignRs[$entityId]->foreign($subs['foreign'][0], $subs['foreign'][1]);
+                            $foreignRs[$entityId]->foreign($subs['foreign'][0], $subs['foreign'][1] ?? null);
                         } else {
                             $foreignRs[$entityId]->foreign($subs['foreign']);
                         }
@@ -1962,7 +1962,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if ($this->optgroup ?? null) $by = $this->optgroup['by'];
 
         // Detect key property for options
-        $keyProperty = $this->enumset ? 'alias' : 'id';
+        $keyProperty = ($this->enumset ?? null) ? 'alias' : 'id';
 
         // Option title maximum length
         $titleMaxLength = 0;
@@ -2167,7 +2167,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @return Indi_Db_Table_Row|null
      */
     public function at($idx) {
-        return $this->_rows[$idx];
+        return $this->_rows[$idx] ?? null;
     }
 
     /**

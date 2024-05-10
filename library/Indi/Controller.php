@@ -813,8 +813,8 @@ class Indi_Controller {
 
         // Get combo data rowset
         $comboDataRs = ($post->keyword ?? null)
-            ? $this->row->getComboData($for, $post->page, $post->keyword,    true, $where, $field, $order, $dir)
-            : $this->row->getComboData($for, $post->page, $this->row->$for, false, $where, $field, $order, $dir, $offset);
+            ? $this->row->getComboData($for, $post->page ?? null, $post->keyword,    true, $where, $field, $order, $dir)
+            : $this->row->getComboData($for, $post->page ?? null, $this->row->$for, false, $where, $field, $order, $dir, $offset);
 
         // Prepare combo options data
         $comboDataA = $comboDataRs->toComboData($field->params);
@@ -855,7 +855,7 @@ class Indi_Controller {
     public function callParent() {
 
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $trace = array_slice(debug_backtrace(), 1, 1); $call = array_pop($trace);
 
         // If it's a panel-specific function - trim panel type from function name
         $func = preg_replace('~^(plan|tile|grid)_~', '', $call['function']);

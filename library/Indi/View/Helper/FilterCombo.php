@@ -132,7 +132,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
                 $connector_in = db()->query('
                   SELECT DISTINCT IFNULL(`' . $connector->alias . '`, 0)
                   FROM `' . $tbl . '`' .
-                  (strlen($sw) ? 'WHERE ' . $sw : '')
+                  (strlen($sw ?? null) ? 'WHERE ' . $sw : '')
                 )->col();
 
                 // Get the distinct list of possibilities

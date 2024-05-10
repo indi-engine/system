@@ -10,8 +10,8 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
             //$this->comboDataOrderColumn = $order;
         } else {
             if (is_array($order)) $order = array_pop($order);
-            $order = array_shift(explode(', `', $order));
-            $this->comboDataOrderDirection = array_pop(explode(' ', $order));
+            $order = explode(', `', $order); $order = array_shift($order);
+            $_ = explode(' ', $order); $this->comboDataOrderDirection = array_pop($_);
             $this->comboDataOrderColumn = trim(preg_replace('/ASC|DESC/', '', $order), ' `');
             if (preg_match('/\(/', $order)) $this->comboDataOffset = uri('aix') - 1;
         }

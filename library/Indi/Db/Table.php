@@ -241,7 +241,7 @@ class Indi_Db_Table
         if ($this->_fraction === null || $this->_fraction == 'system') return 'adminSystemUi';
 
         // Else if values defined for both 'field' and 'value' keys within $this->_fraction
-        if ($this->_fraction['value']) return $this->_fraction['value'][$r->{$this->_fraction['field']}];
+        if ($this->_fraction['value'] ?? null) return $this->_fraction['value'][$r->{$this->_fraction['field']}];
 
         // Else if value defined only for 'field' key - go upper
         return $r->foreign($this->_fraction['field'])->fraction();
@@ -734,7 +734,7 @@ class Indi_Db_Table
                         // we shift both start and end points because disabled items should be ignored
                         // and start and end points of page range should be calculated with taking in attention
                         // about disabled options.
-                    } else if ($disabledA[$id] && (is_null($page) || $page > 0)) {
+                    } else if (($disabledA[$id] ?? null) && (is_null($page) || $page > 0)) {
                         if (!$selected || $i >= $selectedIndex) {
                             $start++;
                             $end++;
@@ -791,7 +791,7 @@ class Indi_Db_Table
             if (!$keyword) $disabledA = array_keys($disabledA);
 
             // We setup 'disabled' property only for rows, which are to be returned
-            foreach ($disabledA as $disabledI) if ($data[$disabledI]) $data[$disabledI]['_system']['disabled'] = true;
+            foreach ($disabledA as $disabledI) if ($data[$disabledI] ?? 0) $data[$disabledI]['_system']['disabled'] = true;
         }
 
         // Set 'parentId' system property. Despite of existence of parent branch identifier in list of properties,
@@ -1207,7 +1207,7 @@ class Indi_Db_Table
      * @return string
      */
     public function table($base = false) {
-        return $base && $this->_baseTable ? $this->_baseTable : $this->_table;
+        return $base && ($this->_baseTable ?? 0) ? $this->_baseTable : $this->_table;
     }
 
     /**

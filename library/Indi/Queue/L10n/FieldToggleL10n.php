@@ -11,20 +11,20 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
      *
      * @param array $params
      */
-    public function chunk($params) {
+    public function chunk($params) { $parts = explode('_', __CLASS__);
 
         // Create `queueTask` entry
         $queueTaskR = m('QueueTask')->new([
-            'title' => 'L10n_' . array_pop(explode('_', __CLASS__)),
+            'title' => 'L10n_' . array_pop($parts),
             'params' => json_encode($params),
-            'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
+            'queueState' => ($params['toggle'] ?? null) == 'n' ? 'noneed' : 'waiting'
         ]);
 
         // Save `queueTask` entries
         $queueTaskR->save();
 
         // Get table and field
-        list ($table, $field, $entry) = explode(':', $params['field']);
+        $parts = explode(':', $params['field']); $table = $parts[0]; $field = $parts[1]; $entry = $parts[2] ?? null;
 
         //
         $fieldR = $entry ? cfgField($table, $entry, $field) : field($table, $field);
@@ -226,7 +226,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
-            $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
+            $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . (($params['toggle'] ?? null) == 'n' ? 'items' : 'queue') . '"';
 
             // Split `location` on $table and $field
             list ($table, $field) = explode(':', $queueChunkR->location);
@@ -237,7 +237,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                 : field($table, $field);
 
             // Convert column type to TEXT
-            if ($params['toggle'] != 'n') {
+            if (($params['toggle'] ?? null) != 'n') {
                 if ($table == 'param' && $field == 'cfgValue') {
                     list ($_table, $_field, $_entry) = explode(':', $params['field']);
                     $fieldR = cfgField($_table, $_entry, $_field, ['columnTypeId' => 'TEXT']);
@@ -253,7 +253,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
             m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, $hasLD) {
 
                 // If localization is going to turned Off - use `queueItem` entry's `value` as target value, else
-                if ($params['toggle'] == 'n') $value = $r->value; else {
+                if (($params['toggle'] ?? null) == 'n') $value = $r->value; else {
 
                     // Get cell's current value
                     $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->cell();
@@ -304,8 +304,8 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
                     field($table, $field, ['columnTypeId' => 'VARCHAR(255)']);
 
             // Switch field's l10n-prop from intermediate to final value
-            if ($params['toggle'] != 'n' || !$queueChunkR->queueChunkId || !$hasLD)
-                $fieldR->set(['l10n' => $params['toggle'] ?: 'y'])->save();
+            if (($params['toggle'] ?? null) != 'n' || !$queueChunkR->queueChunkId || !$hasLD)
+                $fieldR->set(['l10n' => $params['toggle'] ?? 'y'])->save();
 
             // Remember that our try to count was successful
             $queueChunkR->set(['applyState' => 'finished'])->basicUpdate();
@@ -324,7 +324,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
     public function itemsBytesMultiplier($params, $setter = false) {
 
         // If we're turning field's localization off, or using setter method instead of actual api call - return 0
-        if ($params['toggle'] == 'n' || $setter) return 0;
+        if (($params['toggle'] ?? null) == 'n' || $setter) return 0;
 
         // If target-param is comma-separated string - return number of items
         if (is_string($params['target'])) return count(ar($params['target']));
