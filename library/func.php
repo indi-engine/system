@@ -78,6 +78,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
             || strpos($message, 'Undefined property' ) !== false
             || preg_match('~Trying to access array offset on value of type null~', $message)
             || preg_match('~Attempt to read property "[^"]*" on null~', $message)
+            || preg_match('~Declaration of .*? should be compatible with~', $message)
         ) {
 
             // Proceed with execution
