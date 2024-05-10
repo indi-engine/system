@@ -15,7 +15,7 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = section($value)->id;
             else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
-            else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
+            else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id ?? null;
             else if ($columnName == 'elementId') $value = element($value)->id;
             else if ($columnName == 'accessExcept') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')

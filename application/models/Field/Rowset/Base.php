@@ -300,7 +300,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
 
             // Get index
             if ($before === true) $before = key($this->_aliases);
-            $idx = $this->_aliases[$before];
+            $idx = $this->_aliases[$before] ?? null;
 
             // Inject new value in $this->_aliases array
             $this->_aliases = array_flip($this->_aliases);

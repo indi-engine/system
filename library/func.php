@@ -493,7 +493,7 @@ function ua($uaK) {
  * @param $rgb
  * @return array
  */
-function rgb2hsl($rgb) {
+function rgb2hsl($rgb) { $h = null;
 
     // This code was got somethere on the internet, so i feel too lazy to write a proper comments
     $varR=$rgb[0]/255;$varG=$rgb[1]/255;$varB=$rgb[2]/255;$varMin=min($varR,$varG,$varB);$varMax=max($varR,$varG,$varB);
@@ -985,7 +985,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
  * @return bool
  */
 function isIE() {
-    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT']);
+    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT'] ?? null);
 }
 
 /**
@@ -1514,7 +1514,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
     foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
 
         // Shortcut to $data[$prop]
-        $value = $data[$prop];
+        $value = $data[$prop] ?? null;
 
         // Get meta
         $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : [];
@@ -1563,7 +1563,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
             $const = trim($expr[3] ?? null, ':') ?: $c . 'KEY';
 
             // Setup $s as a flag indicating whether *_Row (single row) or *_Rowset should be fetched
-            $s = !$expr[2];
+            $s = !($expr[2] ?? null);
 
             // Setup WHERE clause and method name to be used for fetching
             $w = $s ? '`id` = "' . $value . '"' : '`id` IN (' . $value . ')';
@@ -1753,7 +1753,7 @@ function field($table, $alias, array $ctor = []) {
     // Try to find `field` entry
     $fieldR = m('Field')->row([
         '`entityId` = "' . $entityId . '"',
-        rif($entryColumn, '`entry` = "' . (int) $ctor['entry'] . '"', 'TRUE'),
+        rif($entryColumn, '`entry` = "' . (int) ($ctor['entry'] ?? null) . '"', 'TRUE'),
         '`' . $byprop . '` = "' . $alias . '"'
     ]);
 
@@ -1775,7 +1775,7 @@ function field($table, $alias, array $ctor = []) {
     if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $fieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $fieldR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `field` entry (newly created, or existing but updated)
     return $fieldR;
@@ -1821,10 +1821,10 @@ function sqlIndex($table, $alias, $ctor = []) {
     if ($ctor['entityId'] && $entry->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // If 'columns' is not given by $ctor - use $alias, as there is usable value of comma-separated list of columns
-    if (!$ctor['columns']) $ctor['columns'] = $ctor['alias'];
+    if (!($ctor['columns'] ?? null)) $ctor['columns'] = $ctor['alias'];
 
     // Assign other props and save
-    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $entry->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `sqlIndex` entry (newly created, or existing but updated)
     return $entry;
@@ -2027,10 +2027,10 @@ function section($alias, array $ctor = []) {
     if (!$sectionR) $sectionR = m('Section')->new();
 
     // Assign `entityId` prop first
-    if ($ctor['entityId'] && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
+    if (($ctor['entityId'] ?? null) && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $sectionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $sectionR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `section` entry (newly created, or existing but updated)
     return $sectionR;
@@ -2093,7 +2093,7 @@ function grid($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $gridR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $gridR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $gridR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `grid` entry (newly created, or existing but updated)
     return $gridR;
@@ -2141,11 +2141,11 @@ function enumset($table, $field, $alias, $ctor = false) {
     else $enumsetR = m('Enumset')->new();
 
     // If $ctor['color'] is given - apply color-box
-    if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
+    if ($ctor['color'] ?? null) $ctor['title'] = '<span class="i-color-box" style="background: '
         . $ctor['color'] . ';"></span>' . strip_tags($ctor['title']);
 
     // Assign other props and save
-    $enumsetR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $enumsetR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `enumset` entry (newly created, or existing but updated)
     return $enumsetR;
@@ -2547,7 +2547,7 @@ function alteredField($section, $field, array $ctor = []) {
     if ($ctor['sectionId'] && $alteredFieldR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
 
     // Assign other props and save
-    $alteredFieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $alteredFieldR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `alteredField` entry (newly created, or existing but updated)
     return $alteredFieldR;
@@ -2610,7 +2610,7 @@ function filter($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $filterR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $filterR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $filterR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `filter` entry (newly created, or existing but updated)
     return $filterR;
@@ -2673,7 +2673,7 @@ function param($table, $field = null, $cfgField = null, $cfgValue = null) {
     else $paramR = m('param')->new();
 
     // Assign other props and save
-    $paramR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $paramR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `param` entry (newly created, or existing but updated)
     return $paramR;
@@ -3357,7 +3357,7 @@ function msg($msg, $success = true, $to = null) {
         $success = $msg['success'] ?? $success;
 
         // Overwrite $msg to contain message itself
-        $msg = $msg['msg'];
+        $msg = $msg['msg'] ?? null;
 
         // If no destination is given, e.g CID-constant is not defined
         if (!$to && preg_match('~^i-section-~', $fn['this'])) {

@@ -97,7 +97,7 @@ class Year extends Indi_Db_Table {
         $yearY = date('Y', $time);
 
         // If there is no year-record for such year so far
-        if (!self::$_yearIdA[$yearY]) {
+        if (!(self::$_yearIdA[$yearY] ?? null)) {
 
             // Create new year-record and get it's id
             $yearId = self::o($yearY)->id;

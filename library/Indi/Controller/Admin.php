@@ -279,7 +279,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         // Scope params
                         $scope = [
                             'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword ?? null,
-                            'order' => Indi::get()->sort ?? null, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
+                            'order' => Indi::get()->sort ?? null, 'page' => Indi::get()->page ?? null, 'found' => $this->rowset->found(),
                             'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
                             'pgupLast' => $this->rowset->pgupLast()->id ?? null, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
@@ -476,7 +476,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $rename = ['grid' => 'rename', 'field' => 'title', 'entity' => 'title', 'filter' => 'rename'];
 
             // If ctrl-key was hold and we were editing grid column title
-            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+            if ($ui == 'grid' && (Indi::post()->ctrlKey ?? null)) {
 
                 // Update grid column's underlying field's title
                 $_['indiId']
@@ -618,7 +618,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If selected rows should be moved into another group
         // Note: changing group and order at the same time is not currently supported
-        if (strlen($groupBy_value)) {
+        if (strlen($groupBy_value ?? null)) {
 
             // Do move
             t()->rows->set($groupBy_field, $groupBy_value)->save();
@@ -633,7 +633,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Prepare within-clause
                     $within = [];
                     if ($where) $within []= "($where)";
-                    if ($groupBy_field) $within []= "`$groupBy_field` = " . db()->quote($row->$groupBy_field);
+                    if ($groupBy_field ?? null) $within []= "`$groupBy_field` = " . db()->quote($row->$groupBy_field);
                     $within = join(' AND ', $within);
 
                     // Setup $last flag, indicating whether it's a last move() call for $row
@@ -2754,7 +2754,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Build an array containing sql-function calls for each column, that have a summary to be retrieved for
         foreach ($js2sql as $type => $fn)
-            if ($summary[$type])
+            if ($summary[$type] ?? null)
                 foreach ($summary[$type] as $col)
                     if (in($col, $cols))
                         $sql[] = 'IFNULL(' . $fn . '(`' . $col . '`), 0) AS `' . $col .'`';
@@ -3622,7 +3622,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Pick certain props from query string
         $query = [];
         foreach (['form', 'filter'] as $key)
-            if ($val = Indi::get()->$key)
+            if ($val = Indi::get()->$key ?? null)
                 $query []= http_build_query([$key => $val]);
 
         // Convert into string
@@ -3671,7 +3671,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Get the id of a row, that we will be simulating navigation
             // to subsection, there that row's nested entries are located
-            preg_match('~/id/([0-9]+)/~', $nav[$i+1], $m); $id = $m[1];
+            preg_match('~/id/([0-9]+)/~', $nav[$i+1], $m); $id = $m[1] ?? null;
 
             // If next url (within $nav) is related to non-same section
             if ($ti[$i+1]) {
@@ -4043,7 +4043,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function confirm($msg, $buttons = 'OKCANCEL', $cancelMsg = null, $httpStatus = '400 Bad Request') {
 
         // Get answer
-        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
+        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)} ?? null;
 
         // If no answer, flush confirmation prompt
         if (!$answer) jconfirm(is_array($msg) ? im($msg, '<br>') : $msg, $buttons, $httpStatus);

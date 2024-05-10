@@ -57,10 +57,11 @@ class Admin_GridController extends Indi_Controller_Admin_Multinew {
     protected function _color(int $fieldId) {
 
         // Get color field alias
-        $prop = m('field')->row((int) $fieldId)->alias;
+        if ($prop = m('field')->row((int) $fieldId)->alias ?? null) {
 
-        // Set it as colorField-param's value
-        t()->fields->field('colorEntry')->param('colorField', $prop);
+            // Set it as colorField-param's value
+            t()->fields->field('colorEntry')->param('colorField', $prop);
+        }
     }
 
     /**

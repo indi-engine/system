@@ -21,15 +21,15 @@ class Realtime extends Indi_Db_Table {
 
         // Get either existing realtime-record having type=session and token=session_id() or create a new one
         $session = $m->row(['`type` =  "session"', "`token` = '$session_id'"])
-            ?: $m->new([ 'type' => 'session' ,  'token' => $session_id  ]);
+                ?: $m->new([ 'type' => 'session' ,  'token' => $session_id  ]);
 
         // If no existing session found having given $session_id - return false
         if ($checkOnly && !$session->id) return false;
 
         // Update props
         $session->set([
-            'roleId' => $_SESSION['admin']['roleId'],
-            'adminId' => $_SESSION['admin']['id'],
+            'roleId' => $_SESSION['admin']['roleId'] ?? null,
+            'adminId' => $_SESSION['admin']['id'] ?? null,
             'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
         ])->save();
 

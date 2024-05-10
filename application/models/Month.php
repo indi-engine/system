@@ -158,7 +158,7 @@ class Month extends Indi_Db_Table {
         $monthYm = date('Y-m', $time);
 
         // If there is no such month so far
-        if (!self::$_monthIdA[$monthYm]) {
+        if (!(self::$_monthIdA[$monthYm] ?? null)) {
 
             // Create new month-record and get it's id
             $monthId = self::o($monthYm)->id;

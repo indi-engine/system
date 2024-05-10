@@ -377,7 +377,7 @@ class Indi_Controller {
         $excelA = [];
 
         // Use Indi::get()->filter if $filter arg is not given
-        $filter = $filter ?: Indi::get()->filter;
+        $filter = $filter ?: (Indi::get()->filter ?? null);
 
         // Convert filters definition format
         if (is_array($filter) || preg_match('~^{~', $filter)) $filter = $this->_filter2search();
@@ -783,7 +783,7 @@ class Indi_Controller {
             if (!array_key_exists($cField->alias, $consider)) continue;
 
             // Collect info about valid values of consider-fields
-            if ($this->row->{$cField->alias} != $picked[$cField->alias])
+            if ($this->row->{$cField->alias} != ($picked[$cField->alias] ?? null))
                 $picked[$cField->alias] = $consider[$cField->alias];
 
             // Check format, and if ok - assign value
@@ -797,7 +797,7 @@ class Indi_Controller {
         // not yet represented in the combo's store, because of, for example, store contains only first
         // 100 entries, and does not contain 101st. So, in this case, we fetch combo data as if $_POST['selected']
         // would be a currently selected value of $this->row->$for
-        if ($post->selected && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
+        if (($post->selected ?? null) && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
 
             // Check $_POST['selected']
             jcheck([
@@ -812,7 +812,7 @@ class Indi_Controller {
         }
 
         // Get combo data rowset
-        $comboDataRs = $post->keyword
+        $comboDataRs = ($post->keyword ?? null)
             ? $this->row->getComboData($for, $post->page, $post->keyword,    true, $where, $field, $order, $dir)
             : $this->row->getComboData($for, $post->page, $this->row->$for, false, $where, $field, $order, $dir, $offset);
 
