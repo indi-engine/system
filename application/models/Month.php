@@ -128,6 +128,9 @@ class Month extends Indi_Db_Table {
      */
     public static function monthId($date = null) {
 
+        // If it's a zero-date - return 0 
+        if ($date === '0000-00-00') return 0;
+        
         // If self::$_monthIdA is null - fetch key-value pairs
         if (self::$_monthIdA === null) self::$_monthIdA = db()->query('
             SELECT CONCAT(`y`.`title`, "-", `m`.`month`) AS `Ym`, `m`.`id`
