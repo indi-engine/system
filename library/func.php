@@ -64,10 +64,10 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $file = str_replace(DOC . STD . '/', '', $file);
 
         // Get data to be logged as file
-        $data = [$type, $message, $file, $line];
+        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2)];
 
         // Prepare path to thatfile
-        $path = "log/" . str_replace('/', '-', $file) . "-$line.txt";
+        $path = "log/err/" . str_replace('/', '-', $file) . "-$line.txt";
 
         // If that file does not already exist - create it
         if (!is_file($path)) i($data, 'a', $path);
