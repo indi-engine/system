@@ -105,7 +105,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Assign values for special properties within $rowConfig variable
                 foreach ($specialA as $specialI) {
-                    $rowConfig[$specialI] = $item['_' . $specialI];
+                    $rowConfig[$specialI] = $item['_' . $specialI] ?? null;
                     unset($item['_' . $specialI]);
                 }
 
@@ -126,7 +126,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (isset($config['query'])) $this->_query = $config['query'];
 
         // If prev-page-last flag is `true` - shift first row for it to be that prev-page-last row
-        if ($config['pgupLast']) $this->_pgupLast = array_shift($this->_rows);
+        if ($config['pgupLast'] ?? null) $this->_pgupLast = array_shift($this->_rows);
 
         $this->_count = count($this->_rows);
     }
@@ -646,32 +646,32 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if ($gridFieldR->rel() && $gridFieldR->rel()->table() == 'enumset')
                 $typeA['enumset'][$gridFieldR->alias] = true;
 
+            // Get mysql column type, if any
+            $TYPE = $gridFieldR->foreign('columnTypeId')->type ?? null;
+
             // Foreign keys (single and multiple)
             if ($gridFieldR->original('storeRelationAbility') == 'one') {
                 $typeA['foreign']['single'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->param('titleColumn') ?: m($gridFieldR->relation)->titleColumn())
                     : true;
             }
 
             else if ($gridFieldR->original('storeRelationAbility') == 'many')
                 $typeA['foreign']['multiple'][$gridFieldR->alias]['title'] = $gridFieldR->relation
-                    ? ($gridFieldR->params['titleColumn'] ?: m($gridFieldR->relation)->titleColumn())
+                    ? ($gridFieldR->param('titleColumn') ?: m($gridFieldR->relation)->titleColumn())
                     : true;
 
             // Boolean values
-            else if ($gridFieldR->foreign('columnTypeId')->type == 'BOOLEAN') $typeA['boolean'][$gridFieldR->alias] = true;
+            else if ($TYPE == 'BOOLEAN') $typeA['boolean'][$gridFieldR->alias] = true;
 
             // Decimal values (prices, etc)
-            else if (preg_match('/^DECIMAL\(\d+,(\d+)\)$/', $gridFieldR->foreign('columnTypeId')->type, $m))
+            else if (preg_match('/^DECIMAL\(\d+,(\d+)\)$/', $TYPE, $m))
                 $typeA['price'][$gridFieldR->alias] = $m[1];
 
             // Date and datetime values. Also we're getting additional params - display format at least
-            else if ($gridFieldR->foreign('columnTypeId')->type == 'DATE')
-                $typeA['date'][$gridFieldR->alias] = $gridFieldR->params;
-            else if ($gridFieldR->foreign('columnTypeId')->type == 'DATETIME')
-                $typeA['datetime'][$gridFieldR->alias] = $gridFieldR->params;
-            else if ($gridFieldR->foreign('columnTypeId')->type == 'TIME')
-                $typeA['time'][$gridFieldR->alias] = $gridFieldR->params;
+            else if ($TYPE == 'DATE')     $typeA['date'    ][$gridFieldR->alias] = $gridFieldR->params;
+            else if ($TYPE == 'DATETIME') $typeA['datetime'][$gridFieldR->alias] = $gridFieldR->params;
+            else if ($TYPE == 'TIME')     $typeA['time'    ][$gridFieldR->alias] = $gridFieldR->params;
 
             // File-uploads
             else if ($gridFieldR->foreign('elementId')->alias == 'upload')
@@ -711,13 +711,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Collect value/tooltip compose templates into separate arrays
         $composeVal = $composeTip = [];
         foreach ($renderCfg as $alias => $cfg) {
-            if ($cfg['composeTip']) $composeTip[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeTip']);
-            if ($cfg['composeVal']) $composeVal[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeVal']);
+            if ($cfg['composeTip'] ?? null) $composeTip[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeTip']);
+            if ($cfg['composeVal'] ?? null) $composeVal[$alias] = str_replace('&rcub;&lcub;', '}{', $cfg['composeVal']);
         }
 
         // Setup aliases fields that have data fetched
-        $gridhead = []; foreach ($columnA as $columnI) $gridhead[$columnI] = $renderCfg[$columnI]['head'];
-        uksort($gridhead, fn($a, $b) => strlen($a) < strlen($b)); unset($gridhead['id']);
+        $gridhead = []; foreach ($columnA as $columnI) $gridhead[$columnI] = $renderCfg[$columnI]['head'] ?? null;
+        uksort($gridhead, fn($a, $b) => strlen($a) < strlen($b) ? -1 : 1); unset($gridhead['id']);
         Indi::store('gridhead', $gridhead);
 
         // Set up $titleProp variable as an indicator of that titleColumn is within grid fields
@@ -727,7 +727,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if ($foreign = $typeA['foreign']['single'] + $typeA['foreign']['multiple']) $this->foreign($foreign);
 
         // Get color config
-        if ($colorField = $renderCfg['_system']['colorField']) {
+        if ($colorField = $renderCfg['_system']['colorField'] ?? null) {
             if ($colorFurther = $renderCfg['_system']['colorFurther']) $this->foreign($colorField);
             else if ($this->model()->fields($colorField)->foreign('elementId')->alias != 'color') unset($colorField);
         }
@@ -754,13 +754,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $entry = $r; $value = $r->$columnI; $further = false;
 
                 // If grid column have further-foreign field defined
-                if ($typeA['further'][$columnI] && preg_match('~^([0-9a-zA-Z_]+)_([0-9a-zA-Z]+)$~', $columnI, $m)) {
+                if (($typeA['further'][$columnI] ?? null) && preg_match('~^([0-9a-zA-Z_]+)_([0-9a-zA-Z]+)$~', $columnI, $m)) {
 
                     // Spoof entry
                     $entry = $r->foreign($m[1]);
 
                     // Spoof value
-                    $value = $entry->{$further = $m[2]};
+                    $value = $entry->{$further = $m[2]} ?? null;
                 }
 
                 // Get value as is
@@ -868,8 +868,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     || isset($typeA['foreign']['multiple'][$columnI]['title'])) {
 
                     // Process color boxes
-                    if ($typeA['enumset'][$columnI]) {
-                        if ($typeA['foreign']['single'][$columnI]['title']) {
+                    if ($typeA['enumset'][$columnI] ?? null) {
+                        if ($typeA['foreign']['single'][$columnI]['title'] ?? null) {
                             $data[$pointer]['_render'][$columnI] = !$further || $entry
                                 ? ($entry->foreign($further ?: $columnI)
                                     ? $entry->foreign($further ?: $columnI)->styled()
@@ -900,35 +900,35 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_render'][$columnI] = '';
 
                 // Provide icon overflow feature
-                if ($_ = $renderCfg[$columnI]['icon']) {
+                if ($_ = $renderCfg[$columnI]['icon'] ?? null) {
                     if ($value != $this->model()->fields($columnI)->defaultValue || !$value) {
                         $tpl = '<img src="' . $_ . '" class="i-cell-img">$1';
-                        if ($typeA['string'][$columnI]) {
+                        if ($typeA['string'][$columnI] ?? null) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer][$columnI], $tpl);
-                        } else if ($typeA['foreign']['single'][$columnI] && !$typeA['enumset'][$columnI]) {
+                        } else if (($typeA['foreign']['single'][$columnI] ?? null) && !($typeA['enumset'][$columnI] ?? null)) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI], $tpl);
-                        } else if ($typeA['upload'][$columnI]) {
+                        } else if ($typeA['upload'][$columnI] ?? null) {
                             $data[$pointer]['_render'][$columnI] = rif($data[$pointer]['_render'][$columnI], $tpl);
                         }
-                    } else if (!$data[$pointer]['_render'][$columnI]) {
-                        if (!$typeA['numeric'][$columnI]) {
+                    } else if (!($data[$pointer]['_render'][$columnI] ?? null)) {
+                        if (!($typeA['numeric'][$columnI] ?? null)) {
                             $data[$pointer]['_render'][$columnI] = '';
                         }
                     }
                 }
 
                 // Shortcuts
-                $j = $renderCfg[$columnI]['jump'];
-                $c = $renderCfg[$columnI]['color'];
+                $j = $renderCfg[$columnI]['jump'] ?? null;
+                $c = $renderCfg[$columnI]['color'] ?? null;
 
                 // If color and/or jump are defined
                 if ($c || $j) {
 
                     // If it's a multiple foreign keys field
-                    if ($typeA['foreign']['multiple'][$columnI]) {
+                    if ($typeA['foreign']['multiple'][$columnI] ?? null) {
 
                         // If it's not enumset-column
-                        if (!$typeA['enumset'][$columnI]) {
+                        if (!($typeA['enumset'][$columnI] ?? null)) {
 
                             // Define _render for a cell
                             $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];
@@ -941,7 +941,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             // Apply jump markup for each value
                             foreach ($data[$pointer]['_render'][$columnI] as $id => $wrap) {
                                 $jump = rif($j, 'jump="'. str_replace('{id}', $id, $j) . '"');
-                                $color = rif($rgb[$id], 'style="color: $1;"');
+                                $color = rif($rgb[$id] ?? 0, 'style="color: $1;"');
                                 $with = "<span $jump $color>";
                                 $data[$pointer]['_render'][$columnI][$id] = wrap($wrap, $with);
                             }
@@ -954,7 +954,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     } else {
 
                         // Get id to be used as replacement for '{id}'
-                        if ($typeA['foreign']['single'][$columnI]) {
+                        if ($typeA['foreign']['single'][$columnI] ?? 0) {
                             $id = $data[$pointer][$columnI];
                         } else {
                             $id = $data[$pointer]['id'];
@@ -980,27 +980,28 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         }
                         $data[$pointer]['_render'][$columnI] = $wrap;
                     }
-                } else if (is_array($data[$pointer]['_render'][$columnI])) {
+                } else if (is_array($data[$pointer]['_render'][$columnI] ?? null)) {
                     // Join values by comma
                     $data[$pointer]['_render'][$columnI] = join(', ', $data[$pointer]['_render'][$columnI]);
                 }
 
                 // Provide icon overflow feature for columns representing multiple foreign key fields
-                if ($src = $renderCfg[$columnI]['icon'])
-                    if ($typeA['foreign']['multiple'][$columnI] && !$typeA['enumset'][$columnI])
+                if ($src = $renderCfg[$columnI]['icon'] ?? null)
+                    if (($typeA['foreign']['multiple'][$columnI] ?? null)
+                        && !($typeA['enumset'][$columnI] ?? null))
                         $data[$pointer]['_render'][$columnI] = rif(
-                            $data[$pointer]['_render'][$columnI] ?: $data[$pointer][$columnI],
+                            $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI],
                             '<img src="' . $src . '" class="i-cell-img">$1');
 
                 // Make sure numeric values to be have really numeric type
-                if ($typeA['numeric'][$columnI]) $data[$pointer][$columnI] = (float) $data[$pointer][$columnI];
+                if ($typeA['numeric'][$columnI] ?? null) $data[$pointer][$columnI] = (float) $data[$pointer][$columnI];
 
                 // If column is numeric and value is 0 - apply lightgray color
-                if ($typeA['numeric'][$columnI] && !$data[$pointer][$columnI])
+                if (($typeA['numeric'][$columnI] ?? null) && !$data[$pointer][$columnI])
                     $data[$pointer]['_style'][$columnI] = 'color: lightgray;';
 
                 // Else if color is defined for column
-                else if (null !== ($color = $renderCfg[$columnI]['color']) || $columnI == 'level') {
+                else if (null !== ($color = $renderCfg[$columnI]['color'] ?? null) || $columnI == 'level') {
 
                     // If color definition starts with color ':' - assume it's a foreight column name from where column can be picked
                     if (preg_match('~^:(.+)$~', $color, $m)
@@ -1008,7 +1009,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $color = $r->$columnI ? $r->foreign($columnI)->rgb($m[1]) : '';
 
                     // If it's a numeric column
-                    if ($typeA['numeric'][$columnI]) {
+                    if ($typeA['numeric'][$columnI] ?? 0) {
                         // Get floating value
                         $value = (float) $data[$pointer][$columnI];
 
@@ -1025,7 +1026,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     }
 
                 // Else if column is numeric, value is non-zero but color is not defined
-                } else if ($typeA['numeric'][$columnI] && $data[$pointer][$columnI]) {
+                } else if (($typeA['numeric'][$columnI] ?? null) && $data[$pointer][$columnI]) {
                     $data[$pointer]['_style'][$columnI] = '';
                 }
             }
@@ -1033,7 +1034,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Setup special 'title' property within '_system' property. This is for having proper title
             // for each grid data row, event if grid does not have `title` property at all, or have, but
             // affected by indents or some other manipulations
-            $data[$pointer]['_system']['title'] = $titleProp ? $data[$pointer][$titleProp] : $r->title();
+            $data[$pointer]['_system']['title'] = ($titleProp ?? null) ? $data[$pointer][$titleProp] : $r->title();
 
             // If color field is defined - get color and apply to record data
             $data[$pointer]['_system']['style'] = '';
@@ -1047,12 +1048,12 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 }
 
             // Setup _system owner flag
-            if ($owner = $renderCfg['_system']['owner']) {
+            if ($owner = $renderCfg['_system']['owner'] ?? null) {
                 $data[$pointer]['_system']['owner'] = in($owner['id'], $r->{$owner['field']});
             }
 
             // Implement indents if need
-            if ($data[$pointer][$_ = $titleProp ?: 'title'] && $treeColumn)
+            if (($data[$pointer][$_ = $titleProp ?? 'title'] ?? null) && $treeColumn)
                 if ($r->system('level') !== null || $r->level() !== null)
                     $data[$pointer]['_render'][$_]
                         = str_repeat(' ', 5 * $r->system('level')) . $data[$pointer][$_];
@@ -1064,7 +1065,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($composeTip as $column => $template) {
 
                 // Get column value. Wrap into <span> if not yet wrapped
-                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column];
+                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column] ?? null;
                 if (!preg_match('~<span[ >]~', $render)) $render = wrap($render, '<span>');
 
                 // Compose column value's tooltip
@@ -1088,7 +1089,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         }
 
         // If data should be grouped
-        if ($by = $renderCfg['_system']['groupBy']) {
+        if ($by = $renderCfg['_system']['groupBy'] ?? null) {
 
             // Group items preserving the order in which they do actually appear
             $groupA = []; foreach ($data as $item) $groupA[$item[$by]] []= $item;
@@ -1246,7 +1247,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // Prepare attributes
                 $attr = " data-field=\"$alias\"";
                 if ($alias !== $column || $purpose !== 'tip')
-                    if ($style = rif($data['_style'][$alias], ' style="$1"'))
+                    if ($style = rif($data['_style'][$alias] ?? null, ' style="$1"'))
                         $attr .= $style;
 
                 // Return inner-before item plus inner-field item with field name replaced with value
@@ -1327,6 +1328,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             // Determine the field, that is a connector between current row and nested rowset
             $connector = $field ? $field : $this->_table . 'Id';
 
+            // Define $where
+            $where = null;
+
             // If $fetch argument is array
             if (is_array($fetch)) {
 
@@ -1341,7 +1345,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             }
 
             // Convert $where to array
-            $where = isset($where) && is_array($where) ? $where : (strlen($where) ? [$where] : []);
+            $where = is_array($where) ? $where : (strlen($where) ? [$where] : []);
 
             // Get all the ids of rows within current rowset
             $idA = []; foreach ($this as $i) $idA[] = $i->id;
@@ -1373,13 +1377,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             } else array_unshift($where, '0');
 
             // Fetch rowset containing rows, that are nested to at least one row of current rowset
-            $nestedRs = m($table)->all($where, $order, $count, $page, $offset);
+            $nestedRs = m($table)->all($where, $order ?? null, $count ?? null, $page ?? null, $offset ?? null);
 
             // Setup foreign data for nested rowset, if need
-            if ($foreign) $nestedRs->foreign($foreign);
+            if ($foreign ?? null) $nestedRs->foreign($foreign);
 
             // Setup nested data for nested rowset, if need
-            if ($nested) {
+            if ($nested ?? null) {
                 if (is_array($nested)) $nestedRs->nested($nested[0], $nested[1], $nested[2], $nested[3], $nested[4]);
                 else $nestedRs->nested($nested);
             }
@@ -1406,7 +1410,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Assign
                 $r->nested($key, m($table)->createRowset(
-                    $cNested[$r->id] && count($cNested[$r->id]) ? ['rows' => $cNested[$r->id]] : []
+                    ($cNested[$r->id] ?? null) && count($cNested[$r->id]) ? ['rows' => $cNested[$r->id]] : []
                 ));
 
                 // Setup a flag indicating that there is a nested data for $key key within rows in current rowset
@@ -1589,7 +1593,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         $cEntryR = m($cField->relation)->row($cValue);
 
                         // Get it's value
-                        $cValueForeign = $cEntryR->{$cField_foreign->alias};
+                        $cValueForeign = $cEntryR->{$cField_foreign->alias} ?? null;
 
                         // Add mapping
                         $entityIdByConsiderFieldA[$cValue] = $cValueForeign;
@@ -1609,7 +1613,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // If there are already items exist within group, representing keys that are related
                         // to certain entity id (entity id is a consider as per 'Variable entity' concept),
                         // - we use this group as array which will be a first array in list of merged arrays
-                        is_array($distinctA[$entityId]) ? $distinctA[$entityId] : [],
+                        is_array($distinctA[$entityId] ?? null) ? $distinctA[$entityId] : [],
 
                         // If foreign key field store relation ability is 'many', and foreign key value of
                         // current row is not empty, we convert it to array by exploding by comma, and append
@@ -1636,7 +1640,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // If there are already items exist within group, representing keys that are related
                         // to related entity id - we use this group as array which will be a first array in list
                         // of merged arrays, otherwise we use empty array to aviod php warning messages
-                        is_array($distinctA[$fieldR->relation]) ? $distinctA[$fieldR->relation] : [],
+                        is_array($distinctA[$fieldR->relation] ?? null) ? $distinctA[$fieldR->relation] : [],
 
                         // If foreign key field store relation ability is 'many', and foreign key value of
                         // current row is not empty, we convert it to array by exploding by comma, and append
@@ -1693,6 +1697,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                         // Set the name of column, that will be involved in sql ' IN() ' statement
                         $col = 'id';
+
+                        // No quotation
+                        $q = '';
                     }
 
                     // If foreign model's `preload` flag was turned On
@@ -1719,24 +1726,24 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $this->_adjustForeignRowset($key, $foreignRs[$entityId]);
 
                 // Call a user-defined method for foreign data rowset, if need
-                if ($call) eval('$foreignRs[$entityId]->' . $call . ';');
+                if ($call ?? null) eval('$foreignRs[$entityId]->' . $call . ';');
 
                 // Setup a foreign and nested data for just fetched foreign data, by a recursive logic
                 if (is_array($subs)) {
 
                     // Setup foreign data
-                    if ($subs['foreign']) {
+                    if ($subs['foreign'] ?? null) {
                         if (is_string($subs['foreign'])) {
                             $foreignRs[$entityId]->foreign($subs['foreign']);
                         } else if (is_array($subs['foreign']) && (key($subs['foreign']) == '0')) {
-                            $foreignRs[$entityId]->foreign($subs['foreign'][0], $subs['foreign'][1]);
+                            $foreignRs[$entityId]->foreign($subs['foreign'][0], $subs['foreign'][1] ?? null);
                         } else {
                             $foreignRs[$entityId]->foreign($subs['foreign']);
                         }
                     }
 
                     // Setup nested data
-                    if ($subs['nested']) {
+                    if ($subs['nested'] ?? null) {
                         if (is_array($subs['nested'])) {
                             if (key($subs['nested']) == '0') {
                                 $foreignRs[$entityId]->nested($subs['nested'][0], $subs['nested'][1], $subs['nested'][2],
@@ -1952,10 +1959,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         $options = [];
 
         // If 'optgroup' param is used - set $by variable's value as 'by' property of $this->optgroup property
-        if ($this->optgroup) $by = $this->optgroup['by'];
+        if ($this->optgroup ?? null) $by = $this->optgroup['by'];
 
         // Detect key property for options
-        $keyProperty = $this->enumset ? 'alias' : 'id';
+        $keyProperty = ($this->enumset ?? null) ? 'alias' : 'id';
 
         // Option title maximum length
         $titleMaxLength = 0;
@@ -1969,7 +1976,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $this->foreign($foreign = $tc->alias);
 
         // Set column
-        $column = $foreign ? $tc->rel()->titleColumn() : 'title';
+        $column = ($foreign ?? null) ? $tc->rel()->titleColumn() : 'title';
 
         // Setup primary data for options. Here we use '$o' name instead of '$comboDataR', because
         // it is much more convenient to use such name to deal with option row object while creating
@@ -1981,13 +1988,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             $system = $o->system();
 
             // Set group identifier for an option
-            if ($by) $system = array_merge($system, ['group' => $o->$by]);
+            if ($by ?? null) $system = array_merge($system, ['group' => $o->$by]);
 
             //
             if ($this->_table == 'enumset') $system += ['cssStyle' => $o->cssStyle];
 
             // If title column's field is a foreign-key field - use it to obtain the actual title
-            $title = $foreign ? $o->foreign($foreign)->$column : $o->{$this->titleColumn};
+            $title = ($foreign ?? null) ? $o->foreign($foreign)->$column : $o->{$this->titleColumn};
 
             // Here we are trying to detect, does $o->title have tag with color definition, for example
             // <span style="color: red">Some option title</span> or <font color=lime>Some option title</font>, etc.
@@ -2000,16 +2007,16 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             ]);
 
             // If color was detected as a box, append $system['boxColor'] property
-            if ($info['box']) $system['boxColor'] = $info['color'];
+            if ($info['box'] ?? null) $system['boxColor'] = $info['color'];
 
             // Else color is defined via colorField - pick color from there
-            else if ($params['colorField']) $system['color'] = $o->rgb($params['colorField']);
+            else if ($params['colorField'] ?? null) $system['color'] = $o->rgb($params['colorField']);
 
             // Add css style, if any
             if ($o->table() == 'enumset' && $o->cssStyle) $system['cssStyle'] = $o->cssStyle;
 
             // Get max length
-            $substr = $params['substr'] ?: 50;
+            $substr = $params['substr'] ?? 50;
 
             // Setup primary option data
             $options[$o->$keyProperty] = ['title' => usubstr($info['title'], $substr), 'system' => $system];
@@ -2021,13 +2028,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             $options[$o->$keyProperty]['raw'] = $this->_table == 'enumset' ? $o->styled() : $o->{$this->titleColumn};
 
             // Setup foreign entries titles
-            if ($params['foreign'])
+            if ($params['foreign'] ?? null)
                 foreach (ar($params['foreign']) as $fk)
                     if ($fr = $o->foreign($fk))
                         $options[$o->$keyProperty]['_foreign'][$fk] =  $fr->title();
 
             // If color box was detected, and it has box-type, we remember this fact
-            if ($info['box']) $hasColorBox = true;
+            if ($info['box'] ?? null) $hasColorBox = true;
 
             // Update maximum option title length, if it exceeds previous maximum
             $noHtmlSpecialChars = preg_replace('/&[a-z]*;/', ' ',$options[$o->$keyProperty]['title']);
@@ -2041,17 +2048,17 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             }
 
             // If color was found, we remember it for that option
-            if ($info['style']) $options[$o->$keyProperty]['system']['color'] = $info['color'];
+            if ($info['style'] ?? null) $options[$o->$keyProperty]['system']['color'] = $info['color'];
 
             // If 'optionTemplate' is not empty, and $ignoreTemplate argument is not boolean true
-            if ($params['optionTemplate'] && !$ignoreTemplate)
+            if (($params['optionTemplate'] ?? null) && !$ignoreTemplate)
 
                 // Compile the template and put the result of the compilation into the 'option'
                 // property within array of current option properties
                 Indi::$cmpTpl = $params['optionTemplate']; eval(Indi::$cmpRun); $options[$o->$keyProperty]['option'] = Indi::cmpOut();
 
             // Deal with optionAttrs, if specified.
-            if ($this->optionAttrs) {
+            if ($this->optionAttrs ?? null) {
                 for ($i = 0; $i < count($this->optionAttrs); $i++) {
                     $options[$o->$keyProperty]['attrs'][$this->optionAttrs[$i]] = $o->{$this->optionAttrs[$i]};
                 }
@@ -2063,7 +2070,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             'options' => $options,
             'titleMaxLength' => $titleMaxLength,
             'titleMaxIndent' => $titleMaxIndent,
-            'hasColorBox' => $hasColorBox,
+            'hasColorBox' => $hasColorBox ?? null,
             'keyProperty' => $keyProperty
         ];
     }
@@ -2160,7 +2167,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @return Indi_Db_Table_Row|null
      */
     public function at($idx) {
-        return $this->_rows[$idx];
+        return $this->_rows[$idx] ?? null;
     }
 
     /**
@@ -2201,8 +2208,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      */
     public function callParent() {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 1, 1);
+
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $call = array_pop($trace);
 
         // Make the call
         return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
@@ -2245,7 +2255,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         }
 
         // Return
-        return [$keys, $expr];
+        return [$keys, $expr ?? null];
     }
 
     /**

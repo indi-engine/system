@@ -63,7 +63,7 @@ class Action_Row extends Indi_Db_Table_Row {
         if ($jump && $this->icon) {
 
             // Foreach directory
-            foreach (ar($this->field('icon')->params['dir']) as $dir) {
+            foreach (ar($this->field('icon')->param('dir')) as $dir) {
 
                 // Get absolute directory path with no trailing slash
                 $pre = DOC . STD . rif(!preg_match('~^/~', $dir), VDR . '/client/');

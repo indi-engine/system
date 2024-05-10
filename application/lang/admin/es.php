@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'Su cuenta es del tipo que acaba de ser desact
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'Ahora ya no hay secciones accesibles para usted.');
 define('I_THROW_OUT_SESSION_EXPIRED', 'Tu sesión ya no está disponible. ¿Continuar para volver a iniciar sesión?');
 
+define('I_WS_CONNECTED', 'Conectado en %s ms');
+define('I_WS_DISCONNECTED', 'Desconectado');
+define('I_WS_RECONNECTING', 'Reconectando...');
+define('I_WS_RECONNECTED', 'Reconectado en %s ms');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Tal sección no existe.');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'La sección está apagada');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'Tal acción no existe.');
@@ -299,7 +304,6 @@ define('I_ENT_TOGGLE_Y', 'encendido');
 define('I_ENT_TOGGLE_N', 'Apagado');
 define('I_ENT_EXTENDS_OTHER', 'El archivo con el modelo php existe, pero %s está especificado como clase principal allí');
 
-define('I_GAPI_KEY_REQUIRED', 'Especifique la clave API aquí.');
 define('I_SELECT_CFGFIELD', 'Seleccione el parámetro de configuración que desea agregar para este campo');
 define('I_SELECT_PLEASE', 'Por favor seleccione');
 define('I_L10N_TOGGLE_ACTION_Y', 'Si desea localizar %s para la acción "%s", presione "%s".');

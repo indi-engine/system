@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'あなたのアカウントは、オフにな
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', '現在、アクセス可能なセクションは残りません');
 define('I_THROW_OUT_SESSION_EXPIRED', 'セッションは利用できなくなりました。再ログインを続けますか?');
 
+define('I_WS_CONNECTED', '%s ms で接続');
+define('I_WS_DISCONNECTED', '切断');
+define('I_WS_RECONNECTING', '再接続中...');
+define('I_WS_RECONNECTED', '%s msで再接続');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'そのようなセクションは存在しません');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'セクションがオフになっています');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'そんな行為は存在しない');
@@ -299,7 +304,6 @@ define('I_ENT_TOGGLE_Y', 'オン');
 define('I_ENT_TOGGLE_N', 'オフになっています');
 define('I_ENT_EXTENDS_OTHER', 'php-modelを含むファイルは存在しますが、親クラスとして%sが指定されています');
 
-define('I_GAPI_KEY_REQUIRED', 'ここに API キーを指定してください。');
 define('I_SELECT_CFGFIELD', 'このフィールドに追加する構成パラメータを選択してください');
 define('I_SELECT_PLEASE', '選んでください');
 define('I_L10N_TOGGLE_ACTION_Y', 'アクション「%s」を %s ローカライズする場合は、「%s」を押してください。');

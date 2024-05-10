@@ -7,7 +7,7 @@ class QueueItem_Row extends Indi_Db_Table_Row {
     public function onSave() {
 
         // If systen `reapply` flag is set
-        if ($this->_system['reapply']) {
+        if ($this->_system['reapply'] ?? null) {
 
             // Get `queueTask` entry
             $queueTaskR = $this->foreign('queueTaskId');

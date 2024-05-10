@@ -115,6 +115,7 @@ class Indi_Trail_Admin {
         $sectionRs->nested('grid',         ['where' => $_nestedWHERE, 'order' => '`group` = "locked" DESC, `move`']);
 
         // Setup initial set of properties
+        $i = null;
         foreach ($sectionRs as $sectionR)
             self::$items[] = new Indi_Trail_Admin_Item($sectionR, $sectionRs->count() - ++$i);
 
@@ -137,7 +138,7 @@ class Indi_Trail_Admin {
         if (uri('section') != 'index' && uri('action') == 'index' && uri('id')) {
 
             // If there is no info about nesting yet, we create an array, where it will be stored
-            if (!is_array($_SESSION['indi']['admin']['trail']['parentId']))
+            if (!is_array($_SESSION['indi']['admin']['trail']['parentId'] ?? null))
                 $_SESSION['indi']['admin']['trail']['parentId'] = [];
 
             // Save id
@@ -292,8 +293,8 @@ class Indi_Trail_Admin {
         // Build $nav array
         for ($i = 1; $i < count(self::$items); $i++)
             $nav[] = '/' . self::$items[$i]->section->alias . '/index/'
-                . ($i == 1 ? '' : 'id/' . self::$items[$i-1]->row->id . '/')
-                . 'single/' . (self::$items[$i]->row->id ?: 0) . '/';
+                . ($i == 1 ? '' : 'id/' . (self::$items[$i-1]->row->id ?? null) . '/')
+                . 'single/' . (self::$items[$i]->row->id ?? 0) . '/';
 
         // Append non-index action, as additional navigation step
         if ($this->item()->action->alias != 'index')

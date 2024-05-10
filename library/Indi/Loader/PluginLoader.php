@@ -86,7 +86,7 @@ class Indi_Loader_PluginLoader
         }
 
         $last = strlen($prefix) - 1;
-        if ($prefix{$last} == '\\') {
+        if ($prefix[$last] == '\\') {
             return $prefix;
         }
 

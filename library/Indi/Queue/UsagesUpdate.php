@@ -22,11 +22,11 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
                         = $considerR->consider;
         
         // If no appropriate dependencies found - return    
-        if (!$considerRA_byAffected) return;
+        if (!($considerRA_byAffected ?? 0)) return;
         
         // Create `queueTask` entry
         $queueTaskR = m('QueueTask')->new([
-            'title' => array_pop(explode('_', __CLASS__)),
+            'title' => array_pop($parts = explode('_', __CLASS__)),
             'params' => json_encode($params, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ]);
 
@@ -289,7 +289,7 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
             $queueChunkR->fieldR = m($table)->fields($field);
 
             // Get queue items
-            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field, $hasLD) {
+            m('QueueItem')->batch(function(&$r, &$deduct) use (&$queueTaskR, &$queueChunkR, $params, $table, $field) {
 
                 // Get cell's current value
                 $json = db()->query('SELECT `:p` FROM `:p` WHERE `id` = :p', $field, $table, $r->target)->cell();

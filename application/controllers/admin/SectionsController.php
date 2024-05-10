@@ -206,7 +206,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             $jsAbs = DIR . $dir[$item['fraction']] . '/js/admin/app/controller/' . $item['alias']. '.js';
 
             // If js-controller file exists
-            if (!$item['_system']['js-class'] && $item['_system']['js-class'] = file_exists($jsAbs)) {
+            if (!($item['_system']['js-class'] ?? 0) && $item['_system']['js-class'] = file_exists($jsAbs)) {
 
                 // Setup filename
                 $item['_system']['js-class'] = preg_replace('~^' . preg_quote(DIR). '/~', '', $jsAbs);

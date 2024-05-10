@@ -16,8 +16,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Pull params
         if (!array_key_exists('params', $this->_temporary)) $this->_temporary['params'] = array_merge(
-            Indi_Db::$_cfgValue['default']['element'][$this->elementId] ?: [],
-            Indi_Db::$_cfgValue['certain']['field'][$this->id] ?: []
+            Indi_Db::$_cfgValue['default']['element'][$this->elementId] ?? [],
+            Indi_Db::$_cfgValue['certain']['field'][$this->id] ?? []
         );
     }
 
@@ -105,11 +105,11 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $columnTypeR = $this->foreign('columnTypeId');
 
         // If column type is SET or ENUM
-        if (in($columnTypeR->type, 'ENUM,SET')) $this->relation = m('enumset')->id();
+        if (in($columnTypeR->type ?? null, 'ENUM,SET')) $this->relation = m('enumset')->id();
 
         // Setup `defaultValue` for current field, but only if it's type is not
         // BLOB or TEXT, as these types do not support default value definition
-        if (!in($columnTypeR->type, 'BLOB,TEXT')) $this->_defaultValue($columnTypeR);
+        if (!in($columnTypeR->type ?? null, 'BLOB,TEXT')) $this->_defaultValue($columnTypeR);
 
         // If there was a relation, but now there is no - we perform a number of 'reset' adjustments, that aim to
         // void values of all properties, that are certainly not used now, as field does not store foreign keys anymore
@@ -196,7 +196,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     /**
      * Delete all files, that were created by usage of current field
      */
-    public function deleteFiles() {
+    public function deleteFiles($field = '') {
 
         // If field has column in db table it means it's not an upload-field, so return
         if ($this->columnTypeId) return;
@@ -405,7 +405,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // If no query built - do a standard save
-        if (!$sql) {
+        if (!($sql ?? 0)) {
 
             // If `alias` property was modified, and current field's control element was and still is 'upload'
             // Rename uploaded files, for their names to be affected by change of current field's `alias` property
@@ -460,7 +460,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             // Check if field's column datatype is going to be changed, and if so - check whether there is a need
             // to adjust existing values, to ensure that they will be compatiple with new datatype, and won't cause
             // mysql error like 'Incorrect integer value ...'  during execution of a change-column-datatype sql query
-            $this->_enforceExistingValuesCompatibility($columnTypeR->type, $defaultValue, $enumsetA);
+            $this->_enforceExistingValuesCompatibility($columnTypeR->type, $defaultValue, $enumsetA ?? null);
         }
 
         // If field's column should be moved within table structure
@@ -526,7 +526,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $this->_clear0($table);
 
         // If earlier we detected some values, that should be inserted to `enumset` table - insert them
-        $this->_enumsetAppend($enumsetAppendA);
+        $this->_enumsetAppend($enumsetAppendA ?? null);
 
         // Get original data before save() call, as this data
         // will be used bit later for proper column indexes adjustments
@@ -660,7 +660,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
     private function _resetRelation($columnTypeR) {
 
         // If storeRelationAbility-prop was not modified - return
-        if (!$storeRelationAbility = $this->_modified['storeRelationAbility']) {
+        if (!$storeRelationAbility = $this->_modified['storeRelationAbility'] ?? null) {
 
             // If it's not a foreign key field, or is but a cfgField - set onDelete to be '-'
             if ($this->storeRelationAbility == 'none' || $this->entry) $this->onDelete = '-';
@@ -737,19 +737,19 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $defaultValue = $this->defaultValue;
 
         // If column type is VARCHAR(255)
-        if ($columnTypeR->type == 'VARCHAR(255)') {
+        if (($columnTypeR->type ?? 0) == 'VARCHAR(255)') {
 
             // If $php is true - set $defaultValue as empty string
             if ($php) $defaultValue = '';
 
             // Else if store relation ability changed to 'many' and default value contains zeros
-            else if ($this->_modified['storeRelationAbility'] == 'many' && preg_match('/,0/', ',' . $defaultValue))
+            else if (($this->_modified['storeRelationAbility'] ?? null) == 'many' && preg_match('/,0/', ',' . $defaultValue))
 
                 // Strip zeros from both $defaultValue and $this->defaultValue
                 $this->defaultValue = $defaultValue = ltrim(preg_replace('/,0/', '', ',' . $defaultValue), ',');
 
         // Else if column type is INT(11)
-        } else if ($columnTypeR->type == 'INT(11)') {
+        } else if (($columnTypeR->type ?? 0) == 'INT(11)') {
 
             // If $php is true, or $defaultValue is not a positive integer
             if ($php || !preg_match(Indi::rex('int11'), $defaultValue)) {
@@ -763,7 +763,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DOUBLE(7,2)
-        } else if ($columnTypeR->type == 'DOUBLE(7,2)') {
+        } else if (($columnTypeR->type ?? 0) == 'DOUBLE(7,2)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('double72'), $defaultValue)) {
@@ -777,7 +777,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DECIMAL(11,2)
-        } else if ($columnTypeR->type == 'DECIMAL(11,2)') {
+        } else if (($columnTypeR->type ?? 0) == 'DECIMAL(11,2)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('decimal112'), $defaultValue)) {
@@ -791,7 +791,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DECIMAL(14,3)
-        } else if ($columnTypeR->type == 'DECIMAL(14,3)') {
+        } else if (($columnTypeR->type ?? 0) == 'DECIMAL(14,3)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('decimal143'), $defaultValue)) {
@@ -805,7 +805,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DATE
-        } else if ($columnTypeR->type == 'DATE') {
+        } else if (($columnTypeR->type ?? 0) == 'DATE') {
 
             // If $php is true or default value is not a date in format YYYY-MM-DD
             if ($php || !preg_match(Indi::rex('date'), $defaultValue)) {
@@ -828,7 +828,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is YEAR
-        } else if ($columnTypeR->type == 'YEAR') {
+        } else if (($columnTypeR->type ?? 0) == 'YEAR') {
 
             // If $php is true or default value does not match the YEAR column type format - set it as '0000'
             if ($php || !preg_match(Indi::rex('year'), $defaultValue)) {
@@ -842,7 +842,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is TIME
-        } else if ($columnTypeR->type == 'TIME') {
+        } else if (($columnTypeR->type ?? 0) == 'TIME') {
 
             // If $php is true or default value is not a time in format HH:MM:SS - set it as '00:00:00'. Otherwise
             if ($php || !preg_match(Indi::rex('time'), $defaultValue)) {
@@ -866,7 +866,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DATETIME
-        } else if ($columnTypeR->type == 'DATETIME') {
+        } else if (($columnTypeR->type ?? 0) == 'DATETIME') {
 
             // If $php is true or $defaultValue is not a datetime in format YYYY-MM-DD HH:MM:SS - set it as '0000-00-00 00:00:00'
             if ($php || !preg_match(Indi::rex('datetime'), $defaultValue)) {
@@ -901,19 +901,19 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is ENUM
-        } else if ($columnTypeR->type == 'ENUM') {
+        } else if (($columnTypeR->type ?? 0) == 'ENUM') {
 
             // If $php is true, set $defaultValue as empty string
             if ($php) $defaultValue = '';
 
         // Else if column type is SET
-        } else if ($columnTypeR->type == 'SET') {
+        } else if (($columnTypeR->type ?? 0) == 'SET') {
 
             // If $php is true, set $defaultValue as empty string
             if ($php) $defaultValue = '';
 
         // Else if column type is BOOLEAN
-        } else if ($columnTypeR->type == 'BOOLEAN') {
+        } else if (($columnTypeR->type ?? 0) == 'BOOLEAN') {
 
             // If $php is true or $devaultValue is not 0 or 1 - set it as 0
             if ($php || !preg_match(Indi::rex('bool'), $defaultValue)) {
@@ -927,7 +927,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is VARCHAR(10) we assume that it should be a color in format 'hue#rrggbb'
-        } else if ($columnTypeR->type == 'VARCHAR(10)') {
+        } else if (($columnTypeR->type ?? 0) == 'VARCHAR(10)') {
 
             // If $php is true, or $defaultValue is not a color in format either '#rrggbb' or 'hue#rrggbb'
             if ($php || (!preg_match(Indi::rex('rgb'), $defaultValue) && !preg_match(Indi::rex('hrgb'), $defaultValue))) {
@@ -992,7 +992,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Check if where was no relation and index, but now relation is exist, - we add an INDEX index
         if (preg_match('/INT|SET|ENUM|VARCHAR/', $columnTypeR->type))
-            if (!db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias'")->obj()->Key_name)
+            if (!(db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias'")->obj()->Key_name ?? null))
                 if ($original['storeRelationAbility'] == 'none' && $this->storeRelationAbility != 'none')
                     $table === 'sqlIndex'
                         ? db()->query("ALTER TABLE  `$table` ADD INDEX (`$this->alias`)")
@@ -1004,13 +1004,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 sqlIndex($table, $index)->delete();
 
         // Check if is was not a TEXT column, and it had no FULLTEXT index, but now it is a TEXT column, - we add a FULLTEXT index
-        if (m('ColumnType')->row($original['columnTypeId'])->type != 'TEXT')
+        if ((m('ColumnType')->row($original['columnTypeId'])->type ?? null) != 'TEXT')
             if (!db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias' AND `Index_type` = 'FULLTEXT'")->fetch())
                 if ($columnTypeR->type == 'TEXT')
                     sqlIndex($table, $this->alias, ['type' => 'FULLTEXT']);
 
         // Check if is was a TEXT column, and it had a FULLTEXT index, but now it is not a TEXT column, - we remove a FULLTEXT index
-        if (m('ColumnType')->row($original['columnTypeId'])->type == 'TEXT')
+        if ((m('ColumnType')->row($original['columnTypeId'])->type ?? null) == 'TEXT')
             if ($index = db()->query("SHOW INDEXES FROM `$table` WHERE `Column_name` = '$this->alias' AND `Index_type` = 'FULLTEXT'")->obj()->Key_name)
                 if ($columnTypeR->type != 'TEXT')
                     sqlIndex($table, $index)->delete();
@@ -1397,7 +1397,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      * @param bool $deep
      * @return array
      */
-    public function toArray($type = 'current', $deep = true) {
+    public function toArray($type = 'current', $deep = true, $purp = null) {
 
         // If toArray conversion mode is 'current'
         if ($type == 'current') {
@@ -1523,7 +1523,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Return ORDER clause
-        return $order;
+        return $order ?? null;
     }
 
     /**
@@ -1709,7 +1709,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         else if (func_num_args() == 0) return (object) $this->_temporary['params'];
 
         // Else just return it
-        else return $this->_temporary['params'][$name];
+        else return $this->_temporary['params'][$name] ?? null;
     }
 
     /**
@@ -1752,7 +1752,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if (!$this->columnTypeId) return;
 
         // If column have been already moved at the proper position within table structure - return
-        if ($this->_system['colAFTER'] === true) return;
+        if (($this->_system['colAFTER'] ?? null) === true) return;
 
         // Get entity, where current field is in
         $model = m($this->entityId); $table = $model->table(); $column = $this->alias;

@@ -105,7 +105,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
             $finalWHERE = $this->getController()->finalWHERE($primaryWHERE, null, false);
 
             // Exclude WHERE clause part, related to current filter
-            unset($finalWHERE['filters'][$alias]); if (!$finalWHERE['filters']) unset($finalWHERE['filters']);
+            unset($finalWHERE['filters'][$alias]); if (!($finalWHERE['filters'] ?? null)) unset($finalWHERE['filters']);
 
             // Flatten $finalWHERE
             foreach ($finalWHERE as $p => $w) if (is_array($w)) $finalWHERE[$p] = im($w, ' AND ');
@@ -132,7 +132,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
                 $connector_in = db()->query('
                   SELECT DISTINCT IFNULL(`' . $connector->alias . '`, 0)
                   FROM `' . $tbl . '`' .
-                  (strlen($sw) ? 'WHERE ' . $sw : '')
+                  (strlen($sw ?? null) ? 'WHERE ' . $sw : '')
                 )->col();
 
                 // Get the distinct list of possibilities
@@ -181,7 +181,7 @@ class Indi_View_Helper_FilterCombo extends Indi_View_Helper_FormCombo {
         return $this->getDefaultValue();
     }
 
-    public function getField() {
+    public function getField($name = null) {
         return (clone m()->fields($this->filter->further ?: $this->filter->fieldId))->set('mode', 'regular');
     }
 

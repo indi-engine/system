@@ -27,13 +27,13 @@ class Consider extends Indi_Db_Table {
     public function update(array $data, $where = '') {
 
         // Temporarily disable foreign keys
-        if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 0');
+        if (($data['connector'] ?? null) == -1) db()->query('SET `foreign_key_checks` = 0');
 
         // Call parent
         $return = parent::update($data, $where);
 
         // Enable foreign keys back
-        if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 1');
+        if (($data['connector'] ?? null) == -1) db()->query('SET `foreign_key_checks` = 1');
 
         // Return
         return $return;

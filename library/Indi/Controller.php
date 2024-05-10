@@ -65,7 +65,7 @@ class Indi_Controller {
         $admin = admin() ? admin()->table() : false;
 
         // Reset design if need, as we can arrive here twice
-        if (ini()->general->seoUri) ini()->design = [];
+        if (ini()->general->seoUri ?? 0) ini()->design = [];
 
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
@@ -86,7 +86,7 @@ class Indi_Controller {
             }
 
         // If more than 1 designs detected for current domain
-        if (count((array) ini()->design) > 1) {
+        if (count((array) (ini()->design ?? null)) > 1) {
 
             // Views dir shortcut
             $dir = DOC . STD . '/application/views/';
@@ -131,7 +131,7 @@ class Indi_Controller {
             }
 
         // Else use first
-        } else ini()->design = ini()->design[0];
+        } else ini()->design = ini()->design[0] ?? null;
 
         // Do paths setup twice: first for module-specific paths, second for general-paths
         for ($i = 0; $i < 2; $i++) {
@@ -377,7 +377,7 @@ class Indi_Controller {
         $excelA = [];
 
         // Use Indi::get()->filter if $filter arg is not given
-        $filter = $filter ?: Indi::get()->filter;
+        $filter = $filter ?: (Indi::get()->filter ?? null);
 
         // Convert filters definition format
         if (is_array($filter) || preg_match('~^{~', $filter)) $filter = $this->_filter2search();
@@ -743,7 +743,7 @@ class Indi_Controller {
             $this->$method(json_decode(Indi::post('consider'), true));
 
         // Prepare and flush json-encoded combo options data
-        $this->_odata($for, $post, $field, null, $order, $dir, $offset);
+        $this->_odata($for, $post, $field, null, $order ?? null, $dir ?? null, $offset ?? null);
     }
 
     /**
@@ -783,7 +783,7 @@ class Indi_Controller {
             if (!array_key_exists($cField->alias, $consider)) continue;
 
             // Collect info about valid values of consider-fields
-            if ($this->row->{$cField->alias} != $picked[$cField->alias])
+            if ($this->row->{$cField->alias} != ($picked[$cField->alias] ?? null))
                 $picked[$cField->alias] = $consider[$cField->alias];
 
             // Check format, and if ok - assign value
@@ -797,7 +797,7 @@ class Indi_Controller {
         // not yet represented in the combo's store, because of, for example, store contains only first
         // 100 entries, and does not contain 101st. So, in this case, we fetch combo data as if $_POST['selected']
         // would be a currently selected value of $this->row->$for
-        if ($post->selected && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
+        if (($post->selected ?? null) && $field->relation && $field->relation != 6 && $field->storeRelationAbility == 'one') {
 
             // Check $_POST['selected']
             jcheck([
@@ -812,9 +812,9 @@ class Indi_Controller {
         }
 
         // Get combo data rowset
-        $comboDataRs = $post->keyword
-            ? $this->row->getComboData($for, $post->page, $post->keyword,    true, $where, $field, $order, $dir)
-            : $this->row->getComboData($for, $post->page, $this->row->$for, false, $where, $field, $order, $dir, $offset);
+        $comboDataRs = ($post->keyword ?? null)
+            ? $this->row->getComboData($for, $post->page ?? null, $post->keyword,    true, $where, $field, $order, $dir)
+            : $this->row->getComboData($for, $post->page ?? null, $this->row->$for, false, $where, $field, $order, $dir, $offset);
 
         // Prepare combo options data
         $comboDataA = $comboDataRs->toComboData($field->params);
@@ -831,10 +831,10 @@ class Indi_Controller {
         if ($comboDataRs->table() && $comboDataRs->model()->treeColumn()) $options['tree'] = true;
 
         // Setup groups for options
-        if ($comboDataRs->optgroup) $options['optgroup'] = $comboDataRs->optgroup;
+        if ($comboDataRs->optgroup ?? null) $options['optgroup'] = $comboDataRs->optgroup;
 
         // Setup additional attributes names list
-        if ($comboDataRs->optionAttrs) $options['attrs'] = $comboDataRs->optionAttrs;
+        if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
 
         // Setup `titleMaxLength` property
         $options['titleMaxLength'] = $titleMaxLength;
@@ -855,7 +855,7 @@ class Indi_Controller {
     public function callParent() {
 
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $trace = array_slice(debug_backtrace(), 1, 1); $call = array_pop($trace);
 
         // If it's a panel-specific function - trim panel type from function name
         $func = preg_replace('~^(plan|tile|grid)_~', '', $call['function']);
@@ -954,8 +954,11 @@ class Indi_Controller {
                     // Setup combo data
                     view()->filterCombo($filter);
 
+                    // Prepare render
+                    $render = t()->filtersSharedRow->view($field->alias);
+
                     // Pick combo data
-                    $metaData['filter'][$field->alias] = array_pop(t()->filtersSharedRow->view($field->alias));
+                    $metaData['filter'][$field->alias] = array_pop($render);
                 }
 
                 // If current request was made using Indi Engine standalone
@@ -1068,7 +1071,7 @@ class Indi_Controller {
     public function keywordWHERE($keyword = '') {
 
         // If $keyword param is not passed we pick Indi::get()->keyword as $keyword
-        if (strlen($keyword) == 0) $keyword = Indi::get()->keyword;
+        if (strlen($keyword) == 0) $keyword = Indi::get()->keyword ?? null;
 
         // Exclusions array - we will be not trying to find a keyword in columns, that will be involved in search process
         // in $this->filtersWHERE() function, so one column can be used to find either selected-grid-filter-value or keyword,
@@ -1285,7 +1288,7 @@ class Indi_Controller {
      *
      * @param $item
      */
-    public function adjustGridDataItem(&$item, $r) {
+    public function adjustGridDataItem(&$item, Indi_Db_Table_Row $row) {
 
     }
 
@@ -1583,8 +1586,22 @@ class Indi_Controller {
         // Prepare stderr-file path
         $err = "log/$out.stderr";
 
+        // Get temp dir
+        $dir = ini_get('upload_tmp_dir')
+            ?: explode(':', ini_get('open_basedir'))[0]
+            ?? sys_get_temp_dir();
+
+        // Create temporary file
+        $env = tempnam($dir, 'pipe');
+
+        // Fill temporary file with current state
+        file_put_contents($env, json_encode([
+            '_SERVER' => $_SERVER,
+            '_COOKIE' => $_COOKIE,
+        ]));
+
         // Prepare command
-        $cmd = "php indi -d $uri 2> $err";
+        $cmd = "php indi -d $uri \"$env\" 2> $err";
 
         // Start service
         $out = WIN ? pclose(popen($cmd, "r")) : `$cmd &`;

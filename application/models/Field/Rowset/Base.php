@@ -37,7 +37,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         // Foreach indexed prop - setup indexes
         foreach (['aliases' => 'alias', 'ids' => 'id'] as $index => $prop) {
             $this->{'_' . $index} = array_flip(
-                $config[$index] ?: parent::column($prop)
+                $config[$index] ?? parent::column($prop)
             );
         }
     }
@@ -109,9 +109,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      * @return mixed
      */
     public function field($aliasOrId) {
-        return $this->_rows[isset($this->_aliases[$aliasOrId])
-            ? $this->_aliases[$aliasOrId]
-            : $this->_ids[$aliasOrId]];
+        return $this->_rows[$this->_aliases[$aliasOrId] ?? $this->_ids[$aliasOrId] ?? null] ?? null;
     }
 
     /**
@@ -256,7 +254,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      * @param Field_Rowset_Base $rowset
      * @return Field_Rowset_Base|Indi_Db_Table_Rowset
      */
-    public function merge(Field_Rowset_Base $rowset) {
+    public function merge(Indi_Db_Table_Rowset $rowset) {
 
         // Call parent
         $this->callParent();
@@ -281,7 +279,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
      */
     public function append($original, $before = null) {
 
-        $id = $original instanceof Field_Row ? $original->id : $original['id'];
+        $id = $original instanceof Field_Row ? $original->id : ($original['id'] ?? null);
         $alias = $original instanceof Field_Row ? $original->alias : $original['alias'];
 
         // Prevent duplicates
@@ -302,7 +300,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
 
             // Get index
             if ($before === true) $before = key($this->_aliases);
-            $idx = $this->_aliases[$before];
+            $idx = $this->_aliases[$before] ?? null;
 
             // Inject new value in $this->_aliases array
             $this->_aliases = array_flip($this->_aliases);

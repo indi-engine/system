@@ -4,7 +4,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
     /**
      * Disable action/fields depending on non-yet existing classroom's props
      */
-    public function adjustCreatingRowAccess(&$row) {
+    public function adjustCreatingRowAccess(Indi_Db_Table_Row $row) {
 
         // Make sure all further code is reached for form-action only
         if (uri()->action !== 'form') return;
@@ -43,7 +43,7 @@ class Indi_Controller_Admin_CfgValue extends Indi_Controller_Admin_Exportable {
      * @param $row
      * @return array[]|mixed
      */
-    public function promptCfgField(&$row) {
+    public function promptCfgField(Indi_Db_Table_Row $row) {
 
         // Preliminary prompt for cfgField
         $data = $this->prompt(I_SELECT_CFGFIELD, [['fieldLabel' => ''] + $row->combo('cfgField')]);

@@ -21,13 +21,13 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
     public function chunk($params) {
 
         // If $params arg is an array
-        if (is_array($params)) {
+        if (is_array($params)) { $parts = explode('_', get_class($this));
 
             // Create `queueTask` entry
             $queueTaskR = m('QueueTask')->new([
-                'title' => 'L10n_' . array_pop(explode('_', get_class($this))),
+                'title' => 'L10n_' . array_pop($parts),
                 'params' => json_encode($params),
-                'queueState' => $params['toggle'] == 'n' ? 'noneed' : 'waiting'
+                'queueState' => ($params['toggle'] ?? null) == 'n' ? 'noneed' : 'waiting'
             ]);
 
             // Save `queueTask` entries
@@ -69,7 +69,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         foreach (m('Entity')->all('`fraction` = "system"', '`table`') as $entityR) {
 
             // If current entity is a multi-fraction entity
-            if ($master[$entityR->table])
+            if ($master[$entityR->table] ?? 0)
                 $where = '`' . $master[$entityR->table]['field'] . '`'
                     . (count($ar = ar($v = $master[$entityR->table]['value'])) > 1
                         ? ' IN ("' . im($ar, '","') . '")'
@@ -424,7 +424,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
          */
         if (!function_exists('___')) {
             function ___($dict, $item, &$ordered) {
-                foreach ($item['consider'] ?: [] as $fieldId) if ($dict[$fieldId]) ___($dict, $dict[$fieldId], $ordered);
+                foreach ($item['consider'] ?? [] as $fieldId) if ($dict[$fieldId]) ___($dict, $dict[$fieldId], $ordered);
                 $ordered[$item['fieldId']] = $item['queueChunkId'];
             }
         }

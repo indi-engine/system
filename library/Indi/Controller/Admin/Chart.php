@@ -59,7 +59,7 @@ class Indi_Controller_Admin_Chart extends Indi_Controller_Admin {
             foreach ($fieldRs_numeric as $fieldR_numeric)
                 switch ($fieldR_numeric->elementId) {
                     case 18: $data[$i][$fieldR_numeric->alias] = (int) $data[$i][$fieldR_numeric->alias]; break;
-                    case 24: $data[$i][$fieldR_numeric->alias] = price($data[$i][$fieldR_numeric->alias]); break;
+                    case 24: $data[$i][$fieldR_numeric->alias] = price($data[$i][$fieldR_numeric->alias] ?? null); break;
                     case 25: $data[$i][$fieldR_numeric->alias] = decimal($data[$i][$fieldR_numeric->alias], 3); break;
                 }
     }

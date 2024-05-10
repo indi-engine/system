@@ -88,7 +88,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             list ($table, $field) = explode(':', $queueChunkR->location);
 
             // Get last target
-            $last = m('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target;
+            $last = m('QueueItem')->row('`queueChunkId` = "' . $queueChunkR->id . '"', '`id` DESC')->target ?? null;
 
             // 
             if ($table && $field) {
@@ -103,17 +103,17 @@ class Indi_Queue_L10n extends Indi_Queue {
                 $where = $where ? im($where, ' AND ') : null;
 
                 // Detect order column
-                $orderColumn = m($table)->fields('move')->alias ?: m($table)->fields('alias')->alias ?: 'id';
+                $orderColumn = m($table)->fields('move')->alias ?? m($table)->fields('alias')->alias ?? 'id';
 
                 // Foreach entry matching chunk's definition
                 m($table)->batch(function(&$r) use (&$queueTaskR, &$queueChunkR, $field, $params, $setter) {
 
                     // Get value
-                    $value = $params['toggle'] == 'n'
+                    $value = ($params['toggle'] ?? null) == 'n'
                         ? $r->language($field, $params['source'])
                         : (preg_match('~^{"~', $r->$field)
                             ? json_decode($r->$field)->{$params['source']}
-                            : $r->language($field, $params['source']) ?: $r->$field);
+                            : ($r->language($field, $params['source']) ?: $r->$field));
 
                     // Create `queueItem` entry
                     $queueItemR = m('QueueItem')->new([

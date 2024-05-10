@@ -1,5 +1,49 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function monthFieldIdAction() {
+        field('entity', 'special', ['title' => 'Special fields', 'elementId' => 'span', 'move' => 'changeLogExcept']);
+        field('entity', 'titleFieldId', ['move' => 'special']);
+        field('entity', 'monthFieldId', [
+            'title' => 'Field to setup and derive \'Month\' field from',
+            'storeRelationAbility' => 'one',
+            'relation' => 'field',
+            'filter' => '`entityId` = "<?=$this->id?>" AND `columnTypeId` IN (6,9)',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => '0',
+            'move' => 'titleFieldId',
+        ]);
+        field('entity', 'filesGroupBy', ['move' => 'monthFieldId']);
+        alteredField('entities', 'monthFieldId', ['jumpSectionId' => 'fields', 'jumpSectionActionId' => 'form']);
+        grid('entities', 'special', ['gridId' => 'features', 'move' => '']);
+        grid('entities', 'titleFieldId', [
+            'gridId' => 'special',
+            'move' => '',
+            'composeTip' => '{TitleFieldId_alias}',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'form',
+        ]);
+        grid('entities', 'titleFieldId', 'alias', ['gridId' => 'special', 'toggle' => 'h', 'move' => 'titleFieldId']);
+        grid('entities', 'monthFieldId', ['gridId' => 'special', 'move' => 'titleFieldId_alias', 'icon' => 'resources/images/icons/monthId.png']);
+        grid('entities', 'filesGroupBy', ['move' => 'monthFieldId', 'gridId' => 'special']);
+    }
+    public function makeAction() {
+        field('alteredField', 'jumpCreate', [
+            'title' => '\'Create new\' button',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'onDelete' => 'RESTRICT',
+            'elementId' => 'combo',
+            'columnTypeId' => 'ENUM',
+            'defaultValue' => 'n',
+            'move' => 'jumpSectionActionId',
+        ]);
+        enumset('alteredField', 'jumpCreate', 'n', ['title' => 'Disabled', 'move' => '', 'boxColor' => '000#FFFFFF']);
+        enumset('alteredField', 'jumpCreate', 'y', ['title' => 'Enabled', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-create.png']);
+        grid('alteredFields', 'jumpCreate', ['gridId' => 'jump', 'move' => 'jumpSectionActionId', 'icon' => 'resources/images/icons/btn-icon-create.png']);
+        alteredField('grid', 'fieldId', ['jumpCreate' => 'y', 'jumpArgs' => 'parent/{parent.entityId}/']);
+    }
     public function missing2Action() {
         field('notice', 'tplIncAudio', ['title' => 'Звук', 'elementId' => 'upload', 'move' => 'tplIncBody']);
         param('notice', 'tplIncAudio', 'allowTypes', 'audio');

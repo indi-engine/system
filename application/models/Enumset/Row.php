@@ -12,10 +12,10 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         // Pick localized value of `title` prop, if detected that raw value contain localized values
         if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data['title']))
             if ($this->_language['title'] = json_decode($data['title'], true))
-                $data['title'] = $this->_language['title'][ini('lang')->admin];
+                $data['title'] = $this->_language['title'][ini('lang')->admin] ?? null;
 
         // Get localized
-        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?: [] as $field => $l10n)
+        foreach (Indi_Queue_L10n_FieldToggleL10n::$l10n[$this->_table] ?? [] as $field => $l10n)
             if (array_key_exists($field, $data))
                 if ($this->_language[$field] = json_decode($l10n[$this->id], true))
                     $data[$field] = $this->_language[$field][ini('lang')->admin];
@@ -184,7 +184,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // If $updateFieldDefaultValue flag is set to true
-        if ($updateFieldDefaultValue)
+        if ($updateFieldDefaultValue ?? 0)
             db()->query('
                 UPDATE `field`
                 SET `defaultValue` = "' . $defaultValue . '"

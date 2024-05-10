@@ -81,7 +81,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $subsection->disableAdd = 1;
 
         // Exclude inaccessible sections
-        $this->sections->exclude($exclude);
+        $this->sections->exclude($exclude ?? null);
 
         // If current trail item will be a first item
         if (count(Indi_Trail_Admin::$items) == 0) {
@@ -137,7 +137,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                             $excludeA []= $gridR->id;
 
                 // Exclude unneeded cols
-                $sectionR->nested('grid')->exclude($excludeA);
+                $sectionR->nested('grid')->exclude($excludeA ?? null);
             }
 
             // Set fields, that will be used as grid columns in case if current action is 'index'
@@ -166,25 +166,29 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     $originalDefaults[$fieldR->alias] = $fieldR->original('defaultValue');
 
                 // Setup field's altered data. Currently only jump-data is stored here
-                if ($_->jumpSectionId && $_->jumpSectionActionId) {
-                    $fieldR->altered = [
-                        'jump' => [
-                            'text' => $_->foreign('jumpSectionActionId')->title,
-                            'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
-                            'href' => '/' . $_->foreign('jumpSectionId')->alias
-                                . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
-                                . '/id/{value}/' . $_->jumpArgs
-                        ]
+                $lbar = [];
+                if ($_->jumpSectionId) {
+                    if ($_->jumpSectionActionId) $lbar['jump'] = [
+                        'text' => $_->foreign('jumpSectionActionId')->title,
+                        'icon' => $_->foreign('jumpSectionActionId')->foreign('actionId')->icon(true),
+                        'href' => '/' . $_->foreign('jumpSectionId')->alias
+                            . '/' . $_->foreign('jumpSectionActionId')->foreign('actionId')->alias
+                            . '/id/{value}/' . $_->jumpArgs
                     ];
-                } else if ($_->jumpArgs) {
-                    $fieldR->altered = [
-                        'jump' => [
-                            'text' => 'Goto',
-                            'icon' => 'resources/images/icons/btn-icon-goto.png',
-                            'href' => $_->jumpArgs
-                        ]
+                    if ($_->jumpCreate === 'y') $lbar['make'] = [
+                        'text' => I_CREATE,
+                        'icon' => 'resources/images/icons/btn-icon-create.png',
+                        'href' => '/' . $_->foreign('jumpSectionId')->alias . '/form/' . $_->jumpArgs
                     ];
-                }
+
+                } else if ($_->jumpArgs) $lbar['jump'] = [
+                    'jump' => [
+                        'text' => 'Goto',
+                        'icon' => 'resources/images/icons/btn-icon-goto.png',
+                        'href' => $_->jumpArgs
+                    ]
+                ];
+                if ($lbar) $fieldR->altered = $lbar;
             }
 
             // Save save those pairs under 'originalDefaults' key within section's system data
@@ -424,7 +428,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Append notices info
         $array['notices'] = m('notice')->info(
             admin(),
-            [$this->section->id => $this->scope->primary]
+            [$this->section->id => $this->scope->primary ?? null]
         )[$this->section->id] ?? [];
 
         //
@@ -439,7 +443,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Setup scope
         if (array_key_exists('scope', $array)) {
-            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'])) {
+            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'] ?? null)) {
                 $tabA = array_unique(ar($tabs));
                 if ($tabIdA = array_filter($tabA)) {
                     $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
@@ -680,7 +684,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Detect view and save into trail
-            if ($view = ucfirst($actionCfg['view'][$action])) {
+            if ($view = ucfirst($actionCfg['view'][$action] ?? null)) {
                 $actionParentClass .= '_' . $view;
                 $this->action->view = $view;
             }
@@ -775,16 +779,16 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Prepare render config for fields
         foreach ($this->gridFields ? $this->gridFields : [] as $field) {
             if ($fieldId = m()->fields($field->alias)->id) {
-                if ($icon = t()->scope->icon[$fieldId]) $renderCfg[$field->alias]['icon'] = $icon;
-                if ($jump = t()->scope->jump[$fieldId]) $renderCfg[$field->alias]['jump'] = $jump;
-                if ($head = t()->scope->head[$fieldId]) $renderCfg[$field->alias]['head'] = $head;
-                if ($val  = t()->scope->composeVal[$fieldId])
+                if ($icon = t()->scope->icon[$fieldId] ?? null) $renderCfg[$field->alias]['icon'] = $icon;
+                if ($jump = t()->scope->jump[$fieldId] ?? null) $renderCfg[$field->alias]['jump'] = $jump;
+                if ($head = t()->scope->head[$fieldId] ?? null) $renderCfg[$field->alias]['head'] = $head;
+                if ($val  = t()->scope->composeVal[$fieldId] ?? null)
                     $renderCfg[$field->alias]['composeVal']
                         = str_replace('&rcub;&lcub;', '}{', $val);
-                if ($tip  = t()->scope->composeTip[$fieldId])
+                if ($tip  = t()->scope->composeTip[$fieldId] ?? null)
                     $renderCfg[$field->alias]['composeTip']
                         = str_replace('&rcub;&lcub;', '}{', $tip);
-                if (null !== ($color = t()->scope->color[$fieldId])) $renderCfg[$field->alias]['color'] = $color;
+                if (null !== ($color = t()->scope->color[$fieldId] ?? null)) $renderCfg[$field->alias]['color'] = $color;
             }
         }
 
@@ -926,6 +930,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
      */
     public function colors() {
 
+        // Array of [fieldId => color_definition] pairs
+        $colorA = [];
+
         // Get icons
         foreach ($this->grid as $gridR) {
 
@@ -950,11 +957,11 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Unset empty values
-            if (!strlen($colorA[$fieldId])) unset($colorA[$fieldId]);
+            if (!strlen($colorA[$fieldId] ?? null)) unset($colorA[$fieldId]);
         }
 
         // Return columns colors
-        return $colorA ?? [];
+        return $colorA;
     }
 
     /**
@@ -1005,7 +1012,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                 $enabled []= $panel;
 
         // At first, check whether panel is an explicitly specified in $_GET['panel']
-        if ($panel = Indi::get()->panel)
+        if ($panel = Indi::get()->panel ?? null)
             if (in_array($panel, $enabled))
                 $this->section->panel = $panel;
 

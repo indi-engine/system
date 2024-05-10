@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', '您的帐户类型刚刚被关闭');
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', '现在没有可供您访问的部分');
 define('I_THROW_OUT_SESSION_EXPIRED', '您的会话不再可用。继续重新登录吗？');
 
+define('I_WS_CONNECTED', '在 %s 毫秒内连接');
+define('I_WS_DISCONNECTED', '断开连接');
+define('I_WS_RECONNECTING', '正在重新连接...');
+define('I_WS_RECONNECTED', '在 %s 毫秒内重新连接');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', '该部分不存在');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', '部分已关闭');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', '这样的动作不存在');
@@ -299,7 +304,6 @@ define('I_ENT_TOGGLE_Y', '打开');
 define('I_ENT_TOGGLE_N', '关掉');
 define('I_ENT_EXTENDS_OTHER', '存在 php-model 的文件，但 %s 被指定为父类');
 
-define('I_GAPI_KEY_REQUIRED', '请在此处指定 API 密钥..');
 define('I_SELECT_CFGFIELD', '选择您要为此字段添加的配置参数');
 define('I_SELECT_PLEASE', '请选择');
 define('I_L10N_TOGGLE_ACTION_Y', '如果您想对操作“%s”进行 %s 本地化，请按“%s”。');

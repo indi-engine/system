@@ -70,6 +70,13 @@ class Indi {
     public static $answer = [];
 
     /**
+     * Array of [pid => info] pairs, where info is an array containing 'total', 'index', 'percent' and other keys
+     *
+     * @var array
+     */
+    public static $progress = [];
+
+    /**
      * Rabbitmq-channel instance
      *
      * @var \PhpAmqpLib\Channel\AMQPChannel
@@ -852,7 +859,7 @@ class Indi {
     public static function registry($key = null, $value = null) {
 
 		// If only $key param passed, the assigned registry value will be returned
-        if (func_num_args() == 1) return self::$_registry[$key];
+        if (func_num_args() == 1) return self::$_registry[$key] ?? null;
 
         // Else if $value argument was given
         else if (func_num_args() == 2) {
@@ -946,7 +953,7 @@ class Indi {
             // If $key argument is an array or is an object - return value, stored under 'uri' key in registry,
             // Else we assume it is a property name within object, stored under 'uri' key in registry, so we
             // return value of $key key
-            return is_array($key) || is_object($key) ? Indi::store('uri') : Indi::registry('uri')->$key;
+            return is_array($key) || is_object($key) ? Indi::store('uri') : Indi::registry('uri')->$key ?? null;
 
         // Else if $value argument is given, we assign it to $key key within data, stored under 'uri' key in registry
         if (func_num_args() == 2) return Indi::registry('uri')->$key = $value;
@@ -964,7 +971,7 @@ class Indi {
         if (is_null(Indi::store('user'))) {
 
             // Get the current user row
-            $userR = (int) $_SESSION['user']['id']
+            $userR = (int) ($_SESSION['user']['id'] ?? null)
                 ? m('User')->row($_SESSION['user']['id'])
                 : false;
 
@@ -989,10 +996,10 @@ class Indi {
         if (is_null(Indi::store('admin')) || $refresh) {
 
             // Get the database table name, where current cms user was found in
-            $table = $_SESSION['admin']['alternate'] ?: 'admin';
+            $table = $_SESSION['admin']['alternate'] ?? 'admin';
 
             // Get the current user row
-            $adminR = (int) $_SESSION['admin']['id']
+            $adminR = (int) ($_SESSION['admin']['id'] ?? null)
                 ? m($table)->row($_SESSION['admin']['id'])
                 : false;
 
@@ -1000,7 +1007,7 @@ class Indi {
             if (!$adminR) return null;    
             
             // Setup 'alternate' property
-            $adminR->alternate = $_SESSION['admin']['alternate'];
+            $adminR->alternate = $_SESSION['admin']['alternate'] ?? null;
 
             // If current cms user was found not in 'admin' database table,  we explicilty setup foreign
             // data for 'roleId' foreign key, despite on in that other table may be not such a foreign key
@@ -1066,7 +1073,7 @@ class Indi {
                 return Indi::registry($key, $arg1);
 
             // Else if $arg1 argument is not an array or object, we assume that it is a subkey, so we return it's value
-            } else return Indi::store($key)->$arg1;
+            } else return Indi::store($key)->$arg1 ?? null;
 
         // Else if three arguments passed, we assume that they are key, subkey and value, so we set a value, got from
         // third argument under a subkey (second argument), under a $key key in registry and after that return that value
@@ -1148,7 +1155,7 @@ class Indi {
         $columnA = $model->fields(null, 'aliases');
 
         // Determine title column name
-        if ($titleColumn = $model->comboDataOrder ?: current(array_intersect($columnA, ['title', '_title']))) {
+        if ($titleColumn = ($model->comboDataOrder ?? null) ?: current(array_intersect($columnA, ['title', '_title']))) {
 
             // Check whether $titleColumn contains some expression rather than just some column name,
             // and if so - use it as is but strip '$dir' from it or replace with actual direction ($dir)
@@ -1471,7 +1478,7 @@ class Indi {
      * @return null
      */
     public static function rex($alias){
-        return $alias ? self::$_rex[$alias] : null;
+        return self::$_rex[$alias] ?? null;
     }
 
 
@@ -2050,7 +2057,7 @@ class Indi {
         if (!count(Indi_Db::$DELETEQueryA)) return;
 
         // If DELETE queries logging is notturned On - return
-        if (!ini('db')->log->DELETE) return;
+        if (! (ini('db')->log->DELETE ?? null)) return;
 
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
@@ -2106,7 +2113,7 @@ class Indi {
         ob_implicit_flush($flag);
 
         // Flush
-        if ($flag) ob_end_flush();
+        if ($flag && ob_get_contents()) ob_end_flush();
     }
 
     /**
@@ -2148,11 +2155,11 @@ class Indi {
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
         $msg .= 'HOST: ' . $_SERVER['HTTP_HOST'] . '<br>';
         $msg .= 'URI: ' . URI . '<br>';
-        $msg .= 'Remote IP: ' . $_SERVER['REMOTE_ADDR'] . '<br>';
+        $msg .= 'Remote IP: ' . ($_SERVER['REMOTE_ADDR'] ?? null) . '<br>';
 
         // Who?
-        if (admin()->id) $msg .= 'Admin [id#' . admin()->id . ']: ' . admin()->title . '<br>';
-        if (Indi::user()->id) $msg .= 'User [id#' . Indi::user()->id . ']: ' . Indi::user()->title . '<br>';
+        if (admin()->id ?? 0) $msg .= 'Admin [id#' . admin()->id . ']: ' . admin()->title . '<br>';
+        if (Indi::user()->id ?? 0) $msg .= 'User [id#' . Indi::user()->id . ']: ' . Indi::user()->title . '<br>';
 
         // Spacer, data and separator
         $msg .= '<br>' . print_r($data, true) . '<br>--------------------------------------<br><br>';

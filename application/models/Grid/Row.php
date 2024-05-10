@@ -15,7 +15,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId' || $columnName == 'jumpSectionId') $value = $value ? section($value)->id : 0;
             else if ($columnName == 'jumpSectionActionId') $value = section2action(section($this->jumpSectionId)->id, $value)->id;
-            else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
+            else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id ?? null;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'colorField') $value = $value ? field(explode('.', $value)[0], explode('.', $value)[1])->id : 0;
             else if ($columnName == 'colorEntry') $value = $value ? m(
@@ -155,8 +155,10 @@ class Grid_Row extends Indi_Db_Table_Row {
                 else if ($field->rel()->table() == 'role') $value = $this->foreign($prop)->col('alias', true);
 
                 // Export other things
-                else if (in($prop, 'formMoreGridIds,formNotHideFieldIds'))
-                    $value = $this->foreign($prop)->col('alias', true);
+                else if (in($prop, 'formMoreGridIds,formNotHideFieldIds')) {
+                    $foreign = $value = $this->foreign($prop);
+                    $value = $foreign ? $foreign->col('alias', true) : '';
+                }
             }
         }
 
@@ -214,7 +216,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         if ($this->isModified('group'))
 
             // Check parent entries
-            while ($parent = ($parent ? $parent->parent() : $this->parent()))
+            while ($parent = (($parent ?? null) ? $parent->parent() : $this->parent()))
                 if ($parent->group != $this->group)
                     $this->_mismatch['group'] = I_MDL_GRID_PARENT_GROUP_DIFFERS;
 
@@ -246,8 +248,11 @@ class Grid_Row extends Indi_Db_Table_Row {
         // If variable-entity field was zeroed - do zero for colorEntry-field
         if ($this->fieldIsZeroed('colorField')) $this->zero('colorEntry', true);
 
-        // If variable-entity field was zeroed - do zero for jumpSectionActionId-field
+        // If jumpSectionId-prop was zeroed - do zero for jumpSectionActionId-field
         if ($this->fieldIsZeroed('jumpSectionId')) $this->zero('jumpSectionActionId', true);
+
+        // Pick parent entry's group, if parent entry is going to be changed
+        if ($this->modified('gridId')) $this->group = $this->foreign('gridId')->group;
     }
 
     /**
@@ -345,14 +350,14 @@ class Grid_Row extends Indi_Db_Table_Row {
      *
      * @return array
      */
-    public function toArray() {
+    public function toArray($type = 'current', $deep = true, $purp = null) {
 
         // Call parent
-        $array = parent::toArray();
+        $array = parent::toArray($type, $deep, $purp);
 
         // Replace curly brackets with their html entities
         foreach (['composeVal', 'composeTip'] as $prop)
-            $array[$prop] = preg_replace('~\}\{~', '&rcub;&lcub;', $array[$prop]);
+            $array[$prop] = preg_replace('~\}\{~', '&rcub;&lcub;', $array[$prop] ?? null);
 
         // Return
         return $array;

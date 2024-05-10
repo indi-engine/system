@@ -27,6 +27,11 @@ define('I_THROW_OUT_ROLE_IS_OFF', 'Тип вашего аккаунта толь
 define('I_THROW_OUT_NO_ACCESSIBLE_SECTIONS', 'В системе не осталось ни одного доступного для вас раздела');
 define('I_THROW_OUT_SESSION_EXPIRED', 'Ваш сеанс более недоступен, требуется повторный вход в систему. Продолжить?');
 
+define('I_WS_CONNECTED', 'Соединение установлено за %s мс');
+define('I_WS_DISCONNECTED', 'Соединение разорвано');
+define('I_WS_RECONNECTING', 'Переподключение...');
+define('I_WS_RECONNECTED', 'Соединение восстановлено за %s мс');
+
 define('I_ACCESS_ERROR_NO_SUCH_SECTION', 'Нет такого раздела');
 define('I_ACCESS_ERROR_SECTION_IS_OFF', 'Этот раздел выключен');
 define('I_ACCESS_ERROR_NO_SUCH_ACTION', 'Нет такого действия');
@@ -299,7 +304,6 @@ define('I_ENT_TOGGLE_Y', 'Включено');
 define('I_ENT_TOGGLE_N', 'Выключено');
 define('I_ENT_EXTENDS_OTHER', 'Файл php-модели существует, но в нем родительский класс указан как %s');
 
-define('I_GAPI_KEY_REQUIRED', 'Вам необходимо получить ключ доступа для Google Cloud Translate API');
 define('I_SELECT_CFGFIELD', 'Выберите параметр настройки элемента управления');
 define('I_SELECT_PLEASE', 'Пожалуйста, выберите');
 define('I_L10N_TOGGLE_ACTION_Y', 'Если вы хотите %s мультиязычность для действия "%s" нажмите "%s".');

@@ -120,6 +120,9 @@ class Indi_Db {
         // Setup $refresh flag, indicating that the purpose of why we're here is to globally refresh entities meta
         $refresh = $arg === true;
 
+        // Define $entityId
+        $entityId = null;
+
         // If singleton instance is not yet created or 'reload' key exists within $config array argument
         if (null === self::$_instance || is_int($arg) || $refresh) {
 
@@ -242,7 +245,7 @@ class Indi_Db {
 
             // Prepare info about quantities and sums where entities instances are counted in
             $inQtySumA = [];
-            if ($entityIdByTable['inQtySum']) {
+            if ($entityIdByTable['inQtySum'] ?? 0) {
                 foreach(self::$_instance->query('SELECT * FROM `inQtySum`')->all() as $_inQtySumI) {
                     if ($_inQtySumI['toggle'] === 'n') continue;
                     $inQtySumI = ['type' => $_inQtySumI['type']];
@@ -285,7 +288,7 @@ class Indi_Db {
 
             // Overwrite ini('lang')->admin for it to be same as $_COOKIE['i-language'], if possible
             // We do it here because this should be done BEFORE any *_Row (and *_Noeval) instance creation
-            if (($lang = $_COOKIE['i-language']) && ini('lang')->admin != $lang
+            if (($lang = $_COOKIE['i-language'] ?? null) && ini('lang')->admin != $lang
                 && in($lang, db()->query('SELECT `alias` FROM `lang` WHERE `toggle` = "y"')->col()))
                 ini('lang')->admin = $_COOKIE['i-language'];
 
@@ -337,6 +340,7 @@ class Indi_Db {
 
             // If certain model should be reloaded, collect ids of it's fields, for use them as a part of WHERE clause
             // in fetch from `enumset`
+            $fieldIdA = null;
             if ($entityId) {
 
                 // Declare array for collecting fields ids
@@ -406,50 +410,50 @@ class Indi_Db {
                 $fieldI['foreign']['elementId'] = $iElementA[$fieldI['original']['elementId']];
 
                 // Setup foreign data for 'columnTypeId' foreign key, if field has a non-zero columnTypeId
-                if ($iColumnTypeA[$fieldI['original']['columnTypeId']])
+                if ($iColumnTypeA[$fieldI['original']['columnTypeId']] ?? 0)
                     $fieldI['foreign']['columnTypeId'] = $iColumnTypeA[$fieldI['original']['columnTypeId']];
 
                 // Setup nested rowset with 'enumset' rows, if field contains foreign keys from 'enumset' table
                 if ($fieldI['original']['relation'] == '6') {
                     $fieldI['nested']['enumset'] = new Indi_Db_Table_Rowset([
                         'table' => 'enumset',
-                        'rows' => $fEnumsetA[$fieldI['original']['id']],
+                        'rows' => $fEnumsetA[$fieldI['original']['id']] ?? [],
                         'rowClass' => 'Enumset_Row',
-                        'found' => count($fEnumsetA[$fieldI['original']['id']] ?: [])
+                        'found' => count($fEnumsetA[$fieldI['original']['id']] ?? [])
                     ]);
-                    unset($fEnumsetA[$fieldI['id']]);
+                    unset($fEnumsetA[$fieldI['id'] ?? null]);
                 }
 
                 // Setup nested rowset with 'consider' rows, if there are consider-fields defined for current field
-                if ($fConsiderA[$fieldI['original']['id']]) {
+                if ($fConsiderA[$fieldI['original']['id']] ?? 0) {
                     $fieldI['nested']['consider'] = new Indi_Db_Table_Rowset([
                         'table' => 'consider',
                         'rows' => $fConsiderA[$fieldI['original']['id']],
                         'rowClass' => 'Indi_Db_Table_Row_Noeval',
                         'found' => count($fConsiderA[$fieldI['original']['id']])
                     ]);
-                    unset($fConsiderA[$fieldI['id']]);
+                    unset($fConsiderA[$fieldI['id'] ?? null]);
                 }
 
                 // Shortcuts
                 $elementId = $fieldI['original']['elementId']; $fieldId = $fieldI['original']['id'];
 
                 // Setup params, as array, containing default values, and actual values arrays merged to single array
-                if ($ePossibleElementParamA[$elementId]
-                    || $fParamA[$fieldId]
-                    || self::$_cfgValue['default']['element'][$elementId]
-                    || self::$_cfgValue['certain']['field'][$fieldId]) {
+                if (($ePossibleElementParamA[$elementId] ?? 0)
+                    || ($fParamA[$fieldId] ?? 0)
+                    || (self::$_cfgValue['default']['element'][$elementId] ?? 0)
+                    || (self::$_cfgValue['certain']['field'][$fieldId] ?? 0)) {
 
-                    if ($pep) $fieldI['temporary']['params'] = array_merge(
+                    if ($pep ?? 0) $fieldI['temporary']['params'] = array_merge(
                         $ePossibleElementParamA[$elementId] ?: [],
                         $fParamA[$fieldId] ?: []
                     );
 
                     // For now, config-fields is a new untested update, so it will should be turnable on/off
-                    if (ini('db')->cfgField || !$pep)
+                    if ((ini('db')->cfgField ?? 0) || !($pep ?? 0))
                     $fieldI['temporary']['params'] = array_merge(
-                        self::$_cfgValue['default']['element'][$elementId] ?: [],
-                        self::$_cfgValue['certain']['field'][$fieldId] ?: []
+                        self::$_cfgValue['default']['element'][$elementId] ?? [],
+                        self::$_cfgValue['certain']['field'][$fieldId] ?? []
                     );
                 }
 
@@ -497,7 +501,7 @@ class Indi_Db {
                         'table'   => $ref['table'],
                         'multi'   => $ref['storeRelationAbility'] == 'many',
                         'entity'  => $ref['entity'],
-                        'expect'  => self::$_cfgValue['certain']['field'][ $ref['fieldId'] ]['whichEntities'],
+                        'expect'  => self::$_cfgValue['certain']['field'][ $ref['fieldId'] ]['whichEntities'] ?? null,
                         'column'  => $ref['column'],
                         'foreign' => $ref['foreign'],
                     ];
@@ -543,12 +547,13 @@ class Indi_Db {
                     'title' => $entityI['title'],
                     'extends' => $entityI['extends'],
                     'titleFieldId' => $entityI['titleFieldId'],
+                    'monthFieldId' => $entityI['monthFieldId'],
                     'filesGroupBy' => $entityI['filesGroupBy'],
                     'hasRole' => in_array($entityI['id'], self::$_roleA),
                     'fraction' => $entityI['fraction'],
-                    'ibfk' => $ibfk[$entityI['table']] ?: [],
-                    'refs' => $refs[$entityI['table']] ?: [],
-                    'unique' => $unique[$entityI['table']] ?: '',
+                    'ibfk' => $ibfk[$entityI['table']] ?? [],
+                    'refs' => $refs[$entityI['table']] ?? [],
+                    'unique' => $unique[$entityI['table']] ?? '',
                     'inQtySum' => $inQtySumA[$entityI['id']] ?? [],
                     'changeLog' => [
                         'toggle' => $entityI['changeLogToggle'],
@@ -825,8 +830,11 @@ class Indi_Db {
                 // Set error code
                 $errcode = 0;
 
+                // Get trace
+                $trace = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1);
+
                 // Get line and file
-                extract(array_pop(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1, 1)));
+                extract(array_pop($trace));
             }
         }
 
@@ -973,7 +981,7 @@ class Indi_Db {
      */
     public static function l10n($table = null, $field = null) {
         if (func_num_args() == 0) return self::$_l10nA;
-        else if (func_num_args() == 1) return self::$_l10nA[$table];
+        else if (func_num_args() == 1) return self::$_l10nA[$table] ?? null;
         else if (func_num_args() > 1) return in_array($field, self::$_l10nA[$table]);
     }
 

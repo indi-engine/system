@@ -15,8 +15,11 @@ function autoloader($class) {
     // Get the filename, by replacing '_' to '/' in $class, and appending '.php'
     $cf = str_replace('_', '/', $class) . '.php';
 
-    // If file inclusion failed
-    if (!@include_once($cf)) {
+    // Get absolute file path is it exists in include_path
+    $abs = stream_resolve_include_path($cf);
+
+    // If file exists - include it, else
+    if ($abs) include_once $abs; else {
 
         // Check if we are in 'admin' module
         if (COM || preg_match('~^' . preg_quote(STD, '~') . '/admin\b~', URI)) {
@@ -36,8 +39,8 @@ function autoloader($class) {
             // Else if $class is some other class, we assume it's a model class
             } else $cf = '..' . VDR . '/public/application/models/' . $cf;
 
-            // Include class file
-            @include_once($cf);
+            // Get absolute file path is it exists in include_path
+            if ($abs = stream_resolve_include_path($cf)) include_once $abs;
         }
     }
 }
@@ -56,6 +59,34 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
     // If arguments are given, we assume that we are here because of
     // a set_error_handler() usage, e.g current error is not a fatal error
     if (func_num_args()) {
+
+        // Trim everything except relative path
+        $file = str_replace(DOC . STD . '/', '', $file);
+
+        // Get data to be logged as file
+        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2)];
+
+        // Prepare path to thatfile
+        $path = "log/err/" . str_replace('/', '-', $file) . "-$line.txt";
+
+        // If that file does not already exist - create it
+        if (!is_file($path)) i($data, 'a', $path);
+
+        // If this is a error related to what's have beed E_NOTICE in php7.4
+        if (   strpos($message, 'Undefined array key') !== false
+            || strpos($message, 'Undefined variable' ) !== false
+            || strpos($message, 'Undefined property' ) !== false
+            || preg_match('~Trying to access array offset on value of type null~', $message)
+            || preg_match('~Attempt to read property "[^"]*" on null~', $message)
+        ) {
+
+            // Proceed with execution
+            return;
+
+        // Todo: fix this problem
+        } else if (strpos($message, 'Indi_Controller::adjustGridData(): Argument #1 ($data) must be passed by reference, value given') !== false) {
+            return;
+        }
 
         // If current error is not in a list of ignored errors - return
         if(!(error_reporting() & $type)) return;
@@ -462,7 +493,7 @@ function ua($uaK) {
  * @param $rgb
  * @return array
  */
-function rgb2hsl($rgb) {
+function rgb2hsl($rgb) { $h = null;
 
     // This code was got somethere on the internet, so i feel too lazy to write a proper comments
     $varR=$rgb[0]/255;$varG=$rgb[1]/255;$varB=$rgb[2]/255;$varMin=min($varR,$varG,$varB);$varMax=max($varR,$varG,$varB);
@@ -899,8 +930,8 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
             : (is_array($msg2) ? $msg2 : ['msg' => $msg2]);
 
     // Merge the additional data to the $flush array
-    if ($mrg1) $flush = array_merge($flush, $mrg1);
-    if ($mrg2) $flush = array_merge($flush, $mrg2);
+    if ($mrg1 ?? 0) $flush = array_merge($flush, $mrg1);
+    if ($mrg2 ?? 0) $flush = array_merge($flush, $mrg2);
 
     // Check if redirect should be performed
     $redir = func_num_args() == 4 ? is_string($die) && Indi::rex('url', $die) : ($_ = Indi::$jfr) && $die = $_;
@@ -954,7 +985,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
  * @return bool
  */
 function isIE() {
-    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT']);
+    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT'] ?? null);
 }
 
 /**
@@ -1399,7 +1430,7 @@ function xml2ar($xml, $options = []) {
         foreach ($xml->children($namespace) as $childXml) {
             //recurse into child nodes
             $childArray = xml2ar($childXml, $options);
-            list($childTagName, $childProperties) = each($childArray);
+            list($childTagName, $childProperties) = $childArray;
 
             //replace characters in tag name
             if ($options['keySearch']) $childTagName =
@@ -1454,7 +1485,7 @@ function l10n_dataI($dataI, $props) {
 
     // Localize needed props within data item
     foreach(ar($props) as $prop)
-        if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop]))
+        if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $dataI[$prop] ?? ''))
             if ($json = json_decode($dataI[$prop], true))
             $dataI[$prop] = $json[array_key_exists(ini('lang')->admin, $json) ? ini('lang')->admin : key($json)];
 
@@ -1483,19 +1514,26 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
     foreach ($ruleA as $props => $rule) foreach (ar($props) as $prop) {
 
         // Shortcut to $data[$prop]
-        $value = $data[$prop];
+        $value = $data[$prop] ?? null;
 
         // Get meta
         $meta = isset($data['_meta'][$prop]) ? $data['_meta'][$prop] : [];
         
         // Get label, or use $prop if label/meta is not given
-        $label = $meta['fieldLabel'] ?: $prop;
+        $label = $meta['fieldLabel'] ?? $prop;
         
         // Flush fn
         $flushFn = $fn == 'mflush' ? 'mflush' : 'jflush';
 
         // First arg for flush fn
         $arg1 = $flushFn == 'mflush' ? $prop : false;
+
+        // Explicitly set up the rule-type keys for which not exist
+        foreach (['req', 'rex', 'ext', 'unq', 'key', 'fis', 'dis', 'min', 'max'] as $type) {
+            if (! isset($rule[$type])) {
+                $rule[$type] = '';
+            }
+        }
 
         // Constant name
         $c = 'I_' . ($flushFn == 'mflush' ? 'M' : 'J') . 'CHECK_';
@@ -1522,10 +1560,10 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
             $m = $expr[1];
 
             // Get error msg constant name
-            $const = trim($expr[3], ':') ?: $c . 'KEY';
+            $const = trim($expr[3] ?? null, ':') ?: $c . 'KEY';
 
             // Setup $s as a flag indicating whether *_Row (single row) or *_Rowset should be fetched
-            $s = !$expr[2];
+            $s = !($expr[2] ?? null);
 
             // Setup WHERE clause and method name to be used for fetching
             $w = $s ? '`id` = "' . $value . '"' : '`id` IN (' . $value . ')';
@@ -1715,7 +1753,7 @@ function field($table, $alias, array $ctor = []) {
     // Try to find `field` entry
     $fieldR = m('Field')->row([
         '`entityId` = "' . $entityId . '"',
-        rif($entryColumn, '`entry` = "' . (int) $ctor['entry'] . '"', 'TRUE'),
+        rif($entryColumn, '`entry` = "' . (int) ($ctor['entry'] ?? null) . '"', 'TRUE'),
         '`' . $byprop . '` = "' . $alias . '"'
     ]);
 
@@ -1737,7 +1775,7 @@ function field($table, $alias, array $ctor = []) {
     if ($ctor['entityId'] && $fieldR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $fieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $fieldR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `field` entry (newly created, or existing but updated)
     return $fieldR;
@@ -1783,10 +1821,10 @@ function sqlIndex($table, $alias, $ctor = []) {
     if ($ctor['entityId'] && $entry->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // If 'columns' is not given by $ctor - use $alias, as there is usable value of comma-separated list of columns
-    if (!$ctor['columns']) $ctor['columns'] = $ctor['alias'];
+    if (!($ctor['columns'] ?? null)) $ctor['columns'] = $ctor['alias'];
 
     // Assign other props and save
-    $entry->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $entry->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `sqlIndex` entry (newly created, or existing but updated)
     return $entry;
@@ -1989,10 +2027,10 @@ function section($alias, array $ctor = []) {
     if (!$sectionR) $sectionR = m('Section')->new();
 
     // Assign `entityId` prop first
-    if ($ctor['entityId'] && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
+    if (($ctor['entityId'] ?? null) && $sectionR->entityId = $ctor['entityId']) unset($ctor['entityId']);
 
     // Assign other props and save
-    $sectionR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $sectionR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `section` entry (newly created, or existing but updated)
     return $sectionR;
@@ -2055,7 +2093,7 @@ function grid($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $gridR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $gridR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $gridR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `grid` entry (newly created, or existing but updated)
     return $gridR;
@@ -2103,11 +2141,11 @@ function enumset($table, $field, $alias, $ctor = false) {
     else $enumsetR = m('Enumset')->new();
 
     // If $ctor['color'] is given - apply color-box
-    if ($ctor['color']) $ctor['title'] = '<span class="i-color-box" style="background: '
+    if ($ctor['color'] ?? null) $ctor['title'] = '<span class="i-color-box" style="background: '
         . $ctor['color'] . ';"></span>' . strip_tags($ctor['title']);
 
     // Assign other props and save
-    $enumsetR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $enumsetR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `enumset` entry (newly created, or existing but updated)
     return $enumsetR;
@@ -2509,7 +2547,7 @@ function alteredField($section, $field, array $ctor = []) {
     if ($ctor['sectionId'] && $alteredFieldR->sectionId = $ctor['sectionId']) unset($ctor['sectionId']);
 
     // Assign other props and save
-    $alteredFieldR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $alteredFieldR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `alteredField` entry (newly created, or existing but updated)
     return $alteredFieldR;
@@ -2572,7 +2610,7 @@ function filter($section, $field, $ctor = false) {
     if ($ctor['fieldId'] && $filterR->fieldId = $ctor['fieldId']) unset($ctor['fieldId']);
 
     // Assign other props and save
-    $filterR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $filterR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `filter` entry (newly created, or existing but updated)
     return $filterR;
@@ -2635,7 +2673,7 @@ function param($table, $field = null, $cfgField = null, $cfgValue = null) {
     else $paramR = m('param')->new();
 
     // Assign other props and save
-    $paramR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();
+    $paramR->set($ctor)->{(ini()->lang->migration ?? null) ? 'basicUpdate' : 'save'}();
 
     // Return `param` entry (newly created, or existing but updated)
     return $paramR;
@@ -3319,7 +3357,7 @@ function msg($msg, $success = true, $to = null) {
         $success = $msg['success'] ?? $success;
 
         // Overwrite $msg to contain message itself
-        $msg = $msg['msg'];
+        $msg = $msg['msg'] ?? null;
 
         // If no destination is given, e.g CID-constant is not defined
         if (!$to && preg_match('~^i-section-~', $fn['this'])) {
@@ -3330,7 +3368,7 @@ function msg($msg, $success = true, $to = null) {
             // Get destination channge tokens
             $to = db()->query("SELECT `token` FROM `realtime` WHERE `id` IN ($in)")->col();
         }
-    }
+    } else $fn = false;
 
     // Prepare msg
     $msg = [
@@ -3525,4 +3563,195 @@ function boxtip($html) {
 
     // Return match
     return $info;
+}
+
+/**
+ * Decode jwt-token
+ *
+ * @param string $jwt_token
+ * @return mixed
+ */
+function jwt_decode(string $jwt_token) {
+    return json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $jwt_token)[1]))));
+}
+
+/**
+ * Publish given $data over websocket to users' UIs contexts identified by $target
+ *
+ * @param array $data Data to be published
+ * @param string $target WHERE clause to identify `realtime`-entries
+ */
+function ws(array $data, string $target) {
+
+    // If rabbitmq is not enabled
+    if (!ini()->rabbitmq->enabled) return;
+
+    // Start building WHERE clause
+    $where = ['`type` = "context"', $target];
+
+    // Fetch matching `realtime` entries
+    $realtimeRs = m('realtime')->all($where);
+
+    // Pull foreign data for `realtimeId` key
+    $realtimeRs->foreign('realtimeId');
+
+    // Foreach
+    foreach ($realtimeRs as $realtimeR) {
+
+        // Get channel
+        $channel = $realtimeR->foreign('realtimeId')->token;
+
+        // Get context
+        $context = $realtimeR->token;
+
+        // Setup data to be picked by certain context (e.g. controller's action) within a certain channel (e.g. browser tab)
+        $byChannel[$channel][$context] = $data;
+    }
+
+    // Send data to each channel
+    if ($byChannel ?? null) foreach ($byChannel as $channel => $byContext) Indi::ws([
+        'type' => 'realtime',
+        'to' => $channel,
+        'data' => $byContext
+    ]);
+}
+
+/**
+ * Prepare fresh data for the given $panel and publish via websocket into recipients' UIs
+ *
+ * @param string $panel
+ * @param ...$args
+ */
+function refresh(string $panel, ...$args) {
+
+    // Get WHERE clause for the panel
+    $where = panel::$location[$panel];
+
+    // If WHERE clause contains {0}, {1}, {2} etc. placeholders - replace with args
+    foreach ($args as $index => $value) $where = str_replace('{' . $index . '}', $value, $where);
+
+    // Refresh data and publish via websocket into recipients' UIs identified by $where clause
+    ws(['panel' => forward_static_call_array(['panel', $panel], $args)], $where);
+}
+
+/**
+ * Show and update progress via websockets.
+ *
+ * Usage:
+ *  1.progress('Some operation', $total = 20);
+ *    // $total is written to Indi::$progress[$pid]['total']
+ *    // Progressbar is initially shown in UI with that message and zero progress
+ *  2.progress(2, 'Processing: {percent}%');
+ *    // 'Processing: 15%'-message will be shown in progress bar
+ *    // value for {percent} is calculated based on $total remembered on prev step and '2' which is an 0-based index
+ *    // which is also available for use in message as {index} and saved and updated in Indi::$progress[$pid]['index']
+ *    // but keep in mind that {index} is 1-based and is '3' in oppose to Indi::$progress[$pid]['index'] which is 0-based
+ *    // Also, {total} is available for use in message
+ *  3.progress(false, 'Some problem happened');
+ *    // Make progressbar div to be red with a given message
+ *    // If operation needs to be resumed - call as per point #2
+ *
+ * @param $percent
+ */
+function progress($arg1, $arg2 = null) {
+
+    // Get PID of current process
+    $pid = getmypid();
+
+    // Basic params
+    $data = [
+        'type' => 'progress',
+        'to' => CID,
+        'process' => getmypid(),
+    ];
+
+    // If first argument is a string and 2nd arg is an integer - assume it's
+    // an operation title and the total count of iterations to be processed
+    if (is_string($arg1) && is_int($arg2)) {
+
+        // Indicate the very beginning of a process
+        $data += [
+            'message' => $arg1,
+            'percent' => 0,
+        ];
+
+        // Remember index, percent and total
+        Indi::$progress[$pid]['index'] = 0;
+        Indi::$progress[$pid]['percent'] = 0;
+        Indi::$progress[$pid]['total'] = $arg2;
+
+    // Else if just an iteration index is given
+    } else if (is_numeric($arg1)) {
+
+        // Calc percent of total
+        $data['percent'] = round(($arg1 + 1) / Indi::$progress[$pid]['total'] * 100, 1);
+
+        // Update iteration index
+        Indi::$progress[$pid]['index'] = $arg1;
+
+        // If progress was now really changed - return
+        if ((Indi::$progress[$pid]['percent'] ?? 0) === $data['percent']) return;
+
+        // Remember last progress
+        Indi::$progress[$pid]['percent'] = $data['percent'];
+
+        // If there was some failure last time but we reached this line, it means progress was resumed
+        if ((Indi::$progress[$pid]['success'] ?? 0) === false) {
+
+            // So we make sure the last message shown before the failure - is shown back
+            // unless the message is explicitly given in $arg2
+            $data['message'] = $arg2 ?? Indi::$progress[$pid]['message'];
+
+            // Forget failure
+            unset(Indi::$progress[$pid]['success']);
+
+        // Else if message is explicitly given with $arg2
+        } else if ($arg2) {
+
+            // Use it and remember
+            $data['message'] = $arg2;
+        }
+
+    // Else if process should be indicated as failed or completed
+    } else if (is_bool($arg1)) {
+
+        // Setup success-flag
+        Indi::$progress[$pid]['success'] = $arg1;
+
+        // Setup message
+        $data['message'] = $arg2;
+
+        // If it's failure indication
+        if (Indi::$progress[$pid]['success'] === false) {
+
+            // Append red background color
+            $data += [
+                'bg' => '#e3495a'
+            ];
+        }
+    }
+
+    // If message is set
+    if ($data['message'] ?? 0) {
+
+        // Prepare values to replace variable names if any in message
+        $tpl = [
+            'index'   => Indi::$progress[$pid]['index'] + 1,
+            'total'   => Indi::$progress[$pid]['total'],
+            'percent' => round(Indi::$progress[$pid]['percent'])
+        ];
+
+        // Do replace if any in message
+        $data['message'] = preg_replace_callback(
+            '~{(?<var>index|percent|total)}~',
+            fn($m) => $tpl[$m['var']],
+            $data['message']
+        );
+
+        // Remember message
+        Indi::$progress[$pid]['message'] = $data['message'];
+    }
+
+    // Send via websockets
+    Indi::ws($data);
 }

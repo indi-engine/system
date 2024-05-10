@@ -14,7 +14,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         // Provide ability for some props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId') $value = section($value)->id;
-            else if ($columnName == 'actionId') $value = action($value)->id;
+            else if ($columnName == 'actionId') $value = action($value)->id ?? null;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
             else if ($columnName == 'roleIds') {
                 if ($value && !Indi::rexm('int11list', $value)) $value = m('role')

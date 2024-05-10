@@ -185,11 +185,11 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $applyA = ['hash' => t()->section->primaryHash, 'color' => t()->colors()];
                 if (uri()->ph) $applyA['upperHash'] = uri()->ph;
                 if (uri()->aix) $applyA['upperAix'] = uri()->aix;
-                $applyA['tree'] = m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'];
-                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
+                $applyA['tree'] = m()->treeColumn() && !($this->actionCfg['misc']['index']['ignoreTreeColumn'] ?? null);
+                if (Indi::get()->stopAutosave ?? 0) $applyA['toggledSave'] = false;
                 $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
 
-                if (is_array($f = Indi::get()->filter) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
+                if (is_array($f = Indi::get()->filter ?? null) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
                 else if ($f == '[]') $applyA['filters'] = $f;
 
                 t()->scope->apply($applyA);
@@ -225,14 +225,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $finalWHERE = $this->finalWHERE($primaryWHERE);
 
                     // If $_GET['group'] is an json-encoded object rather than array containing that object
-                    if (json_decode(Indi::get()->group) instanceof stdClass)
+                    if (json_decode(Indi::get()->group ?? null) instanceof stdClass)
 
                         // Prepend it to the list of sorters, to provide compatibility with ExtJS 6.7 behaviour,
                         // because ExtJS 4.1 auto-added grouping to the list of sorters but ExtJS 6.7 does not do that
                         Indi::get()->sort = preg_replace('~^\[~', '$0' . Indi::get()->group . ',', Indi::get()->sort);
 
                     // Get final ORDER clause, built regarding column name and sorting direction
-                    $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort);
+                    $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort ?? null);
 
                     // Build fetch method name
                     $fetchMethod = t()->scope->tree ? 'fetchTree' : 'fetchAll';
@@ -278,10 +278,10 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                         // Scope params
                         $scope = [
-                            'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword,
-                            'order' => Indi::get()->sort, 'page' => Indi::get()->page, 'found' => $this->rowset->found(),
+                            'primary' => $primaryWHERE, 'filters' => Indi::get()->filter, 'keyword' => Indi::get()->keyword ?? null,
+                            'order' => Indi::get()->sort ?? null, 'page' => Indi::get()->page ?? null, 'found' => $this->rowset->found(),
                             'WHERE' => $finalWHERE, 'ORDER' => $finalORDER, 'hash' => t()->section->primaryHash,
-                            'pgupLast' => $this->rowset->pgupLast()->id, 'rowsOnPage' => t()->section->rowsOnPage,
+                            'pgupLast' => $this->rowset->pgupLast()->id ?? null, 'rowsOnPage' => t()->section->rowsOnPage,
                             'tree' => $fetchMethod == 'fetchTree',
                             'rowReqIfAffected' => t()->grid->select('y', 'rowReqIfAffected')->column('fieldId', true),
                             'icon' => t()->icons(),
@@ -295,7 +295,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                                 t()->grid->select('sum', 'summaryType')->column('fieldId')
                             )->column('alias', ','),
                             'filterOwner' => t()->filterOwner('section'),
-                            'groupBy' => t()->section->foreign('groupBy')->alias,
+                            'groupBy' => t()->section->foreign('groupBy')->alias ?? null,
                             'panel' => t()->section->panel
                         ];
 
@@ -337,7 +337,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // If channel detected and referer context detected - update spaceUntil timestamp
                 if (!ini()->rabbitmq->enabled) Realtime::session()->save();
                 else if ($channel = Realtime::channel())
-                    if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid, 0))
+                    if ($token = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid ?? null, 0))
                         if ($context = m('realtime')->row(['`realtimeId` = "' . $channel->id . '"', '`token` = "' . $token . '"']))
                             $context->set('spaceUntil', date('Y-m-d H:i:s'))->save();
 
@@ -352,8 +352,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 ];
 
                 // Manage autosave-mode
-                if (Indi::get()->stopAutosave) $applyA['toggledSave'] = false;
-                else if (Indi::get()->startAutosave) $applyA['toggledSave'] = true;
+                if (Indi::get()->stopAutosave ?? null) $applyA['toggledSave'] = false;
+                else if (Indi::get()->startAutosave ?? null) $applyA['toggledSave'] = true;
 
                 // Apply scope params
                 t()->scope->apply($applyA);
@@ -369,7 +369,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 else if ($channel = Realtime::channel()) {
 
                     // Get context where request came from, if possible
-                    $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid)
+                    $context = Indi::rexm('ctx', $ctx = Indi::post()->_refCtxBid ?? null)
                         ? m('realtime')->row([
                             '`realtimeId` = "' . $channel->id . '"',
                             '`token` = "' . $ctx . '"'
@@ -400,7 +400,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $stepsUp = t()->level > 1 && t()->action->selectionRequired === 'n' ? 1 : 0;
 
         // Get id of first selected record. This record may be at upper level than current section
-        $id = t($stepsUp)->row->id;
+        $id = t($stepsUp)->row->id ?? null;
 
         // Append [index => $this->row->id] pairs
         if ($id)
@@ -410,7 +410,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             ] = $id;
 
         // Append others, if any
-        if ($otherIdA = Indi::post()->others)
+        if ($otherIdA = Indi::post()->others ?? null)
             foreach ($otherIdA as $index => $id)
                 if (Indi::rexm('int11', $id) && Indi::rexm('int11', $index))
                     $idA[$index] = $id;
@@ -476,7 +476,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $rename = ['grid' => 'rename', 'field' => 'title', 'entity' => 'title', 'filter' => 'rename'];
 
             // If ctrl-key was hold and we were editing grid column title
-            if ($ui == 'grid' && Indi::post()->ctrlKey) {
+            if ($ui == 'grid' && (Indi::post()->ctrlKey ?? null)) {
 
                 // Update grid column's underlying field's title
                 $_['indiId']
@@ -618,7 +618,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If selected rows should be moved into another group
         // Note: changing group and order at the same time is not currently supported
-        if (strlen($groupBy_value)) {
+        if (strlen($groupBy_value ?? null)) {
 
             // Do move
             t()->rows->set($groupBy_field, $groupBy_value)->save();
@@ -633,7 +633,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Prepare within-clause
                     $within = [];
                     if ($where) $within []= "($where)";
-                    if ($groupBy_field) $within []= "`$groupBy_field` = " . db()->quote($row->$groupBy_field);
+                    if ($groupBy_field ?? null) $within []= "`$groupBy_field` = " . db()->quote($row->$groupBy_field);
                     $within = join(' AND ', $within);
 
                     // Setup $last flag, indicating whether it's a last move() call for $row
@@ -1250,7 +1250,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Get the format
                     foreach (t()->fields as $fieldR) {
                         if ($fieldR->alias == $alias) {
-                            $dformat = $fieldR->params['display' . ($fieldR->elementId == 12 ? '' : 'Date') . 'Format'];
+                            $dformat = $fieldR->param('display' . ($fieldR->elementId == 12 ? '' : 'Date') . 'Format');
                         }
                     }
 
@@ -2360,7 +2360,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         return db()->query('
             SELECT
                 `a`.*,
-                `a`.`password` IN (IF(' . ($_SESSION['admin'] || $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
+                `a`.`password` IN (IF(' . ($_SESSION['admin'] ?? $place != 'admin' ? 1 : 0) . ', :s, ""), CONCAT("*", UPPER(SHA1(UNHEX(SHA1(:s)))))) AS `passwordOk`,
                 '. $adminToggle . ' AS `adminToggle`,
                 IF(`r`.`entityId`, `r`.`entityId`, 11) as `mid`,
                 `r`.`toggle` = "y" AS `roleToggle`,
@@ -2454,7 +2454,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         else if (!$data['atLeastOneSectionAccessible']) $error = I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS;
 
         // Return error or signin-data
-        return $error ?: $data;
+        return $error ?? $data;
     }
 
     /**
@@ -2546,7 +2546,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // If $error was set - return error, or return $data otherwise
-        return $error ? $error : $data;
+        return $error ?? $data;
     }
 
     /**
@@ -2566,7 +2566,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // If visitor is a visitor, e.g. he has not signed in yet
-        if (!$_SESSION['admin']) {
+        if ( ! ($_SESSION['admin'] ?? null) ) {
 
             // If 'consider' param is passed within the uri
             if (uri('consider')) {
@@ -2584,7 +2584,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             } else {
 
                 // If he is trying to do that
-                if (Indi::post()->enter && uri('section') == 'index' && uri('action') == 'index') {
+                if (Indi::post('enter') && uri('section') == 'index' && uri('action') == 'index') {
 
                     // If no username given
                     if (!Indi::post()->username) $data = I_LOGIN_ERROR_ENTER_YOUR_USERNAME;
@@ -2600,7 +2600,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Else start a session for user and report that sing-in was ok
                     $allowedA = ['id', 'title', 'email', 'password', 'roleId', 'roleTitle', 'alternate', 'mid'];
-                    foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI];
+                    foreach ($allowedA as $allowedI) $_SESSION['admin'][$allowedI] = $data[$allowedI] ?? null;
 
                     // Create `realtime` record having `type` = session_id(), if not exists so far
                     Realtime::session();
@@ -2611,7 +2611,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // If user was thrown out from the system, assign a throwOutMsg to view() object, for this message
                 // to be available for picking up and usage as Ext.MessageBox message, as a reason of throw out
-                if ($_SESSION['indi']['throwOutMsg']) {
+                if ($_SESSION['indi']['throwOutMsg'] ?? null) {
                     view()->throwOutMsg = $_SESSION['indi']['throwOutMsg'];
                     unset($_SESSION['indi']['throwOutMsg']);
                 }
@@ -2754,7 +2754,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Build an array containing sql-function calls for each column, that have a summary to be retrieved for
         foreach ($js2sql as $type => $fn)
-            if ($summary[$type])
+            if ($summary[$type] ?? null)
                 foreach ($summary[$type] as $col)
                     if (in($col, $cols))
                         $sql[] = 'IFNULL(' . $fn . '(`' . $col . '`), 0) AS `' . $col .'`';
@@ -2955,7 +2955,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$location) {
 
             // Setup parentness
-            if (t(1)->row) $id = t(1)->row->id;
+            $id = t(1)->row->id ?? null;
 
             // Get scope data
             if (uri()->ph) $scope = $_SESSION['indi']['admin'][uri('section')][uri()->ph];
@@ -3034,7 +3034,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $name = 'lang.gapi.key';
 
             // Get message
-            $msg = __(I_GAPI_RESPONSE, json_decode($e->getMessage())->error->message);
+            $msg = __(I_GAPI_RESPONSE, json_decode($e->getMessage())->error->message ?? $e->getMessage());
 
             // Prompt for valid Google Cloud Translate API key
             $prompt = $this->prompt($msg, [[
@@ -3095,7 +3095,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $data[$possibleI] = Indi::post($possibleI);
 
         // Unset 'move' key from data, because 'move' is a system field, and it's value will be set up automatically
-        if (!is_a($this, 'Indi_Controller_Admin_Exportable') || !$data['move']) unset($data['move']);
+        if (!is_a($this, 'Indi_Controller_Admin_Exportable') || !($data['move'] ?? null)) unset($data['move']);
 
         // If there was disabled fields defined for current section, we check if default value was additionally set up
         // and if so - assign that default value under that disabled field alias in $data array, or, if default value
@@ -3144,7 +3144,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->_save();
 
         // If current row has been just successfully created
-        if ($updateAix && $this->row->id) {
+        if (($updateAix ?? null) && $this->row->id) {
 
             // Update uri('aix')
             $this->updateAix($this->row);
@@ -3219,7 +3219,18 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Wrap row in a rowset, process it by $this->adjustGridDataRowset(), and unwrap back
         $row = t()->row ?? m()->new();
-        if ($phantom) $row->set((array) Indi::post());
+
+        // If $phantom arg is true
+        if ($phantom) {
+
+            // Setup modified data
+            $row->set((array) Indi::post());
+
+            // Setup system index
+            $row->system('index', t()->scope->aix - 1);
+        }
+
+        // Prepare row with adjustments, if need
         $this->rowset = m()->createRowset(['rows' => [$row]]);
         $this->adjustGridDataRowset();
         $this->row = $this->rowset->at(0);
@@ -3435,7 +3446,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         setcookie('i-language', null);
 
         // Unset session
-        if ($_SESSION['admin']['id'])  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
+        if ($_SESSION['admin']['id'] ?? null)  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
 
         // If `realtime` entry of `type` = "session" exists
         if ($_ = m('Realtime')->row([
@@ -3471,7 +3482,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'vdr' => VDR,
             'uri' => uri()->toArray(),
             'title' => ini('general')->title ?: 'Indi Engine',
-            'throwOutMsg' => $_SESSION['indi']['throwOutMsg'],
+            'throwOutMsg' => $_SESSION['indi']['throwOutMsg'] ?? null,
             'lang' => $this->lang(),
             'logo' => ini('general')->logo
         ]);
@@ -3611,7 +3622,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Pick certain props from query string
         $query = [];
         foreach (['form', 'filter'] as $key)
-            if ($val = Indi::get()->$key)
+            if ($val = Indi::get()->$key ?? null)
                 $query []= http_build_query([$key => $val]);
 
         // Convert into string
@@ -3660,7 +3671,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Get the id of a row, that we will be simulating navigation
             // to subsection, there that row's nested entries are located
-            preg_match('~/id/([0-9]+)/~', $nav[$i+1], $m); $id = $m[1];
+            preg_match('~/id/([0-9]+)/~', $nav[$i+1], $m); $id = $m[1] ?? null;
 
             // If next url (within $nav) is related to non-same section
             if ($ti[$i+1]) {
@@ -3810,7 +3821,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($menu as &$item) {
 
             // If $item relates to 0-level section, or is not linked to some entity - return
-            if (!$qtyA[$item['id']]) continue;
+            if ( ! ($qtyA[$item['id']] ?? null) ) continue;
 
             // Append each qty to menu item's title
             foreach (array_reverse($qtyA[$item['id']]) as $qtyI)
@@ -4032,7 +4043,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function confirm($msg, $buttons = 'OKCANCEL', $cancelMsg = null, $httpStatus = '400 Bad Request') {
 
         // Get answer
-        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)};
+        $answer = Indi::get()->{'answer' . rif(Indi::$answer, count(Indi::$answer) + 1)} ?? null;
 
         // If no answer, flush confirmation prompt
         if (!$answer) jconfirm(is_array($msg) ? im($msg, '<br>') : $msg, $buttons, $httpStatus);
@@ -4057,7 +4068,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $answerIdx = rif(Indi::$answer, count(Indi::$answer) + 1);
 
         // Get answer
-        $answer = Indi::get()->{'answer' . $answerIdx};
+        $answer = Indi::get()->{'answer' . $answerIdx} ?? null;
 
         // Build meta
         $meta = []; foreach($cfg as $field) $meta[$field['name']] = $field;
@@ -4137,7 +4148,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $langA = db()->query('SELECT `alias`, `title`, `toggle` FROM `lang` WHERE `toggle` = "y" ORDER BY `move`')->fetchAll();
 
         // Get default/current language
-        $lang = in($_COOKIE['lang'], array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
+        $lang = in($_COOKIE['lang'] ?? null, array_column($langA, 'alias')) ? $_COOKIE['lang'] : ini('lang')->admin;
 
         // Get all languages' versions for 4 constants
         foreach ($langA as &$langI) {
@@ -4172,13 +4183,13 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($langI['alias'] == $lang && admin(true)) {
                     $const = Indi::rexma('~define\(\'(.*?)\', ?\'(.*?)\'\);~', $php);
                     foreach ($const[2] as &$value) $value = stripslashes($value);
-                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?: []);
+                    $l10n = array_combine($const[1], $const[2]) + ($l10n ?? []);
                 }
             }
         }
 
         // Setup list of possible translations and current/last chosen one
-        return view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?: []);
+        return view()->lang = ['odata' => $langA, 'name' => $lang] + ($l10n ?? []);
     }
 
     /**
@@ -4189,7 +4200,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function createContextIfNeed($scope) {
 
         // Prevent `realtime` entry from being created in case of excel-export or jumping
-        if (uri()->format == 'excel' || Indi::get()->jump || t()->action->hasView === 'n') return;
+        if (uri()->format == 'excel' || (Indi::get()->jump ?? null) || t()->action->hasView === 'n') return;
 
         // Track involved entries
         if ($_ = Realtime::context()) $_->set([
@@ -4281,8 +4292,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function callPanel($function = '', $elseParent = true) {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 1, 1);
+
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $call = array_pop($trace);
 
         // Method name
         $method = $function ?: $call['function'];

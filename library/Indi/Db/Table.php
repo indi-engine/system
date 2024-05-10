@@ -241,7 +241,7 @@ class Indi_Db_Table
         if ($this->_fraction === null || $this->_fraction == 'system') return 'adminSystemUi';
 
         // Else if values defined for both 'field' and 'value' keys within $this->_fraction
-        if ($this->_fraction['value']) return $this->_fraction['value'][$r->{$this->_fraction['field']}];
+        if ($this->_fraction['value'] ?? null) return $this->_fraction['value'][$r->{$this->_fraction['field']}];
 
         // Else if value defined only for 'field' key - go upper
         return $r->foreign($this->_fraction['field'])->fraction();
@@ -285,7 +285,7 @@ class Indi_Db_Table
         $this->_treeColumn = $config['fields']->field($this->_table . 'Id') ? $this->_table . 'Id' : '';
 
         // Setup title field id
-        $this->_titleFieldId = $config['titleFieldId'] ?: 0;
+        $this->_titleFieldId = $config['titleFieldId'] ?: 0; $this->_monthFieldId = $config['monthFieldId'] ?: 0;
 
         // Setup filesGroupBy field id
         $this->_filesGroupBy = $config['filesGroupBy'] ?: 0;
@@ -474,7 +474,7 @@ class Indi_Db_Table
             'table'   => $this->_table,
             'data' => $data,
             'rowClass' => $this->_rowClass,
-            'found'=> $limit ? $this->_found($where, $union) : count($data),
+            'found'=> $limit ? $this->_found($where, $union ?? null) : count($data),
             'page' => $page,
             'pgupLast' => $pgupLast,
             'query' => $sql
@@ -728,13 +728,13 @@ class Indi_Db_Table
                         $level[$id] = $tree[$id][1];
 
                         // We shift end point because disabled items should be ignored
-                        if ($disabledA[$id] && (is_null($page) || $page > 0)) $end++;
+                        if (($disabledA[$id] ?? null) && (is_null($page) || $page > 0)) $end++;
 
                         // If we have not yet reached start point but faced a disabled option
                         // we shift both start and end points because disabled items should be ignored
                         // and start and end points of page range should be calculated with taking in attention
                         // about disabled options.
-                    } else if ($disabledA[$id] && (is_null($page) || $page > 0)) {
+                    } else if (($disabledA[$id] ?? null) && (is_null($page) || $page > 0)) {
                         if (!$selected || $i >= $selectedIndex) {
                             $start++;
                             $end++;
@@ -783,7 +783,7 @@ class Indi_Db_Table
         unset($assocDataA);
 
         // Set 'disabled' system property for results that should have such a property
-        if (is_array($disabledA)) {
+        if (is_array($disabledA ?? null)) {
             // Here we replace $disabledA values with it's keys, as we have no more need
             // to store info about disabled in array keys instead of store it in array values
             // We need to do this replacement only if we are not running keyword-search, because
@@ -791,7 +791,7 @@ class Indi_Db_Table
             if (!$keyword) $disabledA = array_keys($disabledA);
 
             // We setup 'disabled' property only for rows, which are to be returned
-            foreach ($disabledA as $disabledI) if ($data[$disabledI]) $data[$disabledI]['_system']['disabled'] = true;
+            foreach ($disabledA as $disabledI) if ($data[$disabledI] ?? 0) $data[$disabledI]['_system']['disabled'] = true;
         }
 
         // Set 'parentId' system property. Despite of existence of parent branch identifier in list of properties,
@@ -889,7 +889,7 @@ class Indi_Db_Table
                 $parentId = $return[$id][0];
                 while ($parentId) {
                     // We mark branch as disabled only if it is not primary
-                    if (!$primary[$parentId]) {
+                    if (! ($primary[$parentId] ?? null)) {
                         $disabled[$parentId] = true;
                     }
                     $parentId = $return[$parentId][0];
@@ -899,7 +899,7 @@ class Indi_Db_Table
 
             // Get final tree
             $tmp = [];
-            foreach ($return as $id => $data) if ($primary[$id] || $disabled[$id]) {
+            foreach ($return as $id => $data) if ($primary[$id] ?? $disabled[$id] ?? null) {
                 $tmp[$id] = $data;
                 unset($id, $data);
             }
@@ -928,7 +928,7 @@ class Indi_Db_Table
      * @return mixed
      */
     protected function _append($parentId, $data, $nested, $level = 0, $recursive = true) {
-        if (is_array($nested[$parentId])) foreach ($nested[$parentId] as $item) {
+        if (is_array($nested[$parentId] ?? null)) foreach ($nested[$parentId] as $item) {
             $item['level'] = $level;
             $id = $item['id'];
             $data[] = $item;
@@ -1153,7 +1153,7 @@ class Indi_Db_Table
         $array['title'] = $this->_title;
         $array['titleFieldId'] = $this->_titleFieldId;
         $array['space'] = $this->_space;
-        if ($this->_space['fields'])
+        if ($this->_space['fields'] ?? null)
             foreach (ar('owners,coords,relyOn') as $group)
                 $array['space']['fields'][$group]
                     = array_keys($array['space']['fields'][$group]);
@@ -1207,7 +1207,7 @@ class Indi_Db_Table
      * @return string
      */
     public function table($base = false) {
-        return $base && $this->_baseTable ? $this->_baseTable : $this->_table;
+        return $base && ($this->_baseTable ?? 0) ? $this->_baseTable : $this->_table;
     }
 
     /**
@@ -1470,12 +1470,12 @@ class Indi_Db_Table
         // Prepare data for construction
         $constructData = [
             'table'   => $this->_table,
-            'original'     => is_array($input['original']) ? $input['original'] : [],
-            'modified' => is_array($input['modified']) ? $input['modified'] : [],
-            'system' => is_array($input['system']) ? $input['system'] : [],
-            'temporary' => is_array($input['temporary']) ? $input['temporary'] : [],
-            'foreign' => is_array($input['foreign']) ? $input['foreign'] : [],
-            'nested' => is_array($input['nested']) ? $input['nested'] : [],
+            'original'  => is_array($input['original']  ?? null) ? $input['original']  : [],
+            'modified'  => is_array($input['modified']  ?? null) ? $input['modified']  : [],
+            'system'    => is_array($input['system']    ?? null) ? $input['system']    : [],
+            'temporary' => is_array($input['temporary'] ?? null) ? $input['temporary'] : [],
+            'foreign'   => is_array($input['foreign']   ?? null) ? $input['foreign']   : [],
+            'nested'    => is_array($input['nested']    ?? null) ? $input['nested']    : [],
         ];
 
         // If $constructData['original'] is an empty array, we setup it according to model structure
@@ -1536,11 +1536,11 @@ class Indi_Db_Table
         // Prepare data for Indi_Db_Table_Rowset object construction
         $data = [
             'table'   => $this->_table,
-            $index     => is_array($input[$index]) ? $input[$index] : [],
+            $index     => is_array($input[$index] ?? null) ? $input[$index] : [],
             'rowClass' => $this->_rowClass,
             'found'=> isset($input['found'])
                 ? $input['found']
-                : (is_array($input[$index]) ? count($input[$index]) : 0)
+                : (is_array($input[$index] ?? null) ? count($input[$index]) : 0)
         ];
 
         // Construct and return Indi_Db_Table_Rowset object
@@ -1619,7 +1619,7 @@ class Indi_Db_Table
      * @param array $data
      * @return string
      */
-    public function insert($data) {
+    public function insert(array $data) {
 
         // Get existing fields
         $fieldRs = $this->fields();
@@ -1632,7 +1632,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
+        if ($data['id'] ?? null) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
@@ -1720,7 +1720,7 @@ class Indi_Db_Table
 
         // If value for `id` is explicitly set - prepend it explicitly,
         // because there is no such a Field_Row instance within $fieldRs
-        if ($data['id']) $setA[] = db()->sql('`id` = :s', $data['id']);
+        if ($data['id'] ?? null) $setA[] = db()->sql('`id` = :s', $data['id']);
 
         // Foreach field within existing fields
         foreach ($fieldRs as $fieldR) {
@@ -1850,7 +1850,7 @@ class Indi_Db_Table
      * @return string
      */
     public function filesGroupBy($alias = false) {
-        return $alias ? $this->_fields->field($this->_filesGroupBy)->alias : $this->_filesGroupBy;
+        return $alias ? ($this->_fields->field($this->_filesGroupBy)->alias ?? null) : $this->_filesGroupBy;
     }
 
     /**
@@ -2384,7 +2384,7 @@ class Indi_Db_Table
      */
     public function ibfk() {
         if (func_num_args() == 0) return $this->_ibfk;
-        else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)];
+        else if (func_num_args() == 1) return $this->_ibfk[func_get_arg(0)] ?? null;
         else if (func_get_arg(1) === null) unset($this->_ibfk[func_get_arg(0)]);
         else return $this->_ibfk[func_get_arg(0)] = func_get_arg(1);
     }
@@ -2577,7 +2577,7 @@ class Indi_Db_Table
                     // we should not go deeper for deletion of same-table child-entries here,
                     // because we have already collected $ids of all-levels child-entries to be deleted
                     // and such a deletion will be done at most upper possible level of nesting
-                    if ($ref['skip']) continue;
+                    if ($ref['skip'] ?? null) continue;
 
                     // If there are usages ids found by that ref
                     if ($ids = im(array_keys($ref['ids'] ?? []))) {
@@ -2727,5 +2727,21 @@ class Indi_Db_Table
      */
     public function unique() {
         return $this->_unique;
+    }
+
+    /**
+     * Id of field, that is used as title-field
+     *
+     * @var boolean
+     */
+    protected $_monthFieldId = 0;
+
+    /**
+     * Return Field_Row object of a field, that is used as title-field
+     *
+     * @return Field_Row
+     */
+    public function monthField() {
+        return $this->_monthFieldId ? $this->_fields->field($this->_monthFieldId) : null;
     }
 }

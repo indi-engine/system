@@ -31,7 +31,7 @@ class Indi_Controller_Admin_Exportable extends Indi_Controller_Admin {
         $_ = jcheck(['certain' => ['rex' => 'int11list', 'key' => 'field*']], $prompt);
 
         // Get explicit list of certain props to be exported, or null if all props and and nested records should be exported
-        return $_['certain'] ? $_['certain']->fis('alias') : '';
+        return ($_['certain'] ?? null) ? $_['certain']->fis('alias') : '';
     }
 
     /**
