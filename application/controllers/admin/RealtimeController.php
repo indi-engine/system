@@ -20,6 +20,9 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // If it's special action
         if (in(uri()->action, 'cleanup,opentab,closetab,maxwell,example,status')) {
 
+            // Close the session
+            session_write_close();
+
             // Call the desired action method
             $this->call(uri()->action, $args);
 
