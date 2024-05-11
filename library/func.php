@@ -3719,17 +3719,11 @@ function progress($arg1, $arg2 = null) {
         // Setup success-flag
         Indi::$progress[$pid]['success'] = $arg1;
 
-        // Setup message
-        $data['message'] = $arg2;
+        // Setup message, if given
+        if (func_num_args() > 1) $data['message'] = $arg2;
 
-        // If it's failure indication
-        if (Indi::$progress[$pid]['success'] === false) {
-
-            // Append red background color
-            $data += [
-                'bg' => '#e3495a'
-            ];
-        }
+        // Append red/greed background color
+        $data['bg'] = Indi::$progress[$pid]['success'] ? '#00bc00' : '#e3495a';
     }
 
     // If message is set
@@ -3755,4 +3749,63 @@ function progress($arg1, $arg2 = null) {
 
     // Send via websockets
     Indi::ws($data);
+}
+
+/**
+ * Start execution of $uri as a separate background process
+ *
+ * @param string $uri
+ * @param array $args
+ * @return bool
+ */
+function process(string $uri, $args = []) {
+
+    // Replace / with -
+    $out = str_replace('/', '-', $uri);
+
+    // Default
+    $success = true;
+
+    // Prepare stderr-file path
+    $err = "log/$out.stderr";
+
+    // Get temp dir
+    $dir = ini_get('upload_tmp_dir')
+        ?: explode(':', ini_get('open_basedir'))[0]
+        ?? sys_get_temp_dir();
+
+    // Create temporary file
+    $env = tempnam($dir, 'pipe');
+
+    // Fill temporary file with current state
+    file_put_contents($env, json_encode([
+        '_SERVER' => $_SERVER,
+        '_COOKIE' => $_COOKIE,
+        'args' => $args
+    ]));
+
+    // Prepare command
+    $cmd = "php indi -d $uri \"$env\" 2> $err";
+
+    // Start service
+    $out = WIN ? pclose(popen($cmd, "r")) : `$cmd &`;
+
+    // Echo output
+    if (CMD && !WIN) echo $out;
+
+    // If stderr-file is not empty
+    if ($err = file_get_contents($err)) {
+
+        // Switch $success flag to false
+        $success = false;
+
+        // Show error message
+        msg($err, $success);
+
+        // Print error message
+        if (CMD) echo $err;
+    }
+
+    // Return flag indicating whether piping was successul
+    return $success;
 }

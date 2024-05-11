@@ -170,7 +170,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $this->_filesGroupBy();
 
         // Apply monthFieldId changes, if any
-        $this->_monthFieldId();
+        $this->detachProcess('monthFieldId');
 
         // Reload the model, that current entity row is representing
         if (count($this->_affected)) {
@@ -604,10 +604,13 @@ class Entity_Row extends Indi_Db_Table_Row {
      *  - new records in `month` table are created if necessary
      *  - add 'Month'-filter to all level-1 sections having this entity as data-source
      */
-    protected function _monthFieldId() {
+    public function monthFieldId() {
 
         // If monthFieldId was changed from 0 to non-0
         if ($this->fieldWasUnzeroed('monthFieldId')) {
+
+            // Print status
+            msg("Creating 'Month'-field...");
 
             // Create monthId-field within current entity data-structure
             field($this->table, 'monthId', [
@@ -624,11 +627,8 @@ class Entity_Row extends Indi_Db_Table_Row {
             param($this->table, 'monthId', 'groupBy', 'yearId');
             param($this->table, 'monthId', 'optionTemplate', '<?=$o->foreign(\'month\')->title?>');
 
-            // Get alias of date field to calculate values for monthId-field
-            $source = $this->foreign('monthFieldId')->alias;
-
-            // Setup value of monthId-field for existing entries
-            m($this->table)->batch(fn($r) => $r->set(['monthId' => monthId($r->$source)])->basicUpdate());
+            // Print status
+            msg("Creating filters for 'Month'-field...");
 
             // Get comma-separated ids of sections used as groups of left menu items
             $level0 = db()->query('
@@ -651,11 +651,36 @@ class Entity_Row extends Indi_Db_Table_Row {
             // For each section - append filter for monthId-field
             foreach ($level1 as $sectionId) filter($sectionId, 'monthId', ['move' => '']);
 
+            // Get alias of date field to calculate values for monthId-field
+            $source = $this->foreign('monthFieldId')->alias;
+
+            // Re-setup value of monthId-field for existing entries
+            m($this->table)->batch(
+
+                // Do setup
+                fn($r) => $r->deriveMonthId($source)->basicUpdate(),
+
+                // Batch settings
+                null, '`id` ASC', 500, false,
+
+                // Progress title
+                "Setting up values for 'Month'-field"
+            );
+
+            // Indicate done
+            progress(true);
+
         // Else if monthFieldId was changed to 0
         } else if ($this->fieldWasZeroed('monthFieldId')) {
 
+            // Print where we are
+            msg("Deleting 'Month'-field...");
+
             // Delete monthId-field from current entity structure
             if ($monthId = field($this->table, 'monthId')) $monthId->delete();
+
+            // Print where we are
+            msg("Done");
 
         // Else if source field was changed from one to another
         } else if ($this->affected('monthFieldId')) {
@@ -664,7 +689,20 @@ class Entity_Row extends Indi_Db_Table_Row {
             $source = $this->foreign('monthFieldId')->alias;
 
             // Re-setup value of monthId-field for existing entries
-            m($this->table)->batch(fn($r) => $r->set(['monthId' => monthId($r->$source)])->basicUpdate());
+            m($this->table)->batch(
+
+                // Do re-setup
+                fn($r) => $r->deriveMonthId($source)->basicUpdate(),
+
+                // Batch settings
+                null, '`id` ASC', 500, false,
+
+                // Progress title
+                "Setting up values for 'Month'-field"
+            );
+
+            // Indicate done
+            progress(true);
         }
     }
 }

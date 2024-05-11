@@ -583,7 +583,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!$mflush && $this->_mismatch) return false;
 
             // If foreign-key-titleField defined - set `title`
-            $this->_setTitle(); $this->_setMonthId();
+            $this->_setTitle(); $this->deriveMonthId();
 
             // Backup modified data
             $modified = $update = $this->_modified;
@@ -616,7 +616,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!$mflush && $this->_mismatch) return false;
 
             // If foreign-key-titleField defined - set `title`
-            $this->_setTitle(); $this->_setMonthId();
+            $this->_setTitle(); $this->deriveMonthId();
 
             // Backup modified data
             $modified = $insert = $this->_modified;
@@ -8186,17 +8186,40 @@ class Indi_Db_Table_Row implements ArrayAccess
     }
 
     /**
-     * Setup new value for monthId-field, if need
+     * Derive value for monthId-field from model's monthField or given $source field
+     *
+     * @param string|null $source
+     * @return $this|void
      */
-    protected function _setMonthId() {
+    public function deriveMonthId(string $source = null) {
 
-        // If monthFieldId is not defined for the entity that current entry belongs to - return
-        if (!$source = $this->model()->monthField()) return;
+        // If $source arg is not given
+        if (!func_num_args()) {
 
-        // If based field is not modified - return
-        if (!$this->isModified($source->alias)) return;
+            // If monthFieldId is not defined for the entity that current entry belongs to - return
+            if (!$source = $this->model()->monthField()->alias ?? 0) return;
+
+            // If based field is not modified - return
+            if (!$this->isModified($source)) return;
+        }
 
         // Setup monthId
-        $this->monthId = monthId($this->{$source->alias});
+        $this->monthId = monthId($this->$source);
+
+        // Fluent interface
+        return $this;
+    }
+
+    /**
+     * Call given $method on current record in a separate background process.
+     * Admin_DetachedController->processAction() is used as an entrypoint for such a call
+     *
+     * @param string $method
+     */
+    public function detachProcess(string $method) {
+        process("detached/process/$this->_table-$method-$this->id", [
+            'record' => serialize($this),
+            'method' => $method,
+        ]);
     }
 }

@@ -590,7 +590,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         // Everything below this call will be executed in a separate background process
         // you can check that by 'php indi'-command which will show the process is running
         // as command 'php indi realtime/example --instance=$dbname'
-        $this->pipe();
+        $this->detach();
 
         // Show progressbar with initial text
         progress('Processing...', $total = 1000);
@@ -617,6 +617,6 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         }
 
         // Indicate that process is done. Optional
-        // progress(true, 'Completed');
+        progress(true/*, 'Completed'*/);
     }
 }

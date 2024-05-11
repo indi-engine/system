@@ -1577,50 +1577,11 @@ class Indi_Controller {
         // If we're already in command-line mode - do nothing
         if (CMD && !$service) return;
 
-        // Default
-        $success = true;
-
         // Shortcuts
-        $uri = $this->_uri($service); $out = str_replace('/', '-', $uri);
+        $uri = $this->_uri($service);
 
-        // Prepare stderr-file path
-        $err = "log/$out.stderr";
-
-        // Get temp dir
-        $dir = ini_get('upload_tmp_dir')
-            ?: explode(':', ini_get('open_basedir'))[0]
-            ?? sys_get_temp_dir();
-
-        // Create temporary file
-        $env = tempnam($dir, 'pipe');
-
-        // Fill temporary file with current state
-        file_put_contents($env, json_encode([
-            '_SERVER' => $_SERVER,
-            '_COOKIE' => $_COOKIE,
-        ]));
-
-        // Prepare command
-        $cmd = "php indi -d $uri \"$env\" 2> $err";
-
-        // Start service
-        $out = WIN ? pclose(popen($cmd, "r")) : `$cmd &`;
-
-        // Echo output
-        if (CMD && !WIN) echo $out;
-
-        // If stderr-file is not empty
-        if ($err = file_get_contents($err)) {
-
-            // Switch $success flag to false
-            $success = false;
-
-            // Show error message
-            msg($err, $success);
-
-            // Print error message
-            if (CMD) echo $err;
-        }
+        // Try to start background process
+        $success = process($uri);
 
         // Flush response
         if (!$service) CMD ? exit : jflush($success);

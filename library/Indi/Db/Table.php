@@ -2021,7 +2021,7 @@ class Indi_Db_Table
      * @param bool $rowset
      * @throws Exception
      */
-    public function batch($fn, $where = null, $order = null, $limit = 500, $rowset = false) {
+    public function batch($fn, $where = null, $order = null, $limit = 500, $rowset = false, $progress = false) {
 
         // Check that $fn arg is callable
         if (!is_callable($fn)) throw new Exception('$fn arg is not callable');
@@ -2034,7 +2034,17 @@ class Indi_Db_Table
         if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
 
         // Get total qty of entries to be processed
-        $qty = db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->cell();
+        $qty = (int) db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->cell();
+
+        // If progress should be shown in ui
+        if ($progress) {
+
+            // Prepare progress title
+            $title = is_string($progress) ? $progress : 'Processing';
+
+            // Setup progress bar and total qty
+            progress($title, $qty);
+        }
 
         // Fetch usages by $limit at a time
         for ($p = 1; $p <= ceil($qty/$limit); $p++) {
@@ -2057,7 +2067,14 @@ class Indi_Db_Table
             if (!$rs->count()) return;
 
             // Update usages
-            if ($rowset) $fn($rs, $deduct); else foreach ($rs as $i => $r) $fn($r, $deduct, ($p - 1) * $limit + $i);
+            if ($rowset) $fn($rs, $deduct); else foreach ($rs as $i => $r) {
+
+                // Call function
+                $fn($r, $deduct, $index= ($p - 1) * $limit + $i);
+
+                // Update progress
+                if ($progress) progress($index, "$title: {percent}% of {total}");
+            }
 
             // If now (e.g. after $fn() call completed) less entries match WHERE clause,
             // it means that we need to fetch same page again rather than fetching next page
