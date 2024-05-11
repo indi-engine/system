@@ -1635,7 +1635,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $queue = new $queueClassName();
 
         // Start queue as a background process
-        if ($queueTaskR = $queue->chunk($params)) process('detached/queue', ['queueTaskId' => $queueTaskR->id]);
+        if ($queueTaskR = $queue->chunk($params)) $queueTaskR->detachProcess('start');
     }
 
     /**

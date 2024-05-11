@@ -35,7 +35,7 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
         }
 
         // Start queue as a background process
-        process('detached/queue', ['queueTaskId' => $this->row->id]);
+        t()->row->detachProcess('start');
 
         // Flush success
         jflush(true);
