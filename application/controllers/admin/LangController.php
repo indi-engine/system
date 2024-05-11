@@ -154,7 +154,7 @@ class Admin_LangController extends Indi_Controller_Admin {
         $queueTaskR = $queue->chunk($params);
 
         // Auto-start queue as a background process, for now only for *Const-fractions
-        Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+        process('detached/queue', ['queueTaskId' => $queueTaskR->id]);
     }
 
     /**
@@ -368,7 +368,7 @@ class Admin_LangController extends Indi_Controller_Admin {
                 if ($prompt['fraction'] == 'adminCustomData') jflush(false, I_LANG_NOT_SUPPORTED);
 
                 // Else auto-start queue as a background process
-                Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+                process('detached/queue', ['queueTaskId' => $queueTaskR->id]);
             }
         }
 

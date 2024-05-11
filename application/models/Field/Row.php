@@ -2059,7 +2059,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $queueTaskR = $queue->chunk($params);
 
         // If $async arg is true - auto-start queue as a background process
-        if ($async === true) Indi::cmd('queue', ['queueTaskId' => $queueTaskR->id]);
+        if ($async === true) process('detached/queue', ['queueTaskId' => $queueTaskR->id]);
 
         // Else
         else {

@@ -51,8 +51,8 @@ define('DIR', DOC . STD);
 // Setup URI constant, representing $_SERVER['REQUEST_URI'] environment variable, for short-hand accessibility
 define('URI', $_SERVER['REQUEST_URI'] == '/' ? '/' : rtrim($_SERVER['REQUEST_URI'], '/'));
 
-// Setup CMD constant, indicating that this execution was not started via Indi::cmd()
-// In case if execution WAS started via Indi::cmd(), this constant will be already defined,
+// Setup CMD constant, indicating that this execution was not started via process()
+// In case if execution WAS started via process(), this constant will be already defined,
 // so constant's value won't be overwritten by below-line definition
 if (!defined('CMD')) define('CMD', false);
 

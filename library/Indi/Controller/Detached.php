@@ -11,15 +11,6 @@ class Indi_Controller_Detached extends Indi_Controller {
     }
 
     /**
-     * Start running queue
-     *
-     * @param $queueTaskId
-     */
-    public function queueAction($queueTaskId) {
-        m('QueueTask')->row($queueTaskId)->start();
-    }
-
-    /**
      * Convert serialized $entry back to Indi_Db_Table_Row instance and call the $method
      *
      * @param string $entry

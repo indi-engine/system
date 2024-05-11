@@ -2352,18 +2352,6 @@ class Indi {
     }
 
     /**
-     * Dispatch /admin/cmd/<method>/ asynchronously,
-     * e.g. there will be a call of Admin_CmdController->{$method . 'Action'}($args)
-     *
-     * @static
-     * @param $method
-     * @param array $args
-     */
-    public static function cmd($method, $args = []) {
-        cmd($method, $args);
-    }
-
-    /**
      * Get parentId to be used while building parent-WHERE clause,
      * or set it with given $parentId value
      *
