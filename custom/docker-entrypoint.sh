@@ -53,7 +53,7 @@ cp /usr/bin/mysql_client_binaries/* /usr/bin/
 # 4.Setup cron job for certificate renewal check
 if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
   service apache2 start
-  certbot --apache -n -d $LETS_ENCRYPT_DOMAIN -m $GIT_COMMIT_EMAIL --agree-tos
+  certbot --apache -n -d $LETS_ENCRYPT_DOMAIN -m $GIT_COMMIT_EMAIL --agree-tos -v
   service apache2 stop
   echo "0 */12 * * * certbot renew" | crontab -
 fi
