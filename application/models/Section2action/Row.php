@@ -92,7 +92,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         // Build within-fields WHERE clause
         $wfw = [];
         foreach (ar($withinFields) as $withinField)
-            $wfw []= "IFNULL(`sa`.`$withinField`, 0) = '{$this->$withinField}'";
+            $wfw []= "IFNULL(`$withinField`, 0) = '{$this->$withinField}'";
 
         // Get ordered action aliases
         $among = db()->query('
