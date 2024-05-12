@@ -17,7 +17,7 @@ define('I_LOGIN_BOX_LANGUAGE', 'Idioma');
 define('I_LOGIN_ERROR_NO_SUCH_ACCOUNT', 'esa cuenta no existe');
 define('I_LOGIN_ERROR_WRONG_PASSWORD', 'Contraseña incorrecta');
 define('I_LOGIN_ERROR_ACCOUNT_IS_OFF', 'Esta cuenta está desactivada');
-define('I_LOGIN_ERROR_ROLE_IS_OFF', 'Esta cuenta es del tipo que está apagada.');
+define('I_LOGIN_ERROR_ROLE_IS_OFF', 'Esta cuenta es del tipo, que está apagada.');
 define('I_LOGIN_ERROR_NO_ACCESSIBLE_SECTIONS', 'Aún no hay secciones a las que pueda acceder esta cuenta');
 
 define('I_THROW_OUT_ACCOUNT_DELETED', 'Tu cuenta acababa de ser eliminada');
@@ -100,7 +100,7 @@ define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_LIST_OF_NON_ZERO_DECIMALS', 'El valor "%
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_BOOLEAN', 'El valor "%s" del campo "%s" debe ser "1" o "0"');
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_COLOR', 'El valor "%s" del campo "%s" debe ser un color en los formatos #rrggbb o hue#rrggbb');
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_DATE', 'El valor "%s" del campo "%s" no es una fecha');
-define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_VALID_DATE', 'El valor "%s" del campo "%s" no es una fecha válida');
+define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_VALID_DATE', 'El valor "%s" del campo "%s" es una fecha no válida');
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_TIME', 'El valor "%s" del campo "%s" debe ser una hora en formato HH:MM:SS');
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_BE_VALID_TIME', 'El valor "%s" del campo "%s" no es una hora válida');
 define('I_ROWSAVE_ERROR_VALUE_SHOULD_CONTAIN_DATE', 'Valor "%s", mencionado en el campo "%s" como fecha - no es una fecha');
@@ -117,7 +117,7 @@ define('I_ROWSAVE_ERROR_VALUE_TREECOLUMN_INVALID_SELF', 'La fila actual no se pu
 define('I_ROWSAVE_ERROR_VALUE_TREECOLUMN_INVALID_404', 'La fila con ID "%s", especificada en el campo "%s", no existe, por lo que no se puede configurar como fila principal.');
 define('I_ROWSAVE_ERROR_VALUE_TREECOLUMN_INVALID_CHILD', 'La fila "%s", especificada en el campo "%s", es una fila secundaria/descendiente de una fila actual "%s", por lo que no se puede configurar como fila principal.');
 define('I_ROWSAVE_ERROR_MFLUSH_MSG1', 'Durante su solicitud, una de las operaciones sobre la entrada del tipo "');
-define('I_ROWSAVE_ERROR_MFLUSH_MSG2', '- devolvió los siguientes errores');
+define('I_ROWSAVE_ERROR_MFLUSH_MSG2', ' - devolvió los siguientes errores');
 
 define('I_ADMIN_ROWSAVE_LOGIN_REQUIRED', 'El campo "%s" es obligatorio');
 define('I_ADMIN_ROWSAVE_LOGIN_OCCUPIED', 'El valor "%s" del campo "%s" ya se utiliza como nombre de usuario para otra cuenta');
@@ -130,7 +130,7 @@ define('I_ROWFILE_ERROR_NONEXISTENT_ROW', 'No hay posibilidad de tratar con arch
 define('I_ROWM4D_NO_SUCH_FIELD', 'El campo `m4d` no existe dentro de la entidad "%s"');
 
 define('I_UPLOAD_ERR_INI_SIZE', 'El archivo cargado en el campo "%s" excede la directiva upload_max_filesize en php.ini');
-define('I_UPLOAD_ERR_FORM_SIZE', 'El archivo cargado en el campo "%s" excede la directiva MAX_FILE_SIZE que se especificó');
+define('I_UPLOAD_ERR_FORM_SIZE', 'El archivo cargado en el campo "%s" excede la directiva MAX_FILE_SIZE que se especificó ');
 define('I_UPLOAD_ERR_PARTIAL', 'El archivo cargado en el campo "%s" se cargó solo parcialmente');
 define('I_UPLOAD_ERR_NO_FILE', 'No se cargó ningún archivo en el campo "%s"');
 define('I_UPLOAD_ERR_NO_TMP_DIR', 'Falta una carpeta temporal en el servidor para almacenar el archivo, cargada en el campo "%s"');
@@ -179,14 +179,14 @@ define('I_COMBO_WAND_TOOLTIP', 'Cree una nueva opción en esta lista usando el t
 define('I_ACTION_FORM_TOPBAR_NAVTOROWID_NOT_FOUND_MSGBOX_TITLE', 'No se encuentra la fila');
 define('I_ACTION_FORM_TOPBAR_NAVTOROWID_NOT_FOUND_MSGBOX_MSG_START', 'El alcance de las filas disponibles de la sección actual');
 define('I_ACTION_FORM_TOPBAR_NAVTOROWID_NOT_FOUND_MSGBOX_MSG_SPM', ', a la vista con opciones de búsqueda aplicadas -');
-define('I_ACTION_FORM_TOPBAR_NAVTOROWID_NOT_FOUND_MSGBOX_MSG_END', 'no contiene una fila con dicho ID');
+define('I_ACTION_FORM_TOPBAR_NAVTOROWID_NOT_FOUND_MSGBOX_MSG_END', ' no contiene una fila con tal ID');
 define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_TITLE', 'Fila #');
-define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_OF', 'de');
+define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_OF', 'de ');
 
 define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_TITLE', 'No se encuentra la fila');
 define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_MSG_START', 'El alcance de las filas que están disponibles en la sección actual,');
-define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_MSG_SPM', 'a la vista con opciones de búsqueda aplicadas');
-define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_MSG_END', '- no contiene una fila con dicho índice, pero recientemente sí lo hizo');
+define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_MSG_SPM', ' a la vista con opciones de búsqueda aplicadas');
+define('I_ACTION_FORM_TOPBAR_NAVTOROWOFFSET_NOT_FOUND_MSGBOX_MSG_END', ' - no contiene una fila con dicho índice, pero recientemente sí lo hizo');
 define('I_ACTION_FORM_TOPBAR_NAVTOSUBSECTION_NO_SUBSECTIONS', 'No');
 define('I_ACTION_FORM_TOPBAR_NAVTOSUBSECTION_SELECT', '--Seleccionar--');
 
@@ -213,14 +213,14 @@ define('I_ENTRY_TBQ', 'entrada,entradas,entradas');
 
 define('I_SOUTH_PLACEHOLDER_TITLE', 'El contenido de esta pestaña se abre en una ventana separada.');
 define('I_SOUTH_PLACEHOLDER_GO', 'Ir a');
-define('I_SOUTH_PLACEHOLDER_TOWINDOW', 'esa ventana');
+define('I_SOUTH_PLACEHOLDER_TOWINDOW', ' esa ventana');
 define('I_SOUTH_PLACEHOLDER_GET', 'Obtener contenidos');
-define('I_SOUTH_PLACEHOLDER_BACK', 'aquí atrás');
+define('I_SOUTH_PLACEHOLDER_BACK', ' aquí atrás');
 
 define('I_DEMO_ACTION_OFF', 'Esta acción está desactivada en el modo de demostración.');
 
 define('I_MCHECK_REQ', 'Campo "%s" - es obligatorio');
-define('I_MCHECK_REG', 'El valor "%s" del campo "%s" tiene un formato no válido');
+define('I_MCHECK_REG', 'El valor "%s" del campo "%s" - tiene un formato no válido');
 define('I_MCHECK_KEY', 'No se encontró ningún objeto de tipo "%s" con la clave "%s"');
 define('I_MCHECK_EQL', 'Valor incorrecto');
 define('I_MCHECK_DIS', 'Valor "%s" del campo "%s" - está en la lista de valores deshabilitados');
@@ -244,7 +244,7 @@ define('I_WHEN_WD_ON2', 'en');
 define('I_WHEN_TM_AT', 'en');
 
 define('I_LANG_LAST', 'No está permitido eliminar la última entrada restante "%s"');
-define('I_LANG_CURR', 'No está permitido eliminar la traducción que se utiliza como su traducción actual.');
+define('I_LANG_CURR', 'No está permitido eliminar la traducción que se utiliza como traducción actual.');
 define('I_LANG_FIELD_L10N_DENY', 'No se puede activar la localización para el campo "%s"');
 define('I_LANG_QYQN_CONFIRM', 'Si desea %s idioma "%s" para la fracción "%s", presione "%s". Si solo necesita alinearlo con el estado actual, presione "%s"');
 define('I_LANG_QYQN_CONFIRM2', 'Para la fracción "%s", el idioma "%s" se marcará manualmente como "%s". ¿Proceder?');
@@ -335,6 +335,9 @@ define('I_CLASS_404', 'Clase no encontrada %s');
 define('I_FORMAT_HIS', 'El valor "%s" del argumento %s debe ser una hora en formato hh:mm:ss');
 define('I_GAPI_RESPONSE', 'Respuesta de la API de Google Cloud Translate: %s');
 define('I_GAPI_KEY_REQUIRED', 'Especifique la clave API aquí.');
+define('I_QUEUE_STARTED', 'comenzó');
+define('I_QUEUE_RESUMED', 'reanudado');
+define('I_QUEUE_COMPLETED', 'terminado');
 define('I_PLAN_ITEM_LOAD_FAIL', 'No se puede cargar %s %s en la programación');
 define('I_SECTIONS_TPLCTLR_404', 'No se encontró ningún archivo de controlador de plantilla');
 define('I_SECTIONS_CTLR_PARENT_MISMATCH_JS', 'El archivo para js-controller existe, pero la clase principal especificada es %s');
@@ -356,5 +359,5 @@ define('I_MDL_ADMIN_VK_1', 'La dirección de la página debe comenzar con https:
 define('I_MDL_ADMIN_VK_2', 'Esta página no existe en VK.');
 define('I_MDL_ADMIN_VK_3', 'Esta página en VK no es una página de usuario.');
 
-define('I_FIELD_DRAG_CLICK', 'Arrastrar para reordenar / Hacer clic para ver detalles');
+define('I_FIELD_DRAG_CLICK', 'Arrastre para reordenar / Haga clic para ver detalles');
 define('I_ACTION_FORM', 'Detalles');
