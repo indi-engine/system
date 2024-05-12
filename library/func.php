@@ -3623,38 +3623,38 @@ function refresh(string $panel, ...$args) {
  *
  * @param $percent
  */
-function progress($arg1, $arg2 = null) {
+function progress($arg1, $arg2 = null, $pid = null) {
 
-    // Get PID of current process
-    $pid = getmypid();
+    // Get PID of current process or another identifier explicitly given by $pid arg
+    $pid ??= getmypid();
 
     // Basic params
     $data = [
         'type' => 'progress',
         'to' => CID,
-        'process' => getmypid(),
+        'process' => $pid,
     ];
 
     // If first argument is a string and 2nd arg is an integer - assume it's
     // an operation title and the total count of iterations to be processed
-    if (is_string($arg1) && is_int($arg2)) {
+    if (is_string($arg1) && (is_int($arg2) || is_array($arg2))) {
+
+        // Remember index, percent and total
+        Indi::$progress[$pid]['index']   = is_int($arg2) ? 0     : $arg2[0];
+        Indi::$progress[$pid]['percent'] = is_int($arg2) ? 0     : round($arg2[0] / $arg2[1] * 100, 1);
+        Indi::$progress[$pid]['total']   = is_int($arg2) ? $arg2 : $arg2[1];
 
         // Indicate the very beginning of a process
         $data += [
             'message' => $arg1,
-            'percent' => 0,
+            'percent' => Indi::$progress[$pid]['percent'],
         ];
-
-        // Remember index, percent and total
-        Indi::$progress[$pid]['index'] = 0;
-        Indi::$progress[$pid]['percent'] = 0;
-        Indi::$progress[$pid]['total'] = $arg2;
 
     // Else if just an iteration index is given
     } else if (is_numeric($arg1)) {
 
         // Calc percent of total
-        $data['percent'] = round(($arg1 + 1) / Indi::$progress[$pid]['total'] * 100, 1);
+        $data['percent'] = round($arg1 / Indi::$progress[$pid]['total'] * 100, 1);
 
         // Update iteration index
         Indi::$progress[$pid]['index'] = $arg1;

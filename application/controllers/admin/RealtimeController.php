@@ -602,7 +602,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             usleep(20000);
 
             // Update progress
-            progress($index, "Processing: {percent}%");
+            progress($index + 1, "Processing: {percent}%");
 
             // Imitate error
             if ($index === 50) {

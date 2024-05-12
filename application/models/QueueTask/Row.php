@@ -2,6 +2,14 @@
 class QueueTask_Row extends Indi_Db_Table_Row {
 
     /**
+     * Title describing whether queue task is started from scratch or is resumed afther the interruption
+     * Should not be set up here, as the value is setup and retrieved automatically when needed
+     *
+     * @var string
+     */
+    private static $title;
+
+    /**
      * Do the job
      *
      * @return int
@@ -20,6 +28,23 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         // Count how many queue items should be created
         $queue->count($this->id);
 
+        // Get fresh instance of current entry
+        $fresh = $this->model()->row($this->id);
+
+        // Get total iterations quantity
+        $total = $fresh->countSize * (2 + (int) ($fresh->queueState !== 'noneed'));
+
+        // Get quantity of iterations already done
+        $index = $this->itemsSize + $this->queueSize + $this->applySize;
+
+        // Prepare progress title
+        self::$title = $this->affected("procID", true)
+            ? "Очередь задач возобновлена с PID: %s, {percent}%%"
+            : "Очередь задач запущена с PID: %s, {percent}%%";
+
+        // Setup progress
+        progress(__(self::$title, $this->procID), [$index, $total], $this->id);
+
         // Create queue items
         $queue->items($this->id);
 
@@ -28,6 +53,9 @@ class QueueTask_Row extends Indi_Db_Table_Row {
 
         // Apply results
         $queue->apply($this->id);
+
+        // Refresh progress
+        progress(true, __('Очередь задач PID#%s - завершена', $this->procID), $this->id);
     }
 
     /**
@@ -40,6 +68,16 @@ class QueueTask_Row extends Indi_Db_Table_Row {
 
         // Call parent
         $this->callParent();
+
+        // If progress changed
+        if ($this->countSize && $this->affected('itemsSize,queueSize,applySize')) {
+
+            // Prepare title
+            $title = __(self::$title, $this->procID);
+
+            // Refresh progress
+            progress($this->itemsSize + $this->queueSize + $this->applySize, $title, $this->id);
+        }
     }
 
     /**
@@ -47,17 +85,17 @@ class QueueTask_Row extends Indi_Db_Table_Row {
      */
     public function onUpdate() {
 
-        // Moved to noticeGetter-level
-        return;
-
         // If queueState-field was changed to 'error'
         if ($this->fieldWasChangedTo('queueState', 'error')) {
+
+            // Show error
+            progress(false, __(I_GAPI_RESPONSE, $this->error), $this->id);
 
             // Make sure queue will be resumed after valid API key provided
             Indi::ws([
                 'type' => 'load',
                 'to' => 'dev',
-                'href' => "/queueTask/run/id/{$this->id}/gapikey/"
+                'href' => "/queueTask/run/id/$this->id/gapikey/"
             ]);
         }
     }

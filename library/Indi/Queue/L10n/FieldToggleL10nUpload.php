@@ -202,8 +202,19 @@ class Indi_Queue_L10n_FieldToggleL10nUpload extends Indi_Queue_L10n_FieldToggleL
                 // Catch exception
                 } catch (Exception $e) {
 
+                    // Get error
+                    $error = $e->getMessage();
+                    if ($json = json_decode($error))
+                        $error = $json->error->message;
+
+                    // Save error to queueTask props
+                    $queueTaskR->set([
+                        'queueState' => 'error',
+                        'error' => $error
+                    ])->save();
+
                     // Log error
-                    ehandler(1, json_decode($e->getMessage())->error->message, __FILE__, __LINE__);
+                    ehandler(1, $queueTaskR->error, __FILE__, __LINE__);
 
                     // Exit
                     exit;
