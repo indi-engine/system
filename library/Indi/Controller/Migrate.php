@@ -1,5 +1,11 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function disableQueueNoticeAction() {
+        notice('queueTask', 'done', ['toggle' => 'n']);
+        notice('queueTask', 'failed', ['toggle' => 'n']);
+        notice('queueTask', 'resumed', ['toggle' => 'n']);
+        notice('queueTask', 'started', ['toggle' => 'n']);
+    }
     public function monthFieldIdAction() {
         field('entity', 'special', ['title' => 'Special fields', 'elementId' => 'span', 'move' => 'changeLogExcept']);
         field('entity', 'titleFieldId', ['move' => 'special']);

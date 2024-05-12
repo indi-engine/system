@@ -18,6 +18,7 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
             // Prompt for valid Google Cloud Translate API key
             $prompt = $this->prompt($msg, [[
                 'xtype' => 'textfield',
+                'inputType' => 'password',
                 'emptyText' => I_GAPI_KEY_REQUIRED,
                 'width' => 250,
                 'name' => $name

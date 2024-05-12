@@ -3609,13 +3609,13 @@ function refresh(string $panel, ...$args) {
  *
  * Usage:
  *  1.progress('Some operation', $total = 20);
- *    // $total is written to Indi::$progress[$pid]['total']
+ *    // $total is written to Indi::$progress[$id]['total']
  *    // Progressbar is initially shown in UI with that message and zero progress
  *  2.progress(2, 'Processing: {percent}%');
  *    // 'Processing: 15%'-message will be shown in progress bar
  *    // value for {percent} is calculated based on $total remembered on prev step and '2' which is an 0-based index
- *    // which is also available for use in message as {index} and saved and updated in Indi::$progress[$pid]['index']
- *    // but keep in mind that {index} is 1-based and is '3' in oppose to Indi::$progress[$pid]['index'] which is 0-based
+ *    // which is also available for use in message as {index} and saved and updated in Indi::$progress[$id]['index']
+ *    // but keep in mind that {index} is 1-based and is '3' in oppose to Indi::$progress[$id]['index'] which is 0-based
  *    // Also, {total} is available for use in message
  *  3.progress(false, 'Some problem happened');
  *    // Make progressbar div to be red with a given message
@@ -3623,16 +3623,16 @@ function refresh(string $panel, ...$args) {
  *
  * @param $percent
  */
-function progress($arg1, $arg2 = null, $pid = null) {
+function progress($arg1, $arg2 = null, $id = null) {
 
-    // Get PID of current process or another identifier explicitly given by $pid arg
-    $pid ??= getmypid();
+    // Get PID of current process or another identifier explicitly given by $id arg
+    $id ??= getmypid();
 
     // Basic params
     $data = [
         'type' => 'progress',
         'to' => CID,
-        'process' => $pid,
+        'process' => $id,
     ];
 
     // If first argument is a string and 2nd arg is an integer - assume it's
@@ -3640,40 +3640,40 @@ function progress($arg1, $arg2 = null, $pid = null) {
     if (is_string($arg1) && (is_int($arg2) || is_array($arg2))) {
 
         // Remember index, percent and total
-        Indi::$progress[$pid]['index']   = is_int($arg2) ? 0     : $arg2[0];
-        Indi::$progress[$pid]['percent'] = is_int($arg2) ? 0     : round($arg2[0] / $arg2[1] * 100, 1);
-        Indi::$progress[$pid]['total']   = is_int($arg2) ? $arg2 : $arg2[1];
+        Indi::$progress[$id]['index']   = is_int($arg2) ? 0     : $arg2[0];
+        Indi::$progress[$id]['percent'] = is_int($arg2) ? 0     : round($arg2[0] / $arg2[1] * 100, 1);
+        Indi::$progress[$id]['total']   = is_int($arg2) ? $arg2 : $arg2[1];
 
         // Indicate the very beginning of a process
         $data += [
             'message' => $arg1,
-            'percent' => Indi::$progress[$pid]['percent'],
+            'percent' => Indi::$progress[$id]['percent'],
         ];
 
     // Else if just an iteration index is given
     } else if (is_numeric($arg1)) {
 
         // Calc percent of total
-        $data['percent'] = round($arg1 / Indi::$progress[$pid]['total'] * 100, 1);
+        $data['percent'] = round($arg1 / Indi::$progress[$id]['total'] * 100, 1);
 
         // Update iteration index
-        Indi::$progress[$pid]['index'] = $arg1;
+        Indi::$progress[$id]['index'] = $arg1;
 
         // If progress was now really changed - return
-        if ((Indi::$progress[$pid]['percent'] ?? 0) === $data['percent']) return;
+        if ((Indi::$progress[$id]['percent'] ?? 0) === $data['percent']) return;
 
         // Remember last progress
-        Indi::$progress[$pid]['percent'] = $data['percent'];
+        Indi::$progress[$id]['percent'] = $data['percent'];
 
         // If there was some failure last time but we reached this line, it means progress was resumed
-        if ((Indi::$progress[$pid]['success'] ?? 0) === false) {
+        if ((Indi::$progress[$id]['success'] ?? 0) === false) {
 
             // So we make sure the last message shown before the failure - is shown back
             // unless the message is explicitly given in $arg2
-            $data['message'] = $arg2 ?? Indi::$progress[$pid]['message'];
+            $data['message'] = $arg2 ?? Indi::$progress[$id]['message'];
 
             // Forget failure
-            unset(Indi::$progress[$pid]['success']);
+            unset(Indi::$progress[$id]['success']);
 
         // Else if message is explicitly given with $arg2
         } else if ($arg2) {
@@ -3686,13 +3686,13 @@ function progress($arg1, $arg2 = null, $pid = null) {
     } else if (is_bool($arg1)) {
 
         // Setup success-flag
-        Indi::$progress[$pid]['success'] = $arg1;
+        Indi::$progress[$id]['success'] = $arg1;
 
         // Setup message, if given
         if (func_num_args() > 1) $data['message'] = $arg2;
 
         // Append red/greed background color
-        $data['bg'] = Indi::$progress[$pid]['success'] ? '#00bc00' : '#e3495a';
+        $data['bg'] = Indi::$progress[$id]['success'] ? '#008dbc' : '#e3495a';
     }
 
     // If message is set
@@ -3700,20 +3700,21 @@ function progress($arg1, $arg2 = null, $pid = null) {
 
         // Prepare values to replace variable names if any in message
         $tpl = [
-            'index'   => Indi::$progress[$pid]['index'] + 1,
-            'total'   => Indi::$progress[$pid]['total'],
-            'percent' => round(Indi::$progress[$pid]['percent'])
+            'id'      => $id,
+            'index'   => Indi::$progress[$id]['index'],
+            'total'   => Indi::$progress[$id]['total'],
+            'percent' => round(Indi::$progress[$id]['percent']),
         ];
 
         // Do replace if any in message
         $data['message'] = preg_replace_callback(
-            '~{(?<var>index|percent|total)}~',
+            '~{(?<var>' . join('|', array_keys($tpl)) . ')}~',
             fn($m) => $tpl[$m['var']],
             $data['message']
         );
 
         // Remember message
-        Indi::$progress[$pid]['message'] = $data['message'];
+        Indi::$progress[$id]['message'] = $data['message'];
     }
 
     // Send via websockets

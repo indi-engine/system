@@ -37,13 +37,18 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         // Get quantity of iterations already done
         $index = $this->itemsSize + $this->queueSize + $this->applySize;
 
+        // Prepare title prefix
+        $prefix = $this->model()->title() . " ID#{id} - ";
+
         // Prepare progress title
-        self::$title = $this->affected("procID", true)
-            ? "Очередь задач возобновлена с PID: %s, {percent}%%"
-            : "Очередь задач запущена с PID: %s, {percent}%%";
+        self::$title = join('', [
+            $prefix,
+            $this->affected("procID", true) ? I_QUEUE_RESUMED : I_QUEUE_STARTED,
+            ": {percent}%"
+        ]);
 
         // Setup progress
-        progress(__(self::$title, $this->procID), [$index, $total], $this->id);
+        progress(self::$title, [$index, $total], $this->id);
 
         // Create queue items
         $queue->items($this->id);
@@ -55,7 +60,7 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         $queue->apply($this->id);
 
         // Refresh progress
-        progress(true, __('Очередь задач PID#%s - завершена', $this->procID), $this->id);
+        progress(true, $prefix . I_QUEUE_COMPLETED, $this->id);
     }
 
     /**
@@ -72,11 +77,8 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         // If progress changed
         if ($this->countSize && $this->affected('itemsSize,queueSize,applySize')) {
 
-            // Prepare title
-            $title = __(self::$title, $this->procID);
-
             // Refresh progress
-            progress($this->itemsSize + $this->queueSize + $this->applySize, $title, $this->id);
+            progress($this->itemsSize + $this->queueSize + $this->applySize, self::$title, $this->id);
         }
     }
 
