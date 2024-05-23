@@ -131,7 +131,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $skip []= m('enumset')->fields('fieldId');
 
         // Get `sqlIndex`.`columns` field
-        $skip []= m('sqlIndex')->fields('columns');
+        if (m('sqlIndex', true)) $skip []= m('sqlIndex')->fields('columns');
 
         // Get current refs
         $refs = $this->model()->refs();

@@ -1794,6 +1794,9 @@ function field($table, $alias, array $ctor = []) {
  */
 function sqlIndex($table, $alias, $ctor = []) {
 
+    // Skip if model not yet exists
+    if (!m('sqlIndex', true)) return;
+
     // Get `entityId` according to $table arg
     $entityId = entity($table)->id;
 
