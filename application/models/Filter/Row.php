@@ -182,7 +182,7 @@ class Filter_Row extends Indi_Db_Table_Row {
         // Maintain values
         if ($this->fieldIsUnzeroed('allowZeroResultExceptPrefilteredWith')) {
             $this->allowZeroResult = '1';
-        } else if (!$this->allowZeroResult) {
+        } else if (!$this->allowZeroResult && $this->field('allowZeroResultExceptPrefilteredWith')) {
             $this->zero('allowZeroResultExceptPrefilteredWith', true);
         }
     }

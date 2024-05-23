@@ -297,6 +297,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         sqlIndex('admin', 'email', ['type' => 'UNIQUE']);
         sqlIndex('resize', 'fieldId,alias', ['type' => 'UNIQUE']);
         sqlIndex('lang', 'alias', ['type' => 'UNIQUE']);
+        db()->query('UPDATE `notice` SET `alias` = `id` WHERE `alias` = ""');
         sqlIndex('notice', 'entityId,alias', ['type' => 'UNIQUE']);
         sqlIndex('year', 'title', ['type' => 'UNIQUE']);
         sqlIndex('month', 'yearId,month', ['type' => 'UNIQUE']);
@@ -356,7 +357,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         file_put_contents('data/upload/.htaccess', 'php_value engine off');
         $this->exec('git add .htaccess');
         $this->exec('git add data/upload/.htaccess');
-        $this->exec('git commit -m ".htaccess updated"', '', 'nothing added to commit');
+        $this->exec('git commit -m ".htaccess updated"', '', 'nothing.+?to commit');
         die('ok');
     }
     public function composeTemplateAction() {
