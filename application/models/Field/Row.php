@@ -175,7 +175,8 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $this->deleteColumn();
 
         // Delete indexes
-        m('sqlIndex')->all("FIND_IN_SET('{$this->_original['id']}', `columns`)")->delete();
+        if (m('sqlIndex', true))
+            m('sqlIndex')->all("FIND_IN_SET('{$this->_original['id']}', `columns`)")->delete();
 
         // Delete current field from model's fields
         m($this->entityId)->fields()->exclude($this->_original['id']);
