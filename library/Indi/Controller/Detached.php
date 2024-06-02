@@ -11,12 +11,13 @@ class Indi_Controller_Detached extends Indi_Controller {
     }
 
     /**
-     * Convert serialized $entry back to Indi_Db_Table_Row instance and call the $method
+     * Convert serialized $record back to Indi_Db_Table_Row instance and call the $method, with $params if given
      *
-     * @param string $entry
+     * @param string $record
      * @param string $method
+     * @param array $params
      */
-    public function processAction(string $entry, string $method) {
-        unserialize($entry)->$method();
+    public function processAction(string $record, string $method, $params = []) {
+        call_user_func_array([unserialize($record), $method], $params);
     }
 }

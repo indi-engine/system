@@ -168,7 +168,7 @@ define('I_FORM_UPLOAD_FPREF', 'รูปภาพ %s');
 define('I_FORM_DATETIME_HOURS', 'ชั่วโมง');
 define('I_FORM_DATETIME_MINUTES', 'นาที');
 define('I_FORM_DATETIME_SECONDS', 'วินาที');
-define('I_COMBO_OF', 'ของ');
+define('I_OF', 'ของ');
 define('I_COMBO_MISMATCH_MAXSELECTED', 'จำนวนตัวเลือกที่เลือกสูงสุดที่อนุญาตคือ');
 define('I_COMBO_MISMATCH_DISABLED_VALUE', 'ตัวเลือก "%s" ไม่พร้อมใช้งานสำหรับการเลือกในฟิลด์ "%s"');
 define('I_COMBO_KEYWORD_NO_RESULTS', 'ไม่พบสิ่งใดโดยใช้คำหลักนี้');
