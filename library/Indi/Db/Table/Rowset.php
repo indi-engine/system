@@ -576,6 +576,33 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     }
 
     /**
+     *
+     */
+    public function appendMissingParents() {
+
+        //
+        if (!$treeColumn = $this->model()->treeColumn()) return;
+
+        //
+        $parentA = $this->col($treeColumn, false, 'id');
+
+        //
+        $missingA = [];
+        foreach ($parentA as $parentId)
+            if ($parentId && !isset($parentA[$parentId]))
+                $missingA[$parentId] = $parentId;
+
+        //
+        if ($missingA) {
+            $missingRs = $this->model()->all('`id` IN (' . im($missingA) . ')');
+            $missingRs->system('disabled', true);
+            //$missingRs->set('visible', false);
+            $this->merge($missingRs);
+            $this->_found -= $missingRs->found();
+        }
+    }
+
+    /**
      * Converts a rowset to grid data array, using current trail item details, such as columns, filters, etc
      *
      * @param string $fields Comma-separated list of field names
@@ -587,6 +614,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // If there are no rows in $this argument - return
         if ($this->_count == 0) return [];
+
+        //
+        $this->appendMissingParents();
 
         // Declare an array for aliases of grid fields
         $columnA = ['id'];
@@ -1052,11 +1082,16 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $data[$pointer]['_system']['owner'] = in($owner['id'], $r->{$owner['field']});
             }
 
-            // Implement indents if need
-            if (($data[$pointer][$_ = $titleProp ?? 'title'] ?? null) && $treeColumn)
-                if ($r->system('level') !== null || $r->level() !== null)
-                    $data[$pointer]['_render'][$_]
-                        = str_repeat(' ', 5 * $r->system('level')) . $data[$pointer][$_];
+            if ($treeColumn) {
+                $data[$pointer]['_system']['parentId'] = (int) $r->$treeColumn;
+                $data[$pointer]['blocks'] = [];
+
+                // Implement indents if need
+                if ($data[$pointer][$_ = $titleProp ?? 'title'] ?? 0)
+                    if ($r->system('level') !== null || $r->level() !== null)
+                        $data[$pointer]['_render'][$_]
+                            = str_repeat(' ', 5 * $r->system('level')) . $data[$pointer][$_];
+            }
 
             // Unset '_foreign'
             unset($data[$pointer]['_foreign']);
@@ -1086,6 +1121,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($composeVal as $column => $template)
                 $data[$pointer]['_render'][$column]
                     = $this->_toGridData_compose($column, $template,$data[$pointer], $format, 'val');
+
+            //if (!$data[$pointer]['sectionId']) $data[$pointer]['sectionId'] = 12345;
+            unset($data[$pointer]['expanded']);
+            unset($data[$pointer]['expand']);
+
+            //
+            $this->_rows[$pointer]->view('gridData', $data[$pointer]);
         }
 
         // If data should be grouped
@@ -2123,7 +2165,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @param false $appendOrphans
      * @return Indi_Db_Table_Rowset
      */
-    public function toNestingTree($appendOrphans = false) {
+    public function toNestingTree($appendOrphans = false, &$data = null) {
 
         // If current rowset is owned by a non-tree model - return rowset with no changes
         if (!($treeColumn = $this->model()->treeColumn())) return $this;
@@ -2138,7 +2180,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         foreach ($rs as $r) {
 
             // Get ids of items (that are root or have parents) iterated during processing of $r
-            $_ = $r->nestDescedants($this);
+            $_ = $r->nestDescedants($this, 'id', $data);
 
             // If it's a non-phantom - append to collection
             if ($r->id) $areRootOrHaveParents += $_;

@@ -259,6 +259,16 @@ class Indi_Controller_Admin extends Indi_Controller {
                         // Try to get rowset
                         do {
 
+                            /*if (t()->section->alias === 'test') {
+                                $node = Indi::get()->node;
+                                if (is_numeric($node)) {
+                                    //if (!is_numeric($node)) $node = '0';
+                                    $nodeWHERE = "IFNULL(`sectionId`, 0) = '$node'";
+                                    $finalWHERE = rif($finalWHERE, ' $1 AND ') . $nodeWHERE;
+                                    $fetchMethod = 'fetchAll';
+                                }
+                            }*/
+
                             // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
                             // constructed with usage of Indi::get('limit') and Indi::get('page') params
                             $this->rowset = m()->{$fetchMethod}($finalWHERE, $finalORDER,
@@ -1837,6 +1847,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // We remember a current row index at this moment, because it is the index which data rows are starting from
         $dataStartAtRowIndex = $currentRowIndex;
 
+        // Non-disabled rows index
+        $index = 0;
+
         // Foreach item in $data array
         for ($i = 0; $i < count($data); $i++) {
 
@@ -1919,7 +1932,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Get the index/value
                 if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?? $data[$i][$columnI['dataIndex']] ?? ' ';
-                else if ($columnI['id'] == 'rownumberer') $value = $i + 1;
+                else if ($columnI['id'] == 'rownumberer') $value = $data[$i]['_system']['disabled'] ? '' : ++ $index;
                 else $value = '';
 
                 // Strip data-title attributes having 'style=' as inner html-encoded contents

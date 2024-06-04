@@ -5429,10 +5429,15 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param Indi_Db_Table_Rowset $source
      */
-    public function nestDescedants(Indi_Db_Table_Rowset $source, $collectProp = 'id') {
+    public function nestDescedants(Indi_Db_Table_Rowset $source, $collectProp = 'id', &$children = null) {
 
         // Collect [idValue => propValue] pair for current record
         $collected[$this->id] = $this->$collectProp;
+
+        //
+        if (isset($children)) {
+            $child = $this->view('gridData') + ['blocks' => []];
+        }
 
         // Get nested records
         $nested = $source->select($this->id, $this->model()->treeColumn());
@@ -5447,7 +5452,14 @@ class Indi_Db_Table_Row implements ArrayAccess
             $collected[$nestedR->id] = $nestedR->$collectProp;
 
             // Merge collected
-            $collected += $nestedR->nestDescedants($source, $collectProp);
+            $collected += $nestedR->nestDescedants($source, $collectProp, $child['blocks']);
+        }
+
+        if (isset($children)) {
+
+            $child['expanded'] = !!$child['blocks'];
+
+            $children[] = $child;
         }
 
         // Return colected pairs
