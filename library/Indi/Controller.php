@@ -921,15 +921,6 @@ class Indi_Controller {
                 // Unset tabs definitions from json-encoded scope data, as we'd already got it previously
                 unset($scope['actionrowset']['south']['tabs']);
 
-                // If current rowset is owned by a tree model
-                if (m()->treeColumn()) {
-
-                    // Clear $data
-                    $data = [];
-
-                    $this->rowset->toNestingTree(true, $data);
-                }
-
                 // Setup basic data
                 $pageData = [
                     'totalCount' => $this->rowset->found(),
@@ -940,9 +931,6 @@ class Indi_Controller {
                 $metaData = [
                     'scope' => $scope
                 ];
-
-                //
-                $metaData['rawBlocks'] = $data;
 
                 // Append summary data
                 if ($summary = $this->rowsetSummary()) $pageData['summary'] = $summary;

@@ -576,30 +576,42 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
     }
 
     /**
-     *
+     * Append missing parents to the current rowset, recursively until no missing parents left
      */
     public function appendMissingParents() {
 
-        //
+        // If no tree-column exists for curren model - return
         if (!$treeColumn = $this->model()->treeColumn()) return;
 
-        //
-        $parentA = $this->col($treeColumn, false, 'id');
+        // Check and merge missing parents recursively
+        do {
 
-        //
-        $missingA = [];
-        foreach ($parentA as $parentId)
-            if ($parentId && !isset($parentA[$parentId]))
-                $missingA[$parentId] = $parentId;
+            // Get [id => parentId] pairs where parentId is $row->$treeColumn
+            $existing = $this->col($treeColumn, false, 'id');
 
-        //
-        if ($missingA) {
-            $missingRs = $this->model()->all('`id` IN (' . im($missingA) . ')');
-            $missingRs->system('disabled', true);
-            //$missingRs->set('visible', false);
-            $this->merge($missingRs);
-            $this->_found -= $missingRs->found();
-        }
+            // Collect ids of missing parents
+            $missing = [];
+            foreach ($existing as $id => $parentId)
+                if ($parentId && !isset($existing[$parentId]))
+                    $missing[$parentId] = $parentId;
+
+            // If some parents are missing
+            if ($missing) {
+
+                // Fetch them but mark as disabled
+                $missingRs = $this->model()
+                    ->all('`id` IN (' . im($missing) . ')')
+                    ->system('disabled', true);
+
+                // Merge into current rowset
+                $this->merge($missingRs);
+
+                // Deduct from found-counter as they're disabled
+                $this->_found -= $missingRs->found();
+            }
+
+        // Until no missing parents left
+        } while ($missing);
     }
 
     /**
@@ -615,7 +627,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // If there are no rows in $this argument - return
         if ($this->_count == 0) return [];
 
-        //
+        // Append missing parents, if need
         $this->appendMissingParents();
 
         // Declare an array for aliases of grid fields
@@ -1082,9 +1094,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $data[$pointer]['_system']['owner'] = in($owner['id'], $r->{$owner['field']});
             }
 
+            // If current model has tree-column
             if ($treeColumn) {
+
+                // Setup parentId in system data
                 $data[$pointer]['_system']['parentId'] = (int) $r->$treeColumn;
-                $data[$pointer]['blocks'] = [];
 
                 // Implement indents if need
                 if ($data[$pointer][$_ = $titleProp ?? 'title'] ?? 0)
@@ -1121,13 +1135,6 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($composeVal as $column => $template)
                 $data[$pointer]['_render'][$column]
                     = $this->_toGridData_compose($column, $template,$data[$pointer], $format, 'val');
-
-            //if (!$data[$pointer]['sectionId']) $data[$pointer]['sectionId'] = 12345;
-            unset($data[$pointer]['expanded']);
-            unset($data[$pointer]['expand']);
-
-            //
-            $this->_rows[$pointer]->view('gridData', $data[$pointer]);
         }
 
         // If data should be grouped
@@ -2165,7 +2172,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @param false $appendOrphans
      * @return Indi_Db_Table_Rowset
      */
-    public function toNestingTree($appendOrphans = false, &$data = null) {
+    public function toNestingTree($appendOrphans = false) {
 
         // If current rowset is owned by a non-tree model - return rowset with no changes
         if (!($treeColumn = $this->model()->treeColumn())) return $this;
@@ -2180,7 +2187,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         foreach ($rs as $r) {
 
             // Get ids of items (that are root or have parents) iterated during processing of $r
-            $_ = $r->nestDescedants($this, 'id', $data);
+            $_ = $r->nestDescedants($this);
 
             // If it's a non-phantom - append to collection
             if ($r->id) $areRootOrHaveParents += $_;

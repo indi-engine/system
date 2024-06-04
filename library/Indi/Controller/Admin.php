@@ -259,16 +259,6 @@ class Indi_Controller_Admin extends Indi_Controller {
                         // Try to get rowset
                         do {
 
-                            /*if (t()->section->alias === 'test') {
-                                $node = Indi::get()->node;
-                                if (is_numeric($node)) {
-                                    //if (!is_numeric($node)) $node = '0';
-                                    $nodeWHERE = "IFNULL(`sectionId`, 0) = '$node'";
-                                    $finalWHERE = rif($finalWHERE, ' $1 AND ') . $nodeWHERE;
-                                    $fetchMethod = 'fetchAll';
-                                }
-                            }*/
-
                             // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
                             // constructed with usage of Indi::get('limit') and Indi::get('page') params
                             $this->rowset = m()->{$fetchMethod}($finalWHERE, $finalORDER,
