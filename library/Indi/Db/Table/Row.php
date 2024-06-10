@@ -8222,4 +8222,57 @@ class Indi_Db_Table_Row implements ArrayAccess
             'method' => $method,
         ]);
     }
+
+    /**
+     * Reorder current entry for it to be prior/after neighbour for the entry identified by $targetId
+     * For now, this is only supported for existing entries of entities having tree- and move- columns
+     *
+     * @param int $targetId
+     * @param string $side Can be 'after' or 'prior'
+     */
+    public function moveToBeNeighbourFor(int $targetId, string $side = 'after') {
+
+        // If current entry does not yet exist - return
+        if (!$this->id) return;
+
+        // If no 'move' field exists in original data - return
+        if (!isset($this->_original['move'])) return;
+
+        // If $targetId is 0 - return
+        if (!$targetId) return;
+
+        // For now, this feature is only supported for entities having tree-column
+        if (!$tc = $this->model()->treeColumn()) return;
+
+        // If no prior/after entry - return
+        if (!$target = $this->model()->row($targetId)) return;
+
+        // Prepare where clause
+        $where = "`$tc`" . rif($target->$tc," = '$1'", " IS NULL");
+
+        // Get old [id => move] pairs
+        $move['old'] = db()
+            ->query("SELECT `id`, `move` FROM `$this->_table` WHERE $where ORDER BY `move`")
+            ->pairs();
+
+        // Copy those but unset for current entry
+        $move['new'] = $move['old']; unset($move['new'][$this->id]);
+
+        // Get index of prior/after
+        $index = array_search($targetId, $keys['new'] = array_keys($move['new']));
+
+        // If not found - return
+        if ($index === false) return;
+
+        // Insert current id prior/after the sibling id
+        array_splice($keys['new'], $index + (int) ($side === 'after'), 0, $this->id);
+
+        // Prepare new [id => move] pairs
+        $move['new'] = array_combine($keys['new'], array_values($move['old']));
+
+        // Apply changes
+        foreach ($move['new'] as $id => $now)
+            if ($now != $move['old'][$id])
+                $this->model()->row($id)->set('move', $now)->basicUpdate();
+    }
 }

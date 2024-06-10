@@ -612,6 +612,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Get tree-column, if exists
         $tree = m()->treeColumn();
 
+        // If neightbourship setup was needed and executed - return
+        if ($this->neighbourIfNeed()) return;
+
         // If $direction is 'down' - reverse selected rows, so that
         // the one which is at the most bottom of selection is moved at first
         if ($direction === 'down') t()->rows->reverse();
@@ -3146,6 +3149,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If google cloud translate API exception is catched on attempt to save - prompt for valid api key and try again
         $this->_save();
 
+        // Reorder current entry to be neighbour at certain side of a certain target, if need
+        $this->neighbourIfNeed();
+
         // If current row has been just successfully created
         if (($updateAix ?? null) && $this->row->id) {
 
@@ -4408,5 +4414,26 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         //
         return $tip;
+    }
+
+    /**
+     * Reorder current entry to be neighbour at certain side of a certain target, if need
+     *
+     * @return bool
+     */
+    public function neighbourIfNeed() {
+
+        // Foreach possible sides
+        foreach (ar('prior,after') as $atSide)
+
+            // If given in $_POST
+            if ($targetId = Indi::post()->$atSide ?? 0) {
+
+                // Setup neighbourship
+                t()->row->moveToBeNeighbourFor($targetId, $atSide);
+
+                // Return true to indicate neighbourship setup was needed
+                return true;
+            }
     }
 }
