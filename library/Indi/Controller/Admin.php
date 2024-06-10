@@ -3152,6 +3152,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Reorder current entry to be neighbour at certain side of a certain target, if need
         $this->neighbourIfNeed();
 
+        // Update group value of all children of current record, if need
+        $this->updateChildrenGroupIfNeed();
+
         // If current row has been just successfully created
         if (($updateAix ?? null) && $this->row->id) {
 
@@ -4435,5 +4438,26 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Return true to indicate neighbourship setup was needed
                 return true;
             }
+    }
+
+    /**
+     * Update group value of all children of current record, if need
+     */
+    public function cascadeChildrenGroupIfNeed() {
+
+        // If current model has no tree-column - return
+        if (!m()->treeColumn()) return;
+
+        // If current section has no grouping set up - return
+        if (!$groupField = t()->section->foreign('groupBy')->alias ?? 0) return;
+
+        // If group was not changed - return
+        if (!t()->row->affected($groupField)) return;
+
+        // Get current entry's group
+        $groupValue = t()->row->$groupField;
+
+        // Run cascade update
+        t()->row->cascade(fn($child) => $child->set($groupField, $groupValue)->save());
     }
 }

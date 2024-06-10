@@ -8275,4 +8275,25 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($now != $move['old'][$id])
                 $this->model()->row($id)->set('move', $now)->basicUpdate();
     }
+
+    /**
+     * Call $fn on all descedants
+     */
+    public function cascade(callable $fn) {
+        foreach ($this->children() as $child) $fn($child);
+    }
+
+    /**
+     * Get direct children
+     *
+     * @return Indi_Db_Table_Rowset
+     */
+    public function children() {
+
+        // Get tree-column
+        $tc = $this->model()->treeColumn();
+
+        // Fetch and return children
+        return $this->model()->all("`$tc` = '$this->id'");
+    }
 }
