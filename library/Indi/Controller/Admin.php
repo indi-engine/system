@@ -3153,7 +3153,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->neighbourIfNeed();
 
         // Update group value of all children of current record, if need
-        $this->updateChildrenGroupIfNeed();
+        $this->cascadeChildrenGroupIfNeed();
 
         // If current row has been just successfully created
         if (($updateAix ?? null) && $this->row->id) {
