@@ -77,21 +77,22 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         $json = [];
 
         // Mind grouping, as it also should be involved while building ORDER clause
-        if ($this->groupBy && $this->foreign('groupBy'))
-            $json[] = [
-                'property' => $this->foreign('groupBy')->alias,
+        if ($this->groupBy && $this->foreign('groupBy')) {
+            $json[$property = $this->foreign('groupBy')->alias] = [
+                'property' => $property,
                 'direction' => 'ASC'
             ];
+        }
 
         // Ming sorting
         if ($this->foreign('defaultSortField'))
-            $json[] = [
-                'property' => $this->foreign('defaultSortField')->alias,
+            $json[$property = $this->foreign('defaultSortField')->alias] = [
+                'property' => $property,
                 'direction' => $this->defaultSortDirection,
             ];
 
         // Return json-encoded sort params
-        return json_encode($json);
+        return json_encode(array_values($json));
     }
 
     /**
@@ -292,5 +293,24 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
         // Call parent
         return parent::move($direction, $within);
+    }
+
+    /**
+     * Overridden from parent to update menu afterwards
+     *
+     * @param false $notices
+     * @param bool $amerge
+     * @param bool $realtime
+     * @param bool $inQtySum
+     * @return int|void
+     */
+    public function basicUpdate($notices = false, $amerge = true, $realtime = true, $inQtySum = true) {
+
+        // Call parent
+        $this->callParent();
+
+        // Update menu
+        if ($this->affected('move,title,sectionId,expanded'))
+            Indi::ws(['type' => 'menu', 'to' => true]);
     }
 }

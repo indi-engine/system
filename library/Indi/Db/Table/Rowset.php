@@ -2410,4 +2410,115 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Return rowset itself
         return $this;
     }
+
+    /**
+     * Spoof row existing $at certain index with another row
+     *
+     * @param int $at
+     * @param Indi_Db_Table_Row $row
+     * @return $this
+     */
+    public function spoofRow(int $at, Indi_Db_Table_Row $row) {
+
+        // Do spoof
+        $this->_rows[$at] = $row;
+
+        // Fluent interface
+        return $this;
+    }
+
+    /**
+     * Call cascade() on each row within current rowset
+     *
+     * @param callable $fn
+     * @return $this
+     */
+    public function cascade(callable $fn) {
+
+        // Call cascade() on each row within current rowset
+        foreach ($this as $row) $row->cascade($fn);
+
+        // Return rowset itself
+        return $this;
+    }
+
+    /**
+     * Reorder entries of current rowset for those to be prior/after neighbour for the entry identified by $targetId
+     * For now, this is only supported for existing entries of entities having tree- and move- columns
+     *
+     * @param int $targetId
+     * @param string $side Can be 'after' or 'prior'
+     */
+    public function moveToBeNeighbourFor(int $targetId, string $side = 'after') {
+
+        // If $targetId is 0 - return
+        if (!$targetId) return;
+
+        // If rowset is empty - return
+        if ($this->_count === 0) return;
+
+        // For now, this feature is only supported for entities having tree-column
+        if (!$tc = $this->model()->treeColumn()) return;
+
+        // If no target entry exists - return
+        if (!$target = $this->model()->row($targetId)) return;
+
+        // Get first entry
+        $first = $this->at(0);
+
+        // If first entry does not yet exist - return
+        if (!$first->id) return;
+
+        // If no 'move' field exists in original data - return
+        if (!isset($first->original()['move'])) return;
+
+        // Prepare where clause
+        $where = "`$tc`" . rif($target->$tc," = '$1'", " IS NULL");
+
+        // Get old [id => move] pairs
+        $move['old'] = db()
+            ->query("SELECT `id`, `move` FROM `$this->_table` WHERE $where ORDER BY `move`")
+            ->pairs();
+
+        // Copy those but unset for current entry
+        $move['new'] = $move['old'];
+
+        // Remove position info of entries within current rowset from $move['new']
+        foreach ($this as $row) unset($move['new'][$row->id]);
+
+        // Get keys where only children of a same parent are left that are NOT within current rowset
+        $keys['new'] = array_keys($move['new']);
+
+        // Foreach entry
+        foreach ($this as $idx => $row) {
+
+            // Use original values of $targetId and $side only for first $row
+            if ($idx) {
+
+                // Spoof $targetId to be id of previous row within current rowset
+                $targetId = $this->_rows[$idx - 1]->id;
+
+                // Spoof $side to be 'after' for 2nd and further enrties within current rowset
+                $side = 'after';
+            }
+
+            // Get index of $targetId
+            $index = array_search($targetId, $keys['new']);
+
+            // If not found - skip
+            if ($index === false) continue;
+
+            // Insert current entry's id at the right position
+            array_splice($keys['new'], $index + (int) ($side === 'after'), 0, $row->id);
+        }
+
+        // Prepare new [id => move] pairs
+        $move['new'] = array_combine($keys['new'], array_values($move['old']));
+
+        // Apply changes
+        foreach ($move['new'] as $id => $now)
+            if ($now != $move['old'][$id])
+                $this->model()->row($id)->set('move', $now)->basicUpdate();
+
+    }
 }

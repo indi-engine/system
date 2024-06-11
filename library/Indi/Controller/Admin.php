@@ -427,8 +427,27 @@ class Indi_Controller_Admin extends Indi_Controller {
         $indexByIdA = array_flip($idA);
 
         // Apply index
-        foreach ($rowset as $row)
-            $row->system('index', $indexByIdA[$row->id]);
+        foreach ($rowset as $pointer => $row) {
+
+            // If t()->row->id is same as $row->id
+            if ($row->id === t($stepsUp)->row->id) {
+
+                // Setup index on t()->row
+                t($stepsUp)->row->system('index', $indexByIdA[$row->id]);
+
+                // Spoof the instance of the same entry we currently have in $rowset
+                // with the instance we do already have in t()->row, so that it would
+                // be SINGLE instance available as t()->row and as one of rows in t()->rows
+                $rowset->spoofRow($pointer, t($stepsUp)->row);
+
+            // Else
+            } else {
+                $row->system('index', $indexByIdA[$row->id]);
+            }
+        }
+
+        // If t()->row is not an existing row - append it to t()->rows
+        if (!$id) $rowset->append(t($stepsUp)->row);
 
         // Return
         return $rowset;
@@ -741,14 +760,17 @@ class Indi_Controller_Admin extends Indi_Controller {
         // If no primary hash param passed within the uri - return
         if (!uri()->ph) return;
 
+        // Shortcut
+        $up = (int) $upper;
+
         // Get the current state of scope
-        $original = $_SESSION['indi']['admin'][t((int) $upper)->section->alias][uri()->ph];
+        $original = $_SESSION['indi']['admin'][t($up)->section->alias][uri()->ph];
 
         // If there is no current state yet - return
         if (!is_array($original)) return;
 
         // If $r argis not given, use $this->row
-        $r = $r ?: $this->row;
+        $r = $r ?: t()->row;
 
         // If current action deals with row, that is not yet exists in database - return
         if (!$r->id) return;
@@ -761,19 +783,19 @@ class Indi_Controller_Admin extends Indi_Controller {
         $modified = ['aix' => !in(uri()->aix, 'undefined,null') ? uri()->aix : 1, 'lastIds' => ar($lastIds ?: $r->id)];
 
         // Start and end indexes. We calculate them, because we should know, whether page number should be changed or no
-        $start = ($original['page'] - 1) * t((int) $upper)->section->rowsOnPage + 1;
-        $end = ($original['page']) * t((int) $upper)->section->rowsOnPage;
+        $start = ($original['page'] - 1) * t($up)->section->rowsOnPage + 1;
+        $end = ($original['page']) * t($up)->section->rowsOnPage;
 
         // If last accessed row index is out of latest fetched rowset page bounds
         if ($modified['aix'] < $start || $modified['aix'] > $end) {
 
             // Calculate new page number, so when user will return to grid panel - an appropriate page
             // will be displayed, and last accessed row will be within it
-            $modified['page'] = min(1, ceil($modified['aix']/t((int) $upper)->section->rowsOnPage));
+            $modified['page'] = min(1, ceil($modified['aix'] / t($up)->section->rowsOnPage));
         }
 
         // Remember all scope params in $_SESSION under a hash
-        t((int) $upper)->scope->apply($modified);
+        t($up)->scope->apply($modified);
     }
 
     /**
@@ -3031,7 +3053,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         try {
 
             // Save the row
-            $this->row->save();
+            t()->rows->save();
 
         // Catch google translate api exception
         } catch (Google\Cloud\Core\Exception\BadRequestException | Google\Cloud\Core\Exception\ServiceException $e) {
@@ -3085,7 +3107,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (($ref = uri()->ref) || $cell = uri()->cell) {
 
             // Assign 'ref' it into entry's system props
-            $this->row->system('ref', $ref ?: 'rowset');
+            t()->rows->system('ref', $ref ?: 'rowset');
 
             // Call onBeforeCellSave(), if need
             if ($cell) $this->onBeforeCellSave($cell, Indi::post()->$cell);
@@ -3108,16 +3130,16 @@ class Indi_Controller_Admin extends Indi_Controller {
         // was not set - drop corresponding key from $data array
         foreach (t()->fields as $fieldR)
             if (in($fieldR->mode, 'hidden,readonly'))
-                if (!strlen($fieldR->defaultValue) || $this->row->id || $this->row->isModified($fieldR->alias)) unset($data[$fieldR->alias]);
+                if (!strlen($fieldR->defaultValue) || $this->row->id || t()->row->isModified($fieldR->alias)) unset($data[$fieldR->alias]);
                 else if (strlen($cmp = $fieldR->compiled('defaultValue'))) $data[$fieldR->alias] = $cmp;
 
         // Update current row properties with values from $data array
-        $this->row->set($data);
+        t()->rows->set($data);
 
         // If some of the fields are CKEditor-fields, we shoudl check whether they contain '<img>' and other tags
         // having STD injections at the beginning of 'src' or other same-aim html attributes, and if found - trim
         // it, for avoid problems while possible move from STD to non-STD, or other-STD directories
-        $this->row->trimSTDfromCKEvalues();
+        t()->row->trimSTDfromCKEvalues();
 
         // Get the aliases of fields, that are file upload fields, and that are not disabled,
         // and are to be some changes applied on
@@ -3156,13 +3178,13 @@ class Indi_Controller_Admin extends Indi_Controller {
         $this->cascadeChildrenGroupIfNeed();
 
         // If current row has been just successfully created
-        if (($updateAix ?? null) && $this->row->id) {
+        if (($updateAix ?? null) && t()->row->id) {
 
             // Update uri('aix')
-            $this->updateAix($this->row);
+            $this->updateAix(t()->row);
 
             // Update parent id, so nested entries will be mapped under entry, that was just saved
-            Indi::parentId(t()->section->id, $this->row->id);
+            Indi::parentId(t()->section->id, t()->row->id);
         }
 
         // Setup row index
@@ -4427,13 +4449,13 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function neighbourIfNeed() {
 
         // Foreach possible sides
-        foreach (ar('prior,after') as $atSide)
+        foreach (ar('prior,after') as $side)
 
             // If given in $_POST
-            if ($targetId = Indi::post()->$atSide ?? 0) {
+            if ($targetId = Indi::post()->$side ?? 0) {
 
                 // Setup neighbourship
-                t()->row->moveToBeNeighbourFor($targetId, $atSide);
+                t()->rows->moveToBeNeighbourFor($targetId, $side);
 
                 // Return true to indicate neighbourship setup was needed
                 return true;
@@ -4458,6 +4480,6 @@ class Indi_Controller_Admin extends Indi_Controller {
         $groupValue = t()->row->$groupField;
 
         // Run cascade update
-        t()->row->cascade(fn($child) => $child->set($groupField, $groupValue)->save());
+        t()->rows->cascade(fn($child) => $child->set($groupField, $groupValue)->save());
     }
 }
