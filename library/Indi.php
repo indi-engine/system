@@ -1305,7 +1305,7 @@ class Indi {
             $color = strtolower($color);
 
             // If found, return it, with '#' prefix, else return empty string
-            return ($hex = self::$colorNameA[$color]) ? '#' . $hex : '';
+            return ($hex = self::$colorNameA[$color] ?? 0) ? '#' . $hex : '';
         }
     }
 

@@ -993,7 +993,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Setup $hasRowNumberer and $hasID flags
         $hasRowNumberer = (int) !!($widthA['rownumberer'] ?? 0);
-        $hasID = (int) !!$widthA['id'];
+        $hasID = (int) !!($widthA['id'] ?? 0);
 
         // Foreach data-column
         foreach ($columnA as $idx => $column) {
@@ -1038,7 +1038,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     if (!isset($byLevel[$level][$gridR->id])) $byLevel[$level][$gridR->id] = $column;
 
                     // Increase column's colspan-prop
-                    $byLevel[$level][$gridR->id]['colspan'] ++;
+                    $byLevel[$level][$gridR->id]['colspan'] ??= 0; $byLevel[$level][$gridR->id]['colspan'] ++;
                 }
 
             // Else
@@ -1068,7 +1068,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Setup rowspan-prop for each column on each level
         foreach ($byLevel as $level => &$columns)
             foreach ($columns as $gridId => &$column)
-                $column['rowspan'] = $column['leaf']
+                $column['rowspan'] = ($column['leaf'] ?? 0)
                     ? $depth - $level + 1
                     : 1;
 
@@ -1107,7 +1107,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             count($data) +
 
             // Summary row
-            (Indi::get()->summary ? 1 : 0) +
+            ((Indi::get()->summary ?? 0) ? 1 : 0) +
 
             // Data groups
             $groupQty;
@@ -1655,18 +1655,18 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $parentOffset[$columnI['id']] = $cellSinceIndex - 1;
 
                 // Increment colspan for parent column
-                $colspan[$columnI['gridId']] += $columnI['colspan'] ?? 1;
+                $colspan[$columnI['gridId']] ??= 0; $colspan[$columnI['gridId']] += $columnI['colspan'] ?? 1;
 
                 $columnL = $cellSinceLetter;
 
                 // Setup column width
-                if ($columnI['width']) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $ratio));
+                if ($columnI['width'] ?? 0) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $ratio));
 
                 // Replace &nbsp;
                 $columnI['title'] = str_replace($html['code'], $html['char'], $columnI['title']);
 
                 // Try detect an image
-                if ($columnI['icon']) {
+                if ($columnI['icon'] ?? 0) {
 
                     // If detected image exists
                     if (!$abs = Indi::abs($columnI['icon']))
