@@ -168,7 +168,7 @@ define('I_FORM_UPLOAD_FPREF', '写真 %s');
 define('I_FORM_DATETIME_HOURS', '時間');
 define('I_FORM_DATETIME_MINUTES', '分');
 define('I_FORM_DATETIME_SECONDS', '秒');
-define('I_COMBO_OF', 'の');
+define('I_OF', 'の');
 define('I_COMBO_MISMATCH_MAXSELECTED', '選択可能なオプションの最大数は');
 define('I_COMBO_MISMATCH_DISABLED_VALUE', 'オプション「%s」はフィールド「%s」では選択できません');
 define('I_COMBO_KEYWORD_NO_RESULTS', 'このキーワードでは何も見つかりません');

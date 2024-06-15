@@ -168,7 +168,7 @@ define('I_FORM_UPLOAD_FPREF', '照片 %s');
 define('I_FORM_DATETIME_HOURS', '小时');
 define('I_FORM_DATETIME_MINUTES', '分钟');
 define('I_FORM_DATETIME_SECONDS', '秒');
-define('I_COMBO_OF', '的');
+define('I_OF', '的');
 define('I_COMBO_MISMATCH_MAXSELECTED', '允许选择的最大选项数为');
 define('I_COMBO_MISMATCH_DISABLED_VALUE', '字段“%s”中不可选选项“%s”');
 define('I_COMBO_KEYWORD_NO_RESULTS', '使用此关键字未找到任何内容');

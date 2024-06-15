@@ -2073,7 +2073,7 @@ class Indi_Db_Table
                 $fn($r, $deduct, $index= ($p - 1) * $limit + $i);
 
                 // Update progress
-                if ($progress) progress($index, "$title: {percent}% of {total}");
+                if ($progress) progress($index + 1, "$title: {percent}% " . I_OF . " {total}");
             }
 
             // If now (e.g. after $fn() call completed) less entries match WHERE clause,

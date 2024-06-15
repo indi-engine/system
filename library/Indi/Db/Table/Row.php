@@ -8222,11 +8222,13 @@ class Indi_Db_Table_Row implements ArrayAccess
      * Admin_DetachedController->processAction() is used as an entrypoint for such a call
      *
      * @param string $method
+     * @param ...$params
      */
-    public function detachProcess(string $method) {
+    public function detachProcess(string $method, ...$params) {
         process("detached/process/$this->_table-$method-$this->id", [
             'record' => serialize($this),
             'method' => $method,
+            'params' => $params
         ]);
     }
 }

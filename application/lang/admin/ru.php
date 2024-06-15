@@ -168,7 +168,7 @@ define('I_FORM_UPLOAD_FPREF', 'Фотография %s');
 define('I_FORM_DATETIME_HOURS', 'часов');
 define('I_FORM_DATETIME_MINUTES', 'минут');
 define('I_FORM_DATETIME_SECONDS', 'секунд');
-define('I_COMBO_OF', 'из');
+define('I_OF', 'из');
 define('I_COMBO_MISMATCH_MAXSELECTED', 'Максимальное количество выбранных опций -');
 define('I_COMBO_MISMATCH_DISABLED_VALUE', 'Значение "%s" недоступно для выбора в поле "%s"');
 define('I_COMBO_KEYWORD_NO_RESULTS', 'Ничего не найдено');
