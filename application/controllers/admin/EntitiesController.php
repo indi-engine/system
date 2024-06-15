@@ -866,4 +866,22 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             }
         }
     }
+
+    /**
+     * Append extends-prop to the list of columns to prepare grid data for,
+     * because $this->adjustGridData() rely on that
+     *
+     * @return mixed|void
+     */
+    public function affected4grid() {
+
+        // Call parent
+        $cols = $this->callParent();
+
+        // Append extends-prop
+        $cols []= 'extends';
+
+        // Return
+        return $cols;
+    }
 }

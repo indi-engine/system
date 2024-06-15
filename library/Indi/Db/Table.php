@@ -776,7 +776,7 @@ class Indi_Db_Table
         $assocDataA = [];
         for ($i = 0; $i < count($data); $i++) {
             $assocDataI = $data[$i];
-            $assocDataI['_system']['level'] = $level[$data[$i]['id']];
+            $assocDataI['_system']['level'] = $level[$data[$i]['id']] ?? null;
             $assocDataA[$data[$i]['id']] = $assocDataI;
         }
         $data = $assocDataA;
@@ -886,7 +886,7 @@ class Indi_Db_Table
             // Then we should find disabled results
             $disabled = [];
             foreach ($primary as $id => $true) {
-                $parentId = $return[$id][0];
+                $parentId = $return[$id][0] ?? null;
                 while ($parentId) {
                     // We mark branch as disabled only if it is not primary
                     if (! ($primary[$parentId] ?? null)) {
@@ -2722,7 +2722,7 @@ class Indi_Db_Table
     public function callParent() {
 
         // Get call info from backtrace
-        $call = array_pop(array_slice(debug_backtrace(), 1, 1));
+        $trace = array_slice(debug_backtrace(), 1, 1); $call = array_pop($trace);
 
         // Make the call
         return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);

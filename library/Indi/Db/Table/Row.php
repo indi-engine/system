@@ -895,7 +895,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
 
                 // If $queryID is 0, or is changed - reset $scope['overpage']
-                if (!$queryID || $scope['queryID'] != $queryID) {
+                if (!$queryID || ($scope['queryID'] ?? null) != $queryID) {
                     $scope['queryID'] = $queryID;
                     unset($scope['overpage']);
                 }
@@ -969,10 +969,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                         } else {
 
                             // If count of overpage-records does not exceed so far the limit of to be shown on page
-                            if (count($scope['overpage'] ?: []) < $scope['rowsOnPage']) {
+                            if (count($scope['overpage'] ?? []) < $scope['rowsOnPage']) {
 
                                 // Make sure previously fetched overpage-records are skipped while fetching next one
-                                if ($scope['overpage'])
+                                if ($scope['overpage'] ?? 0)
                                     $where = rif($where, "$1 AND ", "WHERE ")
                                         . '`id` NOT IN (' . im($scope['overpage']) . ')';
 
@@ -3576,12 +3576,16 @@ class Indi_Db_Table_Row implements ArrayAccess
         // then in $this->_original array, and then in $this->_temporary array, and return
         // once value was found
         if (array_key_exists($columnName, $this->_modified)) return $this->_modified[$columnName];
-        else if (array_key_exists($columnName, $this->_language) && is_array($this->_language[$columnName]))
-            return $this->_language[$columnName][array_key_exists(ini('lang')->admin, $this->_language[$columnName])
+        else if (array_key_exists($columnName, $this->_language) && is_array($this->_language[$columnName])) {
+
+            // Detect which lang should be picked
+            $lang = array_key_exists(ini('lang')->admin, $this->_language[$columnName])
                 ? ini('lang')->admin
-                : key(Lang::$_jtpl[$this->fraction()])
-        ];
-        else if (array_key_exists($columnName, $this->_original)) return $this->_original[$columnName];
+                : key(Lang::$_jtpl[$this->fraction()]);
+
+            // Pick
+            return $this->_language[$columnName][$lang] ?? '';
+        } else if (array_key_exists($columnName, $this->_original)) return $this->_original[$columnName];
         else if (array_key_exists($columnName, $this->_temporary)) return $this->_temporary[$columnName];
         else if ($fieldR = $this->model()->fields($columnName)) if ($fieldR->foreign('elementId')->alias == 'upload')
             return $this->src($columnName, '', false);

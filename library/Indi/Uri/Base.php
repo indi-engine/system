@@ -210,9 +210,13 @@ class Indi_Uri_Base {
         // Start session, if need
         if (session_status() === PHP_SESSION_NONE) session_start();
 
-        // Set current language
-        @include_once(DOC . STD . VDR . '/system/application/lang/admin/' . ini('lang')->admin . '.php');
-        @include_once(DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php');
+        // Load system language constants
+        if (file_exists($system = DOC . STD . VDR . '/system/application/lang/admin/' . ini('lang')->admin . '.php'))
+            include_once $system;
+
+        // Load custom language constants
+        if (file_exists($custom = DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php'))
+            include_once $custom;
     }
 
     /**

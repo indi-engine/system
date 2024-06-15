@@ -382,9 +382,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             // Get the id
             $id = t($index-1)->action->selectionRequired == 'n' && $index == 1
                 ? uri('id')
-                : (preg_match('~,~', t($index-1)->row->$connector) // ambiguous check
+                : (preg_match('~,~', t($index-1)->row->$connector ?? '') // ambiguous check
                     ? Indi::parentId($this->section->id)
-                    : t($index-1)->row->$connector);
+                    : (t($index-1)->row->$connector ?? 0));
 
             // Add main item to WHERE clause stack
             $where[] = '`id` = "' . $id . '"';
@@ -807,7 +807,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         }
 
         // If rows grouping is turned on - add that into $renderCfg as well
-        if ($this->scope->groupBy) $renderCfg['_system']['groupBy'] = $this->scope->groupBy;
+        if ($this->scope->groupBy ?? 0) $renderCfg['_system']['groupBy'] = $this->scope->groupBy;
 
         // Add panel to into $renderCfg
         $renderCfg['_system']['panel'] = $this->scope->panel ?? $this->section->panel;
@@ -996,7 +996,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // If $filterOwner flag is true, so 'Owner only'-restriction should be applied
         // return name of field (if exists), responsible for storing ownerId for a record
         return $filterOwner
-            ? $this->model->ownerField($owner)->alias
+            ? ($this->model->ownerField($owner)->alias ?? null)
             : false;
     }
 

@@ -57,12 +57,12 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             // and appendChunk() call will return WHERE clause rather than `queueChunk` instance
             if ($this->fieldId) {
                 if ($fieldR_certain = m($entityR->id)->fields($this->fieldId))
-                    return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, $where ? [$where] : []);
+                    return $this->appendChunk($queueTaskR, $entityR, $fieldR_certain, []);
 
                 // Foreach `field` entry, having `l10n` = "y"
             } else foreach (m($entityR->id)->fields()->select('y', 'l10n') as $fieldR_having_l10nY)
                 if ($fieldR_having_l10nY->relation == 6)
-                    $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, $where ? [$where] : []);
+                    $this->appendChunk($queueTaskR, $entityR, $fieldR_having_l10nY, []);
         }
 
         // Foreach `entity` entry, having `fraction` = "system" (e.g. project's system entities)

@@ -188,7 +188,7 @@ class Indi_View_Helper_Admin_FormCombo {
                 } else {
                     $key = $this->getRow()->$name;
                 }
-            } else if ($comboDataRs->enumset && $this->type == 'form') {
+            } else if (($comboDataRs->enumset ?? 0) && $this->type == 'form') {
                 $key = key($options);
             } else {
                 $key = $this->getDefaultValue();

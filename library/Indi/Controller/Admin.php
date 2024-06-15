@@ -945,6 +945,10 @@ class Indi_Controller_Admin extends Indi_Controller {
             $dataIndexA[$gridR->id] = $gridR->foreign('fieldId')->alias
                 . rif($gridR->further, '_' . $gridR->foreign('further')->alias);
 
+            // If further/JOINed field is defined but no record is found - log that
+            if ($gridR->further && !$gridR->foreign('further'))
+                Indi::log('grid-further-problem', $gridR, true);
+
             // Get element
             $element = $gridR->foreign($gridR->further ? 'further': 'fieldId')->foreign('elementId')->alias;
 
@@ -968,7 +972,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             }
 
             // Apply alignment in remaining cases
-            if ($alignA[$columnI['id']]) $_columnA[$idx]['align'] = $alignA[$columnI['id']];
+            if ($alignA[$columnI['id']] ?? 0) $_columnA[$idx]['align'] = $alignA[$columnI['id']];
         }
 
         // Build columns array, indexed by 'dataIndex' prop
@@ -981,11 +985,15 @@ class Indi_Controller_Admin extends Indi_Controller {
         $columnA = array_values($columnA);
 
         // Get grouping info
-        $group = json_decode(Indi::get()->group, true);
-        if (!array_key_exists($group['property'], $data[0] ?: [])) $group = false;
+        $group = json_decode(Indi::get()->group ?? null, true) ?? [];
+        if (!$group || !array_key_exists($group['property'], $data[0] ?? [])) $group = false;
+
+        // Prepare [id => width] pairs
+        $widthA = array_column($columnA, 'width', 'id');
 
         // Setup $hasRowNumberer and $hasID flags
-        $widthA = array_column($columnA, 'width', 'id'); $hasRowNumberer = (int) !!$widthA['rownumberer']; $hasID = (int) !!$widthA['id'];
+        $hasRowNumberer = (int) !!($widthA['rownumberer'] ?? 0);
+        $hasID = (int) !!$widthA['id'];
 
         // Foreach data-column
         foreach ($columnA as $idx => $column) {
@@ -1007,7 +1015,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     'tooltip' => $gridR->tooltip ?: $gridR->foreign('fieldId')->tooltip ?: $gridR->title,
                     'leaf' => true,
                     'icon' => $gridR->icon,
-                    'color' => t()->scope->color[$gridR->further ?: $gridR->fieldId],
+                    'color' => t()->scope->color[$gridR->further ?: $gridR->fieldId] ?? null,
                     'element' => $gridR->foreign($gridR->further ? 'further' : 'fieldId')->foreign('elementId')->alias,
                 ];
 
@@ -1087,7 +1095,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             (is_array($this->_excelA) && count($this->_excelA) ? count($this->_excelA) + 1 : 0) +
 
             // Keyword search usage
-            (bool) (Indi::get()->keyword || (is_array($this->_excelA) && count($this->_excelA) > 1)) +
+            (bool) ((Indi::get()->keyword ?? 0) || (is_array($this->_excelA) && count($this->_excelA) > 1)) +
 
             // Header rows depth
             $depth;
@@ -1245,7 +1253,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objSelfStyled->getFont()->setName($font)->setSize('8')->getColor()->setRGB('04408C');
 
                 // If filter type is 'date' (or 'datetime'. There is no difference at this case)
-                if ($excelI['type'] == 'date') {
+                if (($excelI['type'] ?? 0) == 'date') {
 
                     // Get the format
                     foreach (t()->fields as $fieldR) {
@@ -1290,7 +1298,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         if (preg_match(Indi::rex('date'), $excelI['value']['lte'])) {
                             if ($excelI['value']['lte'] == '0000-00-00' && $dformat == 'd.m.Y') {
                                 $excelI['value']['lte'] = '00.00.0000';
-                            } else if ($excelI['value']['gte'] != '0000-00-00'){
+                            } else if (($excelI['value']['gte'] ?? 0) != '0000-00-00'){
                                 $excelI['value']['lte'] = date($dformat, strtotime($excelI['value']['lte']));
                                 if ($excelI['value']['lte'] == '30.11.-0001') $excelI['value']['lte'] = '00.00.0000';
                             }
@@ -1303,7 +1311,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     }
 
                 // If filter type is 'number'
-                } else if ($excelI['type'] == 'number') {
+                } else if (($excelI['type'] ?? 0) == 'number') {
 
                     // If start point for number range specified
                     if (isset($excelI['value']['gte'])) {
@@ -1335,7 +1343,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
 
                 // If filter type is 'number'
-                } else if ($excelI['type'] == 'color') {
+                } else if (($excelI['type'] ?? 0) == 'color') {
 
                     // Create the GD canvas image for hue background and thumbs to be placed there
                     $canvasIm = imagecreatetruecolor(197, 15);
@@ -1364,7 +1372,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $objDrawing->setWorksheet($sheet);
 
                 // If filter type is combo, with foreign table relation
-                } else if ($excelI['table']) {
+                } else if ($excelI['table'] ?? 0) {
 
                     // Prepare the array of keys
                     if (!is_array($excelI['value'])) $excelI['value'] = [$excelI['value']];
@@ -1551,7 +1559,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Append row with keyword, if keyword search was used
-        if (Indi::get()->keyword) {
+        if (Indi::get()->keyword ?? 0) {
 
             // Setup new rich text object for keyword search usage mention
             $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
@@ -1606,7 +1614,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Get the order column alias and direction
-        $order = @array_shift(json_decode(Indi::get()->sort));
+        $order = json_decode(Indi::get()->sort)[0]; $colspan = [];
 
         // Foreach data column headers level
         foreach ($byLevel as $level => $columns) {
@@ -1740,7 +1748,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 //
                 if ($columnI['colspan'] > 1) {
                     $align = 'center';
-                } else if ($columnI['align'] == 'right') {
+                } else if (($columnI['align'] ?? 0) == 'right') {
                     if ($order->property == $columnI['dataIndex']) {
                         $align = 'left';
                     } else {
@@ -1784,7 +1792,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 ]);
 
                 // Ensure header title to be wrapped, if need
-                if ($columnI['height']) {
+                if ($columnI['height'] ?? 0) {
                     $sheet->getStyle($columnL . $currentRowIndex)->getAlignment()->setWrapText(true);
                     $sheet->getStyle($columnL . $currentRowIndex)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                     if ($wrap < $columnI['height']) $wrap = $columnI['height'];
@@ -1809,7 +1817,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     ->getStyle($columnL . ($currentRowIndex + 1) . ':' . $columnL . $lastRowIndex)
                     ->applyFromArray([
                         'alignment' => [
-                            'horizontal' => $columnI['align']
+                            'horizontal' => $columnI['align'] ?? 'left'
                         ]
                     ]);
 
@@ -1832,7 +1840,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Here we set row height, because OpenOffice Writer (unlike Excel) ignores previously setted default height
-        $sheet->getRowDimension($currentRowIndex)->setRowHeight(($wrap ? $wrap/22 : 1) * $rowHeight);
+        $sheet->getRowDimension($currentRowIndex)->setRowHeight((isset($wrap) ? $wrap/22 : 1) * $rowHeight);
 
         // We remember a current row index at this moment, because it is the index which data rows are starting from
         $dataStartAtRowIndex = $currentRowIndex;
@@ -1896,7 +1904,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $sheet->getRowDimension($currentRowIndex)->setRowHeight($rowHeight);
 
             // Check if row is disabled
-            $disabled = $data[$i]['_system']['disabled'] ?: false;
+            $disabled = $data[$i]['_system']['disabled'] ?? false;
 
             // Apply row color, if defined
             if (preg_match('~color: (.*);~', $data[$i]['_system']['style'], $m))
@@ -1927,7 +1935,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $value = preg_replace('~data-title=".*?style=.*?"~', '', $value);
 
                 // If we have chunked contents for this column
-                if ($chunks = $data[$i]['_richtext'][$columnI['dataIndex']]) {
+                if ($chunks = $data[$i]['_richtext'][$columnI['dataIndex']] ?? 0) {
 
                     // In order to support different styles for different chunks of text within the same
                     // spreadsheet cell - we have to use richtext
@@ -1949,7 +1957,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                             $offsetX = gettextsize($cumulativeText, 11)['textWidth'];
 
                             // Insert drawing into a spreadsheet
-                            $this->_renderColorBox(['box' => $c['box'], 'tip' => $chunk['title']],$columnI, $coord, $sheet, $offsetX);
+                            $this->_renderColorBox(['box' => $c['box'], 'tip' => $chunk['title']],$columnI, $coord, $sheet, $i, $el, $offsetX);
 
                         // Else just
                         } else {
@@ -1987,7 +1995,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 } else if ($boxtip = boxtip($value)) {
 
                     // Insert drawing for a color-box
-                    $value = $this->_renderColorBox($boxtip, $columnI, $coord, $sheet);
+                    $value = $this->_renderColorBox($boxtip, $columnI, $coord, $sheet, $i, $el);
 
                 // Else if cell value contain a color definition within 'color' attribute,
                 // or as a 'color: xxxxxxxx' expression within 'style' attribute, we extract that color definition
@@ -2164,8 +2172,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                 // Convert the column index to excel column letter
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
 
-                // Get the value
-                $value = $summary->{$columnI['dataIndex']};
+                // Get the summary value for current column or skip
+                if (!($value = $summary->{$columnI['dataIndex']} ?? null)) continue;
 
                 // Get the control element
                 $el = $columnI['dataIndex'] == 'id'
@@ -2637,7 +2645,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'throwOutMsg' => view()->throwOutMsg,
                         'lang' => $this->lang(),
                         'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
-                        'logo' => ini('general')->logo
+                        'logo' => ini('general')->logo ?? ''
                     ]);
 
                 // Else if '/client' folder exists and contains Indi standalone client app
@@ -2919,7 +2927,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             ],
             'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
             'lang' => $this->lang(),
-            'logo' => ini('general')->logo,
+            'logo' => ini('general')->logo ?? '',
             'title' => ini('general')->title ?: 'Indi Engine',
             'user' => [
                 'title' => admin()->title(),
@@ -3082,7 +3090,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->row->system('ref', $ref ?: 'rowset');
 
             // Call onBeforeCellSave(), if need
-            if ($cell) $this->onBeforeCellSave($cell, Indi::post()->$cell ?? null);
+            if ($cell ?? 0) $this->onBeforeCellSave($cell, Indi::post()->$cell ?? null);
         }
 
         // Get array of aliases of fields, that are actually represented in database table
@@ -3454,14 +3462,16 @@ class Indi_Controller_Admin extends Indi_Controller {
             '`token` = "' . session_id() . '"'
         ])) {
 
+            // Get current channel id, if any
+            $cid = defined('CID') ? CID : '';
+
             // Refresh other tabs
             foreach($channelA = db()->query('
                 SELECT `token` 
                 FROM `realtime` 
-                WHERE 1
-                  AND `type` = "channel" 
+                WHERE `type` = "channel" 
                   AND `realtimeId` = "' . $_->id . '" 
-                  AND `token` != "' . CID . '"
+                  AND `token` != "' . $cid . '"
             ')->col() as $channel)
 
                 // Reload tabs
@@ -3484,7 +3494,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             'title' => ini('general')->title ?: 'Indi Engine',
             'throwOutMsg' => $_SESSION['indi']['throwOutMsg'] ?? null,
             'lang' => $this->lang(),
-            'logo' => ini('general')->logo
+            'logo' => ini('general')->logo ?? null
         ]);
 
         // Else redirect
@@ -3658,12 +3668,23 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Simulate as if rowset panel was loaded
             } else uri()->dispatch($nav[$i]);
 
-            // Setup sorting
-            if (t()->section->defaultSortField)
-                Indi::get('sort', json_encode([[
-                    'property' => t()->section->foreign('defaultSortField')->alias,
-                    'direction' => t()->section->defaultSortDirection
-                ]]));
+            // If default sort field is defined for current section
+            if (t()->section->defaultSortField) {
+
+                // If sort field exists
+                if (!t()->section->foreign('defaultSortField')) {
+
+                    // Spoof sort-param
+                    Indi::get('sort', json_encode([[
+                        'property' => t()->section->foreign('defaultSortField')->alias,
+                        'direction' => t()->section->defaultSortDirection
+                    ]]));
+
+                // Else log that for further investigation
+                } else {
+                    Indi::log('default-sort-field-problem', t()->section, true);
+                }
+            }
 
             // Simulate as if rowset data was loaded into rowset panel. This provide
             // t()->scope's fulfilness with `found` and `ORDER` properties
@@ -4330,7 +4351,7 @@ class Indi_Controller_Admin extends Indi_Controller {
      * @return string
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    protected function _renderColorBox($info, $columnI, $cellCoords, $sheet, $offsetX = null) {
+    protected function _renderColorBox($info, $columnI, $cellCoords, $sheet, $i, $el, $offsetX = null) {
 
         // Use second capture group value
         $tip = strip_tags(htmlspecialchars_decode($info['tip']));

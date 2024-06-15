@@ -1051,6 +1051,6 @@ class Indi_Db {
      * @return array
      */
     public function multiRefs($rule = null) {
-        return $rule ? self::$_multiRefA[$rule] : self::$_multiRefA;
+        return $rule ? (self::$_multiRefA[$rule] ?? []) : self::$_multiRefA;
     }
 }

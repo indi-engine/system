@@ -1837,7 +1837,7 @@ class Indi {
         if (func_num_args() == 0) return $obar;
 
         // Else if single argument given - assume it's a key within $obar, and return it's value
-        else if (func_num_args() == 1) return $obar[func_get_arg(0)];
+        else if (func_num_args() == 1) return $obar[func_get_arg(0)] ?? null;
 
         // Else if two arguments given - assume it's a key and a value, that should be assigned to a key
         else if (func_num_args() == 2) {
