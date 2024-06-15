@@ -23,10 +23,10 @@ class Indi_Queue_UsagesUpdate extends Indi_Queue_L10n_FieldToggleL10n {
         
         // If no appropriate dependencies found - return    
         if (!($considerRA_byAffected ?? 0)) return;
-        
+
         // Create `queueTask` entry
         $queueTaskR = m('QueueTask')->new([
-            'title' => array_pop($parts = explode('_', __CLASS__)),
+            'title' => array_reverse(explode('_', __CLASS__))[0],
             'params' => json_encode($params, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)
         ]);
 

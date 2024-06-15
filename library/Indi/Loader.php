@@ -158,7 +158,7 @@ class Indi_Loader
         }
 
         foreach (self::explodeIncludePath() as $path) {
-            if ($path == '.') {
+            if ($path == '.' || preg_match('~^/~', $filename)) {
                 if (is_readable($filename)) {
                     return true;
                 }

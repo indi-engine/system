@@ -91,7 +91,7 @@ if (function_exists('geoip_country_code_by_name')
 // If request came from client-app - split 'Indi-Auth' header's value by ':', and set cookies
 if (APP && $_ = explode(':', $_SERVER['HTTP_INDI_AUTH'])) {
     if ($_[0]) $_COOKIE['PHPSESSID'] = $_[0];
-    if ($_[1]) setcookie('i-language', $_COOKIE['i-language'] = $_[1]);
+    if ($_[1] ?? 0) setcookie('i-language', $_COOKIE['i-language'] = $_[1]);
     define('CID', $_[2] ?? false);
 }
 

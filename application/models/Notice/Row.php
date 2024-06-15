@@ -36,11 +36,13 @@ class Notice_Row extends Indi_Db_Table_Row_Noeval {
         // Provide ability for some field props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'entityId') $value = entity($value)->id;
-            else if ($columnName == 'sectionId') $value = section($value)->id;
+            else if ($columnName == 'sectionId') {
+                if ($value && !Indi::rexm('int11list', $value))
+                    $value = m('section')->all('FIND_IN_SET(`alias`, "' . $value .'")')->fis();
+            }
             else if ($columnName == 'roleId') {
-                if ($value && !Indi::rexm('int11list', $value)) $value = m('role')
-                    ->all('FIND_IN_SET(`alias`, "' . $value .'")')
-                    ->col('id', true);
+                if ($value && !Indi::rexm('int11list', $value))
+                    $value = m('role')->all('FIND_IN_SET(`alias`, "' . $value .'")')->fis();
             }
         }
 

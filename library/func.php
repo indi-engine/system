@@ -3217,10 +3217,10 @@ function __($str) {
     if (substr($str, 0, 2) == 'I_' && preg_match('~^I_[A-Z0-9_]+$~', $str)) {
 
         // If initial language is not same as current
-        if ($COOKIE['i-language'] != ini('lang')->admin) {
+        if ($_COOKIE['i-language'] != ini('lang')->admin) {
 
             // Load other-language constants as a variables, if not yet loaded
-            if (!$GLOBALS['const'][ini('lang')->admin]) {
+            if (!($GLOBALS['const'][ini('lang')->admin] ?? 0)) {
 
                 // Build filename of a php-file, containing l10n constants for required language
                 $l10n_source_abs = DOC . STD . '/application/lang/admin/' . ini('lang')->admin . '.php';

@@ -43,7 +43,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         if (!$r) jflush(false, I_DOWNLOAD_ERROR_NO_SUCH_ROW);
 
         // Get the file
-        list($abs) = glob($r->dir() . $r->id . '_' . $fieldR->alias . '.*');
+        $abs = glob($r->dir() . $r->id . '_' . $fieldR->alias . '.*')[0] ?? null;
 
         // If there is no file
         if (!$abs) jflush(false, I_DOWNLOAD_ERROR_NO_FILE);

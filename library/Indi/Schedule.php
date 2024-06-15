@@ -216,7 +216,7 @@ class Indi_Schedule {
         }
 
         // Default value for $isBusy flag
-        $isBusy = true;
+        $isBusy = true; $entry ??= null; $enough = $found = false;
 
         // Convert $since arg into timestamp
         $since = is_numeric($since) ? $since : strtotime($since);
@@ -757,7 +757,7 @@ class Indi_Schedule {
             $timeA = [];
 
             // If $timeA arg is not `false`, and $timeA['idsFn'] is callable
-            if (is_callable($hours['idsFn'])) {
+            if ($hours && is_callable($hours['idsFn'])) {
 
                 // Get `time` entries ids by calling $timeA['idsFn'], passing $date amonth other
                 // arguments, so ids-fn can return `time` entries ids depending on certain date, if need
@@ -855,7 +855,7 @@ class Indi_Schedule {
         $step = _2sec($step);
 
         // If $timeA arg is not `false`, and $timeA['idsFn'] is callable
-        if (is_callable($hours['idsFn'])) {
+        if (is_callable($hours['idsFn'] ?? 0)) {
 
             // Get `time` entries ids by calling $timeA['idsFn'], passing $date amonth other
             // arguments, so ids-fn can return `time` entries ids depending on certain date, if need
@@ -890,7 +890,7 @@ class Indi_Schedule {
             $Hi = date('H:i', $mark);
 
             // If given $frame can't be injected as NEW busy space - append $mark's date in busy time-steps array
-            if (($_hours && !isset($timeA[$Hi])) || $this->busy($mark, $this->_shift['frame'], true)) $busy[] = $Hi;
+            if ((($_hours ?? 0) && !isset($timeA[$Hi])) || $this->busy($mark, $this->_shift['frame'], true)) $busy[] = $Hi;
 
             // Jump to next time-step
             $mark += $step;
@@ -1010,7 +1010,7 @@ class Indi_Schedule {
         if (!func_num_args() || (!is_string($prop) && !is_array($prop))) return $this->_distinct;
 
         // If $prop arg is given and it's a string
-        if (is_string($prop)) return $this->_distinct[$prop] ?: [];
+        if (is_string($prop)) return $this->_distinct[$prop] ?? [];
 
         // Foreach prop that we need to collect distinct values for
         foreach ($prop as $propI => $ruleA) {
@@ -1029,12 +1029,12 @@ class Indi_Schedule {
                         $this->_distinct[$propI][$v]['idxA'][] = $idx;
 
             // If hours-rule no set - skip, else
-            if (!$ruleA['hours']) continue; else $spaceOwnerProp = $propI;
+            if (!($ruleA['hours'] ?? 0)) continue; else $spaceOwnerProp = $propI;
 
             // Also, consider values of event entry's prop
             if ($self->$propI)
                 foreach (ar($self->$propI) as $v)
-                    if (!$this->_distinct[$propI][$v])
+                    if (!($this->_distinct[$propI][$v] ?? 0))
                         $this->_distinct[$propI][$v]['idxA'] = [];
 
             // If $strict arg is false, this means that current distinct() call was NOT made within $self->validate() call,
@@ -1049,7 +1049,7 @@ class Indi_Schedule {
             // and 18:00 at Wednesdays
             if (!$strict && $self->system('purpose') != 'drag')
                 foreach ($self->getComboData($propI)->column('id') as $v)
-                    if (!$this->_distinct[$propI][$v])
+                    if (!($this->_distinct[$propI][$v] ?? 0))
                         $this->_distinct[$propI][$v]['idxA'] = [];
 
             // If no distinct values collected - skip

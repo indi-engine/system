@@ -154,7 +154,7 @@ class Sms {
             // If $code is one of 100,101,102,103
             $result = [
                 'success' => in($code, '100,101,102,103'),
-                'msg' => self::$_codeA[$method][$code] ?: self::$_codeA['shared'][$code],
+                'msg' => self::$_codeA[$method][$code] ?? self::$_codeA['shared'][$code],
                 'raw' => $raw
             ];
         }

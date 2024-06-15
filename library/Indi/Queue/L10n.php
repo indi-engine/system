@@ -163,8 +163,8 @@ class Indi_Queue_L10n extends Indi_Queue {
 
         // Create `queueChunk` entry and setup basic props
         $queueChunkR = m('QueueChunk')->new([
-            'queueTaskId' => $queueTaskR->id,
-            'queueState' => $queueTaskR->queueState
+            'queueTaskId' => $queueTaskR->id ?? '',
+            'queueState' => $queueTaskR->queueState ?? ''
         ]);
 
         // If $entity arg is really entity
@@ -300,4 +300,9 @@ class Indi_Queue_L10n extends Indi_Queue {
     public function amendResult(&$result, $queueItemR) {
 
     }
+
+    /**
+     * @var
+     */
+    public $fieldId;
 }

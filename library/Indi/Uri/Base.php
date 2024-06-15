@@ -47,6 +47,10 @@ class Indi_Uri_Base {
         // If 'cms-only' mode is turned on, we prepend $_SERVER['REQUEST_URI'] with '/admin'
         if (COM) $_SERVER['REQUEST_URI'] = '/admin' . ($_SERVER['REQUEST_URI'] ?? null);
 
+        // If no http host defined - log that
+        if (!isset($_SERVER['HTTP_HOST']))
+            Indi::log('no-httphost', [$_SERVER, defined('CMD')], true);
+
         // Build the full url by prepending protocol and hostname, and parse it by parse_url() function
         $uri = parse_url('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 
@@ -203,8 +207,8 @@ class Indi_Uri_Base {
         // If 'Indi-Auth' header given - use it's value as session id
         if (!session_id()) if ($id = $_COOKIE['PHPSESSID'] ?? null) session_id($id);
 
-        // Start session
-        session_start();
+        // Start session, if need
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
         // Set current language
         @include_once(DOC . STD . VDR . '/system/application/lang/admin/' . ini('lang')->admin . '.php');

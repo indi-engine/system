@@ -229,7 +229,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                         // Prepend it to the list of sorters, to provide compatibility with ExtJS 6.7 behaviour,
                         // because ExtJS 4.1 auto-added grouping to the list of sorters but ExtJS 6.7 does not do that
-                        Indi::get()->sort = preg_replace('~^\[~', '$0' . Indi::get()->group . ',', Indi::get()->sort);
+                        Indi::get()->sort = preg_replace('~^\[~', '$0' . Indi::get()->group . ',', Indi::get()->sort ?? '');
 
                     // Get final ORDER clause, built regarding column name and sorting direction
                     $finalORDER = $this->finalORDER($finalWHERE, Indi::get()->sort ?? null);
@@ -542,7 +542,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $idA = t()->grid->select(': != 0')->column('id');
 
                 // Access check
-                if ($_['gridId'] && !in($_['gridId']->id, $idA)) jflush(false);
+                if (($_['gridId'] ?? 0) && !in($_['gridId']->id, $idA)) jflush(false);
 
                 // Do reattach
                 $_['indiId']->set(['gridId' => Indi::post()->gridId, 'group' => Indi::post()->group])->save();
@@ -2412,7 +2412,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $data = $this->_findSigninUserData($username, $password, 'admin', null, $level1ToggledOnSectionIdA);
 
         // If not found
-        if (!$data['id']) {
+        if (!(is_array($data) && $data['id'])) {
 
             // Get the list of other possible places, there user with given credentials can be found
             $role2tableA = db()->query('
@@ -2427,7 +2427,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             foreach ($role2tableA as $role2tableI) {
                 $data = $this->_findSigninUserData($username, $password, $role2tableI['table'],
                     $role2tableI['roleId'], $level1ToggledOnSectionIdA);
-                if ($data['id']) break;
+                if (is_array($data) && $data['id']) break;
             }
 
             // If found - assign some additional info to found data
@@ -2770,7 +2770,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // If current model has a tree column, and it is not forced to be ignored - append special
         // clause to WHERE-clauses stack for summaries to be calculated only for top-level entries
-        if (m()->treeColumn() && !$this->actionCfg['misc']['index']['ignoreTreeColumn'])
+        if (m()->treeColumn() && !($this->actionCfg['misc']['index']['ignoreTreeColumn'] ?? 0))
             $where['rootRowsOnly'] = 'IFNULL(`' . m()->treeColumn() . '`, 0) = "0"';
 
         // Append scope's WHERE clause to the stack
@@ -3082,7 +3082,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $this->row->system('ref', $ref ?: 'rowset');
 
             // Call onBeforeCellSave(), if need
-            if ($cell) $this->onBeforeCellSave($cell, Indi::post()->$cell);
+            if ($cell) $this->onBeforeCellSave($cell, Indi::post()->$cell ?? null);
         }
 
         // Get array of aliases of fields, that are actually represented in database table
@@ -3671,7 +3671,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Get the id of a row, that we will be simulating navigation
             // to subsection, there that row's nested entries are located
-            preg_match('~/id/([0-9]+)/~', $nav[$i+1], $m); $id = $m[1] ?? null;
+            preg_match('~/id/([0-9]+)/~', $nav[$i+1] ?? '', $m); $id = $m[1] ?? null;
 
             // If next url (within $nav) is related to non-same section
             if ($ti[$i+1]) {

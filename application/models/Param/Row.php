@@ -13,8 +13,8 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
 
         // Do that  for cfgValue-prop
         if ($columnName === 'cfgValue') {
-            if (m('field')->row($this->cfgField)->relation === m('field')->id())
-                if ($value && !Indi::rexm('int11list', $value))
+            if ($value && !Indi::rexm('int11list', $value))
+                if (m('field')->row($this->cfgField)->relation === m('field')->id())
                     if ($field = m('field')->row($this->fieldId))
                         $value = m($field->relation)->fields($value, 'rowset')->fis();
         }

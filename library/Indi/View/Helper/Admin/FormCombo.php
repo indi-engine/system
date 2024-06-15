@@ -333,6 +333,9 @@ class Indi_View_Helper_Admin_FormCombo {
      */
     public static function detectColor($option, $flag = false) {
 
+        // Define 'title' key, if need
+        $option['title'] ??= '';
+
         // Color detection in different places within one certain option
         ($v = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', is_string($option['value'] ?? 0) ? $option['value'] : '', $color)) ||
         ($t = preg_match('/^[0-9]{3}(#[0-9a-fA-F]{6})$/', $option['title'], $color)) ||

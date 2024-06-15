@@ -2239,7 +2239,7 @@ class Indi_Db_Table
 
         // Collect auto-fields aliases
         foreach ($this->_space['fields']['owners'] as $owner => $ruleA)
-            if ($ruleA['auto']) $ownerAuto[] = $owner;
+            if ($ruleA['auto'] ?? 0) $ownerAuto[] = $owner;
 
         // Return array of auto-fields aliases
         return $ownerAuto;

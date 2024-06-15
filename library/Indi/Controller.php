@@ -76,7 +76,7 @@ class Indi_Controller {
                 // Split $domain by domain name itself and admin-type, that may be specified
                 // for cases when new design is not fully ready and should be accessible only by
                 // admin of specified type
-                list($d, $u) = explode(':', $domain);
+                $_ = explode(':', $domain); $d = $_[0]; $u = $_[1] ?? null;
 
                 // If design's domain does not match current domain - skip
                 if ($d != $_SERVER['SERVER_NAME']) continue;
@@ -127,7 +127,7 @@ class Indi_Controller {
                 }
 
                 // Break
-                if ($found) break;
+                if ($found ?? 0) break;
             }
 
         // Else use first
@@ -424,6 +424,7 @@ class Indi_Controller {
                 if (array_key_exists($found->alias, $excelA) == false) {
 
                     // Get filter `rename` property
+                    $rename = '';
                     if (t()->filters instanceof Indi_Db_Table_Rowset)
                         $rename = t()->filters->select($found->id, $lookupBy)->at(0)->rename;
 
@@ -1386,7 +1387,7 @@ class Indi_Controller {
             $color = &$colorA[$prop];
 
             // Shortcut to what is going to be shown in cell
-            $cell = $item['_render'][$prop] ?? $item[$prop];
+            $cell = $item['_render'][$prop] ?? $item[$prop] ?? '';
 
             // If it's array
             if (is_array($jump)) {

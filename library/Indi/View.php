@@ -671,7 +671,8 @@ class Indi_View {
      */
     public function other($name, array $vars = []) {
         extract($vars);
-        $file = str_replace('\\', '/', array_shift(array_shift(debug_backtrace(false))));
+        $frame = debug_backtrace(false)[0];
+        $file = str_replace('\\', '/', array_shift($frame));
         include preg_replace('/\/[a-z0-9A-Z]+\.php/', '/' . $name . '.php', $file);
     }
 
@@ -689,7 +690,8 @@ class Indi_View {
      * @param $name
      */
     public function same($name) {
-        $file = str_replace('\\', '/', array_shift(array_shift(debug_backtrace(false))));
+        $frame = debug_backtrace(false)[0];
+        $file = str_replace('\\', '/', array_shift($frame));
         $rex = '~\/[a-z0-9A-Z]+\/([a-z0-9A-Z]+)\.php~';
         $lang = '-' . ini('lang')->admin;
         if (!file_exists($tpl = preg_replace($rex, '/' . $name . '/$1-' . ini('lang')->admin . '.php', $file)))

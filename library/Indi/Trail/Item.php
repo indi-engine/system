@@ -90,7 +90,7 @@ class Indi_Trail_Item {
             if ($prop != 'id') $this->filtersSharedRow->zero($prop, true);
 
         // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-        if (admin() && admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
+        if (admin() && admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias ?? 0)
 
             // Force setup of that field value as id of current cms user, within filters shared row
             $this->filtersSharedRow->$ownerColumn = admin()->id;
@@ -213,7 +213,7 @@ class Indi_Trail_Item {
                 if (!$r->editor || $r->editor == 'enumNoCycle') continue;
 
                 // Else if it's underlying field is not an enumset-field - skip
-                if (t()->fields($r->fieldId)->relation != 6) continue;
+                if ((t()->fields($r->fieldId)->relation ?? 0) != 6) continue;
 
                 // Pick store
                 $r->editor = ['store' => $blank->combo($r->fieldId, true)];

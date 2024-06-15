@@ -50,13 +50,13 @@ class Consider extends Indi_Db_Table {
     public function insert(array $data) {
 
         // Temporarily disable foreign keys
-        if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 0');
+        if (($data['connector'] ?? null) == -1) db()->query('SET `foreign_key_checks` = 0');
 
         // Call parent
         $return = parent::insert($data);
 
         // Enable foreign keys back
-        if ($data['connector'] == -1) db()->query('SET `foreign_key_checks` = 1');
+        if (($data['connector'] ?? null) == -1) db()->query('SET `foreign_key_checks` = 1');
 
         // Return
         return $return;

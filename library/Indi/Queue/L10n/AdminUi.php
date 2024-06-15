@@ -37,7 +37,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         } else $this->fieldId = $params;
 
         // Dict of entities having purpose-distinction
-        $master = $this->master;
+        $master = $this->master; $queueTaskR ??= null;
 
         // Additional info for detecting entries
         foreach ($master as $table => &$info) $info += [

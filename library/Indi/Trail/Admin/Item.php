@@ -336,7 +336,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     }
 
                 // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-                if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias)
+                if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias ?? 0)
 
                     // Force setup of that field value as id of current cms user
                     $this->row->$ownerColumn = admin()->id;
@@ -439,7 +439,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         $array['section']['panels'] = $panelA;
 
         // Setup pressed-prop
-        foreach ($array['notices'] as &$notice) $notice['pressed'] = $notice['id'] == Indi::get()->notice;
+        foreach ($array['notices'] as &$notice) $notice['pressed'] = $notice['id'] == (Indi::get()->notice ?? null);
 
         // Setup scope
         if (array_key_exists('scope', $array)) {

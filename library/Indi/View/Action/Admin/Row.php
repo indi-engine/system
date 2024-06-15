@@ -41,14 +41,11 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         // If there should be no south panel - return
         if (t()->action->south != 'yes') return;
 
-        // Get last active tab
-        $nested = t()->scope->actionrow['south']['activeTab'];
+        // Get last active tab or use first section alias instead
+        $nested = t()->scope->actionrow['south']['activeTab'] ?? t()->sections->at(0)->alias;
 
         // If last active tab was minimized - return
-        if (t()->scope->actionrow['south']['height'] == 25) return;
-
-        // If no last active tab, use first section alias instead
-        if (!$nested) $nested = t()->sections->at(0)->alias;
+        if ((t()->scope->actionrow['south']['height'] ?? 0) == 25) return;
 
         // Build url, even if parent entry is non yet existing entry
         $url = '/' . $nested . '/index/id/' . (t()->row->id ?: 0)

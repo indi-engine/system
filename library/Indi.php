@@ -1350,7 +1350,7 @@ class Indi {
         }
 
         // Check whether current block's content contains other blocks placeholders, and if found
-        if (preg_match_all('/{[a-zA-Z0-9\-]+}/', self::$_blockA[$key], $m))
+        if (preg_match_all('/{[a-zA-Z0-9\-]+}/', self::$_blockA[$key] ?? '', $m))
 
             // Foreach found placeholder
             foreach ($m[0] as $placeholder)
@@ -1417,6 +1417,9 @@ class Indi {
                 }
             }
 
+            // Prevent 'undefined property' warnings
+            $ini->lang->migration = false;
+
             // Save into the registry
             return Indi::registry('ini', $ini);
         }
@@ -1464,7 +1467,7 @@ class Indi {
                 return $val;
 
             // Return value
-            } else return Indi::store('ini')->$arg;
+            } else return Indi::store('ini')->$arg ?? null;
         }
 
         // Else we return the whole ini object
@@ -1782,7 +1785,7 @@ class Indi {
 
         // Get size and mime-type
         $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        $mime = array_shift(explode(';', curl_getinfo($ch, CURLINFO_CONTENT_TYPE)));
+        $mime = explode(';', curl_getinfo($ch, CURLINFO_CONTENT_TYPE))[0];
 
         // Close curl resource
         curl_close($ch);
@@ -1794,7 +1797,7 @@ class Indi {
                 $ext = array_pop(explode('.', trim(array_pop(explode('=',array_pop(explode(';', $value)))), '"\'')));
 
         // If no extension detected, try to detect it using mime-type
-        if (!$ext) $ext = Indi::ext($mime);
+        if (!($ext ?? 0)) $ext = Indi::ext($mime);
 
         // Return info
         return ['size' => $size, 'mime' => $mime, 'ext' => $ext];

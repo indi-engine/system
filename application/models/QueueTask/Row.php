@@ -48,7 +48,7 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         ]);
 
         // Setup progress
-        progress(self::$title, [$index, $total], $this->id);
+        if ($total) progress(self::$title, [$index, $total], $this->id);
 
         // Create queue items
         $queue->items($this->id);

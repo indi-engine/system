@@ -336,6 +336,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $columnTypeR = $this->foreign('columnTypeId');
 
             // If column type is SET or ENUM
+            $enumsetAppendA = [];
             if ($columnTypeR->isEnumset())
                 list($enumsetA, $enumsetAppendA) = $this->_setupEnumset($columnTypeR, $table);
 

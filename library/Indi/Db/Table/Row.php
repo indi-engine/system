@@ -751,7 +751,8 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get aliases of affected fields involved by context
         $dataColumns = []; $renderCfg = ['_system' => []];
         foreach (ar($fieldIds) as $fieldId)
-            if ($field = $this->field($fieldId)->alias ?: $scope['join'][$fieldId]) {
+            $fieldR = $this->field($fieldId);
+            if ($field = $fieldR ? $fieldR->alias : $scope['join'][$fieldId]) {
                 $dataColumns[] = $field;
                 if ($icon = $scope['icon'][$fieldId] ?? null) $renderCfg[$field]['icon'] = $icon;
                 if ($jump = $scope['jump'][$fieldId] ?? null) $renderCfg[$field]['jump'] = $jump;
@@ -1154,7 +1155,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
 
                 // If scope's tree-flag is true
-                if ($scope['tree']) {
+                if ($scope['tree'] ?? 0) {
 
                     // Get raw tree
                     $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
@@ -1166,10 +1167,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
 
                 // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER']) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?: '');
+                } else $order = is_array($scope['ORDER'] ?? 0) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
                 // Check whether inserted row match scope's WHERE clause
-                if (!$scope['WHERE'] || db()->query($sql = '
+                if (!($scope['WHERE'] ?? 0) || db()->query($sql = '
                     SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
                 )->cell()) {
 
@@ -1180,7 +1181,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     ];
 
                     // Adjust summary if need
-                    foreach (ar($scope['sum']) as $sumCol)
+                    foreach (ar($scope['sum'] ?? '') as $sumCol)
                         $byChannel[$channel][$context]['sum'][$sumCol]
                             = $this->$sumCol * 1;
 
@@ -1190,12 +1191,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // Get the ordered IDs: pgupLast, current, and newly added
                         $idA = db()->query($sql = '
                             SELECT `id` FROM `' . $this->_table . '`
-                            WHERE `id` IN (' . rif($scope['pgupLast'], '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
+                            WHERE `id` IN (' . rif($scope['pgupLast'] ?? 0, '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
                             ' . rif($order, 'ORDER BY $1') . ' 
                         ')->col();
 
                         // If new entry belongs to prev page
-                        if ($scope['pgupLast'] && $this->id == array_shift($idA)) {
+                        if (($scope['pgupLast'] ?? 0) && $this->id == array_shift($idA)) {
 
                             // Make sure pgupLast-entry will be appended -
                             $byChannel[$channel][$context]['entry'] = $scope['pgupLast'];
@@ -1218,7 +1219,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             ')->cell();
 
                         // Else if total number of entries is more than rowsOnPage
-                        } else if (count($idA) > $scope['rowsOnPage']) {
+                        } else if (count($idA) > ($scope['rowsOnPage'] ?? 25)) {
 
                             // If new entry is the last entry - it means that it is needless
                             // entry of current page and belongs to next page
@@ -3194,7 +3195,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $src =  $std . '/' . $uph . '/' . $this->_table . '/';
 
         // If field have l10n turned on and tpldoc exists for that field prepare language-part of glob() pattern
-        if ($this->id && $this->field($alias)->l10n == 'y')
+        if ($this->id && $this->field($alias) && $this->field($alias)->l10n == 'y')
             if ($this->tpldoc($alias, true, $_ = ini('lang')->admin))
                 $lang = '-' . $_;
 
@@ -4125,7 +4126,12 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                     list($value['date'], $value['time']) = explode(' ', $datetime);
                     list($value['year'], $value['month'], $value['day']) = explode('-', $value['date']);
-                    list($value['hours'], $value['minutes'], $value['seconds']) = explode(':', $value['time']);
+                    list($value['hours'], $value['minutes'], $value['seconds']) = explode(':',
+                        str_pad(
+                            str_pad($value['time'], 6, ':', STR_PAD_RIGHT),
+                            8, '0', STR_PAD_RIGHT
+                        )
+                    );
 
                 // Else if $value is already an array, we assume that it already have 'date', 'hours', 'minutes'
                 // and 'seconds' keys, so we only explode value under 'date' key to setup values for keys 'year',
@@ -4719,7 +4725,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Get the whole list of allowed extensions
         for ($i = 0; $i < count($aTypeA); $i++)
-            if (!is_array($aTypeI = $typeA[$aTypeA[$i]])) $customExtA[] = $aTypeA[$i];
+            if (!is_array($aTypeI = $typeA[$aTypeA[$i]] ?? 0)) $customExtA[] = $aTypeA[$i];
             else if (is_string($aTypeIExt = $aTypeI['ext'])) $aTypeAExt = array_merge($aTypeAExt, ar($aTypeIExt));
 
         // Setup regular expression for file extension check
@@ -4874,7 +4880,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // Apply faced keys to $this->_language where possible
                 foreach (func_get_arg(0) as $prop => $value)
-                    if ($this->_language[$prop])
+                    if ($this->_language[$prop] ?? 0)
                         $this->_language[$prop][ini('lang')->admin] = $value;
 
                 // Assign original data and return it
@@ -4936,7 +4942,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
 
         if (func_num_args() == 0) return $this->_system;
-        else if (func_num_args() == 1) return $this->_system[func_get_arg(0)];
+        else if (func_num_args() == 1) return $this->_system[func_get_arg(0)] ?? null;
         else {
             if (func_get_arg(1) === null) unset($this->_system[func_get_arg(0)]);
             else $this->_system[func_get_arg(0)] = func_get_arg(1);
@@ -5301,13 +5307,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->deleteFiles($field);
 
         // Get the extension of the uploaded file
-        preg_match('/[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-]+\/[^?#]*\.([a-zA-Z0-9+]+)$/', $url, $m); $uext = $m[1];
+        preg_match('/[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-]+\/[^?#]*\.([a-zA-Z0-9+]+)$/', $url, $m); $uext = $m[1] ?? null;
 
         // Try to detect remote file props using cURL request
         $p = Indi::probe($url); $size = $p['size']; $mime = $p['mime']; $cext = $p['ext'];
 
         // If simple extension detection failed - use one that curl detected
-        $ext = $uext ? $uext : $cext;
+        $ext = $uext ?? $cext;
 
         // If no size, or zero-size detected
         if (!$size) {
@@ -5398,13 +5404,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Copy the remote file
-        $return = copy($tmp ? $tmp : $url, $dst, $ctx);
+        $return = copy($tmp ?? $url, $dst, $ctx);
 
         // Change access rights
         chmod($dst, 0666);
 
         // Delete the temporary file
-        if ($tmp) @unlink($tmp);
+        if ($tmp ?? 0) @unlink($tmp);
 
         // If uploaded file is an image in formats gif, jpg or png
         if (preg_match('/^gif|jpe?g|png$/i', $ext)) {
@@ -5488,7 +5494,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Fix for cases when $src arg was created using *_Row->src() call, with 
             // it's $dc (disable cache) arg being explicitly (or by default) set to `true`
-            $src = array_shift(explode('?', $src));
+            $src = explode('?', $src)[0];
             
             // If $raw arg is given, we assume that $src arg is an extension, else
             if (func_num_args() == 3) $ext = $src; else {
@@ -5531,7 +5537,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!($abs = $this->abs($field, preg_match('~^/~', $src) ? '' : $src))) return;
 
         // Get the extension
-        $ext = array_pop(explode('.', $abs));
+        $ext = array_reverse(explode('.', $abs))[0];
 
         // Setup basic file info
         $file = [
@@ -5540,7 +5546,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             'src' => $this->src($abs, '', false),
             'ext' => $ext,
             'mime' => $mime = Indi::mime($abs),
-            'type' => array_shift(explode('/', $mime)),
+            'type' => explode('/', $mime)[0],
             'text' => $text = strtoupper($ext) . ' » ' . size2str($size),
             'href' => $href = PRE . "/auxiliary/download/id/{$this->id}/field/{$this->model()->fields($field)->id}/",
             'link' => "<a href=\"$href\">$text</a>"
@@ -5551,7 +5557,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         else if ($ext == 'swf') $more = getflashsize($abs);
 
         // If more info was successfully got, append some of it to main info
-        if ($more) {
+        if ($more ?? 0) {
             $file['width'] = $more[0];
             $file['height'] = $more[1];
         }
@@ -5753,8 +5759,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Setup other properties
             $storageR->datetime = date('Y-m-d H:i:s');
             $storageR->monthId = $monthId;
-            $storageR->roleId = admin()->roleId ?: 0;
-            $storageR->adminId = admin()->id ?: 0;
+            $storageR->roleId = admin()->roleId ?? 0;
+            $storageR->adminId = admin()->id ?? 0;
             $storageR->save();
         }
     }
@@ -6730,14 +6736,14 @@ class Indi_Db_Table_Row implements ArrayAccess
             } else {
 
                 // If prop is required, but has empty/null/zero value - flush error
-                if ($rule['req'] && !$this->$prop) jflush(false, sprintf(I_JCHECK_REQ, $prop));
+                if (($rule['req'] ?? 0) && !$this->$prop) jflush(false, sprintf(I_JCHECK_REQ, $prop));
 
                 // If prop's value should match certain regular expression, but it does not - flush error
-                if ($rule['rex'] && $this->$prop && !Indi::rexm($rule['rex'], $this->$prop))
+                if (($rule['rex'] ?? 0) && $this->$prop && !Indi::rexm($rule['rex'], $this->$prop))
                     jflush(false, sprintf(I_JCHECK_REG, $this->$prop, $prop));
 
                 // If prop's value should be an identifier of an existing object, but such object not found - flush error
-                if ($rule['key'] && $this->$prop) {
+                if (($rule['key'] ?? 0) && $this->$prop) {
                     if ($fgn = m($rule['key'])->row($this->$prop)) $this->foreign($prop, $fgn);
                     else jflush(false, sprintf(I_JCHECK_KEY, $rule['key'], $this->$prop));
                 }
@@ -7002,23 +7008,23 @@ class Indi_Db_Table_Row implements ArrayAccess
         // such dates within calendar UI, to prevent user from dropping event at disabled date
         // So, in this cases, $data['purpose'] == 'drag', and it is used within $schedule->distinct()
         // call, to prevent processing space owners, that are not same as current entry's space owners
-        if ($data['purpose']) $this->_system['purpose'] = $data['purpose'];
+        if ($data['purpose'] ?? 0) $this->_system['purpose'] = $data['purpose'];
 
         // If $data arg contains 'uixtype' param - pass into current entry's system data
         // It will be used to calc disabled values for other weekdays' dates within week,
         // that current event's date is in
-        if ($data['uixtype']) $this->_system['uixtype'] = $data['uixtype'];
+        if ($data['uixtype'] ?? 0) $this->_system['uixtype'] = $data['uixtype'];
 
         // If $data arg contains 'kanban' param - it means that uixtype is 'dayview'
         // and kanban param contains kanban columns info (possible values of kanban-prop)
-        if ($data['kanban']) $this->_system['kanban'] = $data['kanban'];
+        if ($data['kanban'] ?? 0) $this->_system['kanban'] = $data['kanban'];
 
         // If $data arg contains 'fromHour' param - it means that uixtype is 'dayview' or 'weekiew'
         // So we need to know what time those view-types start with
-        if ($data['fromHour']) $this->_system['fromHour'] = $data['fromHour'];
+        if ($data['fromHour'] ?? 0) $this->_system['fromHour'] = $data['fromHour'];
 
         // If system 'fromHour' param is set - set system 'bounds' param to 'day'
-        if ($this->_system['fromHour']) $this->_system['bounds'] = 'day';
+        if ($this->_system['fromHour'] ?? 0) $this->_system['bounds'] = 'day';
 
         // Create schedule
         $schedule = !$strict && array_key_exists('since', $this->_temporary)
@@ -7041,7 +7047,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $daily = $this->daily(); $disabled = ['date' => [], 'timeId' => []];
 
         // Get time in 'H:i' format
-        $time = $this->foreign('timeId')->title;
+        $time = $this->foreign('timeId')->title ?? '';
 
         // Setup 'early' and 'late' spaces and backup
         $schedule->daily($daily['since'], $daily['until'])->backup();
@@ -7064,15 +7070,16 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $both = [];
 
                 // Refill schedule
-                $schedule->refill($info['idxA'], null, null, $ruleA['pre']);
+                $schedule->refill($info['idxA'], null, null, $ruleA['pre'] ?? null);
 
                 // Prepare $hours arg for busyDates call
-                if (!$ruleA['hours']) $hours = false; else $hours = [
-                    'idsFn' => $ruleA['hours']['time'],
-                    'only' => $ruleA['hours']['only'],
-                    'owner' => $info['entry'],
-                    'event' => $this
-                ];
+                $hours = ($ruleA['hours'] ?? 0)
+                    ? [
+                        'idsFn' => $ruleA['hours']['time'],
+                        'only' => $ruleA['hours']['only'],
+                        'owner' => $info['entry'],
+                        'event' => $this
+                    ] : false;
 
                 // Setup daily working hours per each date separately
                 if ($hours && !$hours['only']) $schedule->ownerDaily($hours);
@@ -7089,7 +7096,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // containing in $schedule->dates array
                 if ($dates = $hours ? $schedule->dates : $both)
                     foreach ($dates as $date)
-                        foreach ($schedule->busyHours($date, '15m', true, $hours['only'] ? $hours : false) as $Hi)
+                        foreach ($schedule->busyHours($date, '15m', true, $hours && $hours['only'] ? $hours : false) as $Hi)
                             $busy['time'][$date][$Hi][] = $id;
             }
 
@@ -7132,14 +7139,14 @@ class Indi_Db_Table_Row implements ArrayAccess
                 foreach ($busy['time'] as $date => $HiA) {
 
                     // If there are non-empty array of disabled values for entry's time
-                    if ($busyA = $HiA[$time]) {
+                    if ($busyA = $HiA[$time] ?? 0) {
 
                         // Reset $d flag to `false`
                         $d = false;
 
                         // If there are no possible values remaining after
                         // deduction of busy values - set $d flag to `true`
-                        if (!array_diff($psblA, array_merge($busy['date'][$date] ?: [], $busyA))) {
+                        if (!array_diff($psblA, array_merge($busy['date'][$date] ?? [], $busyA))) {
                             if ($psblA) $d = true;
                         }
 
@@ -7162,7 +7169,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                         // If there are no possible values remaining after
                         // deduction of busy values - set $d flag to `true`
-                        if (!array_diff($psblA, array_merge($busy['date'][$date] ?: [], $busyA))) {
+                        if (!array_diff($psblA, array_merge($busy['date'][$date] ?? [], $busyA))) {
                             if ($psblA) $d = true;
                         }
 
@@ -7177,7 +7184,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // If current space field is auto-field -  setup list of possible values
-            if ($ruleA['auto']) $this->_system['possible'][$prop] = array_diff($psblA, $disabled[$prop]);
+            if ($ruleA['auto'] ?? 0) $this->_system['possible'][$prop] = array_diff($psblA, $disabled[$prop]);
         }
 
         // Append disabled timeIds, for time that is before opening and after closing
@@ -7234,7 +7241,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Get unixtime of a time, that day/week view starts with
-        $fromHour = strtotime($this->date) + $this->_system['fromHour'] * 3600;
+        $fromHour = strtotime($this->date) + ($this->_system['fromHour'] ?? 0) * 3600;
 
         // Foreach chunk
         foreach ($chunkA as $idx => &$curr) {
@@ -7260,7 +7267,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Get kanban value
-        $kanbanKey = $this->_system['kanban'] ? $this->_system['kanban']['prop'] : 'date';
+        $kanbanKey = ($this->_system['kanban'] ?? 0) ? $this->_system['kanban']['prop'] : 'date';
         $kanbanVal = $this->$kanbanKey;
 
         // Pass busy chunks, grouped by kanban values - to the return value
@@ -7271,7 +7278,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->adjustSpaceDisabledValues($disabled, $schedule);
 
         // If we're trying to drag event within week-calendar
-        if ($this->_system['uixtype'] == 'weekview') {
+        if (($this->_system['uixtype'] ?? 0) == 'weekview') {
 
             // Backup date and
             $date = $this->date;
@@ -7306,7 +7313,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $this->date = $date; $this->_system['uixtype'] = 'weekview';
 
         // Else if uixtype is 'dayview' and kanban cfg is set
-        } else if ($this->_system['uixtype'] == 'dayview' && ($k = $this->_system['kanban'])) {
+        } else if (($this->_system['uixtype'] ?? 0) == 'dayview' && ($k = $this->_system['kanban'])) {
 
             // Backup kanban-prop's value and
             $kanban = $this->{$k['prop']};
@@ -7407,7 +7414,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If still no mismatch - break
-                if (!$this->_mismatch[$prop]) break;
+                if (!($this->_mismatch[$prop] ?? 0)) break;
             }
         }
 
@@ -7570,7 +7577,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Setup an info about selected value
             $selected = [
-                'title' => $options[$key]['title'],
+                'title' => $options[$key]['title'] ?? $key,
                 'value' => $key
             ];
 

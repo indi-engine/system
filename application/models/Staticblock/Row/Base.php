@@ -13,7 +13,7 @@ class Staticblock_Row_Base extends Indi_Db_Table_Row {
     /**
      * Prevent tags-stripping from `detailsTextarea` contents
      */
-    public function mismatch($check = false) {
+    public function mismatch($check = false, $message = null) {
         $textarea = $this->detailsTextarea;
         $return = parent::mismatch($check);
         $this->detailsTextarea = $textarea;

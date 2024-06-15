@@ -44,6 +44,11 @@ class Indi_Trail_Admin_Item_Scope {
     public $filters = '[]';
 
     /**
+     * @var string
+     */
+    public $filterOwner = '';
+
+    /**
      * Number of found rows within current scope
      *
      * @var

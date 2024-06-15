@@ -406,7 +406,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // mostly responsible for docker-compose setup - should be replicated to the project root, so that
         // same files already existing there to be updated
         // todo: remove ' || true' once all instances updated
-        if ($isOutdated['system'] || true) $this->_custom();
+        if (isset($isOutdated['system']) || true) $this->_custom();
 
         // Run migrations, if need
         $this->_migrate();
