@@ -452,20 +452,20 @@ class Indi_Db_Table_Row implements ArrayAccess
             $this->spaceSince = $this->date($coords['date'], 'Y-m-d H:i:s');
 
         // If scheme assumes that `spaceSince` depends on a single field, and that field is a datetime-field
-        if (in($scheme, 'datetime,datetime-minuteQty'))
+        else if (in($scheme, 'datetime,datetime-minuteQty'))
             $this->spaceSince = $this->date($coords['datetime'], 'Y-m-d H:i:s');
 
         // If scheme assumes that `spaceSince` depends both on date-field and time-field,
-        if (in($scheme, 'date-time,date-time-minuteQty'))
+        else if (in($scheme, 'date-time,date-time-minuteQty'))
             $this->spaceSince = $this->{$coords['date']} . ' ' . $this->{$coords['time']};
 
         // If scheme assumes that `spaceSince` depends both on date-field and time-field,
         // and time field is a foreign-key field
-        if (in($scheme, 'date-timeId,date-timeId-minuteQty'))
-            $this->spaceSince = $this->{$coords['date']} . ' ' . $this->foreign($coords['timeId'])->title . ':00';
+        else if (in($scheme, 'date-timeId,date-timeId-minuteQty')) {
+            $this->spaceSince = $this->{$coords['date']} . ' ' . ($this->foreign($coords['timeId'])->title ?? '00:00') . ':00';
 
         // If scheme assumes that `spaceSince` depends on date-field, and on start time within timespan-field
-        if ($scheme == 'date-timespan')
+        } else if ($scheme == 'date-timespan')
             $this->spaceSince = $this->{$coords['date']}
                 . ' ' . array_shift(explode('-', $this->{$coords['timespan']})) . ':00';
     }
@@ -6012,8 +6012,16 @@ class Indi_Db_Table_Row implements ArrayAccess
             else if (Indi::rexm('datetime', $this->_original[$prop]))
                 return strtotime($this->_modified[$prop]) - strtotime($this->_original[$prop]);
 
-            // Else return result of deduction of previous value from modified value
-            else return $this->_modified[$prop] - $this->_original[$prop];
+            // Else
+            else {
+
+                // If any version of $prop is not numeric - log that for further investigation
+                if (!is_numeric($this->_modified[$prop]) || is_numeric($this->_original[$prop]))
+                    Indi::log('non-well-formed-numeric', [$prop, $this], true);
+
+                // Return result of deduction of previous value from modified value
+                return $this->_modified[$prop] - $this->_original[$prop];
+            }
 
         // Return empty array or 0, depend on whether field definition
         // assumes containing comma-separated list of keys

@@ -841,9 +841,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // If field type is fileupload, we build something like
                 // '<a href="/url/for/file/download/">DOCX » 1.25mb</a>'
                 if (isset($typeA['upload'][$columnI])) {
-                    $file = $entry->file($columnI);
-                    $data[$pointer]['_render'][$columnI] = $typeA['shade'][$columnI] ? $file->text : $file->link;
-                    $data[$pointer]['_upload'][$columnI]['type'] = $file->type;
+                    if ($file = $entry->file($columnI)) {
+                        $data[$pointer]['_render'][$columnI] = ($typeA['shade'][$columnI] ?? 0) ? $file->text : $file->link;
+                        $data[$pointer]['_upload'][$columnI]['type'] = $file->type;
+                    } else {
+                        $data[$pointer]['_render'][$columnI] = '';
+                        $data[$pointer]['_upload'][$columnI]['type'] = '';
+                    }
                 }
 
                 // Render data for a column linked to icon-field
@@ -1092,7 +1096,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if ($by = $renderCfg['_system']['groupBy'] ?? null) {
 
             // Group items preserving the order in which they do actually appear
-            $groupA = []; foreach ($data as $item) $groupA[$item[$by]] []= $item;
+            $groupA = []; foreach ($data as $item) $groupA[$item[$by] ?? ''] []= $item;
 
             // Spoof ungrouped data with grouped data
             $data = []; foreach ($groupA as $group => $itemA) $data = array_merge($data, $itemA);
@@ -1777,7 +1781,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $cValue = $r->{$fieldR->nested('consider')->at(0)->foreign('consider')->alias};
 
                     // Use mapping to spoof consider-value if need
-                    $foreignKeyEntityId = $entityIdByConsiderFieldA[$cValue] ?: $cValue;
+                    $foreignKeyEntityId = $entityIdByConsiderFieldA[$cValue] ?? $cValue;
                 }
 
                 // Get the column name, which value will be used for match

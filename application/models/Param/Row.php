@@ -90,9 +90,10 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
         $data = $this->callParent();
 
         // Pick localized value of `cfgValue` prop, if detected that raw value contain localized values
-        if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data['cfgValue']))
-            if ($this->_language['cfgValue'] = json_decode($data['cfgValue'], true))
-                $data['cfgValue'] = $this->_language['cfgValue'][ini('lang')->admin];
+        if (isset($data['cfgValue']))
+            if (preg_match('/^{"[a-z_A-Z]{2,5}":/', $data['cfgValue']))
+                if ($this->_language['cfgValue'] = json_decode($data['cfgValue'], true))
+                    $data['cfgValue'] = $this->_language['cfgValue'][ini('lang')->admin];
 
         // Return data
         return $data;
@@ -115,5 +116,23 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function fraction() {
         return $this->fieldId ? parent::fraction() : 'system';
+    }
+
+    /**
+     * Overridden to make sure cfgField-field is always present in $fields arg
+     *
+     * @param $fields
+     * @return mixed
+     */
+    public function toGridData($fields, $renderCfg = []) {
+
+        // Make sure 'cfgField' is always present, as cfgValue rely on that
+        if (!in('cfgField', $fields)) $fields []= 'cfgField';
+
+        // Render grid data
+        $data = $this->model()->createRowset(['rows' => [$this]])->toGridData($fields, $renderCfg);
+
+        // Return
+        return array_shift($data);
     }
 }

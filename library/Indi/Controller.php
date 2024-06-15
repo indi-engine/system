@@ -1350,7 +1350,7 @@ class Indi_Controller {
                     $class = 'other';
 
                     // Set holder to contain file extension (e.g. 'TXT')
-                    $holder = array_shift(explode(' ', strip_tags($item['_render'][$field])));
+                    $holder = explode(' ', strip_tags($item['_render'][$field]))[0];
 
                 // Else
                 } else {

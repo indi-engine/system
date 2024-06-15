@@ -196,7 +196,7 @@ class Indi_Db {
             // Get info about existing entities, or one certain entity, identified by id,
             // passed within value of 'model' key of $config argument
             $entityA = self::$_instance->query(
-                'SELECT * FROM `entity`' . ($entityId ? ' WHERE `id` = "' . $entityId . '"' : '')
+                'SELECT * FROM `entity`'
             )->all();
 
             // If we're not reloading some certain entity
@@ -521,22 +521,22 @@ class Indi_Db {
 
                 // If $entityId was found, so it mean that we are reloading existing model
                 // Unset metadata storage under that key from self::$_entityA and self::$_modelA
-                if ($class) unset(self::$_entityA[$class], self::$_modelA[$class]);
+                if ($class ?? 0) unset(self::$_entityA[$class], self::$_modelA[$class]);
             }
 
             // Array for collecting "entityId => modelName" pairs
             $modelNameA = [];
 
             // Foreach existing entity
-            foreach ($entityA as $entityI) {
+            foreach ($entityA as $entityI) if (!$entityId || $entityI['id'] == $entityId){
 
                 // Collect "entityId => modelName" pairs
                 $modelNameA[$entityI['id']] = ucfirst($entityI['table']);
 
                 // Prepare comma-separated list of aliases of fields, specified in $entityI['changeLogExcept']
                 $changeLogExcept = [];
-                $_ids = array_values($eFieldA[$entityI['id']]['ids'] ?: []);
-                $_aliases = array_values($eFieldA[$entityI['id']]['aliases'] ?: []);
+                $_ids = array_values($eFieldA[$entityI['id']]['ids'] ?? []);
+                $_aliases = array_values($eFieldA[$entityI['id']]['aliases'] ?? []);
                 $_map = array_combine($_ids, $_aliases);
                 foreach (ar($entityI['changeLogExcept']) as $exceptFieldId) $changeLogExcept []= $_map[$exceptFieldId];
                 $entityI['changeLogExcept'] = im($changeLogExcept);
@@ -561,11 +561,11 @@ class Indi_Db {
                     ],
                     'fields' => new Field_Rowset_Base([
                         'table' => 'field',
-                        'rows' => $eFieldA[$entityI['id']]['rows'],
+                        'rows' => $eFieldA[$entityI['id']]['rows'] ?? [],
                         'aliases' => $_aliases,
                         'ids' => $_ids,
                         'rowClass' => 'Field_Row',
-                        'found' => count($eFieldA[$entityI['id']]['rows'] ?: [])
+                        'found' => count($eFieldA[$entityI['id']]['rows'] ?? [])
                     ])
                 ];
 
@@ -590,7 +590,7 @@ class Indi_Db {
             }
 
             // Setup notices
-            if (self::$_entityA['Notice']
+            if (isset(self::$_entityA['Notice']['fields'])
                 && self::$_entityA['Notice']['fields'] instanceof Field_Rowset_Base
                 && self::$_entityA['Notice']['fields']->count() >= 13) {
 
