@@ -19,7 +19,7 @@ error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
 ini_set('display_errors', 'On');
 
 // PHP 8.x compatiblity
-$_SERVER['STD'] ??= null; $_SERVER['REDIRECT_STD'] ??=null; $GLOBALS['last'] = null;
+$_SERVER['STD'] ??= null; $_SERVER['REDIRECT_STD'] ??=null; $GLOBALS['last'] = null; 
 
 // Set up STD server variable in case if multiple IndiEngine projects
 // are running within same document root, and there is one project that
