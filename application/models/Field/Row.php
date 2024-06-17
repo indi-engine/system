@@ -739,7 +739,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         $defaultValue = $this->defaultValue;
 
         // If column type is VARCHAR(255)
-        if (($columnTypeR->type ?? 0) == 'VARCHAR(255)') {
+        if (($columnTypeR->type ?? 0) === 'VARCHAR(255)') {
 
             // If $php is true - set $defaultValue as empty string
             if ($php) $defaultValue = '';
@@ -751,7 +751,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                 $this->defaultValue = $defaultValue = ltrim(preg_replace('/,0/', '', ',' . $defaultValue), ',');
 
         // Else if column type is INT(11)
-        } else if (($columnTypeR->type ?? 0) == 'INT(11)') {
+        } else if (($columnTypeR->type ?? 0) === 'INT(11)') {
 
             // If $php is true, or $defaultValue is not a positive integer
             if ($php || !preg_match(Indi::rex('int11'), $defaultValue)) {
@@ -765,7 +765,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DOUBLE(7,2)
-        } else if (($columnTypeR->type ?? 0) == 'DOUBLE(7,2)') {
+        } else if (($columnTypeR->type ?? 0) === 'DOUBLE(7,2)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('double72'), $defaultValue)) {
@@ -779,7 +779,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DECIMAL(11,2)
-        } else if (($columnTypeR->type ?? 0) == 'DECIMAL(11,2)') {
+        } else if (($columnTypeR->type ?? 0) === 'DECIMAL(11,2)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('decimal112'), $defaultValue)) {
@@ -793,7 +793,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DECIMAL(14,3)
-        } else if (($columnTypeR->type ?? 0) == 'DECIMAL(14,3)') {
+        } else if (($columnTypeR->type ?? 0) === 'DECIMAL(14,3)') {
 
             // If $php is true, or default value does not match the column type signature
             if ($php || !preg_match(Indi::rex('decimal143'), $defaultValue)) {
@@ -807,7 +807,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DATE
-        } else if (($columnTypeR->type ?? 0) == 'DATE') {
+        } else if (($columnTypeR->type ?? 0) === 'DATE') {
 
             // If $php is true or default value is not a date in format YYYY-MM-DD
             if ($php || !preg_match(Indi::rex('date'), $defaultValue)) {
@@ -830,7 +830,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is YEAR
-        } else if (($columnTypeR->type ?? 0) == 'YEAR') {
+        } else if (($columnTypeR->type ?? 0) === 'YEAR') {
 
             // If $php is true or default value does not match the YEAR column type format - set it as '0000'
             if ($php || !preg_match(Indi::rex('year'), $defaultValue)) {
@@ -844,7 +844,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is TIME
-        } else if (($columnTypeR->type ?? 0) == 'TIME') {
+        } else if (($columnTypeR->type ?? 0) === 'TIME') {
 
             // If $php is true or default value is not a time in format HH:MM:SS - set it as '00:00:00'. Otherwise
             if ($php || !preg_match(Indi::rex('time'), $defaultValue)) {
@@ -868,7 +868,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is DATETIME
-        } else if (($columnTypeR->type ?? 0) == 'DATETIME') {
+        } else if (($columnTypeR->type ?? 0) === 'DATETIME') {
 
             // If $php is true or $defaultValue is not a datetime in format YYYY-MM-DD HH:MM:SS - set it as '0000-00-00 00:00:00'
             if ($php || !preg_match(Indi::rex('datetime'), $defaultValue)) {
@@ -903,19 +903,19 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is ENUM
-        } else if (($columnTypeR->type ?? 0) == 'ENUM') {
+        } else if (($columnTypeR->type ?? 0) === 'ENUM') {
 
             // If $php is true, set $defaultValue as empty string
             if ($php) $defaultValue = '';
 
         // Else if column type is SET
-        } else if (($columnTypeR->type ?? 0) == 'SET') {
+        } else if (($columnTypeR->type ?? 0) === 'SET') {
 
             // If $php is true, set $defaultValue as empty string
             if ($php) $defaultValue = '';
 
         // Else if column type is BOOLEAN
-        } else if (($columnTypeR->type ?? 0) == 'BOOLEAN') {
+        } else if (($columnTypeR->type ?? 0) === 'BOOLEAN') {
 
             // If $php is true or $devaultValue is not 0 or 1 - set it as 0
             if ($php || !preg_match(Indi::rex('bool'), $defaultValue)) {
@@ -929,7 +929,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             }
 
         // Else if column type is VARCHAR(10) we assume that it should be a color in format 'hue#rrggbb'
-        } else if (($columnTypeR->type ?? 0) == 'VARCHAR(10)') {
+        } else if (($columnTypeR->type ?? 0) === 'VARCHAR(10)') {
 
             // If $php is true, or $defaultValue is not a color in format either '#rrggbb' or 'hue#rrggbb'
             if ($php || (!preg_match(Indi::rex('rgb'), $defaultValue) && !preg_match(Indi::rex('hrgb'), $defaultValue))) {

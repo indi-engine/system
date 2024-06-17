@@ -45,7 +45,7 @@ class Indi_View_Action_Admin_Row extends Indi_View_Action_Admin {
         $nested = t()->scope->actionrow['south']['activeTab'] ?? t()->sections->at(0)->alias;
 
         // If last active tab was minimized - return
-        if ((t()->scope->actionrow['south']['height'] ?? 0) == 25) return;
+        if ((int) (t()->scope->actionrow['south']['height'] ?? 0) === 25) return;
 
         // Build url, even if parent entry is non yet existing entry
         $url = '/' . $nested . '/index/id/' . (t()->row->id ?: 0)

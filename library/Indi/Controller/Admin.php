@@ -1278,7 +1278,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objSelfStyled->getFont()->setName($font)->setSize('8')->getColor()->setRGB('04408C');
 
                 // If filter type is 'date' (or 'datetime'. There is no difference at this case)
-                if (($excelI['type'] ?? 0) == 'date') {
+                if (($excelI['type'] ?? 0) === 'date') {
 
                     // Get the format
                     foreach (t()->fields as $fieldR) {
@@ -1336,7 +1336,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     }
 
                 // If filter type is 'number'
-                } else if (($excelI['type'] ?? 0) == 'number') {
+                } else if (($excelI['type'] ?? 0) === 'number') {
 
                     // If start point for number range specified
                     if (isset($excelI['value']['gte'])) {
@@ -1368,7 +1368,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
 
                 // If filter type is 'number'
-                } else if (($excelI['type'] ?? 0) == 'color') {
+                } else if (($excelI['type'] ?? 0) === 'color') {
 
                     // Create the GD canvas image for hue background and thumbs to be placed there
                     $canvasIm = imagecreatetruecolor(197, 15);
@@ -1773,7 +1773,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 //
                 if ($columnI['colspan'] > 1) {
                     $align = 'center';
-                } else if (($columnI['align'] ?? 0) == 'right') {
+                } else if (($columnI['align'] ?? 0) === 'right') {
                     if ($order->property == $columnI['dataIndex']) {
                         $align = 'left';
                     } else {

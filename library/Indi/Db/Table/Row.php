@@ -7290,7 +7290,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $this->adjustSpaceDisabledValues($disabled, $schedule);
 
         // If we're trying to drag event within week-calendar
-        if (($this->_system['uixtype'] ?? 0) == 'weekview') {
+        if (($this->_system['uixtype'] ?? 0) === 'weekview') {
 
             // Backup date and
             $date = $this->date;
@@ -7325,7 +7325,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $this->date = $date; $this->_system['uixtype'] = 'weekview';
 
         // Else if uixtype is 'dayview' and kanban cfg is set
-        } else if (($this->_system['uixtype'] ?? 0) == 'dayview' && ($k = $this->_system['kanban'])) {
+        } else if (($this->_system['uixtype'] ?? 0) === 'dayview' && ($k = $this->_system['kanban'])) {
 
             // Backup kanban-prop's value and
             $kanban = $this->{$k['prop']};
