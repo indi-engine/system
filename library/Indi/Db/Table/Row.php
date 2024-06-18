@@ -7589,7 +7589,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Setup an info about selected value
             $selected = [
-                'title' => $options[$key]['title'] ?? $key,
+                'title' => $options[$key]['title'] ?? '',
                 'value' => $key
             ];
 

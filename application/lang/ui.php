@@ -10,6 +10,7 @@ field('admin', 'toggle')->toggleL10n('qy', $lang, false);
 field('admin', 'demo')->toggleL10n('qy', $lang, false);
 field('admin', 'uiedit')->toggleL10n('qy', $lang, false);
 field('field', 'title')->toggleL10n('qy', $lang, false);
+field('alteredField', 'toggle')->toggleL10n('qy', $lang, false);
 field('alteredField', 'accessRoles')->toggleL10n('qy', $lang, false);
 field('alteredField', 'mode')->toggleL10n('qy', $lang, false);
 field('alteredField', 'jumpCreate')->toggleL10n('qy', $lang, false);

@@ -1,5 +1,20 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function alteredFieldsMoreToggleAction() {
+        field('filter', 'allowZeroResultExceptPrefilteredWith', ['move' => 'allowZeroResult']);
+        enumset('alteredField', 'toggle', 'creating', ['title' => 'Turned on, but for creating records only', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-lime-create.png']);
+        enumset('alteredField', 'toggle', 'existing', ['title' => 'Turned on, but for existing records only', 'move' => 'creating', 'boxIcon' => 'resources/images/icons/btn-icon-lime-form.png']);
+        field('alteredField', 'toggle', ['elementId' => 'radio']);
+        field('grid', 'accessRoles', ['elementId' => 'radio']);
+        field('filter', 'accessRoles', ['elementId' => 'radio']);
+        field('alteredField', 'accessRoles', ['elementId' => 'radio']);
+        field('grid', 'accessExcept', ['elementId' => 'multicheck']);
+        field('filter', 'accessExcept', ['elementId' => 'multicheck']);
+        field('alteredField', 'accessExcept', ['elementId' => 'multicheck']);
+        param('grid', 'accessExcept', 'cols', '2');
+        param('filter', 'accessExcept', 'cols', '2');
+        param('alteredField', 'accessExcept', 'cols', '2');
+    }
     public function disableQueueNoticeAction() {
         notice('queueTask', 'done', ['toggle' => 'n']);
         notice('queueTask', 'failed', ['toggle' => 'n']);

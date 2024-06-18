@@ -68,7 +68,7 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
         return "param('" .
             $this->foreign('entityId')->table . "', '" .
             $this->foreign('fieldId')->alias . "', '" .
-            $this->foreign('cfgField')->alias . "', " . $this->_ctor($certain) . ");";
+            $this->foreign('cfgField', true)->alias . "', " . $this->_ctor($certain) . ");";
     }
 
     /**

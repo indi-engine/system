@@ -145,6 +145,14 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             //if ($this->action->selectionRequired == 'n' || uri()->phantom) $this->gridFields($sectionR);
             //else $this->gridFields = m('Field')->createRowset();
 
+            // Exclude altered fields having inappropriate values of toggle-prop
+            if ($this->action->selectionRequired == 'y') {
+                $exclude = uri('id') ? 'creating' : 'existing';
+                $sectionR->nested('alteredField')->exclude(': == "' . $exclude . '"', 'toggle');
+            } else {
+                $sectionR->nested('alteredField')->exclude(': != "y"', 'toggle');
+            }
+
             // Alter fields
             $originalDefaults = [];
             foreach ($sectionR->nested('alteredField') as $_) {
