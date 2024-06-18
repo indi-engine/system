@@ -2747,8 +2747,14 @@ class Indi_Controller_Admin extends Indi_Controller {
                 else t($this->_routeA, $this)->authLevel3();
 
             // Else if current section is 'index', it means we are in the root of interface,
-            // so create `realtime` record having `type` = 'session', if not exists so far
-            } else Realtime::session();
+            } else {
+
+                // If $_POST['windows'] is given - reload all ui-windows
+                if (Indi::post()->windows ?? 0) $this->windows();
+
+                // Else create `realtime` record having `type` = 'session', if not exists so far
+                else Realtime::session();
+            }
         }
 
         // If current request had a only aim to check access - report that all is ok
@@ -4502,5 +4508,48 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Run cascade update
         t()->rows->cascade(fn($child) => $child->set($groupField, $groupValue)->save());
+    }
+
+    /**
+     * Process multiple URIs and flush responses
+     * either one by one via websocket
+     * or all via ordinary http response
+     *
+     * Currently this is used to reload all {xtype: desktopwindow} instances on websocket reconnect
+     */
+    public function windows() {
+
+        // If $_POST['windows'] is not given or is not json decodable - return
+        if (!$windows = json_decode(Indi::post()->windows ?? '')) return;
+
+        // Append uris for other row ids
+        foreach ($windows as $uri) {
+
+            // If it's not a string - skip
+            if (!Indi::rexm('varchar255', $uri)) continue;
+
+            // Prepare output
+            $out = uri()->response($uri);
+            if (preg_match('~\}\{~', $out)) {
+                $out = explode('}{', $out)[0] . '}';
+            }
+
+            // Prepare stomp msg
+            $msg = [
+                'type' => 'load',
+                'href' => $uri,
+                'resp' => $out
+            ];
+
+            // Trigger Indi.load(...) call with predefined responseText-prop
+            if (ini()->rabbitmq->enabled && defined('CID') && CID) {
+                Indi::ws($msg + ['to' => CID]);
+            } else {
+                $stomp []= $msg;
+            }
+        }
+
+        // Flush success
+        jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
     }
 }

@@ -593,7 +593,7 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
         $this->detach();
 
         // Show progressbar with initial text
-        progress('Processing...', $total = 1000);
+        progress('Realtime progress example...', $total = 1000);
 
         // Run the $total number of iterations
         for ($index = 0; $index < $total; $index ++) {
@@ -601,14 +601,14 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
             // Delay 20ms
             usleep(20000);
 
-            // Update progress
-            progress($index + 1, "Processing: {percent}%");
+            // Update progress (incl. when resumed after error)
+            progress($index + 1, "Realtime progress example: {percent}%");
 
             // Imitate error
             if ($index === 50) {
 
                 // Make progress to be red with error message
-                progress(false, 'Some error happened');
+                progress(false, 'Some error happened example');
 
                 // Wait a sec, then change to initial color and last message
                 // before error, if new message is not given explicitly

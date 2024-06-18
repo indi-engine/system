@@ -3634,7 +3634,6 @@ function progress($arg1, $arg2 = null, $id = null) {
     // Basic params
     $data = [
         'type' => 'progress',
-        'to' => CID,
         'process' => $id,
     ];
 
@@ -3646,6 +3645,15 @@ function progress($arg1, $arg2 = null, $id = null) {
         Indi::$progress[$id]['index']   = is_int($arg2) ? 0     : $arg2[0];
         Indi::$progress[$id]['percent'] = is_int($arg2) ? 0     : round($arg2[0] / $arg2[1] * 100, 1);
         Indi::$progress[$id]['total']   = is_int($arg2) ? $arg2 : $arg2[1];
+
+        // If exact channel is defined - use it as a destination
+        if (defined('CID')) Indi::$progress[$id]['to'] = CID;
+
+        // Else if no session is available - use every available channel of a users having dev-role
+        else if (!$admin = admin()) Indi::$progress[$id]['to'] = 'dev';
+
+        // Else if some user is logged in - use all channels of that user as a destination
+        else Indi::$progress[$id]['to'] = [$admin->roleId => $admin->id];
 
         // Indicate the very beginning of a process
         $data += [
@@ -3719,6 +3727,9 @@ function progress($arg1, $arg2 = null, $id = null) {
         // Remember message
         Indi::$progress[$id]['message'] = $data['message'];
     }
+
+    // Pick destination from cache
+    $data['to'] = Indi::$progress[$id]['to'];
 
     // Send via websockets
     Indi::ws($data);
