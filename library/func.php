@@ -142,7 +142,7 @@ function jerror($errno, $errstr, $errfile, $errline) {
     if (APP) jflush(false, ['errors' => [$error]]);
 
     // Return that info via json encode, wrapped with '<error>' tag, for error to be easy pickable with javascript
-    return '<error>' . json_encode($error, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</error>';
+    else return '<error>' . json_encode($error, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</error>';
 }
 
 /**
@@ -963,7 +963,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
         $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES; if (CMD) $options |= JSON_PRETTY_PRINT;
 
         // Flush json
-        echo json_encode($flush, $options);
+        $json = json_encode($flush, $options); if ($flush['errors'] ?? 0) Indi::$errors []= $json; echo $json;
     }
 
     // If redirect should be done - do that

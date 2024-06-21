@@ -357,7 +357,7 @@ class Grid_Row extends Indi_Db_Table_Row {
 
         // Replace curly brackets with their html entities
         foreach (['composeVal', 'composeTip'] as $prop)
-            $array[$prop] = preg_replace('~\}\{~', '&rcub;&lcub;', $array[$prop] ?? null);
+            $array[$prop] ??= null;
 
         // Return
         return $array;

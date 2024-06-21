@@ -170,11 +170,19 @@ class Indi_Uri_Base {
                 'instance' => Indi::registry('trail'),
                 'items' => Indi_Trail_Admin::$items,
                 'controller' => Indi_Trail_Admin::$controller,
-            ]
+            ],
+            'errors' => Indi::$errors
         ];
+
+        // Reset errors
+        Indi::$errors = [];
 
         // Dispatch sub-request and get sub-response
         ob_start(); $this->dispatch($uri); $out = ob_get_clean();
+
+        // Strip errors from $out
+        foreach (Indi::$errors as $error)
+            $out = preg_replace('~^' . preg_quote($error, '~') . '~', '', $out);
 
         // Get prev environment key
         $prev = array_key_last(self::$stack);
@@ -185,6 +193,7 @@ class Indi_Uri_Base {
         Indi::registry('trail',         self::$stack[$prev]['trail']['instance']);
         Indi_Trail_Admin::$items =      self::$stack[$prev]['trail']['items'];
         Indi_Trail_Admin::$controller = self::$stack[$prev]['trail']['controller'];
+        Indi::$errors =                 self::$stack[$prev]['errors'];
 
         // Unset from stack as now it is the current environment again
         unset(self::$stack[$prev]);

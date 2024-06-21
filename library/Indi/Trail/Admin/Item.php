@@ -922,7 +922,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
         // Get icons
         foreach ($this->grid->select(': !=""', $for) as $gridR)
             $tplA[$gridR->further ?: $gridR->fieldId]
-                = preg_replace('~\}\{~', '&rcub;&lcub;', $gridR->$for);
+                = $gridR->$for;
 
         // Return icons
         return $tplA ?? [];

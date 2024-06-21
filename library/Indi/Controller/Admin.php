@@ -143,9 +143,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                     // Prepare output
                     $out = uri()->response($uri);
-                    if (preg_match('~\}\{~', $out)) {
-                        $out = explode('}{', $out)[0] . '}';
-                    }
 
                     // Prepare stomp msg
                     $msg = [
@@ -4530,9 +4527,6 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Prepare output
             $out = uri()->response($uri);
-            if (preg_match('~\}\{~', $out)) {
-                $out = explode('}{', $out)[0] . '}';
-            }
 
             // Prepare stomp msg
             $msg = [

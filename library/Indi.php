@@ -11,6 +11,20 @@ class Indi {
     protected static $_registry = [];
 
     /**
+     * Once error happened, it's printed to the output as json-encoded assoc array, that looks like:
+     * {success: false, errors: [{code: 2, line: 123, file: 'path/to/file.php', message: '..', trace: [{}]}]}
+     *
+     * If error is non-fatal execution is going further and flush some json response, so in the end we may get
+     * something like '{...error1..}{..error2..}{..response..}', so we need to trim everything except '{..response..}'
+     * as otherwise that won't be a valid json.
+     *
+     * So here errors are collected as json-encoded strings, to be later used to trim those from the accumulated json output
+     *
+     * @var array
+     */
+    public static $errors = [];
+
+    /**
      * An internal array, containing info related to what kind of suspicious events should be logged.
      * Currently is has two types of such events: 'jerror' and 'mflush'. Logging of 'jerror' events
      * is turned On (e.g is boolean `true`) by default, as if such an event occurs, this mean that
