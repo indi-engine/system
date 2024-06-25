@@ -313,7 +313,7 @@ class Indi_Controller {
             if (!$column) continue;
 
             // Find a field, that column is linked to
-            foreach (t()->fields as $fieldR) if ($fieldR->alias == $column) break;
+            foreach (t()->fields as $fieldR) if ($fieldR->alias === $column) break;
 
             // Skip further-foreign fields. todo: add support for such fields
             if ($column !== 'id' && $fieldR->entityId != m()->id()) continue;
@@ -325,7 +325,7 @@ class Indi_Controller {
             if ($fieldR->alias !== $column) {
 
                 // If column's name is 'id' create new item in $orderA array
-                if ($column == 'id') $orderA[] = '`' . $column . '` ' . $direction;
+                if ($column === 'id') $orderA[] = '`' . $column . '` ' . $direction;
 
                 // Continue
                 continue;
