@@ -1515,6 +1515,13 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
                             $order = 'FIND_IN_SET(`' . $this->alias . '`, "' . implode(',', $setA) . '") ' . $direction;
                         }
                     }
+
+                // Else if it's a variable entity foreign key field
+                } else {
+
+                    // Use simple ORDER clause for now
+                    // todo: reimplement for order to be based on titles of variable entities entries
+                    $order = "`$this->alias` $direction";
                 }
             }
         }
