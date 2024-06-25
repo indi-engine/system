@@ -4546,4 +4546,24 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Flush success
         jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
     }
+
+    /**
+     * @param string $for
+     * @param array $post
+     */
+    public function formActionOdata($for, $post) {
+
+        // If we're operating in single-row mode
+        if ($row = t()->row) {
+
+            // Adjust trailing row access with no attention to whether is existing or new
+            $this->adjustTrailingRowAccess($row);
+
+            // Adjust trailing row access with attention to whether is existing or new
+            $this->{$row->id ? 'adjustExistingRowAccess' : 'adjustCreatingRowAccess'}($row);
+        }
+
+        // Call parent
+        $this->callParent();
+    }
 }
