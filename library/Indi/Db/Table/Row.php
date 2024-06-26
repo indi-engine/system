@@ -750,7 +750,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Get aliases of affected fields involved by context
         $dataColumns = []; $renderCfg = ['_system' => []];
-        foreach (ar($fieldIds) as $fieldId)
+        foreach (ar($fieldIds) as $fieldId) {
             $fieldR = $this->field($fieldId);
             if ($field = $fieldR ? $fieldR->alias : $scope['join'][$fieldId]) {
                 $dataColumns[] = $field;
@@ -761,6 +761,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if ($tip  = $scope['composeTip'][$fieldId] ?? null) $renderCfg[$field]['composeTip'] = $tip;
                 if (null !== ($color = $scope['color'][$fieldId] ?? null)) $renderCfg[$field]['color'] = $color;
             }
+        }
 
         // Prepare row color config
         foreach (ar('colorField,colorFurther') as $prop)
