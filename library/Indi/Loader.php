@@ -157,7 +157,7 @@ class Indi_Loader
             return false;
         }
 
-        foreach (self::explodeIncludePath() as $path) {
+        foreach (self::explodeIncludePath(ini_get('open_basedir') ?: null) as $path) {
             if ($path == '.' || preg_match('~^/~', $filename)) {
                 if (is_readable($filename)) {
                     return true;
