@@ -968,11 +968,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Setup dataIndex
             $dataIndexA[$gridR->id] = $gridR->foreign('fieldId')->alias
-                . rif($gridR->further, '_' . $gridR->foreign('further')->alias);
-
-            // If further/JOINed field is defined but no record is found - log that
-            if ($gridR->further && !$gridR->foreign('further'))
-                Indi::log('grid-further-problem', $gridR, true);
+                . ($gridR->further ? '_' . $gridR->foreign('further')->alias : '');
 
             // Get element
             $element = $gridR->foreign($gridR->further ? 'further': 'fieldId')->foreign('elementId')->alias;
@@ -3596,7 +3592,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     break;
         
             // Flush msg
-            jflush(false, $reason ?: sprintf(I_ACCESS_ERROR_ACTION_IS_OFF_DUETO_CIRCUMSTANCES, $title));
+            jflush(false, $reason ?? sprintf(I_ACCESS_ERROR_ACTION_IS_OFF_DUETO_CIRCUMSTANCES, $title));
         }
     }
 
@@ -3712,7 +3708,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             if (t()->section->defaultSortField) {
 
                 // If sort field exists
-                if (!t()->section->foreign('defaultSortField')) {
+                if (t()->section->foreign('defaultSortField')) {
 
                     // Spoof sort-param
                     Indi::get('sort', json_encode([[
@@ -4548,5 +4544,25 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Flush success
         jflush(ini()->rabbitmq->enabled ?: ['success' => true, 'stomp' => $stomp]);
+    }
+
+    /**
+     * @param string $for
+     * @param array $post
+     */
+    public function formActionOdata($for, $post) {
+
+        // If we're operating in single-row mode
+        if ($row = t()->row) {
+
+            // Adjust trailing row access with no attention to whether is existing or new
+            $this->adjustTrailingRowAccess($row);
+
+            // Adjust trailing row access with attention to whether is existing or new
+            $this->{$row->id ? 'adjustExistingRowAccess' : 'adjustCreatingRowAccess'}($row);
+        }
+
+        // Call parent
+        $this->callParent();
     }
 }
