@@ -4197,6 +4197,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If date is not a valid date
                     if (!checkdate($value['month'], $value['day'], $value['year'])) {
 
+                        // If $value['year'] is a string - log that
+                        if (is_string($value['year'])) {
+                            Indi::log('scratchy-string-year', [$column, $value], true);
+                        }
+
                         // Push a error to errors stack
                         $this->_mismatch[$column] = sprintf(I_ROWSAVE_ERROR_VALUE_SHOULD_CONTAIN_VALID_DATE,
                             $value['date'], $fieldR->title);
@@ -7099,7 +7104,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Collect info about disabled values per each busy date
                 // So for each busy date we will have the exact reasons of why it is busy
                 // Also, fulfil $both array with partially busy dates
-                foreach ($dates = $schedule->busyDates($frame, $both, $hours['only'] ? $hours : false) as $date)
+                foreach ($dates = $schedule->busyDates($frame, $both, $hours && $hours['only'] ? $hours : false) as $date)
                     $busy['date'][$date][] = $id;
 
                 // Get given date's busy hours for current prop's value

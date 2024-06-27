@@ -788,7 +788,10 @@ class Indi_Controller_Admin extends Indi_Controller {
 
             // Calculate new page number, so when user will return to grid panel - an appropriate page
             // will be displayed, and last accessed row will be within it
-            $modified['page'] = min(1, ceil($modified['aix'] / t($up)->section->rowsOnPage));
+            $modified['page'] = min(1, ceil($page = $modified['aix'] / t($up)->section->rowsOnPage));
+
+            // If $page is not numeric - log that for further investigation
+            if (!is_numeric($page)) Indi::log('non-numeric-page', [$modified, t($up)->section], true);
         }
 
         // Remember all scope params in $_SESSION under a hash
