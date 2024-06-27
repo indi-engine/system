@@ -1107,7 +1107,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
                 // Implement indents if need
                 if ($data[$pointer][$_ = $titleProp ?? 'title'] ?? 0)
-                    if ($renderCfg['_system']['format'] !== 'json')
+                    if (($renderCfg['_system']['format'] ?? 0) !== 'json')
                         if ($r->system('level') !== null || $r->level() !== null)
                             $data[$pointer]['_render'][$_]
                                 = str_repeat(' ', 5 * $r->system('level')) . $data[$pointer][$_];

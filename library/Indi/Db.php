@@ -250,7 +250,7 @@ class Indi_Db {
                     if ($_inQtySumI['toggle'] === 'n') continue;
                     $inQtySumI = ['type' => $_inQtySumI['type']];
                     foreach (['sourceTarget', 'targetField', 'sourceField'] as $prop)
-                        $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'];
+                        $inQtySumI[$prop] = $fieldA[$_inQtySumI[$prop]]['alias'] ?? '';
                     $inQtySumA [ $_inQtySumI['sourceEntity'] ] []= $inQtySumI + [
                         'sourceWhereSQL' => $_inQtySumI['sourceWhere'],
                         'sourceWherePHP' => isPhpableWHERE($_inQtySumI['sourceWhere'])
