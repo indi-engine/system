@@ -15,14 +15,17 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Prompt for valid Google Cloud Translate API key
         $prompt = $this->prompt(im([
-            'Please specify git username and token to update current repo via `git pull` command',
-            'Leave empty if your project use public repository'
+            'Please specify your GitHub token having read-write access to the current repo.',
+            'Write access might be needed to push composer.lock file if changed by `composer update`',
+            'command, and to upload database backups before and after migrations, unless skipped.'
         ], '<br>'), [[
-            'xtype' => 'textfield',
-            'emptyText' => 'yourUsername:yourToken',
+            'xtype'      => 'textfield',
+            'emptyText'  => 'Please specify GitHub token here..',
+            'inputType'  => 'password',
+            'allowBlank' => false,
             //'regex' => '/' . $this->git['auth']['rex']['self'] . '/',
             'width' => 250,
-            'name' => $name = 'user:token'
+            'name' => $name = 'token'
         ], [
             'xtype' => 'checkbox',
             'name'  => 'nobackup',
@@ -188,7 +191,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                             // Do backup
                             $this->backupAction([
                                 'dump' => "custom-$type.backup-before-migrate.sql.gz",
-                                'token' => explode(':', $this->git['auth']['value'])[1]
+                                'token' => $this->git['auth']['value']
                             ]);
 
                             // Setup $backup flag to true
@@ -223,7 +226,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                         // Do backup
                         $this->backupAction([
                             'dump' => "custom-$type.backup-before-migrate.sql.gz",
-                            'token' => explode(':', $this->git['auth']['value'])[1]
+                            'token' => $this->git['auth']['value']
                         ]);
 
                         // Setup $backup flag to true
@@ -267,7 +270,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                         // Do backup
                         $this->backupAction([
                             'dump' => "custom-$type.backup-before-migrate.sql.gz",
-                            'token' => explode(':', $this->git['auth']['value'])[1]
+                            'token' => $this->git['auth']['value']
                         ]);
 
                         // Setup $backup flag to true
@@ -315,7 +318,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             // Do backup
             $this->backupAction($prompt = [
                 'dump' => "custom-$type.sql.gz",
-                'token' => explode(':', $this->git['auth']['value'])[1]
+                'token' => $this->git['auth']['value']
             ]);
         }
     }

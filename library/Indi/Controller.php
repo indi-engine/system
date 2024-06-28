@@ -31,7 +31,7 @@ class Indi_Controller {
                 'conf' => '\[remote "origin"\]\s+.*?url\s*=\s*[^\s]*//',
 
                 // Regex to match auth string itself
-                'self' => '[a-zA-Z0-9_]+:[a-zA-Z0-9_]+',
+                'self' => '[a-zA-Z0-9_]+',
 
                 // Regex to match repo url (e.g. github.com/repo-account/repo-name.git) that comes after auth string plus '@'
                 'repo' => '[^\n]+'
@@ -1620,7 +1620,7 @@ class Indi_Controller {
             $this->git['auth']['value'],
             '-p' . ini()->db->pass
         ], [
-            '*user*:*token*',
+            '*token*',
             '-p*pass*'
         ], $command);
 
