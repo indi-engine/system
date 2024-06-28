@@ -498,8 +498,9 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If current scheme assumes that duration is specified by a number-field, containing minutes quantity
         if (in($scheme, 'datetime-minuteQty,date-time-minuteQty,date-timeId-minuteQty'))
-            $this->spaceUntil = date('Y-m-d H:i:s',
-                strtotime($this->spaceSince) + _2sec($this->{$coords['minuteQty']} . 'm'));
+            $this->spaceUntil = $this->zero('spaceSince')
+                ? $this->spaceSince
+                : date('Y-m-d H:i:s',strtotime($this->spaceSince) + _2sec($this->{$coords['minuteQty']} . 'm'));
 
         // If scheme assumes duration is the difference between from-time
         // and till-time, both specified by the value of timespan-field
@@ -4200,7 +4201,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                         // If $value['year'] is a string - log that
                         if (is_string($value['year'])) {
-                            Indi::log('scratchy-string-year', [$column, $value], true);
+                            Indi::log('scratchy-string-year', [$column, $value, $this], true);
                         }
 
                         // Push a error to errors stack

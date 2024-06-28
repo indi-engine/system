@@ -49,7 +49,7 @@ class Indi_Uri_Base {
 
         // If no http host defined - log that
         if (!isset($_SERVER['HTTP_HOST']))
-            Indi::log('no-httphost', [$_SERVER, defined('CMD')], true);
+            Indi::log('no-httphost', [$_SERVER, CMD, stack()], true);
 
         // Build the full url by prepending protocol and hostname, and parse it by parse_url() function
         $uri = parse_url('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);

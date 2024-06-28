@@ -181,7 +181,7 @@ class NoticeGetter_Row extends Indi_Db_Table_Row_Noeval {
         // Convert hrefs uri's to absolute
         $body = preg_replace(
             '~(\s+jump=")(/[^/][^"]*")~',
-            ' href="' . ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://'. $_SERVER['HTTP_HOST'] . PRE . '/#$2',
+            ' href="' . ($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://'. $_SERVER['HTTP_HOST'] . PRE . '/#$2',
             $body
         );
 
