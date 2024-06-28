@@ -32,11 +32,12 @@ class ColumnType extends Indi_Db_Table {
 
     /**
      * Get zero value for a given column type
+     * todo: make it configurable in db
      *
      * @param $type
      * @return string
      */
     public function zeroValue($type) {
-        return $this->_zeroValue[$type];
+        return $this->_zeroValue[$type] ?? '';
     }
 }

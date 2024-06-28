@@ -64,7 +64,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $file = str_replace(DOC . STD . '/', '', $file);
 
         // Get data to be logged as file
-        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 2)];
+        $data = [URI, $type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1)];
 
         // Prepare path to thatfile
         $path = "log/err/" . str_replace('/', '-', $file) . "-$line.txt";
@@ -2904,7 +2904,7 @@ function between($since, $until, $html) {
     // Collect items
     $itemA = [];
     foreach ($splitFn_since($since, $html) as $i => $_)
-        if ($i) $itemA []= array_shift($splitFn_until($until, $_));
+        if ($i) $itemA []= $splitFn_until($until, $_)[0];
 
     // Return collected
     return $itemA;

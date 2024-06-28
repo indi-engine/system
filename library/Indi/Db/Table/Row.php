@@ -1197,7 +1197,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         ')->col();
 
                         // If new entry belongs to prev page
-                        if (($scope['pgupLast'] ?? 0) && $this->id == array_shift($idA)) {
+                        if (($scope['pgupLast'] ?? 0) && $this->id == $idA[0]) {
 
                             // Make sure pgupLast-entry will be appended -
                             $byChannel[$channel][$context]['entry'] = $scope['pgupLast'];
@@ -1220,7 +1220,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             ')->cell();
 
                         // Else if total number of entries is more than rowsOnPage
-                        } else if (count($idA) > ($scope['rowsOnPage'] ?? 25)) {
+                        } else if (count($idA) - min($scope['pgupLast'] ?? 0, 1) > ($scope['rowsOnPage'] ?? 25)) {
 
                             // If new entry is the last entry - it means that it is needless
                             // entry of current page and belongs to next page

@@ -444,7 +444,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // If t()->row is not an existing row - append it to t()->rows
-        if (!$id) $rowset->append(t($stepsUp)->row);
+        if (t($stepsUp)->row && !$id) $rowset->append(t($stepsUp)->row);
 
         // Return
         return $rowset;
@@ -2668,7 +2668,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         'title' => ini('general')->title ?: 'Indi Engine',
                         'throwOutMsg' => view()->throwOutMsg,
                         'lang' => $this->lang(),
-                        'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
+                        'css' => is_readable($css = DOC . STD . '/css/admin/app.css') ? file_get_contents($css) : '',
                         'logo' => ini('general')->logo ?? ''
                     ]);
 
@@ -2955,7 +2955,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 'realtime' => ini()->rabbitmq->enabled ?? false,
                 'demo' => Indi::demo(false)
             ],
-            'css' => @file_get_contents(DOC . STD . '/css/admin/app.css') ?: '',
+            'css' => is_readable($css = DOC . STD . '/css/admin/app.css') ? file_get_contents($css) : '',
             'lang' => $this->lang(),
             'logo' => ini('general')->logo ?? '',
             'title' => ini('general')->title ?: 'Indi Engine',
