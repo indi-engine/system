@@ -3707,19 +3707,11 @@ class Indi_Controller_Admin extends Indi_Controller {
             // If default sort field is defined for current section
             if (t()->section->defaultSortField) {
 
-                // If sort field exists
-                if (t()->section->foreign('defaultSortField')) {
-
-                    // Spoof sort-param
-                    Indi::get('sort', json_encode([[
-                        'property' => t()->section->foreign('defaultSortField')->alias,
-                        'direction' => t()->section->defaultSortDirection
-                    ]]));
-
-                // Else log that for further investigation
-                } else {
-                    Indi::log('default-sort-field-problem', t()->section, true);
-                }
+                // Spoof sort-param
+                Indi::get('sort', json_encode([[
+                    'property' => t()->section->foreign('defaultSortField')->alias ?? 'id',
+                    'direction' => t()->section->defaultSortDirection
+                ]]));
             }
 
             // Simulate as if rowset data was loaded into rowset panel. This provide
