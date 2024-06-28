@@ -4199,11 +4199,6 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If date is not a valid date
                     if (!checkdate($value['month'], $value['day'], $value['year'])) {
 
-                        // If $value['year'] is a string - log that
-                        if (is_string($value['year'])) {
-                            Indi::log('scratchy-string-year', [$column, $value, $this], true);
-                        }
-
                         // Push a error to errors stack
                         $this->_mismatch[$column] = sprintf(I_ROWSAVE_ERROR_VALUE_SHOULD_CONTAIN_VALID_DATE,
                             $value['date'], $fieldR->title);
@@ -6027,7 +6022,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             else {
 
                 // If any version of $prop is not numeric - log that for further investigation
-                if (!is_numeric($this->_modified[$prop]) || is_numeric($this->_original[$prop]))
+                if (!is_numeric($this->_modified[$prop]) || !is_numeric($this->_original[$prop]))
                     Indi::log('non-well-formed-numeric', [$prop, $this], true);
 
                 // Return result of deduction of previous value from modified value
