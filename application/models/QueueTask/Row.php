@@ -60,7 +60,7 @@ class QueueTask_Row extends Indi_Db_Table_Row {
         $queue->apply($this->id);
 
         // Refresh progress
-        progress(true, $prefix . I_QUEUE_COMPLETED, $this->id);
+        if ($total) progress(true, $prefix . I_QUEUE_COMPLETED, $this->id);
     }
 
     /**
