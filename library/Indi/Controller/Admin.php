@@ -3271,7 +3271,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $row->set((array) Indi::post());
 
             // Setup system index
-            $row->system('index', t()->scope->aix - 1);
+            $row->system('index', (int) t()->scope->aix - 1);
         }
 
         // Prepare row with adjustments, if need
