@@ -196,7 +196,7 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
     public function keywordWHERE($keyword, $exclude = [], array $nested = []) {
 
         // Convert quotes and perform an urldecode
-        $keyword = strip_tags(urldecode($keyword));
+        $keyword = strip_tags(urldecode($keyword ?? ''));
 
         // Explode the keyword by spaces
         $keywordA = explode(' ', $keyword);

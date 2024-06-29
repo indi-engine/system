@@ -1,4 +1,5 @@
 <?php
+#[\AllowDynamicProperties]
 class Indi_View {
     /**
      * Path stack for script , helper, and filter directories.

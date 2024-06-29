@@ -451,7 +451,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
 
         // Setup scope
         if (array_key_exists('scope', $array)) {
-            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'] ?? null)) {
+            if (strlen($tabs = $array['scope']['actionrowset']['south']['tabs'] ?? '')) {
                 $tabA = array_unique(ar($tabs));
                 if ($tabIdA = array_filter($tabA)) {
                     $where = ['`id` IN (' . implode(',', $tabIdA) . ')'];
@@ -692,7 +692,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Detect view and save into trail
-            if ($view = ucfirst($actionCfg['view'][$action] ?? null)) {
+            if ($view = ucfirst($actionCfg['view'][$action] ?? '')) {
                 $actionParentClass .= '_' . $view;
                 $this->action->view = $view;
             }
@@ -965,7 +965,7 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
             }
 
             // Unset empty values
-            if (!strlen($colorA[$fieldId] ?? null)) unset($colorA[$fieldId]);
+            if (!strlen($colorA[$fieldId] ?? '')) unset($colorA[$fieldId]);
         }
 
         // Return columns colors

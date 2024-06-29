@@ -1393,7 +1393,7 @@ class Indi {
     public static function ini($arg = null, $val = null) {
 
         // If $arg argument is a path end with '.ini', and file with that path exists
-        if (preg_match('/\.ini$/', $arg) && is_file($arg)) {
+        if (preg_match('/\.ini$/', $arg ?? '') && is_file($arg)) {
 
             // Parse ini file
             $parsed = parse_ini_file($arg, true, INI_SCANNER_TYPED);
@@ -1517,7 +1517,7 @@ class Indi {
         if ($_ = Indi::rex($rex)) $rex = $_;
 
         // Match
-        preg_match($rex, $subject, $found);
+        preg_match($rex, $subject ?? '', $found);
 
         // Return
         return $found ? (func_num_args() == 3 ? $found[$sub] : $found) : ($found ?: '');

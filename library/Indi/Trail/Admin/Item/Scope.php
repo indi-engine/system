@@ -1,4 +1,5 @@
 <?php
+#[\AllowDynamicProperties]
 class Indi_Trail_Admin_Item_Scope {
 
     /**

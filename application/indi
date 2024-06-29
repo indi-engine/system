@@ -175,7 +175,8 @@ if ($flag['d'] ?? 0) {
         'REQUEST_METHOD' => 'GET',
         'HTTP_HOST' => 'localhost',
         'VDR' => $m['VDR'],
-        'STD' => ''
+        'STD' => '',
+        'REQUEST_URI' => "/$action"
     ];
 
     // Apply those

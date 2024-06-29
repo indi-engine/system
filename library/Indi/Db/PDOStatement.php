@@ -45,7 +45,7 @@ class Indi_Db_PDOStatement extends PDOStatement {
     /**
      * Alias for fetchAll() method
      */
-    public function all($style = null) {
+    public function all($style = 0) {
         return $this->fetchAll($style);
     }
 

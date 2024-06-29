@@ -855,22 +855,22 @@ class Indi_Controller {
      */
     public function callParent() {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 1, 1);
+
         // Get call info from backtrace
-        $trace = array_slice(debug_backtrace(), 1, 1); $call = array_pop($trace);
+        $call = array_pop($trace);
 
         // If it's a panel-specific function - trim panel type from function name
         $func = preg_replace('~^(plan|tile|grid)_~', '', $call['function']);
 
-        // Prepare method name
-        $method = get_parent_class($call['class']) . '::' .  $func;
-
-        // Prepare args
-        $args = func_num_args() ? func_get_args() : $call['args'];
+        // Create a ReflectionMethod for the parent method
+        $method = new ReflectionMethod(get_parent_class($call['class']), $func);
 
         // Make the call
-        return call_user_func_array([$this, $method], $args);
+        return $method->invokeArgs($this, func_num_args() ? func_get_args() : $call['args']);
     }
-    
+
     /**
      * Provide default index action
      */
@@ -908,7 +908,7 @@ class Indi_Controller {
             if ((int) Indi::get('required')) jflush(true,  ['required' => array_pop($data)]);
 
             // Else if $_GET['required'] given as json-encoded array of integers - flush all found required entries
-            else if (Indi::rexm('int11list', trim(Indi::get('required'), '[]'))) jflush(true, ['required' => $data]);
+            else if (Indi::rexm('int11list', trim(Indi::get('required') ?? '', '[]'))) jflush(true, ['required' => $data]);
 
             // Else if data is gonna be used in the excel spreadsheet building process, pass it to a special function
             if (in(uri('format'), 'excel,pdf')) $this->export($data, uri('format'));

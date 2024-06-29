@@ -924,7 +924,7 @@ class Indi_Db {
         $sql = '';
 
         // Split given sql-query template by variable-expressions
-        $rawA = preg_split('~(:[spi])~u', $tpl, null, PREG_SPLIT_DELIM_CAPTURE);
+        $rawA = preg_split('~(:[spi])~u', $tpl, -1, PREG_SPLIT_DELIM_CAPTURE);
 
         // Get quantity of given arguments, excluding first, as we assume it's a sql query
         $aQty  = count($args);

@@ -1,4 +1,5 @@
 <?php
+#[\AllowDynamicProperties]
 class Indi_Uri_Base {
 
     /**
@@ -234,10 +235,10 @@ class Indi_Uri_Base {
     public function setCookieDomain(){
         
         // Get current host name without port number
-        $hostname = $_SERVER['SERVER_NAME'] ?? null;
+        $hostname = $_SERVER['SERVER_NAME'] ?? '';
 
         // Detect domain
-        $domain = null;
+        $domain = '';
         $domainA = explode(' ', ini()->general->domain);
         foreach ($domainA as $domainI) 
             if (preg_match('/' . preg_quote($domainI) . '$/', $hostname))
@@ -263,7 +264,7 @@ class Indi_Uri_Base {
     public function no3w() {
 
         // If current domain name starts with 'www.'
-        if (preg_match('/^www\./', $_SERVER['SERVER_NAME'] ?? null)) {
+        if (preg_match('/^www\./', $_SERVER['SERVER_NAME'] ?? '')) {
 
             // Setup 301 header
             header('HTTP/1.1 301 Moved Permanently');
@@ -350,6 +351,6 @@ class Indi_Uri_Base {
      * @return null
      */
     public function __get($prop) {
-        return null;
+        return '';
     }
 }

@@ -2721,11 +2721,17 @@ class Indi_Db_Table
      */
     public function callParent() {
 
+        // Get trace
+        $trace = array_slice(debug_backtrace(), 1, 1);
+
         // Get call info from backtrace
-        $trace = array_slice(debug_backtrace(), 1, 1); $call = array_pop($trace);
+        $call = array_pop($trace);
+
+        // Create a ReflectionMethod for the parent method
+        $method = new ReflectionMethod(get_parent_class($call['class']), $call['function']);
 
         // Make the call
-        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+        return $method->invokeArgs($this, func_num_args() ? func_get_args() : $call['args']);
     }
 
     /**

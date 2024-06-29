@@ -200,10 +200,10 @@ class Indi_Db_Table_Row implements ArrayAccess
         foreach ($data as $k => $v) {
 
             // If prop's value is a string, containing integer value - force value type to be integer, not string
-            if (preg_match(Indi::rex('int11'), $v)) $data[$k] = (int) $v;
+            if (preg_match(Indi::rex('int11'), $v ?? '')) $data[$k] = (int) $v;
 
             // Else if prop's value is a string, containing decimal value - force value type to be float, not string
-            else if (preg_match(Indi::rex('decimal112'), $v)) $data[$k] = (float) $v;
+            else if (preg_match(Indi::rex('decimal112'), $v ?? '')) $data[$k] = (float) $v;
             
             // Else if prop's value is a string, containing relative src - prepend STD
             else if ($m = Indi::rexm('~\burl\((/[^/]+)~', $v)) $data[$k] = preg_replace('~\burl\((/[^/]+)~', 'url(' . STD . '$1', $v);
@@ -2784,7 +2784,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // If we have no consider field's value passed as a param, we get it
         // from related row property or from consider-field zero value
-        if (is_null($cValue)) $cValue = strlen($this->$prop) ? $this->$prop : $cValue = $cField->zeroValue();
+        if (is_null($cValue)) $cValue = strlen($this->$prop ?? '') ? $this->$prop : $cValue = $cField->zeroValue();
 
         // Spoof consider value, if need
         return $this->_spoofConsider($for, $prop, $cValue);
@@ -3472,7 +3472,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             }
 
             // Convert $where to array
-            $where = (isset($where) && is_array($where)) ? $where : (strlen($where ?? null) ? [$where] : []);
+            $where = (isset($where) && is_array($where)) ? $where : (strlen($where ?? '') ? [$where] : []);
 
             // If connector field store relation ability is multiple
             if (m($table)->fields($connector)->storeRelationAbility == 'many')
@@ -5036,6 +5036,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $offset
      * @return boolean
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset) {
         return $this->__isset($offset);
     }
@@ -5047,6 +5048,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $offset
      * @return mixed|string
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset) {
         return $this->__get($offset);
     }
@@ -5058,6 +5060,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $offset
      * @param mixed $value
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value) {
         $this->__set($offset, $value);
     }
@@ -5068,6 +5071,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      *
      * @param string $offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset) {
         return $this->__unset($offset);
     }
@@ -6186,8 +6190,11 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Get call info from backtrace
         $call = array_pop($trace);
 
+        // Create a ReflectionMethod for the parent method
+        $method = new ReflectionMethod(get_parent_class($call['class']), $call['function']);
+
         // Make the call
-        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+        return $method->invokeArgs($this, func_num_args() ? func_get_args() : $call['args']);
     }
     
     /**
@@ -6451,7 +6458,7 @@ class Indi_Db_Table_Row implements ArrayAccess
     public function compileDefaultValue($prop, $level = 'model') {
 
         // If compile expr is empty - return
-        if (!strlen($expr = $this->{$level == 'trail' ? '_modified' : '_original'}[$prop] ?? null)) return;
+        if (!strlen($expr = $this->{$level == 'trail' ? '_modified' : '_original'}[$prop] ?? '')) return;
 
         // Compile and assign
         Indi::$cmpTpl = $expr; eval(Indi::$cmpRun); $this->$prop = Indi::cmpOut();
@@ -8098,7 +8105,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @return string|string[]|null
      */
     public function rgb($field) {
-        return preg_replace('~^[0-9]{3}~', '', $this->$field);
+        return preg_replace('~^[0-9]{3}~', '', $this->$field ?? '');
     }
 
     /**

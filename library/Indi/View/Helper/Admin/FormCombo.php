@@ -1,4 +1,5 @@
 <?php
+#[\AllowDynamicProperties]
 class Indi_View_Helper_Admin_FormCombo {
 
     /**
@@ -154,7 +155,7 @@ class Indi_View_Helper_Admin_FormCombo {
             }
 
             // Setup an info about selected value
-            if (strlen($key)) {
+            if (strlen($key ?? '')) {
                 $selected = [
                     'title' => $options[$key]['title'] ?? null,
                     'value' => $key

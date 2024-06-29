@@ -1,4 +1,5 @@
 <?php
+#[\AllowDynamicProperties]
 class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
     /**
@@ -138,6 +139,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return Indi_Db_Table_Row|mixed Current element from the current rowset
      */
+    #[\ReturnTypeWillChange]
     public function current() {
         // If $this->_pointer is out of bounds - return null
         if ($this->valid() === false) return null;
@@ -238,6 +240,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function count() {
         return $this->_count;
     }
@@ -249,6 +252,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @param string $offset
      * @return boolean
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset) {
         return isset($this->_rows[(int) $offset]);
     }
@@ -261,6 +265,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @throws Exception
      * @return Indi_Db_Table_Row|mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset) {
         $offset = (int) $offset;
         if ($offset < 0 || $offset >= $this->_count) {
@@ -278,6 +283,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @param string $offset
      * @param mixed $value
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value) {
 
     }
@@ -288,6 +294,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @param string $offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset) {
 
     }
@@ -299,6 +306,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return Indi_Db_Table_Rowset|void Fluent interface.
      */
+    #[\ReturnTypeWillChange]
     public function rewind() {
         // Set the internal pointer to 0
         $this->_pointer = 0;
@@ -314,6 +322,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return scalar
      */
+    #[\ReturnTypeWillChange]
     public function key() {
         return $this->_pointer;
     }
@@ -325,6 +334,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return Indi_Db_Table_Rowset|void Fluent interface
      */
+    #[\ReturnTypeWillChange]
     public function next() {
 
         // Increment internal pointer
@@ -341,6 +351,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @return bool False if there's nothing more to iterate over
      */
+    #[\ReturnTypeWillChange]
     public function valid() {
         return $this->_pointer >= 0 && $this->_pointer < $this->_count;
     }
@@ -353,6 +364,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      * @throws Exception
      * @return Indi_Db_Table_Rowset_Abstract|void Fluent interface
      */
+    #[\ReturnTypeWillChange]
     public function seek($position) {
         // Force $position argument to int
         $position = (int) $position;
@@ -569,7 +581,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if ($found == 'unset') unset($this->_found);
 
         // Else if $found argument is numeric - set $this->_found property equal to $found argument, and return it
-        else if (preg_match('/^[0-9]+$/', $found)) return $this->_found = $found;
+        else if (preg_match('/^[0-9]+$/', $found ?? '')) return $this->_found = $found;
 
         // Else just return $this->_found property
         else return $this->_found;
@@ -689,7 +701,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $typeA['enumset'][$gridFieldR->alias] = true;
 
             // Get mysql column type, if any
-            $TYPE = $gridFieldR->foreign('columnTypeId')->type ?? null;
+            $TYPE = $gridFieldR->foreign('columnTypeId')->type ?? '';
 
             // Foreign keys (single and multiple)
             if ($gridFieldR->original('storeRelationAbility') == 'one') {
@@ -821,7 +833,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_render'][$columnI] = number_format($value, 0, '.', ' ');
 
                 // Temporary: inject STD to img paths
-                if (isset($typeA['string'][$columnI]) && preg_match('~(url\()(/data/upload/)~', $data[$pointer][$columnI]))
+                if (isset($typeA['string'][$columnI]) && preg_match('~(url\()(/data/upload/)~', $data[$pointer][$columnI] ?? ''))
                     $data[$pointer]['_render'][$columnI] = preg_replace('~(url\()(/data/upload/)~', '$1' . STD . '$2', $data[$pointer][$columnI]);
 
                 // If field column type is 'boolean', we replace actual value with localized 'Yes' or 'No' strings
@@ -981,7 +993,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                             $data[$pointer]['_render'][$columnI] = $data[$pointer]['_render'][$columnI] ?? [];
 
                             // If color definition starts with color ':' - assume it's a foreign column name from where color can be picked
-                            if (preg_match('~^:(.+)$~', $c, $m))
+                            if (preg_match('~^:(.+)$~', $c ?? '', $m))
                                 foreach ($r->foreign($columnI) ?: [] as $row)
                                     $rgb[$row->id] = $row->rgb($m[1]);
 
@@ -1120,7 +1132,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             foreach ($composeTip as $column => $template) {
 
                 // Get column value. Wrap into <span> if not yet wrapped
-                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column] ?? null;
+                $render = $data[$pointer]['_render'][$column] ?? $data[$pointer][$column] ?? '';
                 if (!preg_match('~<span[ >]~', $render)) $render = wrap($render, '<span>');
 
                 // Compose column value's tooltip
@@ -1225,7 +1237,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $value = $raw ? $data[$field] : ($data['_render'][$field] ?? $data[$field]);
 
                 // If value is zero-length -return
-                if ($raw ? !$value : !strlen($value)) return '';
+                if ($raw ? !$value : !strlen($value ?? '')) return '';
             }
 
             // Trim first and last curly brackets
@@ -1539,7 +1551,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $keyA = explode(',', $key);
 
                 // If $subs argument contains 'columns' keyword
-                if (preg_match('/columns/', $subs)) {
+                if (preg_match('/columns/', $subs ?? '')) {
 
                     // If there actually was only one key name in $key argument, we replace 'columns' with 'column' in
                     // $subs argument, to avoid infinite recursion and to provide an ability for results to be returned
@@ -1701,7 +1713,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // current row is not empty, we convert it to array by exploding by comma, and append
                         // to $distinctA array under $entityId key, otherwise we create and array that contains
                         // only one item and also append it to $distinctA array under $entityId key
-                        strlen($r->$key)
+                        strlen($r->$key ?? '')
                             ? ($fieldR->original('storeRelationAbility') == 'many'
                                 ? explode(',', $r->$key)
                                 : [$r->$key])
@@ -2269,8 +2281,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Get call info from backtrace
         $call = array_pop($trace);
 
+        // Create a ReflectionMethod for the parent method
+        $method = new ReflectionMethod(get_parent_class($call['class']), $call['function']);
+
         // Make the call
-        return call_user_func_array([$this, get_parent_class($call['class']) . '::' .  $call['function']], func_num_args() ? func_get_args() : $call['args']);
+        return $method->invokeArgs($this, func_num_args() ? func_get_args() : $call['args']);
     }
 
     /**
@@ -2303,10 +2318,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         if (is_string($keys) || is_integer($keys) || is_null($keys)) {
 
             // Check if it contains a match expression
-            if (preg_match('/^: (.*)/', $keys, $expr)) $expr = $expr[1];
+            if (preg_match('/^: (.*)/', $keys ?? '', $expr)) $expr = $expr[1];
 
             // If $keys argument is not an array, we convert it to it by exploding by comma
-            else if (!is_array($keys)) $keys = explode(',', $keys);
+            else if (!is_array($keys)) $keys = explode(',', $keys ?? '');
         }
 
         // Return

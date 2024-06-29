@@ -64,7 +64,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $file = str_replace(DOC . STD . '/', '', $file);
 
         // Get data to be logged as file
-        $data = [URI, $type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1)];
+        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1), $_SERVER];
 
         // Prepare path to thatfile
         $path = "log/err/" . str_replace('/', '-', $file) . "-$line.txt";
@@ -72,25 +72,8 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         // If that file does not already exist - create it
         if (!is_file($path)) i($data, 'a', $path);
 
-        // If this is a error related to what's have beed E_NOTICE in php7.4
-        if (   strpos($message, 'Undefined array key') !== false
-            || strpos($message, 'Undefined variable' ) !== false
-            || strpos($message, 'Undefined property' ) !== false
-            || preg_match('~Trying to access array offset on value of type null~', $message)
-            || preg_match('~Attempt to read property "[^"]*" on null~', $message)
-            || preg_match('~Declaration of .*? should be compatible with~', $message)
-        ) {
-
-            // Proceed with execution
-            return;
-
-        // Todo: fix this problem
-        } else if (strpos($message, 'Indi_Controller::adjustGridData(): Argument #1 ($data) must be passed by reference, value given') !== false) {
-            return;
-        }
-
         // If current error is not in a list of ignored errors - return
-        if(!(error_reporting() & $type)) return;
+        return;
 
     // Else if argument are not given, we assume that we are here because
     // of a register_shutdown_function() usage, e.g current error is a fatal error
@@ -265,10 +248,10 @@ function usubstr($string, $length, $dots = true, $lineQty = false) {
 
     // If $dots argument is true, and length of $string argument
     // is greater that the value of $length argument set $dots as '..'
-    $dots = mb_strlen($string, 'utf-8') > $length && $dots ? '…' : '';
+    $dots = mb_strlen($string ?? '', 'utf-8') > $length && $dots ? '…' : '';
 
     // Trim the $string by the $length characters, add dots, if need, and return the result string
-    $str = mb_substr($string, 0, $length, 'utf-8') . $dots;
+    $str = mb_substr($string ?? '', 0, $length, 'utf-8') . $dots;
     
     // If $lineQty arg is given
     if ($lineQty) {
@@ -986,7 +969,7 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
  * @return bool
  */
 function isIE() {
-    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT'] ?? null);
+    return !!preg_match('/(MSIE|Trident|rv:)/', $_SERVER['HTTP_USER_AGENT'] ?? '');
 }
 
 /**
@@ -995,7 +978,7 @@ function isIE() {
  * @return bool
  */
 function isEdge() {
-    return !!preg_match('/Edge/', $_SERVER['HTTP_USER_AGENT']);
+    return !!preg_match('/Edge/', $_SERVER['HTTP_USER_AGENT'] ?? '');
 }
 
 /**
@@ -1543,7 +1526,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
         if (($rule['req'] || $rule['unq']) && (!strlen($value) || (!$value && $rule['key']))) $flushFn($arg1, sprintf(constant($c . 'REQ'), $label));
 
         // If prop's value should match certain regular expression, but it does not - flush error
-        if ($rule['rex'] && strlen($value) && !Indi::rexm($rule['rex'], $value)) $flushFn($arg1, sprintf(constant($c . 'REG'), $value, $label));
+        if ($rule['rex'] && strlen($value ?? '') && !Indi::rexm($rule['rex'], $value)) $flushFn($arg1, sprintf(constant($c . 'REG'), $value, $label));
 
         // If value should be a json-encoded expression, and it is - decode
         if ($rule['rex'] == 'json') $rowA[$prop] = json_decode($value);
@@ -1552,7 +1535,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
         if ($rule['dis'] && in($value, $rule['dis'])) $flushFn($arg1, sprintf(constant($c . 'DIS'), $value, $label));
 
         // If prop's value should be an identifier of an existing object, but such object not found - flush error
-        if ($rule['key'] && strlen($value) && $value != '0') {
+        if ($rule['key'] && strlen($value ?? '') && $value != '0') {
 
             // Parse key expr
             preg_match('~^(.+?)(\*)?(:I_[A-Z0-9_]+)?$~', $rule['key'], $expr);
@@ -3202,7 +3185,7 @@ function getpid($action = '', $instance = '') {
         if ($action) $cmd .= " | grep '$action' | awk '{print $1}'";
 
         // If such process is found - return string output found within process list, else return false
-        return rtrim(`$cmd`);
+        return rtrim(`$cmd` ?? '');
     }
 }
 

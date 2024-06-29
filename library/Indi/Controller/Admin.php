@@ -186,7 +186,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if (Indi::get()->stopAutosave ?? 0) $applyA['toggledSave'] = false;
                 $applyA['primary'] = is_array($primaryWHERE) ? im($primaryWHERE, ' AND ') : $primaryWHERE;
 
-                if (is_array($f = Indi::get()->filter ?? null) || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
+                if (is_array($f = Indi::get()->filter ?? '') || preg_match('~^{~', $f)) $applyA['filters'] = $this->_filter2search();
                 else if ($f == '[]') $applyA['filters'] = $f;
 
                 t()->scope->apply($applyA);
@@ -201,7 +201,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         : t()->scope->filters;
 
                     // Prepare search data for $this->keywordWHERE()
-                    Indi::get()->keyword = urlencode(t()->scope->keyword);
+                    Indi::get()->keyword = urlencode(t()->scope->keyword ?? '');
 
                     // Prepare sort params for $this->finalORDER()
                     Indi::get()->sort = t()->scope->order == '[]'
@@ -222,7 +222,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $finalWHERE = $this->finalWHERE($primaryWHERE);
 
                     // If $_GET['group'] is an json-encoded object rather than array containing that object
-                    if (json_decode(Indi::get()->group ?? null) instanceof stdClass)
+                    if (json_decode(Indi::get()->group ?? '') instanceof stdClass)
 
                         // Prepend it to the list of sorters, to provide compatibility with ExtJS 6.7 behaviour,
                         // because ExtJS 4.1 auto-added grouping to the list of sorters but ExtJS 6.7 does not do that
@@ -235,7 +235,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $fetchMethod = t()->scope->tree ? 'fetchTree' : 'fetchAll';
 
                     // If $_GET['required'] given and it's a comma-separated list
-                    if (is_array($required = json_decode(Indi::get('required')))
+                    if (is_array($required = json_decode(Indi::get('required') ?? ''))
                         && Indi::rexm('int11list', $required = im($required))) {
 
                         // Fetch rowset consisting of required rows
@@ -848,7 +848,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             $whereS = count($where) ? implode(' AND ', $where) : null;
 
             // Set a hash
-            t()->section->primaryHash = substr(md5($whereS), 0, 10);
+            t()->section->primaryHash = substr(md5($whereS ?? ''), 0, 10);
         }
 
         // Return primary WHERE clauses stack
@@ -1006,7 +1006,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         $columnA = array_values($columnA);
 
         // Get grouping info
-        $group = json_decode(Indi::get()->group ?? null, true) ?? [];
+        $group = json_decode(Indi::get()->group ?? '', true) ?? [];
         if (!$group || !array_key_exists($group['property'], $data[0] ?? [])) $group = false;
 
         // Prepare [id => width] pairs
@@ -1635,7 +1635,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Get the order column alias and direction
-        $order = json_decode(Indi::get()->sort)[0]; $colspan = [];
+        $order = json_decode(Indi::get()->sort ?? '[]')[0]; $colspan = [];
 
         // Foreach data column headers level
         foreach ($byLevel as $level => $columns) {
@@ -1732,7 +1732,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $sheet->SetCellValue($cellSinceCoord, $columnI['title']);
 
                 // If current column is an order-column
-                if ($columnI['dataIndex'] == $order->property) {
+                if ($columnI['dataIndex'] == $order->property ?? '') {
 
                     // Pick icon
                     $iconFn = DOC . STD . VDR . '/client/resources/images/icons/sort_' . strtolower($order->direction) . '.gif';
@@ -1770,7 +1770,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($columnI['colspan'] > 1) {
                     $align = 'center';
                 } else if (($columnI['align'] ?? 0) === 'right') {
-                    if ($order->property == $columnI['dataIndex']) {
+                    if (($order->property ?? '') == $columnI['dataIndex']) {
                         $align = 'left';
                     } else {
                         $align = 'center';
@@ -3487,7 +3487,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         header('Access-Control-Allow-Origin: *');
 
         // Unset language
-        setcookie('i-language', null);
+        setcookie('i-language', '');
 
         // Unset session
         if ($_SESSION['admin']['id'] ?? null)  unset($_SESSION['admin'], $_SESSION['indi']['admin']);
@@ -4362,11 +4362,26 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Else return
         else return null;
 
+        // Split by '::'
+        list ($class, $method) = explode('::', $method);
+
+        // Create a ReflectionMethod for the parent method
+        $method = new ReflectionMethod($class, $method);
+
         // Prepare args
-        $args = func_num_args() ? func_get_args() : $call['args'];
+        $args = [];
+        foreach ($method->getParameters() as $idx => $parameter) {
+            if (isset($call['args'][$idx])) {
+                if ($parameter->isPassedByReference()) {
+                    $args []= &$call['args'][$idx];
+                } else {
+                    $args []= $call['args'][$idx];
+                }
+            }
+        }
 
         // Make the call
-        return call_user_func_array([$this, $method], $args);
+        return $method->invokeArgs($this, $args);
     }
 
     /**
@@ -4396,7 +4411,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             // Setup auto x-offset for color-box, for it to be centered within the cell, if not explicitly given by $offsetX arg
             $offsetX = $offsetX ?? ($columnI['dataIndex'] == 'color'
                 ? ($columnI['icon'] ? 8 : 5)
-                : ceil(($columnI['width']-14)/2) + 0.5);
+                : ceil(($columnI['width']-14)/2));
 
             //  Add the image to a worksheet
             $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
