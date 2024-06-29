@@ -3909,7 +3909,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (is_array($value)) $value = implode(',', $value);
 
                 // Trim the ',' from value
-                $value = trim($value, ',');
+                $value = trim($value ?? '', ',');
 
                 // If value is not empty
                 if (strlen($value)) {
@@ -7488,7 +7488,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!$fieldR->columnTypeId) continue;
 
             // If default value should be set up as a result of php-expression's execution - do it
-            if (preg_match(Indi::rex('php'), $fieldR->{$level == 'trail' ? 'modified' : 'original'}('defaultValue')) ?? '')
+            if (preg_match(Indi::rex('php'), $fieldR->{$level == 'trail' ? 'modified' : 'original'}('defaultValue') ?? ''))
                 $this->compileDefaultValue($fieldR->alias, $level);
 
             // Else if underlying column's datatype is TEXT - set up default value, stored in Indi

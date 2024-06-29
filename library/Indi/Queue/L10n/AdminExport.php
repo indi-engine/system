@@ -110,7 +110,7 @@ trait Indi_Queue_L10n_AdminExport {
 
         // Get source and target languages
         $source = json_decode($queueTaskR->params)->source;
-        $target = json_decode($queueTaskR->params)->target;
+        $target = json_decode($queueTaskR->params)->target ?? null;
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
         foreach ($queueTaskR->nested('queueChunk', [

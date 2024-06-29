@@ -224,7 +224,7 @@ class Indi_View_Helper_Admin_FormCombo {
             $selected = ['value' => $selected];
 
             // Set up html attributes for hidden input, if optionAttrs param was used
-            $exploded = explode(',', $selected['value']);
+            $exploded = explode(',', $selected['value'] ?? '');
             $attrs = [];
             for ($i = 0; $i < count($exploded); $i++) {
                 if ($options[$exploded[$i]]['attrs'] ?? 0) {

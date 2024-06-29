@@ -13,7 +13,7 @@ class Indi_View_Helper_Admin_SiblingCombo extends Indi_View_Helper_Admin_FormCom
             $order = explode(', `', $order ?? ''); $order = array_shift($order);
             $_ = explode(' ', $order); $this->comboDataOrderDirection = array_pop($_);
             $this->comboDataOrderColumn = trim(preg_replace('/ASC|DESC/', '', $order), ' `');
-            if (preg_match('/\(/', $order)) $this->comboDataOffset = uri('aix') - 1;
+            if (preg_match('/\(/', $order)) $this->comboDataOffset = (int) uri('aix') - 1;
         }
 
         return parent::formCombo('sibling');

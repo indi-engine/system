@@ -429,7 +429,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
          */
         if (!function_exists('___')) {
             function ___($dict, $item, &$ordered) {
-                foreach ($item['consider'] ?? [] as $fieldId) if ($dict[$fieldId]) ___($dict, $dict[$fieldId], $ordered);
+                foreach ($item['consider'] ?? [] as $fieldId) if ($dict[$fieldId] ?? 0) ___($dict, $dict[$fieldId], $ordered);
                 $ordered[$item['fieldId']] = $item['queueChunkId'];
             }
         }

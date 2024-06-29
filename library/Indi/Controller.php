@@ -332,7 +332,7 @@ class Indi_Controller {
             }
 
             //
-            if (strlen($order = $fieldR->order($direction, $finalWHERE))) $orderA[] = $order;
+            if (strlen($order = $fieldR->order($direction, $finalWHERE) ?? '')) $orderA[] = $order;
         }
 
         // Return
@@ -377,7 +377,7 @@ class Indi_Controller {
         $excelA = [];
 
         // Use Indi::get()->filter if $filter arg is not given
-        $filter = $filter ?: (Indi::get()->filter ?? null);
+        $filter = $filter ?: (Indi::get()->filter ?? '');
 
         // Convert filters definition format
         if (is_array($filter) || preg_match('~^{~', $filter)) $filter = $this->_filter2search();
