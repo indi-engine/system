@@ -751,9 +751,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $typeA['numeric'][$gridFieldR->alias] = true;
 
             // Shaded fields
-            if (Indi::demo(false) && ($gridFieldR->param('shade')  || (
+            if (Indi::demo(false)
+                && ($gridFieldR->param('shade') || (
                     ($_ = $gridFieldR->relation) && ($_ = m($_)) && ($_ = $_->titleField()) && $_->param('shade')
-                ))) $typeA['shade'][$gridFieldR->alias] = $gridFieldR->param();                
+                ))
+            ) $typeA['shade'][$gridFieldR->alias] = true;
 
             // Make sure span-columns won't be in $columnA array
             if ($gridFieldR->elementId != $span) $columnA[] = $gridFieldR->alias;
@@ -843,7 +845,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if (isset($typeA['foreign']['single'][$columnI]['title']) && $entry)
                     $data[$pointer]['_render'][$columnI] =
                         ($foreign = $entry->foreign($further ?: $columnI))
-                            ? $foreign->title()
+                            ? (isset($typeA['shade'][$further ?: $columnI])
+                                ? I_PRIVATE_DATA
+                                : $foreign->title())
                             : ($entry->{$further ?: $columnI} == -1
                                 ? 'ID'
                                 : '');
@@ -853,7 +857,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $titleCol = is_string($title = $typeA['foreign']['multiple'][$columnI]['title']) ? $title : 'title';
                     $data[$pointer]['_render'][$columnI] = [];
                     foreach ($entry->foreign($further ?: $columnI) as $m) {
-                        $data[$pointer]['_render'][$columnI][$m->id] = $m->$titleCol;
+                        $data[$pointer]['_render'][$columnI][$m->id]
+                            = isset($typeA['shade'][$further ?: $columnI])
+                                ? I_PRIVATE_DATA
+                                : $m->$titleCol;
                     }
                 }
 
@@ -2045,6 +2052,13 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Set column
         $column = ($foreign ?? null) ? $tc->rel()->titleColumn() : 'title';
 
+        // Setup $shade-flag indicating whether I_PRIVATE_DATA should be used instead of actual title
+        $this->shade = false;
+        if ($tc) {
+            if ($tc->rel()) $this->shade = $tc->rel()->titleField()->param('shade');
+            else $this->shade = $tc->param('shade');
+        }
+
         // Setup primary data for options. Here we use '$o' name instead of '$comboDataR', because
         // it is much more convenient to use such name to deal with option row object while creating
         // a template in $params['template'] contents, if it is set, because php expressions are executed
@@ -2061,7 +2075,9 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if ($this->_table == 'enumset') $system += ['cssStyle' => $o->cssStyle];
 
             // If title column's field is a foreign-key field - use it to obtain the actual title
-            $title = ($foreign ?? null) ? $o->foreign($foreign)->$column : $o->{$this->titleColumn};
+            $title = $this->shade
+                ? I_PRIVATE_DATA
+                : (($foreign ?? null) ? $o->foreign($foreign)->$column : $o->{$this->titleColumn});
 
             // Here we are trying to detect, does $o->title have tag with color definition, for example
             // <span style="color: red">Some option title</span> or <font color=lime>Some option title</font>, etc.
@@ -2092,7 +2108,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
             if (preg_match('/\.\.$/', $options[$o->$keyProperty]['title']))
                 $options[$o->$keyProperty]['system']['tooltip'] = '..' . mb_substr($info['title'], $substr, 1024, 'utf-8');
 
-            $options[$o->$keyProperty]['raw'] = $this->_table == 'enumset' ? $o->styled() : $o->{$this->titleColumn};
+            $options[$o->$keyProperty]['raw'] = $this->_table == 'enumset'
+                ? $o->styled()
+                : ($shade
+                    ? I_PRIVATE_DATA
+                    : $o->{$this->titleColumn});
 
             // Setup foreign entries titles
             if ($params['foreign'] ?? null)

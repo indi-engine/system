@@ -13,6 +13,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      */
     public function jsAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // JS-controller files for sections of fraction:
         // - 'system' - will be created in VDR . '/system',
         // - 'public' -                 in VDR . '/public',
@@ -76,6 +79,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      * Create php-controller file for selected section
      */
     public function phpAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // PHP-controller files for sections of fraction:
         // - 'system' - will be created in VDR . '/system',
@@ -251,6 +257,9 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
      * Caution! Do not use it, it's not completed and works properly only in specific situations
      */
     public function copyAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // Get selected entries ids
         $sectionId_disabled = t()->rows->column('id');

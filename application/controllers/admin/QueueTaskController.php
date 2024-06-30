@@ -6,6 +6,9 @@ class Admin_QueueTaskController extends Indi_Controller_Admin {
      */
     public function runAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // If command is 'gapikey'
         if (uri()->command == 'gapikey') {
 

@@ -329,6 +329,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function updateAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // If rabbitmq is not enabled - clear log/update.log
         if (!ini()->rabbitmq->enabled) i('', 'w', 'log/update.log');
 
@@ -487,6 +490,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function backupAction($prompt = null) {
 
+        // Respect demo mode
+        Indi::demo();
+
         // Check sql/ directory is writable
         if (!is_writable('sql')) jflush(false, 'sql/ directory is not writable');
 
@@ -563,6 +569,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      * Restore the whole db from sql dump
      */
     public function restoreAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // Get instance type
         $type = param('instance-type')->cfgValue;
@@ -668,6 +677,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      * Create php classes files
      */
     public function phpAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // PHP class files for entities of fraction:
         // - 'system' - will be created in VDR . '/system',
@@ -785,6 +797,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function authorAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // Get current entity's table name
         $table = t()->row->table;
 
@@ -817,6 +832,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      * Create a `toggle` field within given entity
      */
     public function toggleAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // Foreach selected entity
         foreach (t()->rows as $row) {

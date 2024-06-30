@@ -252,6 +252,9 @@ class Indi_View_Helper_Admin_FormCombo {
         // Setup groups for options
         if ($comboDataRs->optgroup ?? null) $options['optgroup'] = $comboDataRs->optgroup;
 
+        // Setup shade-option
+        if ($comboDataRs->shade ?? 0) $options['shade'] = $comboDataRs->shade;
+
         // Setup option height. Current context does not have a $this->ignoreTemplate member,but inherited class *_FilterCombo
         // does, so option height that is applied to form combo will not be applied to filter combo, unless $this->ignoreTemplate
         // in *_FilterCombo is set to false
@@ -314,6 +317,7 @@ class Indi_View_Helper_Admin_FormCombo {
                     'boxIcon'   => $selectedR->boxIcon,
                     'textColor' => $selectedR->textColor,
                 ]);
+                if ($options['shade']) $item['title'] = I_PRIVATE_DATA;
                 $item['id'] = $selectedR->{$this->keyProperty};
                 $view['subTplData']['selected']['items'][] = $item;
             }

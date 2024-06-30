@@ -6,6 +6,9 @@ class Admin_LangController extends Indi_Controller_Admin {
      */
     public function dictAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // Get languages, already existing as `lang` entries
         $langA = db()->query('SELECT `alias`, `title` FROM `lang`')->pairs();
 
@@ -162,6 +165,9 @@ class Admin_LangController extends Indi_Controller_Admin {
      * for selected language. Optionally, those wordings can be replaced with their constants within source code files
      */
     public function wordingsAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // If $answer is 'no'  - wordings will be replaced with their constants within source code files
         $answer = $this->confirm(I_LANG_WORD_DETECT_ONLY, 'YESNOCANCEL');
@@ -340,6 +346,9 @@ class Admin_LangController extends Indi_Controller_Admin {
      */
     public function exportAction() {
 
+        // Respect demo mode
+        Indi::demo();
+
         // Show prompt
         $prompt = $this->_prompt(I_LANG_EXPORT_HEADER);
 
@@ -380,6 +389,9 @@ class Admin_LangController extends Indi_Controller_Admin {
      * Import admin system or custom ui translation from php-code
      */
     public function importAction() {
+
+        // Respect demo mode
+        Indi::demo();
 
         // Set no time limit
         set_time_limit(0);
