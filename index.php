@@ -37,7 +37,7 @@ define('DEV', preg_match('~local~', $_SERVER['HTTP_HOST']));
 define('STD', $_SERVER['STD']); define('VDR', '/' . $vdr = $_SERVER['VDR']);
 
 // Setup $GLOBALS['cmsOnlyMode'] as php constant, for being easier accessible
-define('COM', $GLOBALS['cmsOnlyMode']);
+define('COM', $GLOBALS['cmsOnlyMode'] ?? false);
 
 // Setup PRE constant, representing total url shift for all urls in cms area
 define('PRE', STD . (COM ? '' : '/admin'));
