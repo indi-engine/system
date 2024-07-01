@@ -2054,7 +2054,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Setup $shade-flag indicating whether I_PRIVATE_DATA should be used instead of actual title
         $this->shade = false;
-        if ($tc) {
+        if (Indi::demo(false) && $tc) {
             if ($tc->rel()) $this->shade = $tc->rel()->titleField()->param('shade');
             else $this->shade = $tc->param('shade');
         }
