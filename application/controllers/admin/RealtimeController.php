@@ -169,14 +169,14 @@ class Admin_RealtimeController extends Indi_Controller_Admin {
                 // Get name of the deleted queue, which was dedicated to the closed browser tab
                 $name = $msg->get_properties()['application_headers']->getNativeData()['name'];
 
+                // Log deleted queue
+                i($name, 'a', 'log/queue.deleted.log');
+
                 // If it was an queue from this instance of Indi Engine
                 if (strpos($name, $prefix) !== false && $token = str_replace($prefix, '', $name) ) {
 
                     // Delete realtime-record of type=channel to be deleted
                     if ($r = m('realtime')->row(['`token` = "' . $token . '"', '`type` = "channel"'])) $r->delete();
-
-                    // Else log the problem
-                    else i($name, 'a', 'log/closetab.err');
 
                     // Acknowledge the queue about that message is processed
                     mq()->basic_ack($msg->getDeliveryTag());
