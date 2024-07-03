@@ -867,20 +867,43 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
      */
     public function adjustGridData(&$data) {
 
+        // Dirs dict by entity fraction
+        $dir = [
+            'system' => VDR . '/system',
+            'public' => VDR . '/public',
+            'custom' => ''
+        ];
+
         // Foreach data item
         foreach ($data as &$item) {
 
-            // Get php-mode class name
-            $php = ucfirst($item['table']);
+            // Get php-model class name
+            $cls =  ucfirst($item['table']);
 
-            // If php-controller file exists for this section
-            if (class_exists($php)) {
+            // Get php-model class file
+            $phpA = [DIR . $dir[$item['fraction']] . "/application/models/$cls.php"];
 
-                // Setup flag
-                $item['_system']['php-class'] = true;
+            // If php-model class file exists for this entity
+            if ($item['_system']['php-class'] = file_exists($phpA[0])) {
+
+                // Add row-class file, if exists
+                if (file_exists($row = DIR . $dir[$item['fraction']] . "/application/models/$cls/Row.php"))
+                    $phpA []= $row;
+
+                // Add rowset-class file, if exists
+                if (file_exists($rowset = DIR . $dir[$item['fraction']] . "/application/models/$cls/Rowset.php"))
+                    $phpA []= $rowset;
+
+                // Convert paths to be relative rather than absolute
+                foreach ($phpA as $idx => $php) {
+                    $phpA[$idx] = preg_replace('~^' . preg_quote(DIR). '/~', '', $php);
+                }
+
+                // Setup class name
+                $item['_system']['php-class'] = im($phpA, "&lt;br&gt;");
 
                 // Get parent class
-                $parent = get_parent_class($php);
+                $parent = get_parent_class($cls);
 
                 // If actual parent class is not as per entity `extends` prop - setup error
                 if ($parent != $item['extends']) $item['_system']['php-error'] = sprintf(I_ENT_EXTENDS_OTHER, $parent);

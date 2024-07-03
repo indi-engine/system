@@ -1214,8 +1214,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
         // Regular expression to parse the inner part (e.g. enclosed by curly brackets) of a given template
         $heads = Indi::store('gridhead')->getArrayCopy();
-        $hkeys = im(array_keys($heads), '\b|');
-        $inner = "~(?<before>.*?)(?<field>\\$?\b(?:$hkeys)\b)~i";
+        $hkeys = im(array_reverse(array_keys($heads)), '\b|');
+        $inner = "~(?<before>.*?)(?<field>\\$?(?<=(?:\W|_)|^)(?:$hkeys)\b)~i";
 
         // Start composing value based on given template
         $composed = preg_replace_callback($outer, function($outer) use ($column, $data, &$richtext, $purpose, $inner, $heads) {
