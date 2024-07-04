@@ -29,7 +29,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         ], [
             'xtype' => 'checkbox',
             'name'  => 'nobackup',
-            'boxLabel' => 'Skip db backup steps before and after migration'
+            'boxLabel' => 'Skip db backup steps before and after migrations, if any'
         ]]);
 
         // Check prompt data
