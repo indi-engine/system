@@ -699,6 +699,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Array of deleted ids
         $deleted = [];
 
+        // Convert to int
+        uri()->aix = (int) uri()->aix;
+
         // Try to delete
         try {
 
