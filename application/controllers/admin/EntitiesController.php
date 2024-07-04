@@ -456,6 +456,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                     // Add this file to the list of to be committed
                     $this->exec("git add $target");
 
+                    // Add executable right if it's *.sh file
+                    if (preg_match('~\.sh$~', $target)) $this->exec("chmod +x $target");
+
                     // Append to the list of files to be commited
                     $commit []= $target;
                 }
