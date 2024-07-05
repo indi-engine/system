@@ -64,7 +64,7 @@ RUN chown -R $user .
 ## </IndiEngine> ##
 
 ## <Sendmail> ##
-RUN apt -y install postfix <<< $'2'
+RUN bash -c "apt -y install postfix <<< $'2'"
 ## </Sendmail> ##
 
 ENTRYPOINT $DOC/docker-entrypoint.sh
