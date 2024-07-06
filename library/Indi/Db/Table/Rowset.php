@@ -2052,7 +2052,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Set column
         $column = ($foreign ?? null) ? $tc->rel()->titleColumn() : 'title';
 
-        // Setup $shade-flag indicating whether I_PRIVATE_DATA should be used instead of actual title
+        // Setup $this->shade flag indicating whether I_PRIVATE_DATA should be used instead of actual title
         $this->shade = false;
         if (Indi::demo(false) && $tc) {
             if ($tc->rel()) $this->shade = $tc->rel()->titleField()->param('shade');
@@ -2110,7 +2110,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
 
             $options[$o->$keyProperty]['raw'] = $this->_table == 'enumset'
                 ? $o->styled()
-                : ($shade
+                : ($this->shade
                     ? I_PRIVATE_DATA
                     : $o->{$this->titleColumn});
 

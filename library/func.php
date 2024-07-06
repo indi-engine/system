@@ -1544,7 +1544,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
             $m = $expr[1];
 
             // Get error msg constant name
-            $const = trim($expr[3] ?? null, ':') ?: $c . 'KEY';
+            $const = trim($expr[3] ?? '', ':') ?: $c . 'KEY';
 
             // Setup $s as a flag indicating whether *_Row (single row) or *_Rowset should be fetched
             $s = !($expr[2] ?? null);

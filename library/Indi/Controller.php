@@ -380,7 +380,7 @@ class Indi_Controller {
         $filter = $filter ?: (Indi::get()->filter ?? '');
 
         // Convert filters definition format
-        if (is_array($filter) || preg_match('~^{~', $filter)) $filter = $this->_filter2search();
+        if (is_array($filter) || preg_match('~^{~', $filter ?? '')) $filter = $this->_filter2search();
 
         // Clauses stack
         $where = [];

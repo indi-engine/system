@@ -2406,16 +2406,16 @@ class Indi_Db_Table_Row implements ArrayAccess
                         : '`' . $titleColumn . '` LIKE "%' . str_replace('"', '\"', $keyword) . '%"';
 
                 // Else we should get results started from selected value only if consider-fields were not modified
-                } else if (! ($hasModifiedConsiderWHERE ?? null)) {
+                } else if (! ($hasModifiedConsiderWHERE ?? 0)) {
 
                     // If $order is a name of a column, and not an SQL expression (except l10n-expression)
                     // we setup results start point as current row's column's value
-                    if (!preg_match('/\(/', $order) || ($l10n ?? null)) {
-                        if (preg_match('~/span>~', $keyword ?? null)) {
+                    if (!preg_match('/\(/', $order) || ($l10n ?? 0)) {
+                        if (preg_match('~/span>~', $keyword ?? '')) {
                             $order = 'SUBSTRING_INDEX(' . $order . ', "/span>", -1)';
                             $keyword = strip_tags($keyword);
                         }
-                        $where['lookup'] = $order . ' '. (is_null($page) || $page > 0 ? ($dir == 'DESC' ? '<=' : '>=') : ($dir == 'DESC' ? '>' : '<')).' "' . str_replace('"', '\"', $keyword ?? null) . '"';
+                        $where['lookup'] = $order . ' '. (is_null($page) || $page > 0 ? ($dir == 'DESC' ? '<=' : '>=') : ($dir == 'DESC' ? '>' : '<')).' "' . str_replace('"', '\"', $keyword ?? '') . '"';
                     }
 
                     // We set this flag to true, because the fact that we are in the body of current 'else if' operator
@@ -3643,7 +3643,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $placeholder = 'less_or_equal' . grs();
 
         // Replace '<=' with placeholders
-        $html = str_replace('<=', $placeholder, $html);
+        $html = str_replace('<=', $placeholder, $html ?? '');
 
         // Strip all tags, except tags, mentioned in $tags argument
         $html = strip_tags($html, '<' . preg_replace('/,/', '><', $allowedS) . '>');
@@ -3892,7 +3892,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 } else {
 
                     // If $value is not a decimal
-                    if (!preg_match(Indi::rex('int11'), $value)) {
+                    if (!preg_match(Indi::rex('int11'), $value ?? '')) {
 
                         // Push a error to errors stack
                         $this->_mismatch[$column] = sprintf(I_ROWSAVE_ERROR_VALUE_SHOULD_BE_INT11, $value, $fieldR->title);
