@@ -935,6 +935,11 @@ class Indi_Controller_Admin extends Indi_Controller {
      */
     public function export($data, $format = 'excel') {
 
+        // If export is disabled for current role in the current section - flush failure
+        if ($noExcel4RoleIds = t()->section->noExcel4RoleIds
+            && !in(admin()->roleId, $noExcel4RoleIds))
+            jflush(false);
+
         // Create new PHPExcel object
         $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 

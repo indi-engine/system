@@ -1,5 +1,31 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function noExcel4RoleIdsAction() {
+        grid('grid', 'skipExcel', ['icon' => 'resources/images/icons/no-excel.png']);
+        enumset('grid', 'skipExcel', 'y', ['boxIcon' => 'resources/images/icons/no-excel.png']);
+        field('section', 'noExcel4RoleIds', [
+            'title' => 'Отключить Excel-экспорт для указанных ролей',
+            'storeRelationAbility' => 'many',
+            'relation' => 'role',
+            'onDelete' => 'CASCADE',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'groupBy',
+        ]);
+        grid('sections', 'noExcel4RoleIds', [
+            'gridId' => 'grid',
+            'move' => 'groupBy',
+            'icon' => 'resources/images/icons/no-excel.png',
+            'editor' => '1',
+        ]);
+        cfgField('element', 'price', 'shade', [
+            'title' => 'Шейдинг',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'measure',
+        ]);
+    }
     public function alteredFieldsMoreToggleAction() {
         field('filter', 'allowZeroResultExceptPrefilteredWith', ['move' => 'allowZeroResult']);
         enumset('alteredField', 'toggle', 'creating', ['title' => 'Turned on, but for creating records only', 'move' => 'n', 'boxIcon' => 'resources/images/icons/btn-icon-lime-create.png']);
