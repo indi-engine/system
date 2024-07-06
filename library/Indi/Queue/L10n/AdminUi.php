@@ -340,7 +340,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         $queueTaskR->basicUpdate(false, false);
 
         // Get params
-        $params = json_decode($queueTaskR->params, true);
+        $params = json_decode($queueTaskR->params, true); $params['toggle'] ??= '';
 
         // Foreach `queueChunk` entries, nested under `queueTask` entry
         foreach ($queueTaskR->nested('queueChunk', [
@@ -352,7 +352,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
             $queueChunkR->set(['applyState' => 'progress'])->basicUpdate();
 
             // Build WHERE clause for batch() call
-            $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] == 'n' ? 'items' : 'queue') . '"';
+            $where = '`queueChunkId` = "' . $queueChunkR->id . '" AND `stage` = "' . ($params['toggle'] === 'n' ? 'items' : 'queue') . '"';
 
             // Split `location` on $table and $field
             list ($table, $field) = explode(':', $queueChunkR->location);
@@ -402,7 +402,7 @@ class Indi_Queue_L10n_AdminUi extends Indi_Queue_L10n {
         $queueTaskR->set(['state' => 'finished', 'applyState' => 'finished'])->save();
 
         // Update target `lang` entry's state for current fraction
-        $langR_target = m('Lang')->row('`alias` = "' . $params[$params['toggle'] == 'n' ? 'source' : 'target'] . '"');
+        $langR_target = m('Lang')->row('`alias` = "' . $params[$params['toggle'] === 'n' ? 'source' : 'target'] . '"');
         $langR_target->{lcfirst(preg_replace('~^Indi_Queue_L10n_~', '', get_class($this)))} = $params['toggle'] ?: 'y';
         $langR_target->save();
     }

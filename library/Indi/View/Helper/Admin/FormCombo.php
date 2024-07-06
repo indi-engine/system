@@ -317,7 +317,7 @@ class Indi_View_Helper_Admin_FormCombo {
                     'boxIcon'   => $selectedR->boxIcon,
                     'textColor' => $selectedR->textColor,
                 ]);
-                if ($options['shade']) $item['title'] = I_PRIVATE_DATA;
+                if ($options['shade'] ?? 0) $item['title'] = I_PRIVATE_DATA;
                 $item['id'] = $selectedR->{$this->keyProperty};
                 $view['subTplData']['selected']['items'][] = $item;
             }

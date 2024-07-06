@@ -948,10 +948,10 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // If field should be shaded - prevent actual value from being assigned
                 if (isset($typeA['shade'][$columnI])) {
                     if ($value) {
-                        if ($typeA['numeric'][$columnI]) {
+                        if ($typeA['numeric'][$columnI] ?? 0) {
                             $data[$pointer]['_render'][$columnI] = number_format(
                                 $data[$pointer][$columnI] = 1234567,
-                                $typeA['price'][$columnI] ? 2 : 0,
+                                isset($typeA['price'][$columnI]) ? 2 : 0,
                                 '.',
                                 ' '
                             );
@@ -1241,7 +1241,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $field = lcfirst($field);
 
                 // Get value to be checked
-                $value = $raw ? $data[$field] : ($data['_render'][$field] ?? $data[$field]);
+                $value = $raw ? $data[$field] : ($data['_render'][$field] ?? $data[$field] ?? '');
 
                 // If value is zero-length -return
                 if ($raw ? !$value : !strlen($value ?? '')) return '';
@@ -1275,7 +1275,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 if ($raw) {
 
                     // Get tooltip, if any
-                    $tip = rif(htmlspecialchars($data['_tooltip'][$alias]), ' data-title="$1"');
+                    $tip = rif(htmlspecialchars($data['_tooltip'][$alias] ?? ''), ' data-title="$1"');
 
                     // Get jump, if any
                     $jump = preg_match('~ jump=".+?"~', $data['_render'][$alias], $j) ? $j[0] : '';
