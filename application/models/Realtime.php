@@ -20,11 +20,17 @@ class Realtime extends Indi_Db_Table {
         $m = m('realtime'); $session_id = session_id();
 
         // Get either existing realtime-record having type=session and token=session_id() or create a new one
-        $session = $m->row(['`type` =  "session"', "`token` = '$session_id'"])
-                ?: $m->new([ 'type' => 'session' ,  'token' => $session_id  ]);
+        $session = $m->row(['`type` =  "session"', "`token` = '$session_id'"]);
 
-        // If no existing session found having given $session_id - return false
-        if ($checkOnly && !$session->id) return false;
+        // If no existing session found having given $session_id
+        if (!$session) {
+
+            // If we're in $checkOnly mode - just return false
+            if ($checkOnly) return false;
+
+            // Create new `realtime` entry of type 'session'
+            $session = $m->new([ 'type' => 'session' ,  'token' => $session_id  ]);
+        }
 
         // Update props
         $session->set([
