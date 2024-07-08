@@ -4144,6 +4144,16 @@ class Indi_Controller_Admin extends Indi_Controller {
     }
 
     /**
+     * Show popup with custom components hierarchy
+     *
+     * @param array $cfg
+     * @return mixed
+     */
+    public function popup($cfg = []) {
+        jpopup($cfg);
+    }
+
+    /**
      * Empty function. Can be overridden in child classes for cases when there is a need to
      * show some confirmation prompt before new cell value will be saved
      */

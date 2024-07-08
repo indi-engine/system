@@ -1063,6 +1063,42 @@ function jprompt($msg, array $cfg) {
 }
 
 /**
+ * Flush the json-encoded message, containing `popup` flag, and popup config
+ *
+ * @param array $cfg
+ */
+function jpopup(array $cfg) {
+
+    // Start building data for flushing
+    $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'cfg' => $cfg];
+
+    // No action on popup close, by default
+    $flush['cfg']['fn'] ??= false;
+
+    // Setup isCustomChild-flags
+    if (isset($flush['cfg']['items'][0])) {
+        foreach ($flush['cfg']['items'] as $idx => $item) $flush['cfg']['items'][$idx]['isCustomChild'] = true;
+    } else {
+        $flush['cfg']['items']['isCustomChild'] = true;
+    }
+
+    // Append prev prompts data
+    if ($flush['prompt'] > 1)
+        for ($i = 1; $i < $flush['prompt']; $i++)
+            if ($name = '_prompt' . rif($i - 1, $i))
+                $flush[$name] = json_decode(Indi::post($name));
+
+    // Send content type header
+    if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
+
+    // Here we send HTTP/1.1 400 Bad Request to prevent success handler from being fired
+    if (!headers_sent() && !isIE()) header('HTTP/1.1 400 Bad Request');
+
+    // Flush
+    iexit(json_encode($flush));
+}
+
+/**
  * Flush text to be shown within <textarea>.
  * If $text are is not a scalar, it will be preliminary stringified by print_r() fn
  *

@@ -1,5 +1,15 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function dnsAction() {
+        action('dns', ['title' => 'Необходимые DNS-записи', 'fraction' => 'system', 'selectionRequired' => 'n']);
+        section2action('actions','dns', [
+            'roleIds' => 'dev',
+            'move' => 'export',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'l10n' => 'na',
+        ]);
+    }
     public function noExcel4RoleIdsAction() {
         grid('grid', 'skipExcel', ['icon' => 'resources/images/icons/no-excel.png']);
         enumset('grid', 'skipExcel', 'y', ['boxIcon' => 'resources/images/icons/no-excel.png']);
