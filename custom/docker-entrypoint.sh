@@ -65,7 +65,7 @@ if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
   # Note: if change LETS_ENCRYPT_DOMAIN and restart the container, postfix will keep using previous
   # value of that env as mail domain
   if [[ ! -f "$dkim/trusted.hosts" ]]; then
-    echo -e "127.0.0.1\nlocalhost"                 >> "$dkim/trusted.hosts"
+    mkdir $dkim && echo -e "127.0.0.1\nlocalhost"  >> "$dkim/trusted.hosts"
     sed -Ei "s~(myhostname\s*=)\s*.*~\1 $maildomain~" "/etc/postfix/main.cf"
     echo "smtpd_milters = inet:localhost:8891"     >> "/etc/postfix/main.cf"
     echo "non_smtpd_milters = inet:localhost:8891" >> "/etc/postfix/main.cf"
