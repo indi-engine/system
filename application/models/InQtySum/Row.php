@@ -33,7 +33,7 @@ class InQtySum_Row extends Indi_Db_Table_Row {
      * @return int
      */
     public function onSave() {
-        $this->recount('save');
+        $this->detachProcess('recount', 'save');
     }
 
     /**
@@ -41,14 +41,14 @@ class InQtySum_Row extends Indi_Db_Table_Row {
      */
     public function onDelete()
     {
-        $this->recount('delete');
+        $this->detachProcess('recount', 'delete');
     }
 
     /**
      * @param string $event
      * @throws Exception
      */
-    protected function recount($event = 'save') {
+    public function recount($event = 'save') {
 
         // Get source table name
         $sourceTable = m($this->sourceEntity)->table();
@@ -80,7 +80,7 @@ class InQtySum_Row extends Indi_Db_Table_Row {
 
             // Calc and apply value into target field
             $targetEntry->set($targetField, $targetValue)->save();
-        });
+        }, null, null, 500, false, true);
     }
 
     /**

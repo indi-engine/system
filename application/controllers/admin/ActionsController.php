@@ -26,7 +26,7 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
                 'store' => [
                     'data' => [
                         [ 'type' => 'MX',  'name' => '@'              , 'data' => 'blackhole.io' ],
-                        [ 'type' => 'TXT', 'name' => '@'              , 'data' => "v=spf1 a mx ip$addr ~all" ],
+                        [ 'type' => 'TXT', 'name' => '@'              , 'data' => "v=spf1 a mx ip4:$addr ~all" ],
                         [ 'type' => 'TXT', 'name' => '_dmarc'         , 'data' => 'v=DMARC1; p=none' ],
                         [ 'type' => 'TXT', 'name' => 'mail._domainkey', 'data' => $dkim ],
                     ]

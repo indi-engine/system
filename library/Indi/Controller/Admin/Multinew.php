@@ -50,7 +50,7 @@ class Indi_Controller_Admin_Multinew extends Indi_Controller_Admin_Exportable {
         if ($this->unset) foreach (ar($this->unset) as $u) unset(Indi::post()->$u);
 
         // Foreach fieldId make clone of $this->row
-        foreach ($_idA as $_id) $cloneA[$_id] = clone $this->row;
+        foreach ($_idA as $_id) $cloneA[$_id] = clone t()->row;
 
         // Foreach clone
         foreach ($cloneA as $_id => $cloned) {
@@ -59,7 +59,7 @@ class Indi_Controller_Admin_Multinew extends Indi_Controller_Admin_Exportable {
             Indi::post($this->field, $_id);
 
             // Spoof $this->row with clone
-            $this->row = $cloned;
+            t()->rows->spoofRow(0, $cloned);
 
             // Call parent
             $response = parent::saveAction(true, true);
