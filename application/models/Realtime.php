@@ -22,11 +22,18 @@ class Realtime extends Indi_Db_Table {
         // Get either existing realtime-record having type=session and token=session_id() or create a new one
         $session = $m->row(['`type` =  "session"', "`token` = '$session_id'"]);
 
-        // If no existing session found having given $session_id
-        if (!$session) {
+        // Pick roleId and adminId from $_SESSION, if any
+        $roleId = $_SESSION['admin']['roleId'] ?? 0; $adminId = $_SESSION['admin']['id'] ?? 0;
+
+        // If no realtime-record of type 'session' is found, or found but it's roleId and/or adminId differs
+        if (!$session || "$session->roleId-$session->adminId" !== "$roleId-$adminId")
 
             // If we're in $checkOnly mode - just return false
             if ($checkOnly) return false;
+
+
+        // If no existing session found having given $session_id
+        if (!$session) {
 
             // Create new `realtime` entry of type 'session'
             $session = $m->new([ 'type' => 'session' ,  'token' => $session_id  ]);
@@ -34,8 +41,8 @@ class Realtime extends Indi_Db_Table {
 
         // Update props
         $session->set([
-            'roleId' => $_SESSION['admin']['roleId'] ?? null,
-            'adminId' => $_SESSION['admin']['id'] ?? null,
+            'roleId' => $roleId ?: null,
+            'adminId' => $adminId ?: null,
             'langId' => m('Lang')->row('`alias` = "' . $_COOKIE['i-language'] . '"')->id,
         ])->save();
 
