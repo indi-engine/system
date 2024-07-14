@@ -9,19 +9,28 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
 
         // Prepare external IP address and DKIM data
         $addr = $this->exec('wget -qO- http://ipecho.net/plain');
-        $host = getenv('LETS_ENCRYPT_DOMAIN');
-        $dkim = $this->exec("cat /etc/opendkim/keys/$host/mail.txt");
-        $dkim = Indi::rexm('~\((.+)\)~', $dkim, 1);
-        $dkim = str_replace('"', '', $dkim);
-        $dkim = wrap($dkim, '<span style="word-wrap: break-word; white-space: pre-line;">');
+        
+        // Get domains
+        $hostA = explode(' ', trim(getenv('LETS_ENCRYPT_DOMAIN')));
+        
+        // If no domains - flush failure
+        if (count($hostA) === 0) jflush(false, 'LETS_ENCRYPT_DOMAIN is empty');
+        
+        // Prepare DNS records for each domain
+        $items = [];
+        foreach ($hostA as $host) {
 
-        // Show popup
-        $this->popup([
-            'title' => "Records to be added to DNS for $host domain - for outgoing emails deliverability",
-            'icon' => false,
-            'buttons' => false,
-            'items' => [
+            // Prepare dkim
+            $dkim = $this->exec("cat /etc/opendkim/keys/$host/mail.txt");
+            $dkim = Indi::rexm('~\((.+)\)~', $dkim, 1);
+            $dkim = str_replace(['"', '<br>', PHP_EOL, "\t  "], '', $dkim);
+            $dkim = str_replace(PHP_EOL, '', $dkim);
+            $dkim = wrap($dkim, '<span style="word-wrap: break-word; white-space: pre-line;">');
+
+            // Prepare tab data
+            $items []= [
                 'xtype' => 'grid',
+                'title' => $host,
                 'width' => 600,
                 'store' => [
                     'data' => [
@@ -39,6 +48,19 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
                 'viewConfig' => [
                     'enableTextSelection' => true,
                 ]
+            ];
+            
+            break;
+        }
+
+        // Show popup
+        $this->popup([
+            'title' => "Records to be added to DNS for outgoing emails deliverability",
+            'icon' => false,
+            'buttons' => false,
+            'items' => [
+                'xtype' => 'tabpanel',
+                'items' => $items
             ],
         ]);
     }
