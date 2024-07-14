@@ -108,5 +108,12 @@ Indi::get($_GET);
 Indi::files($_FILES);
 unset($_POST, $_GET, $_FILES);
 
+// Include l10n constants
+foreach (['', VDR . '/public', VDR . '/system'] as $fraction)
+    foreach (['', '/admin'] as $module)
+        if ($lang = ini('lang')->{trim($module, '/') ?: 'front'})
+            if (file_exists($file = DOC . STD . "$fraction/application/lang$module/$lang.php"))
+                include_once $file;
+
 // Dispatch uri request
 if (!CMD) uri()->dispatch();
