@@ -42,12 +42,13 @@ cp /usr/bin/mysql_client_binaries/* /usr/bin/
 
 # Trim leading/trailing whitespaces from domain name(s)
 LETS_ENCRYPT_DOMAIN=$(echo "$LETS_ENCRYPT_DOMAIN" | xargs)
+EMAIL_SENDER_DOMAIN=$(echo "$EMAIL_SENDER_DOMAIN" | xargs)
 
 # Obtain Let's Encrypt certificate, if LETS_ENCRYPT_DOMAIN env is not empty:
 if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
 
-  # 1.Insert/update ServerAlias directive for default vhost and
-  #   start apache in background to make certbot challenge possible
+  # Insert/update ServerAlias directive for default vhost
+  # and start apache in background to make certbot challenge possible
   conf="/etc/apache2/sites-available/000-default.conf"
   if ! grep -q "ServerAlias" <<< "$(<"$conf")"; then
     sed -i "s~ServerAdmin.*~&\n\tServerAlias $LETS_ENCRYPT_DOMAIN~" $conf
@@ -56,24 +57,29 @@ if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
   fi
   service apache2 start
 
-  # 2.Obtain certificate and stop apache in background
+  # Obtain certificate and stop apache in background
+  # and setup cron job for certificate renewal check
   domainsArg=$(echo "$LETS_ENCRYPT_DOMAIN" | sed 's/ / -d /g')
   certbot --apache -n -d $domainsArg -m "$GIT_COMMIT_EMAIL" --agree-tos -v
   service apache2 stop
-
-  # 3.Setup cron job for certificate renewal check
   echo "0 */12 * * * certbot renew" | crontab -
 
-  # 4.Configure postfix and opendkim to ensure outgoing emails deliverability
+  # If $EMAIL_SENDER_DOMAIN is empty - use LETS_ENCRYPT_DOMAIN by default
+  if [[ -z "$EMAIL_SENDER_DOMAIN" ]]; then EMAIL_SENDER_DOMAIN=$LETS_ENCRYPT_DOMAIN; fi
+fi
+
+# Configure postfix and opendkim to ensure outgoing emails deliverability
+if [[ ! -z "$EMAIL_SENDER_DOMAIN" ]]; then
+
+  # Shortcuts
   dkim="/etc/opendkim"
   selector="mail"
 
   # Split LETS_ENCRYPT_DOMAIN into an array
-  IFS=' ' read -r -a domainsArr <<< "$LETS_ENCRYPT_DOMAIN"
+  IFS=' ' read -r -a senders <<< "$EMAIL_SENDER_DOMAIN"
 
   # Iterate over each domain for postfix and opendkim configuration
-  for domain in "${domainsArr[@]}"; do
-    maildomain=$domain
+  for maildomain in "${senders[@]}"; do
     domainkeys="$dkim/keys/$maildomain"
     priv="$domainkeys/$selector.private"
     DNSname="$selector._domainkey.$maildomain"
