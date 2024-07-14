@@ -74,23 +74,31 @@ if [[ ! -z "$EMAIL_SENDER_DOMAIN" ]]; then
   # Shortcuts
   dkim="/etc/opendkim"
   selector="mail"
+  conf="/etc/postfix/main.cf"
+  sock="inet:localhost:8891"
+
+  # If trusted.hosts file does not yet exist - it means we're setting up opendkim for the very first time
+  if [[ ! -f "$dkim/trusted.hosts" ]]; then
+    echo -e "127.0.0.1\nlocalhost" >> "$dkim/trusted.hosts"
+  fi
+
+  # Setup postfix to use opendkim as milter
+  if ! grep -q $sock <<< "$(<"$conf")"; then
+    echo -e "smtpd_milters = $sock\nnon_smtpd_milters = $sock" >> $conf
+  fi
 
   # Split LETS_ENCRYPT_DOMAIN into an array
   IFS=' ' read -r -a senders <<< "$EMAIL_SENDER_DOMAIN"
+
+  # Use first item of that array as myhostname in postfix config
+  # This is executed on container (re)start so you can apply new value without container re-creation
+  sed -Ei "s~(myhostname\s*=)\s*.*~\1 ${senders[0]}~" "/etc/postfix/main.cf"
 
   # Iterate over each domain for postfix and opendkim configuration
   for maildomain in "${senders[@]}"; do
     domainkeys="$dkim/keys/$maildomain"
     priv="$domainkeys/$selector.private"
     DNSname="$selector._domainkey.$maildomain"
-
-    # If trusted.hosts file does not yet exist - it means we're setting up opendkim for the very first time
-    if [[ ! -f "$dkim/trusted.hosts" ]]; then
-      mkdir -p $dkim && echo -e "127.0.0.1\nlocalhost"  >> "$dkim/trusted.hosts"
-      sed -Ei "s~(myhostname\s*=)\s*.*~\1 $maildomain~" "/etc/postfix/main.cf"
-      echo "smtpd_milters = inet:localhost:8891"     >> "/etc/postfix/main.cf"
-      echo "non_smtpd_milters = inet:localhost:8891" >> "/etc/postfix/main.cf"
-    fi
 
     # If private key file was not generated so far
     if [[ ! -f $priv ]]; then
