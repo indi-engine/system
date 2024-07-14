@@ -11,10 +11,10 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
         $addr = $this->exec('wget -qO- http://ipecho.net/plain');
         
         // Get domains
-        $hostA = explode(' ', trim(getenv('LETS_ENCRYPT_DOMAIN')));
+        $hostA = explode(' ', trim(getenv('EMAIL_SENDER_DOMAIN') ?: getenv('LETS_ENCRYPT_DOMAIN')));
         
         // If no domains - flush failure
-        if (count($hostA) === 0) jflush(false, 'LETS_ENCRYPT_DOMAIN is empty');
+        if (count($hostA) === 0) jflush(false, 'EMAIL_SENDER_DOMAIN is empty');
         
         // Prepare DNS records for each domain
         $items = [];
