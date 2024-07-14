@@ -49,8 +49,6 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
                     'enableTextSelection' => true,
                 ]
             ];
-            
-            break;
         }
 
         // Show popup
