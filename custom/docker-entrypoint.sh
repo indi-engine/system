@@ -40,51 +40,66 @@ if [ -f "$pid_file" ]; then rm "$pid_file" && echo "Apache old pid-file removed"
 # Copy 'mysql' and 'mysqldump' binaries to /usr/bin, to make it possible to restore/backup the whole database as sql-file
 cp /usr/bin/mysql_client_binaries/* /usr/bin/
 
-# Obtain Let's Encrypt certificate, if LE_DOMAIN env is given:
+# Trim leading/trailing whitespaces from domain name(s)
+LETS_ENCRYPT_DOMAIN=$(echo "$LETS_ENCRYPT_DOMAIN" | xargs)
+
+# Obtain Let's Encrypt certificate, if LETS_ENCRYPT_DOMAIN env is not empty:
 if [[ ! -z "$LETS_ENCRYPT_DOMAIN" ]]; then
 
-  # 1.Start apache in background to make certbot challenge possible
-  # 2.Obtain certificate
-  # 3.Stop apache in backgrond
-  # 4.Setup cron job for certificate renewal check
+  # 1.Insert/update ServerAlias directive for default vhost and
+  #   start apache in background to make certbot challenge possible
+  conf="/etc/apache2/sites-available/000-default.conf"
+  if ! grep -q "ServerAlias" <<< "$(<"$conf")"; then
+    sed -i "s~ServerAdmin.*~&\n\tServerAlias $LETS_ENCRYPT_DOMAIN~" $conf
+  else
+    sed -i "s~ServerAlias.*~ServerAlias $LETS_ENCRYPT_DOMAIN~" $conf
+  fi
   service apache2 start
-  certbot --apache -n -d $LETS_ENCRYPT_DOMAIN -m $GIT_COMMIT_EMAIL --agree-tos -v
+
+  # 2.Obtain certificate and stop apache in background
+  domainsArg=$(echo "$LETS_ENCRYPT_DOMAIN" | sed 's/ / -d /g')
+  certbot --apache -n -d $domainsArg -m "$GIT_COMMIT_EMAIL" --agree-tos -v
   service apache2 stop
+
+  # 3.Setup cron job for certificate renewal check
   echo "0 */12 * * * certbot renew" | crontab -
 
-  # Also, configure postfix and opendkim to ensure outdoing emails deliverability
+  # 4.Configure postfix and opendkim to ensure outgoing emails deliverability
   dkim="/etc/opendkim"
   selector="mail"
-  maildomain=$LETS_ENCRYPT_DOMAIN
-  domainkeys="$dkim/keys/$maildomain"
-  priv="$domainkeys/$selector.private"
-  DNSname="$selector._domainkey.$maildomain"
 
-  # If trusted.hosts file does not yet exist - it means we're setting up opendkim for the very first time
-  # so add localhost to the list of trusted hosts and append changes to postfix config for it to invokate opendkim
-  # Note: if change LETS_ENCRYPT_DOMAIN and restart the container, postfix will keep using previous
-  # value of that env as mail domain
-  if [[ ! -f "$dkim/trusted.hosts" ]]; then
-    mkdir $dkim && echo -e "127.0.0.1\nlocalhost"  >> "$dkim/trusted.hosts"
-    sed -Ei "s~(myhostname\s*=)\s*.*~\1 $maildomain~" "/etc/postfix/main.cf"
-    echo "smtpd_milters = inet:localhost:8891"     >> "/etc/postfix/main.cf"
-    echo "non_smtpd_milters = inet:localhost:8891" >> "/etc/postfix/main.cf"
-  fi
+  # Split LETS_ENCRYPT_DOMAIN into an array
+  IFS=' ' read -r -a domainsArr <<< "$LETS_ENCRYPT_DOMAIN"
 
-  # If private key file was not generated so far
-  if [[ ! -f $priv ]]; then
+  # Iterate over each domain for postfix and opendkim configuration
+  for domain in "${domainsArr[@]}"; do
+    maildomain=$domain
+    domainkeys="$dkim/keys/$maildomain"
+    priv="$domainkeys/$selector.private"
+    DNSname="$selector._domainkey.$maildomain"
 
-    # Generate key files
-    mkdir -p $domainkeys
-    opendkim-genkey -D $domainkeys -s $selector -d $maildomain
-    chown opendkim:opendkim $priv
-    chown $user:$user "$domainkeys/$selector.txt"
+    # If trusted.hosts file does not yet exist - it means we're setting up opendkim for the very first time
+    if [[ ! -f "$dkim/trusted.hosts" ]]; then
+      mkdir -p $dkim && echo -e "127.0.0.1\nlocalhost"  >> "$dkim/trusted.hosts"
+      sed -Ei "s~(myhostname\s*=)\s*.*~\1 $maildomain~" "/etc/postfix/main.cf"
+      echo "smtpd_milters = inet:localhost:8891"     >> "/etc/postfix/main.cf"
+      echo "non_smtpd_milters = inet:localhost:8891" >> "/etc/postfix/main.cf"
+    fi
 
-    # Setup key.table, signing.table and trusted.hosts files to be picked by opendkim
-    echo "$DNSname $maildomain:$selector:$priv"   >> "$dkim/key.table"
-    echo "*@$maildomain $DNSname"                 >> "$dkim/signing.table"
-    echo "*.$maildomain"                          >> "$dkim/trusted.hosts"
-  fi
+    # If private key file was not generated so far
+    if [[ ! -f $priv ]]; then
+      # Generate key files
+      mkdir -p $domainkeys
+      opendkim-genkey -D $domainkeys -s $selector -d $maildomain
+      chown opendkim:opendkim $priv
+      chown $user:$user "$domainkeys/$selector.txt"
+
+      # Setup key.table, signing.table and trusted.hosts files to be picked by opendkim
+      echo "$DNSname $maildomain:$selector:$priv"   >> "$dkim/key.table"
+      echo "*@$maildomain $DNSname"                 >> "$dkim/signing.table"
+      echo "*.$maildomain"                          >> "$dkim/trusted.hosts"
+    fi
+  done
 fi
 
 # Setup crontab
