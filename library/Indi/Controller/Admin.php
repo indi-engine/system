@@ -967,7 +967,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Exclude certain column from export, if need
         foreach ($_columnA as $idx => $column)
-            if (t()->grid->gb($column['id'])->skipExcel === 'y')
+            if ((t()->grid->gb($column['id'])->skipExcel ?? 0) === 'y')
                 unset($_columnA[$idx]);
 
         // Get dataIndex-es
@@ -989,12 +989,12 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach ($_columnA as $idx => $columnI) {
 
             // Apply dataIndex and alignment in certain cases
-            if ($dataIndexA[$columnI['id']]) {
+            if ($dataIndexA[$columnI['id']] ?? 0) {
                 $_columnA[$idx]['dataIndex'] = $dataIndexA[$columnI['id']];
-            } else if ($columnI['id'] == 'id') {
+            } else if ($columnI['id'] === 'id') {
                 $_columnA[$idx]['dataIndex'] = $columnI['id'];
                 $_columnA[$idx]['align'] = 'right';
-            } else if ($columnI['id'] == 'rownumberer') {
+            } else if ($columnI['id'] === 'rownumberer') {
                 $_columnA[$idx]['align'] = 'right';
             } else {
                 unset($_columnA[$idx]);
@@ -1005,7 +1005,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         }
 
         // Build columns array, indexed by 'dataIndex' prop
-        foreach ($_columnA as $_columnI) $columnA[$_columnI['dataIndex']] = $_columnI;
+        foreach ($_columnA as $_columnI) $columnA[$_columnI['dataIndex'] ?? $_columnI['id']] = $_columnI;
 
         // Adjust exported columns
         $this->adjustExportColumns($columnA);
@@ -1165,7 +1165,7 @@ class Indi_Controller_Admin extends Indi_Controller {
             ]);
 
             // If color definition is a value in rgb-format
-            if ($color = Indi::rexm('rgb', $columnI['color'], 1)) {
+            if ($color = Indi::rexm('rgb', $columnI['color'] ?? '', 1)) {
 
                 // Apply default color for all non-data cells within this column
                 $sheet->getStyle($columnL . '1:' . $columnL . $beforeDataRowIndex)
@@ -1692,7 +1692,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($columnI['width'] ?? 0) $sheet->getColumnDimension($columnL)->setWidth(ceil($columnI['width'] / $ratio));
 
                 // Replace &nbsp;
-                $columnI['title'] = str_replace($html['code'], $html['char'], $columnI['title']);
+                $columnI['title'] = str_replace($html['code'], $html['char'], $columnI['title'] ?? '');
 
                 // Try detect an image
                 if ($columnI['icon'] ?? 0) {
@@ -1740,7 +1740,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $sheet->SetCellValue($cellSinceCoord, $columnI['title']);
 
                 // If current column is an order-column
-                if ($columnI['dataIndex'] == $order->property ?? '') {
+                if (($columnI['dataIndex'] ?? 0) === $order->property ?? '') {
 
                     // Pick icon
                     $iconFn = DOC . STD . VDR . '/client/resources/images/icons/sort_' . strtolower($order->direction) . '.gif';
@@ -1778,7 +1778,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 if ($columnI['colspan'] > 1) {
                     $align = 'center';
                 } else if (($columnI['align'] ?? 0) === 'right') {
-                    if (($order->property ?? '') == $columnI['dataIndex']) {
+                    if (($order->property ?? '') === ($columnI['dataIndex'] ?? 0)) {
                         $align = 'left';
                     } else {
                         $align = 'center';
@@ -1958,8 +1958,8 @@ class Indi_Controller_Admin extends Indi_Controller {
                     : m()->fields($columnI['dataIndex'])->foreign('elementId')->alias;
 
                 // Get the index/value
-                if ($columnI['dataIndex']) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?? $data[$i][$columnI['dataIndex']] ?? ' ';
-                else if ($columnI['id'] == 'rownumberer') $value = $data[$i]['_system']['disabled'] ? '' : ++ $index;
+                if ($columnI['dataIndex'] ?? 0) $value = ((array) $data[$i]['_render'])[$columnI['dataIndex']] ?? $data[$i][$columnI['dataIndex']] ?? ' ';
+                else if ($columnI['id'] == 'rownumberer') $value = ($data[$i]['_system']['disabled'] ?? 0) ? '' : ++ $index;
                 else $value = '';
 
                 // Strip data-title attributes having 'style=' as inner html-encoded contents
@@ -1967,7 +1967,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $value = preg_replace('~data-title=".*?style=.*?"~', '', $value);
 
                 // If we have chunked contents for this column
-                if ($chunks = $data[$i]['_richtext'][$columnI['dataIndex']] ?? 0) {
+                if (($columnI['dataIndex'] ?? 0) && $chunks = $data[$i]['_richtext'][$columnI['dataIndex']] ?? 0) {
 
                     // In order to support different styles for different chunks of text within the same
                     // spreadsheet cell - we have to use richtext
@@ -2062,7 +2062,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     $a[1] = $protocol . $server . $a[1];
 
                     // Filter
-                    $url = array_shift(explode(' ', trim($a[1])));
+                    $url = explode(' ', trim($a[1]))[0];
 
                     // Try detect an image
                     if (preg_match('/<img src="([^"]+)"/', $value, $src) && $abs = Indi::abs($src[1])) {
@@ -2144,7 +2144,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Apply color
                     if ($value == 0) {
                         $sheet->getStyle($coord)->getFont()->getColor()->setRGB('d3d3d3');
-                    } else if (Indi::rexm('int11', $level = $columnI['color'])) {
+                    } else if (isset($columnI['color']) && Indi::rexm('int11', $level = $columnI['color'])) {
                         $sheet->getStyle($coord)->getFont()->getColor()->setRGB($value >= $level ? '32cd32' : 'ff0000');
                     }
                 }
@@ -2203,6 +2203,9 @@ class Indi_Controller_Admin extends Indi_Controller {
 
                 // Convert the column index to excel column letter
                 $columnL = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($n + 1);
+
+                // Skip columns having no dataIndex
+                if (!isset($columnI['dataIndex'])) continue;
 
                 // Get the summary value for current column or skip
                 if (!($value = $summary->{$columnI['dataIndex']} ?? null)) continue;
@@ -3766,7 +3769,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$apply['section'] || !$apply['hash']) return;
 
         // If there is no such a scope - return
-        if (!$_SESSION['indi']['admin'][$apply['section']][$apply['hash']]) return;
+        if (!isset($_SESSION['indi']['admin'][$apply['section']][$apply['hash']])) return;
 
         // Preliminary unset 'section' and 'hash' params from $merge array, before merging with $_SESSION[...]
         $merge = $apply; unset($merge['section'], $merge['hash']);

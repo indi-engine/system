@@ -64,7 +64,7 @@ function ehandler($type = null, $message = null, $file = null, $line = null) {
         $file = str_replace(DOC . STD . '/', '', $file);
 
         // Get data to be logged as file
-        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1), $_SERVER];
+        $data = [$type, $message, $file, $line, array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1), $_SERVER, (array) Indi::post()];
 
         // Prepare path to thatfile
         $path = "log/err/" . str_replace('/', '-', $file) . "-$line.txt";
@@ -1050,7 +1050,7 @@ function jprompt($msg, array $cfg) {
     if ($flush['prompt'] > 1)
         for ($i = 1; $i < $flush['prompt']; $i++)
             if ($name = '_prompt' . rif($i - 1, $i))
-                $flush[$name] = json_decode(Indi::post($name));
+                $flush[$name] = json_decode(Indi::post($name) ?? '');
 
     // Send content type header
     if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));

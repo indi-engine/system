@@ -34,7 +34,7 @@ if (!defined('WIN')) define('WIN', preg_match('~^WIN~', PHP_OS));
 define('DEV', preg_match('~local~', $_SERVER['HTTP_HOST']));
 
 // Setup $_SERVER['STD'] and $_SERVER['VDR'] as php constants, for being easier accessible
-define('STD', $_SERVER['STD']); define('VDR', '/' . $vdr = $_SERVER['VDR']);
+define('STD', $_SERVER['STD'] ?? ''); define('VDR', '/' . $vdr = $_SERVER['VDR']);
 
 // Setup $GLOBALS['cmsOnlyMode'] as php constant, for being easier accessible
 define('COM', $GLOBALS['cmsOnlyMode'] ?? false);

@@ -2170,9 +2170,9 @@ class Indi {
 
         // General info
         $msg = 'Datetime: ' . date('Y-m-d H:i:s') . '<br>';
-        $msg .= 'HOST: ' . $_SERVER['HTTP_HOST'] . '<br>';
+        $msg .= 'HOST: ' . ($_SERVER['HTTP_HOST'] ?? '') . '<br>';
         $msg .= 'URI: ' . URI . '<br>';
-        $msg .= 'Remote IP: ' . ($_SERVER['REMOTE_ADDR'] ?? null) . '<br>';
+        $msg .= 'Remote IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '') . '<br>';
 
         // Who?
         if (admin()->id ?? 0) $msg .= 'Admin [id#' . admin()->id . ']: ' . admin()->title . '<br>';
@@ -2202,7 +2202,7 @@ class Indi {
                         $mail .= ',' . $ccI;
 
             // Send mail
-            @mail($mail, $type . ' happened at ' . $_SERVER['HTTP_HOST'], $msg, 'Content-Type: text/html; charset=utf-8');
+            @mail($mail, $type . ' happened at ' . ($_SERVER['HTTP_HOST'] ?? ''), $msg, 'Content-Type: text/html; charset=utf-8');
         }
 
         // If mailing failed - write to special *.log file
@@ -2261,7 +2261,7 @@ class Indi {
         }
 
         // Get session data, containing info about current logged-in admin
-        $me = (object) $_SESSION['admin'];
+        $me = (object) ($_SESSION['admin'] ?? []);
 
         // If $mode args is explicitly given return session data, stored under $mode key within $_SESSION
         return is_string($prop) ? $me->$prop : $me;

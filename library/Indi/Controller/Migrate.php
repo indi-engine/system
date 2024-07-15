@@ -1,5 +1,9 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function compatiblecleanAction(){
+        $text = coltype('TEXT');
+        $text->set('elementId', $text->foreign('elementId')->fis())->save();
+    }
     public function dnsAction() {
         action('dns', ['title' => 'Необходимые DNS-записи', 'fraction' => 'system', 'selectionRequired' => 'n']);
         section2action('actions','dns', [

@@ -14,7 +14,7 @@ class Filter_Row extends Indi_Db_Table_Row {
         // Provide ability for some props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
             if ($columnName == 'sectionId') $value = section($value)->id;
-            else if ($columnName == 'fieldId') $value = field(section($this->sectionId)->entityId, $value)->id;
+            else if ($columnName == 'fieldId') $value = $value ? field(section($this->sectionId)->entityId, ar($value)[0])->id : 0;
             else if ($columnName == 'move') return $this->_system['move'] = $value;
             else if ($columnName == 'further') $value = field(field(section($this->sectionId)->entityId, $this->fieldId)->relation, $value)->id;
             else if ($columnName == 'accessExcept') {

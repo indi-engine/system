@@ -35,6 +35,9 @@ class Indi_Uri_Base {
             . '/' . ltrim($uri, '/')
             . rif(!preg_match('~\?~', $uri), '/');
 
+        // If request url starts with double slash - flush failure
+        if (preg_match('~^//~', $_SERVER['REQUEST_URI'])) jflush(false, I_URI_ERROR_SECTION_FORMAT);
+
         // If project located in some subfolder of $_SERVER['DOCUMENT_ROOT'] instead of directly in it
         // we strip mention of that subfolder from $_SERVER['REQUEST_URI']
         if (STD) $_SERVER['REQUEST_URI'] = preg_replace('!^' . STD . '!', '', $_SERVER['REQUEST_URI']);
@@ -42,15 +45,11 @@ class Indi_Uri_Base {
         // If 'cms-only' mode is turned on, we prepend $_SERVER['REQUEST_URI'] with '/admin'
         if (COM) $_SERVER['REQUEST_URI'] = '/admin' . ($_SERVER['REQUEST_URI'] ?? null);
 
-        // If no http host defined - log that
-        if (!isset($_SERVER['HTTP_HOST']))
-            Indi::log('no-httphost', [$_SERVER, CMD, stack()], true);
-
-        // Build the full url by prepending protocol and hostname, and parse it by parse_url() function
-        $uri = parse_url('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+        // Extract path component from request uri
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         // Trim '/' from 'path' item, got by parse_url() usage, and explode it by '/'
-        $uri = explode('/', trim($uri['path'], '/'));
+        $uri = explode('/', trim($uri, '/'));
 
         // Set default params
         $this->module = 'front';

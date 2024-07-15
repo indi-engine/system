@@ -3384,7 +3384,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (is_array($where)) $nested = array_merge($nested, count($where = un($where, [null, ''])) ? $where : []);
 
         // Else if where arg is a non-empty string
-        else if (strlen($where)) $nested []= "($where)";
+        else if (strlen($where ?? '')) $nested []= "($where)";
 
         // Prepare WHERE clause
         $where = im($nested, ' AND ');
