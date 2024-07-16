@@ -2236,8 +2236,8 @@ class Indi {
         $mail = new \PHPMailer\PHPMailer\PHPMailer();
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        if ($fe = ini('mail')->default->from->email) $mail->From = $fe;
-        if ($fn = ini('mail')->default->from->name)  $mail->FromName = $fn;
+        if ($fe = ini('mail')->default->from->email ?? 0) $mail->From = $fe;
+        if ($fn = ini('mail')->default->from->name ?? 0)  $mail->FromName = $fn;
         return $mail;
     }
 

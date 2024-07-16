@@ -70,7 +70,7 @@ class Indi_Controller {
         // If module is 'front', and design-specific config was set up,
         // detect design specific dir name, that will be used to build
         // additional paths for both scripts and helpers
-        if (uri('module') == 'front' && is_array($dsdirA = (array) ini('view')->design))
+        if (uri('module') == 'front' && is_array($dsdirA = isset(ini('view')->design) ? (array) ini('view')->design : false))
             foreach($dsdirA as $dsdirI => $domainS) foreach (explode(' ', $domainS) as $domain) {
 
                 // Split $domain by domain name itself and admin-type, that may be specified
@@ -421,7 +421,7 @@ class Indi_Controller {
                 if ($further) list($foreign, $further) = explode('_', $found->alias);
 
                 // Pick the current filter field title to $excelA
-                if (array_key_exists($found->alias, $excelA) == false) {
+                if ($found && array_key_exists($found->alias, $excelA) == false) {
 
                     // Get filter `rename` property
                     $rename = '';
@@ -433,7 +433,7 @@ class Indi_Controller {
                 }
 
                 // If field is not storing foreign keys
-                if (!$found || $found->storeRelationAbility == 'none') {
+                if (!$found) {} else if ($found->storeRelationAbility == 'none') {
 
                     // If $found field's control element is 'Color'
                     if ($found->elementId == 11) {

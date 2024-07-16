@@ -3766,7 +3766,7 @@ class Indi_Controller_Admin extends Indi_Controller {
         if (!$apply = json_decode($apply, true)) return;
 
         // If $apply object does not have either `section` or `hash` properties - return
-        if (!$apply['section'] || !$apply['hash']) return;
+        if (!$apply['section'] || !($apply['hash'] ?? 0)) return;
 
         // If there is no such a scope - return
         if (!isset($_SESSION['indi']['admin'][$apply['section']][$apply['hash']])) return;
