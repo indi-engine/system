@@ -702,6 +702,9 @@ class Indi_Controller_Admin extends Indi_Controller {
         // Convert to int
         uri()->aix = (int) uri()->aix;
 
+        // Get the page of results, that we were at
+        $wasPage = t()->scope->page;
+
         // Try to delete
         try {
 

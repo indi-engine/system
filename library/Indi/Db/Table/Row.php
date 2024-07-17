@@ -7625,7 +7625,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             $selected = ['value' => $selectedValue];
 
             // Set up html attributes for hidden input, if optionAttrs param was used
-            $exploded = explode(',', $selected['value']);
+            $exploded = $selected['value'] ? explode(',', $selected['value']) : [];
             $attrs = [];
             for ($i = 0; $i < count($exploded); $i++) {
                 if ($options[$exploded[$i]]['attrs'] ?? null) {
