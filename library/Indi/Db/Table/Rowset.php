@@ -1944,7 +1944,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
      *
      * @param string $column
      * @param false $unique
-     * @return array
+     * @return string
      */
     public function fis($column = 'id', $unique = false) {
         return $this->column($column, ',', $unique);

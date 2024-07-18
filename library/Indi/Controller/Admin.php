@@ -3171,8 +3171,8 @@ class Indi_Controller_Admin extends Indi_Controller {
         foreach (t()->fields as $fieldR)
             if (!in($fieldR->mode, 'hidden,readonly'))
                 if ($fieldR->foreign('elementId')->alias == 'upload')
-                    if (preg_match('/^m|d$/', Indi::post($fieldR->alias)) ||
-                        preg_match(Indi::rex('url'), Indi::post($fieldR->alias)))
+                    if (preg_match('/^m|d$/', Indi::post($fieldR->alias) ?? '') ||
+                        preg_match(Indi::rex('url'), Indi::post($fieldR->alias) ?? ''))
                         $filefields[] = $fieldR->alias;
 
         // If we're going to save new row - setup $updateAix flag

@@ -85,8 +85,14 @@ class Realtime extends Indi_Db_Table {
 
         // Get involved fields
         $fields = t()->row
-            ? t()->fields->select('regular,required,readonly', 'mode')->column('id', ',')
-            : t()->gridFields->select(': > 0')->column('id', ',');
+            ? t()->fields->select('regular,required,readonly', 'mode')
+            : t()->gridFields->select(': > 0');
+
+        //
+        $fieldIdA = [];
+        foreach ($fields as $field)
+            if ($id = $field->original('id'))
+                $fieldIdA []= $id;
 
         // Create `realtime` entry of `type` = "context"
         $realtimeR_context = m('realtime')->new([
@@ -95,7 +101,7 @@ class Realtime extends Indi_Db_Table {
             'token' => t()->bid(),
             'sectionId' => t()->section->id,
             'entityId' => t()->section->entityId,
-            'fields' => $fields,
+            'fields' => im($fieldIdA),
             'title' => t(true)->toString(),
             'mode' => t()->action->selectionRequired == 'y' ? 'row' : 'rowset'
         ] + $data);
