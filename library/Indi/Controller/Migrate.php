@@ -1,5 +1,9 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function usability1Action() {
+        enumset('alteredField', 'toggle', 'y', ['boxIcon' => 'resources/images/icons/btn-icon-lime.png']);
+        enumset('alteredField', 'toggle', 'n', ['boxIcon' => 'resources/images/icons/btn-icon-red.png']);
+    }
     public function compatiblecleanAction(){
         $text = coltype('TEXT');
         $text->set('elementId', $text->foreign('elementId')->fis())->save();
