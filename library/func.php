@@ -1043,23 +1043,31 @@ function jconfirm($msg, $buttons = 'OKCANCEL', $httpStatus = '400 Bad Request') 
  */
 function jprompt($msg, array $cfg) {
 
-    // Start building data for flushing
-    $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg];
+    // If $msg argument is an array, we assume custom configuration object
+    // is given containing fields somewhere inside rather than as top-level items
+    if (is_array($msg)) jpopup($msg);
 
-    // Append prev prompts data
-    if ($flush['prompt'] > 1)
-        for ($i = 1; $i < $flush['prompt']; $i++)
-            if ($name = '_prompt' . rif($i - 1, $i))
-                $flush[$name] = json_decode(Indi::post($name) ?? '');
+    // Else
+    else {
 
-    // Send content type header
-    if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
+        // Start building data for flushing
+        $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'msg' => $msg, 'cfg' => $cfg];
 
-    // Here we send HTTP/1.1 400 Bad Request to prevent success handler from being fired
-    if (!headers_sent() && !isIE()) header('HTTP/1.1 400 Bad Request');
+        // Append prev prompts data
+        if ($flush['prompt'] > 1)
+            for ($i = 1; $i < $flush['prompt']; $i++)
+                if ($name = '_prompt' . rif($i - 1, $i))
+                    $flush[$name] = json_decode(Indi::post($name) ?? '');
 
-    // Flush
-    iexit(json_encode($flush));
+        // Send content type header
+        if (!headers_sent()) header('Content-Type: '. (isIE() ? 'text/plain' : 'application/json'));
+
+        // Here we send HTTP/1.1 400 Bad Request to prevent success handler from being fired
+        if (!headers_sent() && !isIE()) header('HTTP/1.1 400 Bad Request');
+
+        // Flush
+        iexit(json_encode($flush));
+    }
 }
 
 /**
@@ -1073,7 +1081,7 @@ function jpopup(array $cfg) {
     $flush = ['prompt' => Indi::$answer ? count(Indi::$answer) + 1 : true, 'cfg' => $cfg];
 
     // No action on popup close, by default
-    $flush['cfg']['fn'] ??= false;
+    //$flush['cfg']['fn'] ??= false;
 
     // Setup isCustomChild-flags
     if (isset($flush['cfg']['items'][0])) {
