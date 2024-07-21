@@ -270,7 +270,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         }
 
         // Set `title`
-        $this->title = mb_substr($title, 0, 255, 'utf-8');
+        $this->title = mb_substr($title ?? '', 0, 255, 'utf-8');
     }
 
     /**
@@ -5201,7 +5201,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 $this->_files[$field] = Indi::post($field);
 
             // If url was detected in $_POST data under key, assotiated with file-upload field
-            } else if (preg_match(Indi::rex('url'), Indi::post($field))) {
+            } else if (preg_match(Indi::rex('url'), Indi::post($field) ?? '')) {
 
                 // Assign $meta under $field key within $this->_files array
                 $this->_files[$field] = Indi::post($field);

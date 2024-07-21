@@ -868,7 +868,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 // to empty string
                 if (isset($typeA['date'][$columnI])
                     && $typeA['date'][$columnI]['displayFormat']
-                    && preg_match(Indi::rex('date'), $value))
+                    && preg_match(Indi::rex('date'), $value ?? ''))
 
                     $data[$pointer]['_render'][$columnI] = $value == '0000-00-00'
                         ? ''
@@ -1029,8 +1029,8 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                         // Wrap cell contents into a <span jump="someuri">
                         $wrap = $data[$pointer]['_render'][$columnI] ?? $data[$pointer][$columnI];
                         if ($j) {
-                            $href = str_replace('{id}', $id, $j);
-                            $href = str_replace('{value}', $data[$pointer][$columnI], $href);
+                            $href = str_replace('{id}', $id ?? '', $j);
+                            $href = str_replace('{value}', $data[$pointer][$columnI] ?? '', $href);
                             $href = preg_replace_callback('~\{(?<alias>[a-z0-9_]+)\}~i', function($m) use ($r){
                                 return $r->{$m['alias']};
                             }, $href);
@@ -1882,7 +1882,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $rows = [];
 
                     // Setup an array, containing keys, that will be used to find match in
-                    $set = explode(',', $r->$key);
+                    $set = strlen($r->$key ?? '') ? explode(',', $r->$key) : [];
 
                     // For each foreign row, fetched for entity, that have same id as $foreignKeyEntityId
                     foreach ($foreignRs[$foreignKeyEntityId] as $foreignR)

@@ -133,6 +133,9 @@ class Indi_Controller {
         // Else use first
         } else ini()->design = ini()->design[0] ?? null;
 
+        // If design is still not picked - pick first
+        if (is_array(ini()->design)) ini()->design = ini()->design[0];
+
         // Do paths setup twice: first for module-specific paths, second for general-paths
         for ($i = 0; $i < 2; $i++) {
 

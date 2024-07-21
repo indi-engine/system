@@ -7,17 +7,17 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
      */
     public function dnsAction() {
 
+        // Get domains
+        $hostA = explode(' ', trim(getenv('EMAIL_SENDER_DOMAIN') ?: getenv('LETS_ENCRYPT_DOMAIN')));
+
+        // If no domains - flush failure
+        if (count($hostA) === 0) jflush(false, 'EMAIL_SENDER_DOMAIN is empty');
+
         // If no prompt was submitted so far
         if (!isset(Indi::get()->answer)) {
 
             // Prepare external IP address and DKIM data
             $addr = $this->exec('wget -qO- http://ipecho.net/plain');
-
-            // Get domains
-            $hostA = explode(' ', trim(getenv('EMAIL_SENDER_DOMAIN') ?: getenv('LETS_ENCRYPT_DOMAIN')));
-
-            // If no domains - flush failure
-            if (count($hostA) === 0) jflush(false, 'EMAIL_SENDER_DOMAIN is empty');
 
             // Prepare DNS records for each domain
             $items = [];
@@ -62,7 +62,7 @@ class Admin_ActionsController extends Indi_Controller_Admin_Exportable {
             'items' => [
                 'controller' => 'actions',
                 'xtype' => 'tabpanel',
-                'items' => $items,
+                'items' => $items ?? [],
                 'dockedItems' => [[
                     'dock' => 'bottom',
                     'defaults' => [

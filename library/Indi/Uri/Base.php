@@ -49,7 +49,7 @@ class Indi_Uri_Base {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         // Trim '/' from 'path' item, got by parse_url() usage, and explode it by '/'
-        $uri = explode('/', trim($uri, '/'));
+        $uri = explode('/', trim($uri ?? '', '/'));
 
         // Set default params
         $this->module = 'front';

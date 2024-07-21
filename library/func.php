@@ -376,7 +376,7 @@ function tbq($q = 2, $versions012 = '', $showNumber = true, $lang = null) {
             if (strpos($spanA[$k], '-') === false) {
 
                 // If quantity count ends with that digit
-                if (preg_match('/' . $spanA[$k] . '$/', $q))
+                if (preg_match('/' . $spanA[$k] . '$/', $q ?? ''))
 
                     // Return the quantity (if $showNumber argument is true), with appended spell version
                     return ($showNumber ? $q . ' ' : '') . $formatV;
@@ -391,7 +391,7 @@ function tbq($q = 2, $versions012 = '', $showNumber = true, $lang = null) {
                 for ($m = $interval[0]; $m <= $interval[1]; $m ++) {
 
                     // If quantity count ends with that digit
-                    if (preg_match('/' . $m . '$/', $q))
+                    if (preg_match('/' . $m . '$/', $q ?? ''))
 
                         // Return the quantity (if $showNumber argument is true), with appended spell version
                         return ($showNumber ? $q . ' ' : '') . $formatV;
