@@ -94,7 +94,7 @@ class Indi_Queue_L10n extends Indi_Queue {
             if ($table && $field) {
 
                 // Check whether we will use setter method call (instead of google translate api call) as queue-stage
-                $setter = method_exists(m($table)->new(), $_ = 'set' . ucfirst($field)) ? $_ : false;
+                $setter = method_exists($table, $_ = 'set' . ucfirst($field)) ? $_ : false;
 
                 // Build WHERE clause
                 $where = [];

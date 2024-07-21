@@ -199,6 +199,9 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Foreach prop check
         foreach ($data as $k => $v) {
 
+            // Skip non-scalar values
+            if (!is_scalar($v)) continue;
+
             // If prop's value is a string, containing integer value - force value type to be integer, not string
             if (preg_match(Indi::rex('int11'), $v ?? '')) $data[$k] = (int) $v;
 
@@ -5599,6 +5602,9 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     public function assign(array $assign) {
 
+        // Convert numeric strings to integer and float where applicable
+        $assign = $this->fixTypes($assign);
+
         // Assign props in batch mode, but ignore ones starting with underscope
         foreach ($assign as $k => $v) if (!preg_match('/^_/', trim($k))) $this->{trim($k)} = $v;
 
@@ -6020,17 +6026,24 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Else if we deal with dates - return difference in seconds
             else if (Indi::rexm('datetime', $this->_original[$prop]))
-                return strtotime($this->_modified[$prop]) - strtotime($this->_original[$prop]);
+                return strtotime($this->_modified[$prop])
+                     - strtotime($this->_original[$prop]);
 
             // Else
             else {
 
-                // If any version of $prop is not numeric - log that for further investigation
-                if (!is_numeric($this->_modified[$prop]) || !is_numeric($this->_original[$prop]))
-                    Indi::log('non-well-formed-numeric', [$prop, $this], true);
+                // Get modified value with no non-numeric characters, if any
+                $modified = is_numeric($this->_modified[$prop])
+                    ? $this->_modified[$prop]
+                    : preg_replace('~[^0-9.]~', '', $this->_modified[$prop]);
 
-                // Return result of deduction of previous value from modified value
-                return $this->_modified[$prop] - $this->_original[$prop];
+                // Get original value with no non-numeric characters, if any
+                $original = is_numeric($this->_original[$prop])
+                    ? $this->_original[$prop]
+                    : preg_replace('~[^0-9.]~', '', $this->_original[$prop]);
+
+                // Return result of deduction of original value from modified value
+                return $modified - $original;
             }
 
         // Return empty array or 0, depend on whether field definition

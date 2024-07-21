@@ -204,7 +204,7 @@ trait Indi_Controller_Admin_Trait_Plan {
         $until = uri('until');
 
         // Setup `extraUri`, for 'since' and 'until' uri-params being kept even if entry's form will be reloaded
-        t()->action->extraUri = '/since/' . $since . ($until ? '/until/' . $until : '');
+        t()->action->extraUri = '/since/' . $since . rif($until,'/until/$1');
 
         // Get space scheme and fields
         $space = m()->space();

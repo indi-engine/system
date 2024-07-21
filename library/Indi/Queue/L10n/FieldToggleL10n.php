@@ -338,7 +338,7 @@ class Indi_Queue_L10n_FieldToggleL10n extends Indi_Queue_L10n {
         if (($params['toggle'] ?? null) == 'n' || $setter) return 0;
 
         // If target-param is comma-separated string - return number of items
-        if (is_string($params['target'])) return count(ar($params['target']));
+        if (is_string($params['target'] ?? 0)) return count(ar($params['target']));
 
         // Return 1 by default
         return 1;

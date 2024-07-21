@@ -1130,7 +1130,7 @@ class Indi_Schedule {
         if (self::$_timeHiA === null) self::$_timeHiA = array_flip(self::$_timeIdA);
 
         // If t$Hi arg (time in 'H:i' format) is given - return id of corresponding `time` entry
-        return $Hi ? self::$_timeIdA[func_get_arg(0)] : self::$_timeIdA;
+        return $Hi ? (self::$_timeIdA[func_get_arg(0)] ?? null) : self::$_timeIdA;
     }
 
     /**

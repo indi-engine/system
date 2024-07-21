@@ -2264,7 +2264,7 @@ class Indi {
         $me = (object) ($_SESSION['admin'] ?? []);
 
         // If $mode args is explicitly given return session data, stored under $mode key within $_SESSION
-        return is_string($prop) ? $me->$prop : $me;
+        return is_string($prop) ? ($me->$prop ?? null) : $me;
     }
 
     /**
