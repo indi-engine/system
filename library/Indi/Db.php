@@ -1053,4 +1053,84 @@ class Indi_Db {
     public function multiRefs($rule = null) {
         return $rule ? (self::$_multiRefA[$rule] ?? []) : self::$_multiRefA;
     }
+
+    /**
+     * Convert basic sql query into CTE expression to preserve order of results that might be given by ORDER clause
+     * and order of results that might be caused by the treeified sequence, which means child items should be always
+     * after their parents, so that ORDER clause works within direct childs of same parents rather than within the entire resultset
+     *
+     * @param string $sql
+     * @param string $base
+     * @return string
+     */
+    public function treeify(string $sql, string $base = '') {
+
+        // Parse $sql
+        preg_match('~^\s*
+            SELECT    \s+(?<props>.+?)\s+
+            FROM      \s+`(?<table>[a-zA-Z0-9_]+)`
+            (?<where> \s+ WHERE     \s+.*?)?
+            (?<having>\s+ HAVING    \s+.*?)?
+            (?<order> \s+ ORDER\sBY \s+.*?)?
+            (?<limit> \s+ LIMIT     \s+.*?)?
+        $~sx', $sql, $m);
+
+        // Shortcuts
+        $props  = $m['props'];
+        $table  = trim($m['table']);
+        $where  = trim($m['where']  ?? '');
+        $having = trim($m['having'] ?? '');
+        $order  = trim($m['order']  ?? '');
+        $limit  = trim($m['limit']  ?? '');
+        $parentId = "{$table}Id";
+        $root = "$table-root";
+        $rest = "$table-rest";
+        $prev = "$table-prev";
+
+        // Path stuff
+        $pathName = "tree-path";
+        $pathExpr = "CAST(LPAD(ROW_NUMBER() OVER `w`, 2, 0) AS CHAR(200)) AS `$pathName`";
+
+        //
+        if ($base) {
+            $base = "`$prev` AS ($base),";
+            $from = "{$table}-prev";
+        } else {
+            $base = '';
+            $from = $table;
+        }
+
+        // Prepare recursive CTE query
+        $sql = <<<SQL
+        WITH RECURSIVE
+           $base
+          `$rest` AS (
+            SELECT
+              $pathExpr,
+              `$table`.*
+            FROM `$from` `$table`
+            WHERE NOT ISNULL(`$parentId`)
+            WINDOW `w` AS ($order)
+          ),
+          `$root` AS (
+            SELECT
+              $pathExpr,
+              '--',
+              `$table`.*
+            FROM `$from` `$table`
+            WHERE ISNULL(`$parentId`)
+            WINDOW `w` AS ($order)
+          UNION ALL
+            SELECT
+              CONCAT(`$root`.`$pathName`, `$rest`.`$pathName`) AS `$pathName`,
+              `$rest`.*
+            FROM `$root`
+              JOIN `$rest` ON `$rest`.`$parentId` = `$root`.`id`
+          )
+        SELECT $props FROM `$root` $where $having ORDER BY `$pathName` $limit
+        SQL;
+
+        // Return treeified sql
+        return $sql;
+    }
 }
