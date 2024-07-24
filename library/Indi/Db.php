@@ -16,6 +16,13 @@ class Indi_Db {
     protected static $_pdo = null;
 
     /**
+     * MySQL server version
+     *
+     * @var string
+     */
+    public static $version = null;
+
+    /**
      * Array of loaded models, with model class names as keys
      *
      * @var array
@@ -1132,5 +1139,24 @@ class Indi_Db {
 
         // Return treeified sql
         return $sql;
+    }
+
+    /**
+     * Usages:
+     *  which()    => "8.0.36"        Current version
+     *  which(5.6) => false           Boolean flag, indicating current version matches $which version
+     *
+     * @param $which
+     * @return string|bool
+     */
+    public function version(string $which = '') {
+
+        // Get version
+        self::$version ??= self::query('SELECT VERSION()')->cell();
+
+        // If $which arg is given -
+        return $which
+            ? !!preg_match('~^' . preg_quote($which, '~') .'~', self::$version)
+            : self::$version;
     }
 }

@@ -253,19 +253,40 @@ class Indi_Controller_Admin extends Indi_Controller {
                     // Else behave in an standard way
                     } else {
 
+                        // Setup flag indicating whether CTEs are supported by current version of mysql server
+                        $isCTEsupported = db()->version('5') === false;
+
                         // Try to get rowset
                         do {
 
-                            // Get the rowset, fetched using WHERE and ORDER clauses, and with built LIMIT clause,
-                            // constructed with usage of Indi::get('limit') and Indi::get('page') params
-                            $this->rowset = m()->{$fetchMethod}($finalWHERE, $finalORDER,
-                                $limit = uri()->format == 'json' || !uri()->format ? (int)Indi::get('limit') : null,
-                                $page = uri()->format == 'json' || !uri()->format ? (int)Indi::get('page') : null,
-                                null,
-                                null,
-                                ($fetchMethod == 'fetchAll') ?: null,
-                                false,
-                                $fetchMethod == 'fetchTree');
+                            // Shortcuts
+                            $limit = uri()->format == 'json' || !uri()->format ? (int) Indi::get('limit') : null;
+                            $page  = uri()->format == 'json' || !uri()->format ? (int) Indi::get('page')  : null;
+
+                            // If CTEs are supported
+                            if ($isCTEsupported) {
+
+                                // Get the rowset. If it's a tree - $finalORDER does affect the order of direct childs
+                                // within same parents on mysql-level using native Common Table Expressions feature
+                                $this->rowset = m()->fetchAll($finalWHERE, $finalORDER, $limit, $page,null,null,
+                                    true,
+                                    false,
+                                    true
+                                );
+
+                            // Else
+                            } else {
+
+                                // Get the rowset. If it's a tree - $finalORDER does affect the order of direct childs
+                                // within same parent on php-level with preliminary fetch of all [id => parentId] pairs
+                                // in the right order, preparing the whole tree and then re-ordering records in RAM
+                                // according to tree and preserving $finalORDER where possible
+                                $this->rowset = m()->{$fetchMethod}($finalWHERE, $finalORDER, $limit, $page, null, null,
+                                    ($fetchMethod === 'fetchAll') ?: null,
+                                    false,
+                                    $fetchMethod === 'fetchTree'
+                                );
+                            }
 
                             // If we're at 2nd or further page, but no results - try to detect new prev page
                             $shift = $limit && $page > 1 && !$this->rowset->count() && ($found = $this->rowset->found()) ? ceil($found / $limit) : 0;
