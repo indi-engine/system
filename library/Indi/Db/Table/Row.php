@@ -1040,7 +1040,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Update `realtime` entry
                     $realtimeR->basicUpdate();
 
-                // Else if deleted entry is on prev or next page
+                // Else if entry was deleted from prev or next page
                 } else if (!$where || db()->query("
                     SELECT `id` FROM ({$this->phantom()}) AS `{$this->_table}` $where
                 ")->cell()) {
@@ -1051,14 +1051,54 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Get comma-separated ids list for First And/Or Last entries/entry on the page
                     $faol = []; if ($first) $faol []= $first; if ($last) $faol []= $last; $faol = im($faol);
 
-                    // If not empty - build SELECT
-                    if ($faol) $faol = "SELECT * FROM `{$this->_table}` WHERE `id` IN ($faol)";
+                    // The goal here is to detect whether deleted record was from one of previous pages or was from one
+                    // of further pages. To detect that, we need to order (according to $scope['ORDER']) the ids of:
+                    //
+                    //  - deleted record
+                    //  - first record from current page
+                    //  - last record from current page
+                    //
+                    // If position of deleted record would be recognized as 'before first record from current page'
+                    // this would mean deleted record belongs to one of previous pages, else if deleted record's
+                    // position would be recognized as 'after last record from current page' - this would mean
+                    // deleted record was deleted from one of further pages.
 
-                    // Create UNION expr
-                    $union = rif($faol, '$1 UNION ') . $this->phantom();
+                    // For non-trees, this is quite simple as we have ids of first and/or last records that are in db
+                    // and full data for record deleted from db, so we build UNIONed SELECTion from 1 or 2 existing
+                    // record(s) and 1 phantom record and then order those according to $order
+                    if (!$treeify || true) {
 
-                    // Get the ordered IDs: deleted, first on current page, and last on current page
-                    $idA = db()->query($sql = "SELECT `id` FROM ($union) AS `{$this->_table}` $order")->col();
+                        // If not empty - build SELECT
+                        if ($faol) $faol = "SELECT * FROM `{$this->_table}` WHERE `id` IN ($faol)";
+
+                        // Create UNION expr
+                        $union = rif($faol, '$1 UNION ') . $this->phantom();
+
+                        // Get the ordered IDs: deleted, first on current page, and last on current page
+                        $idA = db()->query($sql = "SELECT `id` FROM ($union) AS `{$this->_table}` $order")->col();
+
+                    // But for trees, this becomes more complicated, as the $order should be used as a secondary order,
+                    // because the primary order is the position in the tree, as, for example, deleted record might be
+                    // before first record on current page according to $order, but deleted record's parent might be after
+                    // current page's last record's parent, which have more priority on the overall order.
+                    //
+                    // This means that to get the really right order we have to not only get those 3 records, but to get
+                    // all of their parents up to the root, then we must build the small tree having only records that
+                    // are those 3 plus all their parents, then sort that tree by $order, then exclude the added parents
+                    // and only at this step we'll have the original 3 records in the reliable order. The problem is that
+                    // when Maxwell daemon is enabled - we may reach this line at the point in time when parent(s) for
+                    // deleted record do not exist anymore in the database, for example in case of batch and/or cascade
+                    // deletions, so we won't be able to build the tree minimal sufficient for the ORDERing as we just
+                    // don't have enough data anymore.
+                    //
+                    // The solution for this can be to fetch all parents' data before(!) record is deleted from tree,
+                    // and put that data in php cache using apcu_store() function, so that this data could be available
+                    // here within realtime/maxwell/render php background process, for preparing the UNION query to build
+                    // the tree having all the needed data, sort it and get the records ordered in the right way
+                    } else {
+
+                        // todo: implement the things described above
+                    }
 
                     // If deleted entry ID is above the others, it means it belongs to the one of prev pages
                     if ($this->id == array_shift($idA)) {
