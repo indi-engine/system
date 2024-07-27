@@ -822,7 +822,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         ];
 
         // If $event is 'update', 'reload' or 'delete'
-        if ($event == 'update' || $event == 'reload' || $event === 'delete') {
+        if ($event == 'update' || $event == 'reload' /* || $event === 'delete'*/) {
 
             // Append clause for `entries` column
             $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
@@ -906,7 +906,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If scope's tree-flag is true
-                if ($scope['tree'] ?? null) {
+                if ($scope['tree'] ?? 0 && db()->version('5')) {
 
                     // Get raw tree
                     $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
@@ -921,10 +921,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                 } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
                 // Get offset
-                $offset = $scope['rowsOnPage'] * ($scope['page'] ?? null);
+                $offset = $scope['rowsOnPage'] * ($scope['page'] ?? 0);
 
                 // Build usable WHERE clause
-                $where = rif($scope['WHERE'] ?? null, 'WHERE $1');
+                $where = rif($scope['WHERE'] ?? 0, 'WHERE $1');
 
                 // Build usable ORDER BY clause
                 $order = rif($order, 'ORDER BY $1');
@@ -933,7 +933,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    if (($scope['found'] ?? null) > $offset) {
+                    if ($scope['found'] ?? 0 > $offset) {
 
                         // Get id of current page's last record
                         $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
@@ -941,7 +941,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // Prepare WHERE and OFFSET clauses for fetching next page's first record
                         $pgdn1stWHERE = [];
                         if ($scope['WHERE'])     $pgdn1stWHERE []= $scope['WHERE'];
-                        if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ({$realtimeR->entries})";
+                        if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ($realtimeR->entries)";
                         $pgdn1stWHERE = rif(join(' AND ', $pgdn1stWHERE), 'WHERE $1');
 
                         // Nasty hack. todo: investigate how that might happend in /realtime
@@ -952,18 +952,23 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                         // Detect ID of entry that will be shifted from next page's first to current page's last:
                         //
-                        // If current page's last record is still exist, it means that even in case of batch-deletion
-                        // such a deletion was either not intended to reach that record, or was but has not yet reached that
-                        // record so far, so that we can rely on that record while calculating, so to say, 'next' record
+                        // If at least one record from current page still exists, it means that even in case of batch-deletion
+                        // such a deletion was either not intended to reach all records, or was but has not yet reached that
+                        // so far, so that we can rely on that while calculating, so to say, 'next' record
                         // which is the next page's first record to be added to the list of current page's records
                         if ($last
-                            && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
-                            && !in($last, $scope['overpage'] ?? null)) {
+                            && $realtimeR->entries
+                            && db()->query("SELECT `id` FROM `$this->_table` WHERE `id` IN ($realtimeR->entries) LIMIT 1")->cell()
+                            && !in($last, $scope['overpage'] ?? [])) {
 
-                            // Get next record after $last
-                            $next = db()
-                                ->query("SELECT `id` FROM `{$this->_table}` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1")
-                                ->cell();
+                            // Initial sql to get next page's first record
+                            $sql = "SELECT `id` FROM `$this->_table` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1";
+
+                            // If current model has a tree-column - modify sql to rely on CTE
+                            if ($scope['tree'] ?? 0 && !db()->version('5')) $sql = db()->treeify($sql);
+
+                            // Get next page's first record
+                            $next = db()->query($sql)->cell();
 
                             // Unset overpage ids
                             unset($scope['overpage']);
@@ -981,8 +986,14 @@ class Indi_Db_Table_Row implements ArrayAccess
                                     $where = rif($where, "$1 AND ", "WHERE ")
                                         . '`id` NOT IN (' . im($scope['overpage']) . ')';
 
+                                // Initial sql to get next page's first record
+                                $sql = "SELECT `id` FROM `$this->_table` $where $order LIMIT 1";
+
+                                // If current model has a tree-column - modify sql to rely on CTE
+                                if ($scope['tree'] ?? 0 && !db()->version('5')) $sql = db()->treeify($sql);
+
                                 // Fetch record
-                                $next = db()->query("SELECT `id` FROM `{$this->_table}` $where $order LIMIT 1")->cell();
+                                $next = db()->query($sql)->cell();
 
                                 // Append it's id to scope's overpage-array
                                 $scope['overpage'] []= (int) $next;
@@ -1119,7 +1130,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     } else if ($this->id == array_pop($idA)) $byChannel[$channel][$context]['deleted'] = 'next';
 
                     // If $byChannel[$channel][$context] is empty - this means that current entry was already deleted
-                    if ($byChannel[$channel][$context]) {
+                    if ($byChannel[$channel][$context] ?? 0) {
 
                         // Prepare data and group it by channel and context
                         $byChannel[$channel][$context] += [
@@ -1144,7 +1155,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
-                if (($entry = $byChannel[$channel][$context]['deleted']) && is_numeric($entry) && !$scope['rowReqIfAffected']) {
+                if (($entry = $byChannel[$channel][$context]['deleted'] ?? 0) && is_numeric($entry) && !$scope['rowReqIfAffected']) {
 
                     // Get it's actual *_Row instance
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
