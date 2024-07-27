@@ -920,6 +920,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Else build ORDER clause using ordinary approach
                 } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
+                // Setup a flag indicating whether we should transform sql query into CTE expression
+                $treeify = $scope['tree'] ?? false && !db()->version('5');
+
                 // Get offset
                 $offset = $scope['rowsOnPage'] * ($scope['page'] ?? 0);
 
@@ -965,7 +968,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                             $sql = "SELECT `id` FROM `$this->_table` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1";
 
                             // If current model has a tree-column - modify sql to rely on CTE
-                            if ($scope['tree'] ?? 0 && !db()->version('5')) $sql = db()->treeify($sql);
+                            if ($treeify) $sql = db()->treeify($sql);
 
                             // Get next page's first record
                             $next = db()->query($sql)->cell();
@@ -990,7 +993,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 $sql = "SELECT `id` FROM `$this->_table` $where $order LIMIT 1";
 
                                 // If current model has a tree-column - modify sql to rely on CTE
-                                if ($scope['tree'] ?? 0 && !db()->version('5')) $sql = db()->treeify($sql);
+                                if ($treeify) $sql = db()->treeify($sql);
 
                                 // Fetch record
                                 $next = db()->query($sql)->cell();
@@ -1069,24 +1072,29 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                             // Detect ID of entry that will be shifted from next page's first to current page's last:
                             //
-                            // If current page's last record is still exist, it means that even in case of batch-deletion
-                            // such a deletion was either not intended to reach that record, or was but has not yet reached that
-                            // record so far, so that we can rely on that record while calculating, so to say, 'next' record
+                            // If at least one record from current page still exists, it means that even in case of batch-deletion
+                            // such a deletion was either not intended to reach all records, or was but has not yet reached that
+                            // so far, so that we can rely on that while calculating, so to say, 'next' record
                             // which is the next page's first record to be added to the list of current page's records
                             if ($last
-                                && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
-                                && !in($last, $scope['overpage'])) {
+                                && db()->query("SELECT `id` FROM `$this->_table` WHERE `id` = '$last'")->cell()
+                                && !in($last, $scope['overpage'] ?? [])) {
 
                                 // Set @found mysql variable
                                 db()->query('SET @found := 0');
 
-                                // Get next record after $last
-                                $next = db()->query("
+                                $sql = "
                                     SELECT `id` 
                                     FROM `{$this->_table}`
                                     HAVING (@found := IF (`id` = '$last', 1, IF(@found, @found + 1, @found))) = 2
                                     $order
-                                ")->cell();
+                                ";
+
+                                // If current model has a tree-column - modify sql to rely on CTE
+                                if ($treeify) $sql = db()->treeify($sql);
+
+                                // Get next record after $last
+                                $next = db()->query($sql)->cell();
 
                                 // Unset overpage ids
                                 unset($scope['overpage']);
