@@ -906,7 +906,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If scope's tree-flag is true
-                if ($scope['tree'] ?? 0 && db()->version('5')) {
+                if (($scope['tree'] ?? 0) && db()->version('5')) {
 
                     // Get raw tree
                     $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
@@ -921,7 +921,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
                 // Setup a flag indicating whether we should transform sql query into CTE expression
-                $treeify = $scope['tree'] ?? false && !db()->version('5');
+                $treeify = ($scope['tree'] ?? false) && !db()->version('5');
 
                 // Get offset
                 $offset = $scope['rowsOnPage'] * ($scope['page'] ?? 0);
@@ -936,7 +936,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    if ($scope['found'] ?? 0 > $offset) {
+                    if (($scope['found'] ?? 0) > $offset) {
 
                         // Get id of current page's last record
                         $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
@@ -1066,7 +1066,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // For non-trees, this is quite simple as we have ids of first and/or last records that are in db
                     // and full data for record deleted from db, so we build UNIONed SELECTion from 1 or 2 existing
                     // record(s) and 1 phantom record and then order those according to $order
-                    if (!$treeify || true) {
+                    if (!$treeify) {
 
                         // If not empty - build SELECT
                         if ($faol) $faol = "SELECT * FROM `{$this->_table}` WHERE `id` IN ($faol)";
@@ -1097,11 +1097,18 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // the tree having all the needed data, sort it and get the records ordered in the right way
                     } else {
 
-                        // todo: implement the things described above
+                        // Get SELECT <root-record-cols> UNION SELECT <intermediate-parent-cols> UNION SELECT <deleted-record-cols> expression
+                        $prev = shmop_get("tree-chain-for-deleted-record-$this->_table-$this->id");
+
+                        // Prepare treeified sql query to get the ids ordered by $order but preserving respect to parents
+                        $sql = db()->treeify("SELECT `id` FROM `$this->_table` WHERE `id` IN ($faol,$this->id) $order", $prev);
+
+                        // Get ids ordered in a right way
+                        $idA = db()->query($sql)->col();
                     }
 
                     // If deleted entry ID is above the others, it means it belongs to the one of prev pages
-                    if ($this->id == array_shift($idA)) {
+                    if (count($idA) > 1 && $this->id == array_shift($idA)) {
 
                         // Remove first from $entries to set it as new scope's pgupLast
                         $scope['pgupLast'] = $first;
@@ -1120,18 +1127,40 @@ class Indi_Db_Table_Row implements ArrayAccess
                                 && db()->query("SELECT `id` FROM `$this->_table` WHERE `id` = '$last'")->cell()
                                 && !in($last, $scope['overpage'] ?? [])) {
 
-                                // Set @found mysql variable
-                                db()->query('SET @found := 0');
+                                //
+                                if ($treeify) {
 
-                                $sql = "
-                                    SELECT `id` 
-                                    FROM `{$this->_table}`
-                                    HAVING (@found := IF (`id` = '$last', 1, IF(@found, @found + 1, @found))) = 2
-                                    $order
-                                ";
+                                    // Get id of current page's last record
+                                    $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
 
-                                // If current model has a tree-column - modify sql to rely on CTE
-                                if ($treeify) $sql = db()->treeify($sql);
+                                    // Prepare WHERE and OFFSET clauses for fetching next page's first record
+                                    $pgdn1stWHERE = [];
+                                    if ($scope['WHERE'])     $pgdn1stWHERE []= $scope['WHERE'];
+                                    if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ($realtimeR->entries)";
+                                    $pgdn1stWHERE = rif(join(' AND ', $pgdn1stWHERE), 'WHERE $1');
+
+                                    // Prepare OFFSET clause for current page's first record
+                                    $pg1stOFFSET = $scope['rowsOnPage'] * ($scope['page'] - 1);
+
+                                    // Initial sql to get next page's first record
+                                    $sql = "SELECT `id` FROM `$this->_table` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1";
+
+                                    // If current model has a tree-column - modify sql to rely on CTE
+                                    $sql = db()->treeify($sql);
+
+                                // Else
+                                } else {
+
+                                    // Set @found mysql variable
+                                    db()->query('SET @found := 0');
+
+                                    $sql = "
+                                        SELECT `id` 
+                                        FROM `{$this->_table}`
+                                        HAVING (@found := IF (`id` = '$last', 1, IF(@found, @found + 1, @found))) = 2
+                                        $order
+                                    ";
+                                }
 
                                 // Get next record after $last
                                 $next = db()->query($sql)->cell();
@@ -1396,7 +1425,11 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Build cols values
         foreach ($data as $prop => $value) {
-            $colA []= db()->quote($value) . " AS `$prop`";
+            if ($this->model()->ibfk($prop) && !$this->$prop) {
+                $colA []= "NULL AS `$prop`";
+            } else {
+                $colA []= db()->quote($value) . " AS `$prop`";
+            }
         }
 
         // Return SQL SELECT expression usable as derived table definition
@@ -2041,6 +2074,24 @@ class Indi_Db_Table_Row implements ArrayAccess
 
             // Apply CASCASE and SET NULL rules for usages
             $this->doDeletionCASCADEandSETNULL();
+
+            // If current model has tree-column
+            if ($tc = $this->model()->treeColumn()) {
+
+                // Get parents, if current record it not a one of root-records
+                $parentIds = $this->$tc ? $this->model()->getAllParentIdsUp2Root($this->id) : [];
+
+                // Create rowset
+                $chain = $parentIds
+                    ? $this->model()->all(im($parentIds))
+                    : $this->model()->createRowset();
+
+                // Append current record to $chain and prepare UNION query
+                $chain = $chain->append($this)->phantom();
+
+                // Put UNION query in cache
+                shmop_set("tree-chain-for-deleted-record-$this->_table-$this->id", $chain);
+            }
 
             // Standard deletion with temporary turn off foreign keys on mysql-level
             // We do that way because CASCADE-deletion events are handled by MySQL
@@ -8297,7 +8348,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!func_num_args()) {
 
             // If monthFieldId is not defined for the entity that current entry belongs to - return
-            if (!$source = $this->model()->monthField()->alias ?? 0) return;
+            if (!($source = $this->model()->monthField()->alias ?? 0)) return;
 
             // If based field is not modified - return
             if (!$this->isModified($source)) return;
