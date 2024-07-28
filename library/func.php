@@ -4046,7 +4046,7 @@ function shmop_set($key, $value) {
     $value = serialize($value);
 
     // Open memory for create
-    $shm_id = shmop_open($key, 'c', 0644, strlen($value) + 10);
+    $shm_id = shmop_open($key, 'c', 0644, strlen($value));
 
     // Write $value to memory
     return shmop_write($shm_id, $value, 0);
