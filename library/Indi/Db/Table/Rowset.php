@@ -2561,4 +2561,26 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 $this->model()->row($id)->set('move', $now)->basicUpdate();
 
     }
+
+    /**
+     * Built sql SELECT expressions joined with UNION for all rows in the current rowset
+     * This is useful in cases when those rows do not exist in database anymore but you
+     * still need to run SQL query on with those rows' data invocation. Currently this is
+     * used in *_Row->realtime() to detect the right order for deleted record,
+     * first record on current page and last record on current page relative to each other
+     *
+     * @param string $version
+     * @param string $format
+     * @return string
+     */
+    public function phantom($version = 'original', $format = 'sql') {
+
+        // Prepare SELECT queries
+        $union = [];
+        foreach ($this as $row)
+            $union []= $row->phantom($version, $format);
+
+        // Return UNION query
+        return im($union, "\nUNION\n");
+    }
 }

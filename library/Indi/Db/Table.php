@@ -2780,6 +2780,9 @@ class Indi_Db_Table
      */
     public function getAllParentIdsUp2Root($childIds) : array {
 
+        // If current model has no tree-column - return empty array
+        if (!$this->_treeColumn) return [];
+
         // Join if array
         if (is_array($childIds)) $childIds = im($childIds);
 

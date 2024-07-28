@@ -1067,10 +1067,11 @@ class Indi_Db {
      * after their parents, so that ORDER clause works within direct childs of same parents rather than within the entire resultset
      *
      * @param string $sql
-     * @param string $base
+     * @param string $prev 'SELECT <deleted-record1-cols> UNION SELECT <deleted-record2-cols> UNION ..'
+     *                     See Indi_Db_Table_Rowset->phantom() for use cases description
      * @return string
      */
-    public function treeify(string $sql, string $base = '') {
+    public function treeify(string $sql, string $prev = '') {
 
         // Parse $sql
         preg_match('~^\s*
@@ -1092,49 +1093,48 @@ class Indi_Db {
         $parentId = "{$table}Id";
         $root = "$table-root";
         $rest = "$table-rest";
-        $prev = "$table-prev";
 
         // Path stuff
         $pathName = "tree-path";
         $pathExpr = "CAST(LPAD(ROW_NUMBER() OVER `w`, 2, 0) AS CHAR(200)) AS `$pathName`";
 
-        //
-        if ($base) {
-            $base = "`$prev` AS ($base),";
-            $from = "{$table}-prev";
+        // If
+        if ($prev) {
+            $prev = str_replace("\n", "\n    ", $prev);
+            $prev = <<<PREV
+            `$table-prev` AS (
+                $prev
+              ),
+            PREV;
+            $from = "(SELECT * FROM `$table` UNION SELECT * FROM `$table-prev`) `$table`";
+            $distinctID = "GROUP BY `id`";
         } else {
-            $base = '';
-            $from = $table;
+            $prev = '';
+            $from = "`$table` `$table`";
+            $distinctID = "";
         }
 
         // Prepare recursive CTE query
         $sql = <<<SQL
         WITH RECURSIVE
-           $base
+          $prev
           `$rest` AS (
-            SELECT
-              $pathExpr,
-              `$table`.*
-            FROM `$from` `$table`
-            WHERE NOT ISNULL(`$parentId`)
+            SELECT $pathExpr, `$table`.*
+            FROM $from
+            WHERE NOT ISNULL(`$parentId`) $distinctID
             WINDOW `w` AS ($order)
           ),
           `$root` AS (
-            SELECT
-              $pathExpr,
-              '--',
-              `$table`.*
-            FROM `$from` `$table`
-            WHERE ISNULL(`$parentId`)
+            SELECT $pathExpr, '--', `$table`.*
+            FROM $from
+            WHERE ISNULL(`$parentId`) $distinctID
             WINDOW `w` AS ($order)
           UNION ALL
-            SELECT
-              CONCAT(`$root`.`$pathName`, `$rest`.`$pathName`) AS `$pathName`,
-              `$rest`.*
+            SELECT CONCAT(`$root`.`$pathName`, `$rest`.`$pathName`) AS `$pathName`, `$rest`.*
             FROM `$root`
-              JOIN `$rest` ON `$rest`.`$parentId` = `$root`.`id`
+            JOIN `$rest` ON `$rest`.`$parentId` = `$root`.`id`
           )
-        SELECT $props FROM `$root` $where $having ORDER BY `$pathName` $limit
+        SELECT $props FROM `$root`{$where}{$having} ORDER BY `$pathName` $limit
         SQL;
 
         // Return treeified sql
