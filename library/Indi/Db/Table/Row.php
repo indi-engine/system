@@ -2241,7 +2241,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($relatedM->comboDataOrder ?? null) {
                 $order = $relatedM->comboDataOrder;
                 if (func_num_args() > 7 && !func_get_arg(7) && ($relatedM->comboDataOrderDirection ?? null)) $dir = $relatedM->comboDataOrderDirection;
-                if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
+                if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir ?? '', $order);
             } else if ($relatedM->fields('move')) {
                 $order = 'move';
             } else {
