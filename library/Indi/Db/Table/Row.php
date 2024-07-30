@@ -893,8 +893,10 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
                 }
 
-            // Else if $event is 'delete'
-            } else if ($event == 'delete') {
+            }
+
+            // Prepare variables used for both events
+            if ($event === 'insert' || $event === 'delete') {
 
                 // Get scope
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
@@ -912,7 +914,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
 
                 // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
+                } else $order = is_array($scope['ORDER'] ?? 0) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
 
                 // Setup a flag indicating whether we should transform sql query into CTE expression
                 $treeify = ($scope['tree'] ?? false) && !db()->version('5');
@@ -925,6 +927,10 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                 // Build usable ORDER BY clause
                 $order = rif($order, 'ORDER BY $1');
+            }
+
+            // Else if $event is 'delete'
+            if ($event == 'delete') {
 
                 // If deleted entry is on current page
                 if (in($this->id, $realtimeR->entries)) {
@@ -934,7 +940,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                         // Detect ID of entry that will be shifted from next page's first to current page's last
                         $nextPage1st = $byChannel[$channel][$context]['deleted']
-                            = $realtimeR->nextPage1st($this->_table, $scope, $order, $treeify);;
+                            = $realtimeR->nextPage1st($this->_table, $scope, $order);
 
                         // If such entry exists - push it's id to context's entries ids list
                         if ($nextPage1st) $realtimeR->push('entries', $nextPage1st);
@@ -966,9 +972,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $realtimeR->basicUpdate();
 
                 // Else if entry was deleted from prev or next page
-                } else if (!$where || db()->query("
-                    SELECT `id` FROM ({$this->phantom()}) AS `{$this->_table}` $where
-                ")->cell()) {
+                } else if (!$where || db()->query("SELECT `id` FROM ({$this->phantom()}) AS `$this->_table` $where")->cell()) {
 
                     // Push current entry ID to the beginning of `entries` column of `realtime` entry
                     $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
@@ -1000,7 +1004,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         $union = rif($faol, '$1 UNION ') . $this->phantom();
 
                         // Get the ordered IDs: deleted, first on current page, and last on current page
-                        $idA = db()->query($sql = "SELECT `id` FROM ($union) AS `$this->_table` $order")->col();
+                        $idA = db()->query("SELECT `id` FROM ($union) AS `$this->_table` $order")->col();
 
                     // But for trees, this becomes more complicated, as the $order should be used as a secondary order,
                     // because the primary order is the position in the tree, as, for example, deleted record might be
@@ -1030,8 +1034,11 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // SELECT <for-sure-deleted-child-level2>
                         $prev = shmop_get("tree-chain-for-deleted-record-$this->_table-$this->id");
 
+                        // Prepare ids
+                        $ids = rif($faol, '$1,') . $this->id;
+
                         // Prepare treeified sql query to get the ids ordered by $order but preserving respect to parents
-                        $sql = db()->treeify("SELECT `id` FROM `$this->_table` WHERE `id` IN ($faol,$this->id) $order", $prev);
+                        $sql = db()->treeify("SELECT `id` FROM `$this->_table` WHERE `id` IN ($ids) $order", $prev);
 
                         // Get ids ordered in a right way
                         $idA = db()->query($sql)->col();
@@ -1049,7 +1056,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
                             // Detect ID of entry that will be shifted from next page's first to current page's last
                             $nextPage1st = $byChannel[$channel][$context]['deleted']
-                                = $realtimeR->nextPage1st($this->_table, $scope, $order, $treeify);;
+                                = $realtimeR->nextPage1st($this->_table, $scope, $order);;
 
                             // If such entry exists - push it's id to context's entries ids list
                             if ($nextPage1st) $realtimeR->push('entries', $nextPage1st);
@@ -1098,28 +1105,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Else if $event is 'insert'
             } else if ($event == 'insert') {
 
-                // Get scope
-                $scope = json_decode($realtimeR->scope, true); $entries = false;
-
-                // If scope's tree-flag is true
-                if ($scope['tree'] ?? 0) {
-
-                    // Get raw tree
-                    $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
-
-                    // Pick tree if need
-                    if ($scope['WHERE']) $tree = $tree['tree'];
-
-                    // Build ORDER clause, respecting the tree
-                    $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
-
-                // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER'] ?? 0) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
-
                 // Check whether inserted row match scope's WHERE clause
-                if (!($scope['WHERE'] ?? 0) || db()->query($sql = '
-                    SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
-                )->cell()) {
+                if (!$where || db()->query("SELECT `id` FROM ({$this->phantom()}) AS `$this->_table` $where")->cell()) {
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context] = [
@@ -1135,38 +1122,46 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If there are at least 1 entry on current page
                     if ($realtimeR->entries) {
 
+                        // Prepare comma-separated IDs: last one from previous page, current page's ones, and the newly added one
+                        $ids = rif($pgupLast = $scope['pgupLast'] ?? 0, '$1,');
+                        $ids .= rif($realtimeR->entries, '$1,');
+                        $ids .= $this->id;
+
+                        // Prepare sql-query to get IDS ordered according ro $order
+                        $sql = "SELECT `id` FROM `$this->_table` WHERE `id` IN ($ids) $order";
+
+                        // If current model has a tree-column - modify sql to rely on CTE to preserve parents
+                        if ($treeify) $sql = db()->treeify($sql);
+
                         // Get the ordered IDs: pgupLast, current, and newly added
-                        $idA = db()->query($sql = '
-                            SELECT `id` FROM `' . $this->_table . '`
-                            WHERE `id` IN (' . rif($scope['pgupLast'] ?? 0, '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
-                            ' . rif($order, 'ORDER BY $1') . ' 
-                        ')->col();
+                        $idA = db()->query($sql)->col();
 
                         // If new entry belongs to prev page
-                        if (($scope['pgupLast'] ?? 0) && $this->id == $idA[0]) {
+                        if ($pgupLast && $this->id == array_shift($idA)) {
 
-                            // Make sure pgupLast-entry will be appended -
-                            $byChannel[$channel][$context]['entry'] = $scope['pgupLast'];
+                            // Make sure pgupLast-entry will be shifted from the end of prev page to the start of current page
+                            $byChannel[$channel][$context]['entry'] = $pgupLast;
 
-                            // - Appended to the top of current page
+                            // So it should be appended at index 0, e.g. at the most top of current page
                             $byChannel[$channel][$context]['inserted'] = 0;
 
-                            // Push current entry ID to the beginning of `entries` column of `realtime` entry
-                            $entries = ar($realtimeR->entries); array_unshift($entries, $scope['pgupLast']);
+                            // Make prev page's last entry to be current page's first entry
+                            $entries = ar($realtimeR->entries); array_unshift($entries, $pgupLast);
 
                             // Get offset
                             $offset = $scope['rowsOnPage'] * ($scope['page'] - 1) - 1;
 
-                            // Get pgupLast
-                            $scope['pgupLast'] = $offset == -1 ? 0 : db()->query('
-                                SELECT `id` FROM `' . $this->_table . '` 
-                                WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
-                                ' . rif($order, 'ORDER BY $1') . ' 
-                                LIMIT ' . $offset . ', 1
-                            ')->cell();
+                            // Prepare sql query to get new prev page's last record id
+                            $sql = "SELECT `id` FROM `$this->_table` $where $order LIMIT $offset, 1";
+
+                            // If current model has a tree-column - modify sql to rely on CTE to preserve parents
+                            if ($treeify) $sql = db()->treeify($sql);
+
+                            // Get new pgupLast
+                            $scope['pgupLast'] = db()->query($sql)->cell();
 
                         // Else if total number of entries is more than rowsOnPage
-                        } else if (count($idA) - min($scope['pgupLast'] ?? 0, 1) > ($scope['rowsOnPage'] ?? 25)) {
+                        } else if (count($idA) > ($scope['rowsOnPage'] ?? 25)) {
 
                             // If new entry is the last entry - it means that it is needless
                             // entry of current page and belongs to next page
@@ -1176,22 +1171,21 @@ class Indi_Db_Table_Row implements ArrayAccess
                             // the record, that is currently last on current page will be pushed out to next page
                             else {
 
-                                // Detect position
-                                $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+                                // Detect the insertion index
+                                $index = array_flip($idA)[$this->id]; $byChannel[$channel][$context]['inserted'] = $index;
 
-                                // Push current entry ID to `entries` column of `realtime` entry
-                                $entries = ar($realtimeR->entries);
-                                array_splice($entries, $byChannel[$channel][$context]['inserted'], 0, $this->id);
+                                // Insert current entry ID to the comma-separated list of ids at the right index
+                                $entries = ar($realtimeR->entries); array_splice($entries, $index, 0, $this->id);
                             }
 
                         // Else it total number of entries on current page is less or equal than the rowsOnPage
                         } else {
 
-                            // Detect the insertion index
-                            $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+                            // Detect position
+                            $index = array_flip($idA)[$this->id]; $byChannel[$channel][$context]['inserted'] = $index;
 
-                            // Push current entry ID to `entries` column of `realtime` entry
-                            $entries = ar($realtimeR->entries); array_push($entries, $this->id);
+                            // Insert current entry ID to the comma-separated list of ids at the right index
+                            $entries = ar($realtimeR->entries); array_splice($entries, $index, 0, $this->id);
                         }
 
                     // Else if there is not yet entries on current page

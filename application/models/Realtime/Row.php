@@ -180,10 +180,12 @@ class Realtime_Row extends Indi_Db_Table_Row {
      * @param $table
      * @param $scope
      * @param $order
-     * @param $treeify
      * @return int
      */
-    public function nextPage1st(string $table, array $scope, string $order, bool $treeify) {
+    public function nextPage1st(string $table, array $scope, string $order) {
+
+        // Setup a flag indicating whether we should transform sql query into CTE expression
+        $treeify = ($scope['tree'] ?? false) && !db()->version('5');
 
         // Prepare WHERE clause
         $where = [];
