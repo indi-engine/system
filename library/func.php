@@ -4031,3 +4031,45 @@ function _strftime (string $format, $timestamp = null, ?string $locale = null) :
     $out = str_replace('%%', '%', $out);
     return $out;
 }
+
+/**
+ * @param $key
+ * @param $value
+ * @return int|false
+ */
+function shmop_set($key, $value) {
+
+    // Convert part of the MD5 hash to a numeric key
+    $key = hexdec(substr(md5($key), 0, 8));
+
+    // Serialize value
+    $value = serialize($value);
+
+    // Open memory for create
+    $shm_id = shmop_open($key, 'c', 0644, strlen($value));
+
+    // Write $value to memory
+    return shmop_write($shm_id, $value, 0);
+}
+
+/**
+ * @param $key
+ * @return mixed
+ */
+function shmop_get($key) {
+
+    // Convert part of the MD5 hash to a numeric key
+    $key = hexdec(substr(md5($key), 0, 8));
+
+    // Open memory for access
+    $shm_id = shmop_open($key, 'a', 0, 0);
+
+    // If memory does not exists - return null
+    if ($shm_id === false) return null;
+
+    // Read value from memory
+    $value = shmop_read($shm_id, 0, 0);
+
+    // Unserialize and return
+    return unserialize($value);
+}

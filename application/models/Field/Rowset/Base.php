@@ -298,9 +298,11 @@ class Field_Rowset_Base extends Indi_Db_Table_Rowset {
         // Else
         } else {
 
-            // Get index
+            // Get alias of item, that new item should be inserted before
             if ($before === true) $before = key($this->_aliases);
-            $idx = $this->_aliases[$before] ?? null;
+
+            // Get insertion index
+            $idx = count($this->_aliases) ? $this->_aliases[$before] ?? null : 0;
 
             // Inject new value in $this->_aliases array
             $this->_aliases = array_flip($this->_aliases);

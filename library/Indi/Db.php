@@ -16,6 +16,13 @@ class Indi_Db {
     protected static $_pdo = null;
 
     /**
+     * MySQL server version
+     *
+     * @var string
+     */
+    public static $version = null;
+
+    /**
      * Array of loaded models, with model class names as keys
      *
      * @var array
@@ -1052,5 +1059,104 @@ class Indi_Db {
      */
     public function multiRefs($rule = null) {
         return $rule ? (self::$_multiRefA[$rule] ?? []) : self::$_multiRefA;
+    }
+
+    /**
+     * Convert basic sql query into CTE expression to preserve order of results that might be given by ORDER clause
+     * and order of results that might be caused by the treeified sequence, which means child items should be always
+     * after their parents, so that ORDER clause works within direct childs of same parents rather than within the entire resultset
+     *
+     * @param string $sql
+     * @param string $prev 'SELECT <deleted-record1-cols> UNION SELECT <deleted-record2-cols> UNION ..'
+     *                     See Indi_Db_Table_Rowset->phantom() for use cases description
+     * @return string
+     */
+    public function treeify(string $sql, string $prev = '') {
+
+        // Parse $sql
+        preg_match('~^\s*
+            SELECT    \s+(?<props>.+?)\s+
+            FROM      \s+`(?<table>[a-zA-Z0-9_]+)`
+            (?<where> \s+ WHERE     \s+.*?)?
+            (?<having>\s+ HAVING    \s+.*?)?
+            (?<order> \s+ ORDER\sBY \s+.*?)?
+            (?<limit> \s+ LIMIT     \s+.*?)?
+        $~sx', $sql, $m);
+
+        // Shortcuts
+        $props  = $m['props'];
+        $table  = trim($m['table']);
+        $where  = trim($m['where']  ?? '');
+        $having = trim($m['having'] ?? '');
+        $order  = trim($m['order']  ?? '');
+        $limit  = trim($m['limit']  ?? '');
+        $parentId = "{$table}Id";
+        $root = "$table-root";
+        $rest = "$table-rest";
+
+        // Path stuff
+        $pathName = "tree-path";
+        $pathExpr = "CAST(LPAD(ROW_NUMBER() OVER `w`, 2, 0) AS CHAR(200)) AS `$pathName`";
+
+        // If
+        if ($prev) {
+            $prev = str_replace("\n", "\n    ", $prev);
+            $prev = <<<PREV
+            `$table-prev` AS (
+                $prev
+              ),
+            PREV;
+            $from = "(SELECT * FROM `$table` UNION SELECT * FROM `$table-prev`) `$table`";
+            $distinctID = "GROUP BY `id`";
+        } else {
+            $prev = '';
+            $from = "`$table` `$table`";
+            $distinctID = "";
+        }
+
+        // Prepare recursive CTE query
+        $sql = <<<SQL
+        WITH RECURSIVE
+          $prev
+          `$rest` AS (
+            SELECT $pathExpr, `$table`.*
+            FROM $from
+            WHERE NOT ISNULL(`$parentId`) $distinctID
+            WINDOW `w` AS ($order)
+          ),
+          `$root` AS (
+            SELECT $pathExpr, '--', `$table`.*
+            FROM $from
+            WHERE ISNULL(`$parentId`) $distinctID
+            WINDOW `w` AS ($order)
+          UNION ALL
+            SELECT CONCAT(`$root`.`$pathName`, `$rest`.`$pathName`) AS `$pathName`, `$rest`.*
+            FROM `$root`
+            JOIN `$rest` ON `$rest`.`$parentId` = `$root`.`id`
+          )
+        SELECT $props FROM `$root`{$where}{$having} ORDER BY `$pathName` $limit
+        SQL;
+
+        // Return treeified sql
+        return $sql;
+    }
+
+    /**
+     * Usages:
+     *  which()    => "8.0.36"        Current version
+     *  which(5.6) => false           Boolean flag, indicating current version matches $which version
+     *
+     * @param $which
+     * @return string|bool
+     */
+    public function version(string $which = '') {
+
+        // Get version
+        self::$version ??= self::query('SELECT VERSION()')->cell();
+
+        // If $which arg is given -
+        return $which
+            ? !!preg_match('~^' . preg_quote($which, '~') .'~', self::$version)
+            : self::$version;
     }
 }

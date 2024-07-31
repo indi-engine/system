@@ -822,7 +822,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         ];
 
         // If $event is 'update', 'reload' or 'delete'
-        if ($event == 'update' || $event == 'reload' || $event === 'delete') {
+        if ($event == 'update' || $event == 'reload' /* || $event === 'delete'*/) {
 
             // Append clause for `entries` column
             $where []= 'CONCAT(",", `entries`, ",") REGEXP ",(' . $this->id . '),"';
@@ -893,20 +893,16 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $byChannel[$channel][$context]['affected'] = array_shift($data);
                 }
 
-            // Else if $event is 'delete'
-            } else if ($event == 'delete') {
+            }
+
+            // Prepare variables used for both events
+            if ($event === 'insert' || $event === 'delete') {
 
                 // Get scope
                 $scope = json_decode($realtimeR->scope, true); $entries = false;
 
-                // If $queryID is 0, or is changed - reset $scope['overpage']
-                if (!$queryID || ($scope['queryID'] ?? null) != $queryID) {
-                    $scope['queryID'] = $queryID;
-                    unset($scope['overpage']);
-                }
-
                 // If scope's tree-flag is true
-                if ($scope['tree'] ?? null) {
+                if (($scope['tree'] ?? 0) && db()->version('5')) {
 
                     // Get raw tree
                     $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
@@ -918,87 +914,36 @@ class Indi_Db_Table_Row implements ArrayAccess
                     $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
 
                 // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER'] ?? null) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
+                } else $order = is_array($scope['ORDER'] ?? 0) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
+
+                // Setup a flag indicating whether we should transform sql query into CTE expression
+                $treeify = ($scope['tree'] ?? false) && !db()->version('5');
 
                 // Get offset
-                $offset = $scope['rowsOnPage'] * ($scope['page'] ?? null);
+                $offset = $scope['rowsOnPage'] * ($scope['page'] ?? 0);
 
                 // Build usable WHERE clause
-                $where = rif($scope['WHERE'] ?? null, 'WHERE $1');
+                $where = rif($scope['WHERE'] ?? 0, 'WHERE $1');
 
                 // Build usable ORDER BY clause
                 $order = rif($order, 'ORDER BY $1');
+            }
+
+            // Else if $event is 'delete'
+            if ($event == 'delete') {
 
                 // If deleted entry is on current page
                 if (in($this->id, $realtimeR->entries)) {
 
                     // If there is at least 1 next page exists
-                    if (($scope['found'] ?? null) > $offset) {
-
-                        // Get id of current page's last record
-                        $entries = ar($realtimeR->entries); $last = $entries[count($entries) - 1];
-
-                        // Prepare WHERE and OFFSET clauses for fetching next page's first record
-                        $pgdn1stWHERE = [];
-                        if ($scope['WHERE'])     $pgdn1stWHERE []= $scope['WHERE'];
-                        if ($realtimeR->entries) $pgdn1stWHERE []= "`id` NOT IN ({$realtimeR->entries})";
-                        $pgdn1stWHERE = rif(join(' AND ', $pgdn1stWHERE), 'WHERE $1');
-
-                        // Nasty hack. todo: investigate how that might happend in /realtime
-                        if ($scope['page'] < 1) $scope = 1;
-
-                        // Prepare OFFSET clause for current page's first record
-                        $pg1stOFFSET = $scope['rowsOnPage'] * ($scope['page'] - 1);
-
-                        // Detect ID of entry that will be shifted from next page's first to current page's last:
-                        //
-                        // If current page's last record is still exist, it means that even in case of batch-deletion
-                        // such a deletion was either not intended to reach that record, or was but has not yet reached that
-                        // record so far, so that we can rely on that record while calculating, so to say, 'next' record
-                        // which is the next page's first record to be added to the list of current page's records
-                        if ($last
-                            && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
-                            && !in($last, $scope['overpage'] ?? null)) {
-
-                            // Get next record after $last
-                            $next = db()
-                                ->query("SELECT `id` FROM `{$this->_table}` $pgdn1stWHERE $order LIMIT $pg1stOFFSET, 1")
-                                ->cell();
-
-                            // Unset overpage ids
-                            unset($scope['overpage']);
-
-                        // Else it means deletion reached all records up to current page's ones inclusively,
-                        // and maybe even further ones, so the only thing we can do is just to pick first among
-                        // remaining records called overpage-records
-                        } else {
-
-                            // If count of overpage-records does not exceed so far the limit of to be shown on page
-                            if (count($scope['overpage'] ?? []) < $scope['rowsOnPage']) {
-
-                                // Make sure previously fetched overpage-records are skipped while fetching next one
-                                if ($scope['overpage'] ?? 0)
-                                    $where = rif($where, "$1 AND ", "WHERE ")
-                                        . '`id` NOT IN (' . im($scope['overpage']) . ')';
-
-                                // Fetch record
-                                $next = db()->query("SELECT `id` FROM `{$this->_table}` $where $order LIMIT 1")->cell();
-
-                                // Append it's id to scope's overpage-array
-                                $scope['overpage'] []= (int) $next;
-
-                            // If limit reached - do nothing
-                            } else {
-                                $next = 0;
-                            }
-                        }
+                    if ($scope['found'] > $offset) {
 
                         // Detect ID of entry that will be shifted from next page's first to current page's last
-                        $byChannel[$channel][$context]['deleted'] = (int) $next;
+                        $nextPage1st = $byChannel[$channel][$context]['deleted']
+                            = $realtimeR->nextPage1st($this->_table, $scope, $order);
 
                         // If such entry exists - push it's id to context's entries ids list
-                        if ($byChannel[$channel][$context]['deleted'])
-                            $realtimeR->push('entries', $byChannel[$channel][$context]['deleted']);
+                        if ($nextPage1st) $realtimeR->push('entries', $nextPage1st);
 
                     // Else if it's the last page - do nothing
                     } else $byChannel[$channel][$context]['deleted'] = 'this';
@@ -1010,7 +955,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     ];
 
                     // Decrement found
-                    $scope['found'] ??= null; $scope['found'] --;
+                    $scope['found'] --;
 
                     // Adjust summary if need
                     foreach (ar($scope['sum'] ?? null) as $sumCol)
@@ -1026,10 +971,8 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Update `realtime` entry
                     $realtimeR->basicUpdate();
 
-                // Else if deleted entry is on prev or next page
-                } else if (!$where || db()->query("
-                    SELECT `id` FROM ({$this->phantom()}) AS `{$this->_table}` $where
-                ")->cell()) {
+                // Else if entry was deleted from prev or next page
+                } else if (!$where || db()->query("SELECT `id` FROM ({$this->phantom()}) AS `$this->_table` $where")->cell()) {
 
                     // Push current entry ID to the beginning of `entries` column of `realtime` entry
                     $entries = ar($realtimeR->entries); $first = $entries[0]; $last = $entries[count($entries) - 1];
@@ -1037,17 +980,72 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // Get comma-separated ids list for First And/Or Last entries/entry on the page
                     $faol = []; if ($first) $faol []= $first; if ($last) $faol []= $last; $faol = im($faol);
 
-                    // If not empty - build SELECT
-                    if ($faol) $faol = "SELECT * FROM `{$this->_table}` WHERE `id` IN ($faol)";
+                    // The goal here is to detect whether deleted record was from one of previous pages or was from one
+                    // of next pages. To detect that, we need to order (according to $scope['ORDER']) the ids of:
+                    //
+                    //  - deleted record
+                    //  - first record from current page
+                    //  - last record from current page
+                    //
+                    // If position of deleted record would be recognized as 'before first record from current page'
+                    // this would mean deleted record belongs to one of previous pages, else if deleted record's
+                    // position would be recognized as 'after last record from current page' - this would mean
+                    // deleted record was deleted from one of next pages.
 
-                    // Create UNION expr
-                    $union = rif($faol, '$1 UNION ') . $this->phantom();
+                    // For non-trees, this is quite simple as we have ids of first and/or last records that are in db
+                    // and full data for record despite already deleted from db, so we build UNIONed SELECTion from 1 or 2 existing
+                    // record(s) and 1 phantom (e.g. deleted) record and then order those according to $order
+                    if (!$treeify) {
 
-                    // Get the ordered IDs: deleted, first on current page, and last on current page
-                    $idA = db()->query($sql = "SELECT `id` FROM ($union) AS `{$this->_table}` $order")->col();
+                        // If not empty - build SELECT
+                        if ($faol) $faol = "SELECT * FROM `$this->_table` WHERE `id` IN ($faol)";
+
+                        // Create UNION expr
+                        $union = rif($faol, '$1 UNION ') . $this->phantom();
+
+                        // Get the ordered IDs: deleted, first on current page, and last on current page
+                        $idA = db()->query("SELECT `id` FROM ($union) AS `$this->_table` $order")->col();
+
+                    // But for trees, this becomes more complicated, as the $order should be used as a secondary order,
+                    // because the primary order is the position in the tree, as, for example, deleted record might be
+                    // before first record on current page according to $order, but deleted record's parent might be after
+                    // current page's last record's parent still according to $order, which have more priority on the overall order.
+                    //
+                    // This means that to get the really right order we have to not only get those 3 records, but to get
+                    // all of their parents up to the root, then we must build the small tree having only records that
+                    // are those 3 plus all their parents, then sort that tree by $order, then exclude the added parents
+                    // and only at this step we'll have the original 3 records in the reliable order. The problem is that
+                    // when Maxwell daemon is enabled - we may reach this line at the point in time when parent(s) for
+                    // deleted record do not exist anymore in the database, for example in case of batch and/or cascade
+                    // deletions, so we won't be able to build the tree minimal sufficient for the ORDERing as we just
+                    // don't have enough data anymore.
+                    //
+                    // The solution for this can be to fetch all parents' data before(!) record is really deleted from db,
+                    // and put that data in php cache using shared memory (see php shmop-extension), so that this data
+                    // could be available here within realtime/maxwell/render php background process, for preparing the
+                    // UNION query to build the tree having all the needed data, sort it and get the records ordered in the right way
+                    } else {
+
+                        // Get expression having all the data and looking like
+                        // SELECT <might-be-deleted-parent-level0>
+                        // UNION
+                        // SELECT <might-be-deleted-parent-level1>
+                        // UNION
+                        // SELECT <for-sure-deleted-child-level2>
+                        $prev = shmop_get("tree-chain-for-deleted-record-$this->_table-$this->id");
+
+                        // Prepare ids
+                        $ids = rif($faol, '$1,') . $this->id;
+
+                        // Prepare treeified sql query to get the ids ordered by $order but preserving respect to parents
+                        $sql = db()->treeify("SELECT `id` FROM `$this->_table` WHERE `id` IN ($ids) $order", $prev);
+
+                        // Get ids ordered in a right way
+                        $idA = db()->query($sql)->col();
+                    }
 
                     // If deleted entry ID is above the others, it means it belongs to the one of prev pages
-                    if ($this->id == array_shift($idA)) {
+                    if (count($idA) > 1 && $this->id == array_shift($idA)) {
 
                         // Remove first from $entries to set it as new scope's pgupLast
                         $scope['pgupLast'] = $first;
@@ -1056,61 +1054,12 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // If there is at least 1 next page exists
                         if ($scope['found'] > $offset) {
 
-                            // Detect ID of entry that will be shifted from next page's first to current page's last:
-                            //
-                            // If current page's last record is still exist, it means that even in case of batch-deletion
-                            // such a deletion was either not intended to reach that record, or was but has not yet reached that
-                            // record so far, so that we can rely on that record while calculating, so to say, 'next' record
-                            // which is the next page's first record to be added to the list of current page's records
-                            if ($last
-                                && db()->query("SELECT `id` FROM `{$this->_table}` WHERE `id` = '$last'")->cell()
-                                && !in($last, $scope['overpage'])) {
-
-                                // Set @found mysql variable
-                                db()->query('SET @found := 0');
-
-                                // Get next record after $last
-                                $next = db()->query("
-                                    SELECT `id` 
-                                    FROM `{$this->_table}`
-                                    HAVING (@found := IF (`id` = '$last', 1, IF(@found, @found + 1, @found))) = 2
-                                    $order
-                                ")->cell();
-
-                                // Unset overpage ids
-                                unset($scope['overpage']);
-
-                            // Else it means deletion reached all records up to current page's ones inclusively,
-                            // and maybe even further ones, so the only thing we can do is just to pick first among
-                            // remaining records called overpage-records
-                            } else {
-
-                                // If count of overpage-records does not exceed so far the limit of to be shown on page
-                                if (count($scope['overpage'] ?: []) < $scope['rowsOnPage'] * $scope['page']) {
-
-                                    // Make sure previously fetched overpage-records are skipped while fetching next one
-                                    if ($scope['overpage'])
-                                        $where = rif($where, "$1 AND ", "WHERE ")
-                                            . '`id` NOT IN (' . im($scope['overpage']) . ')';
-
-                                    // Fetch record
-                                    $next = db()->query("SELECT `id` FROM `{$this->_table}` $where $order LIMIT 1")->cell();
-
-                                    // Append it's id to scope's overpage-array
-                                    $scope['overpage'] []= (int) $next;
-
-                                // If limit reached - do nothing
-                                } else {
-                                    $next = 0;
-                                }
-                            }
-
-                            // Apply to ws-message
-                            $byChannel[$channel][$context]['deleted'] = $next;
+                            // Detect ID of entry that will be shifted from next page's first to current page's last
+                            $nextPage1st = $byChannel[$channel][$context]['deleted']
+                                = $realtimeR->nextPage1st($this->_table, $scope, $order);;
 
                             // If such entry exists - push it's id to context's entries ids list
-                            if ($byChannel[$channel][$context]['deleted'])
-                                $realtimeR->push('entries', $byChannel[$channel][$context]['deleted']);
+                            if ($nextPage1st) $realtimeR->push('entries', $nextPage1st);
 
                         // Else if it's the last page
                         } else $byChannel[$channel][$context]['deleted'] = 'prev';
@@ -1119,7 +1068,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                     } else if ($this->id == array_pop($idA)) $byChannel[$channel][$context]['deleted'] = 'next';
 
                     // If $byChannel[$channel][$context] is empty - this means that current entry was already deleted
-                    if ($byChannel[$channel][$context]) {
+                    if ($byChannel[$channel][$context] ?? 0) {
 
                         // Prepare data and group it by channel and context
                         $byChannel[$channel][$context] += [
@@ -1144,7 +1093,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
 
                 // If some entry should be appended to UI grid store instead of deleted entry and scope's rowReqIfAffected-prop is empty
-                if (($entry = $byChannel[$channel][$context]['deleted']) && is_numeric($entry) && !$scope['rowReqIfAffected']) {
+                if (($entry = $byChannel[$channel][$context]['deleted'] ?? 0) && is_numeric($entry) && !$scope['rowReqIfAffected']) {
 
                     // Get it's actual *_Row instance
                     $entry = $entry == $this->id ? $this : $this->model()->row($entry);
@@ -1156,28 +1105,8 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Else if $event is 'insert'
             } else if ($event == 'insert') {
 
-                // Get scope
-                $scope = json_decode($realtimeR->scope, true); $entries = false;
-
-                // If scope's tree-flag is true
-                if ($scope['tree'] ?? 0) {
-
-                    // Get raw tree
-                    $tree = $this->model()->fetchRawTree($scope['ORDER'], $scope['WHERE']);
-
-                    // Pick tree if need
-                    if ($scope['WHERE']) $tree = $tree['tree'];
-
-                    // Build ORDER clause, respecting the tree
-                    $order = 'FIND_IN_SET(`id`, "' . im(array_keys($tree)) . '")';
-
-                // Else build ORDER clause using ordinary approach
-                } else $order = is_array($scope['ORDER'] ?? 0) ? im($scope['ORDER'], ', ') : ($scope['ORDER'] ?? '');
-
                 // Check whether inserted row match scope's WHERE clause
-                if (!($scope['WHERE'] ?? 0) || db()->query($sql = '
-                    SELECT `id` FROM `' . $this->_table . '` WHERE `id` = "' . $this->id . '" AND (' . $scope['WHERE'] . ')'
-                )->cell()) {
+                if (!$where || db()->query("SELECT `id` FROM ({$this->phantom()}) AS `$this->_table` $where")->cell()) {
 
                     // Prepare blank data and group it by channel and context
                     $byChannel[$channel][$context] = [
@@ -1193,38 +1122,46 @@ class Indi_Db_Table_Row implements ArrayAccess
                     // If there are at least 1 entry on current page
                     if ($realtimeR->entries) {
 
+                        // Prepare comma-separated IDs: last one from previous page, current page's ones, and the newly added one
+                        $ids = rif($pgupLast = $scope['pgupLast'] ?? 0, '$1,');
+                        $ids .= rif($realtimeR->entries, '$1,');
+                        $ids .= $this->id;
+
+                        // Prepare sql-query to get IDS ordered according ro $order
+                        $sql = "SELECT `id` FROM `$this->_table` WHERE `id` IN ($ids) $order";
+
+                        // If current model has a tree-column - modify sql to rely on CTE to preserve parents
+                        if ($treeify) $sql = db()->treeify($sql);
+
                         // Get the ordered IDs: pgupLast, current, and newly added
-                        $idA = db()->query($sql = '
-                            SELECT `id` FROM `' . $this->_table . '`
-                            WHERE `id` IN (' . rif($scope['pgupLast'] ?? 0, '$1,') . rif($realtimeR->entries, '$1,') .  $this->id . ')
-                            ' . rif($order, 'ORDER BY $1') . ' 
-                        ')->col();
+                        $idA = db()->query($sql)->col();
 
                         // If new entry belongs to prev page
-                        if (($scope['pgupLast'] ?? 0) && $this->id == $idA[0]) {
+                        if ($pgupLast && $this->id == array_shift($idA)) {
 
-                            // Make sure pgupLast-entry will be appended -
-                            $byChannel[$channel][$context]['entry'] = $scope['pgupLast'];
+                            // Make sure pgupLast-entry will be shifted from the end of prev page to the start of current page
+                            $byChannel[$channel][$context]['entry'] = $pgupLast;
 
-                            // - Appended to the top of current page
+                            // So it should be appended at index 0, e.g. at the most top of current page
                             $byChannel[$channel][$context]['inserted'] = 0;
 
-                            // Push current entry ID to the beginning of `entries` column of `realtime` entry
-                            $entries = ar($realtimeR->entries); array_unshift($entries, $scope['pgupLast']);
+                            // Make prev page's last entry to be current page's first entry
+                            $entries = ar($realtimeR->entries); array_unshift($entries, $pgupLast);
 
                             // Get offset
                             $offset = $scope['rowsOnPage'] * ($scope['page'] - 1) - 1;
 
-                            // Get pgupLast
-                            $scope['pgupLast'] = $offset == -1 ? 0 : db()->query('
-                                SELECT `id` FROM `' . $this->_table . '` 
-                                WHERE ' . ($scope['WHERE'] ?: 'TRUE') . ' 
-                                ' . rif($order, 'ORDER BY $1') . ' 
-                                LIMIT ' . $offset . ', 1
-                            ')->cell();
+                            // Prepare sql query to get new prev page's last record id
+                            $sql = "SELECT `id` FROM `$this->_table` $where $order LIMIT $offset, 1";
+
+                            // If current model has a tree-column - modify sql to rely on CTE to preserve parents
+                            if ($treeify) $sql = db()->treeify($sql);
+
+                            // Get new pgupLast
+                            $scope['pgupLast'] = db()->query($sql)->cell();
 
                         // Else if total number of entries is more than rowsOnPage
-                        } else if (count($idA) - min($scope['pgupLast'] ?? 0, 1) > ($scope['rowsOnPage'] ?? 25)) {
+                        } else if (count($idA) > ($scope['rowsOnPage'] ?? 25)) {
 
                             // If new entry is the last entry - it means that it is needless
                             // entry of current page and belongs to next page
@@ -1234,22 +1171,21 @@ class Indi_Db_Table_Row implements ArrayAccess
                             // the record, that is currently last on current page will be pushed out to next page
                             else {
 
-                                // Detect position
-                                $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+                                // Detect the insertion index
+                                $index = array_flip($idA)[$this->id]; $byChannel[$channel][$context]['inserted'] = $index;
 
-                                // Push current entry ID to `entries` column of `realtime` entry
-                                $entries = ar($realtimeR->entries);
-                                array_splice($entries, $byChannel[$channel][$context]['inserted'], 0, $this->id);
+                                // Insert current entry ID to the comma-separated list of ids at the right index
+                                $entries = ar($realtimeR->entries); array_splice($entries, $index, 0, $this->id);
                             }
 
                         // Else it total number of entries on current page is less or equal than the rowsOnPage
                         } else {
 
-                            // Detect the insertion index
-                            $byChannel[$channel][$context]['inserted'] = array_flip($idA)[$this->id];
+                            // Detect position
+                            $index = array_flip($idA)[$this->id]; $byChannel[$channel][$context]['inserted'] = $index;
 
-                            // Push current entry ID to `entries` column of `realtime` entry
-                            $entries = ar($realtimeR->entries); array_push($entries, $this->id);
+                            // Insert current entry ID to the comma-separated list of ids at the right index
+                            $entries = ar($realtimeR->entries); array_splice($entries, $index, 0, $this->id);
                         }
 
                     // Else if there is not yet entries on current page
@@ -1337,7 +1273,11 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Build cols values
         foreach ($data as $prop => $value) {
-            $colA []= db()->quote($value) . " AS `$prop`";
+            if ($this->model()->ibfk($prop) && !$this->$prop) {
+                $colA []= "NULL AS `$prop`";
+            } else {
+                $colA []= db()->quote($value) . " AS `$prop`";
+            }
         }
 
         // Return SQL SELECT expression usable as derived table definition
@@ -1983,6 +1923,24 @@ class Indi_Db_Table_Row implements ArrayAccess
             // Apply CASCASE and SET NULL rules for usages
             $this->doDeletionCASCADEandSETNULL();
 
+            // If current model has tree-column
+            if ($tc = $this->model()->treeColumn()) {
+
+                // Get parents, if current record it not a one of root-records
+                $parentIds = $this->$tc ? $this->model()->getAllParentIdsUp2Root($this->id) : [];
+
+                // Create rowset
+                $chain = $parentIds
+                    ? $this->model()->all(im($parentIds))
+                    : $this->model()->createRowset();
+
+                // Append current record to $chain and prepare UNION query
+                $chain = $chain->append($this)->phantom();
+
+                // Put UNION query in cache
+                shmop_set("tree-chain-for-deleted-record-$this->_table-$this->id", $chain);
+            }
+
             // Standard deletion with temporary turn off foreign keys on mysql-level
             // We do that way because CASCADE-deletion events are handled by MySQL
             // InnoDB storage engine internally and not logged into binlog, so cannot be captured by Maxwell
@@ -2283,7 +2241,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if ($relatedM->comboDataOrder ?? null) {
                 $order = $relatedM->comboDataOrder;
                 if (func_num_args() > 7 && !func_get_arg(7) && ($relatedM->comboDataOrderDirection ?? null)) $dir = $relatedM->comboDataOrderDirection;
-                if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir, $order);
+                if (!preg_match('~^[a-zA-Z0-9]+$~', $order)) $order = str_replace('$dir', $dir ?? '', $order);
             } else if ($relatedM->fields('move')) {
                 $order = 'move';
             } else {
@@ -5235,7 +5193,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!is_dir($dir)) return;
 
             // Get the original uploaded file full filename
-            list ($src) = glob($dir . $this->id . '_' . $field . '.*');
+            $src = glob($dir . $this->id . '_' . $field . '.*')[0] ?? null;
 
             // If filename was not found - return
             if (!$src) return;
@@ -8238,7 +8196,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if (!func_num_args()) {
 
             // If monthFieldId is not defined for the entity that current entry belongs to - return
-            if (!$source = $this->model()->monthField()->alias ?? 0) return;
+            if (!($source = $this->model()->monthField()->alias ?? 0)) return;
 
             // If based field is not modified - return
             if (!$this->isModified($source)) return;

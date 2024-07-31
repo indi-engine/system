@@ -173,4 +173,36 @@ class Realtime_Row extends Indi_Db_Table_Row {
         // Return queue name
         return $qn;
     }
+
+    /**
+     * Detect id of next page's first record
+     *
+     * @param $table
+     * @param $scope
+     * @param $order
+     * @return int
+     */
+    public function nextPage1st(string $table, array $scope, string $order) {
+
+        // Setup a flag indicating whether we should transform sql query into CTE expression
+        $treeify = ($scope['tree'] ?? false) && !db()->version('5');
+
+        // Prepare WHERE clause
+        $where = [];
+        if ($scope['WHERE']) $where['scope']            = $scope['WHERE'];
+        if ($this->entries)  $where['skipCurrPageRows'] = "`id` NOT IN ($this->entries)";
+        $where = rif(join(' AND ', $where), 'WHERE $1');
+
+        // Prepare OFFSET clause for current page's first record
+        $offset = $scope['rowsOnPage'] * ($scope['page'] - 1);
+
+        // Prepare sql-query to get next page's first record's ID
+        $sql = "SELECT `id` FROM `$table` $where $order LIMIT $offset, 1";
+
+        // If current model has a tree-column - modify sql to rely on CTE
+        if ($treeify) $sql = db()->treeify($sql);
+
+        // Run query and return ID
+        return (int) db()->query($sql)->cell() ?? 0;
+    }
 }

@@ -369,16 +369,17 @@ class Indi_Db_Table
      * @param null $split
      * @param bool $pgupLast
      * @param string $postfix Can be used to add 'FOR UPDATE SKIP LOCKED' to the query
+     * @param bool $treeify
      * @return Indi_Db_Table_Rowset
      */
-    public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '') {
+    public function all($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '', bool $treeify = false) {
 
         // If $where arg is a comma-separated list of integers - assume we have to use '`id` IN (...)' expr
         if (is_string($where) && strlen($where) && Indi::rexm('int11list', $where))
             $where = "`id` IN ($where)";
 
         // Do fetch
-        return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast, $postfix);
+        return $this->fetchAll($where, $order, $count, $page, $offset, $split, $pgupLast, $postfix, $treeify);
     }
 
     /**
@@ -394,7 +395,7 @@ class Indi_Db_Table
      * @param string $postfix Can be used to add 'FOR UPDATE SKIP LOCKED' to the query
      * @return Indi_Db_Table_Rowset
      */
-    public function fetchAll($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '') {
+    public function fetchAll($where = null, $order = null, $count = null, $page = null, $offset = null, $split = null, $pgupLast = false, string $postfix = '', bool $treeify = false) {
         // Build WHERE and ORDER clauses
         if (is_array($where) && count($where = un($where, [null, '']))) $where = implode(' AND ', $where);
         if (is_array($order) && count($order = un($order, [null, '']))) $order = implode(', ', $order);
@@ -445,8 +446,11 @@ class Indi_Db_Table
             $sql .= " $postfix";
         }
 
+        // If $treeify flag is given and current model has a tree-column - modify sql to rely on CTE
+        if ($treeify && $this->treeColumn()) $sql = db()->treeify($sql);
+
         // Fetch data
-        $data = db()->query($sql)->fetchAll();
+        $data = db()->query($sql)->all();
 
         // Get ids
         if ($this->_verticalPartitions && ($idA = array_column($data, 'id'))) {
@@ -2766,5 +2770,37 @@ class Indi_Db_Table
      */
     public function monthField() {
         return $this->_monthFieldId ? $this->_fields->field($this->_monthFieldId) : null;
+    }
+
+    /**
+     * Get array of all parent ids for all $childIds given as array or comma-separated string
+     *
+     * @param string|array $childIds
+     * @return array
+     */
+    public function getAllParentIdsUp2Root($childIds) : array {
+
+        // If current model has no tree-column - return empty array
+        if (!$this->_treeColumn) return [];
+
+        // Join if array
+        if (is_array($childIds)) $childIds = im($childIds);
+
+        // Prepare sql
+        $sql = <<<SQL
+        WITH RECURSIVE `parents` AS (
+          SELECT `id`, `$this->_treeColumn` 
+          FROM `$this->_table` 
+          WHERE `id` IN ($childIds)
+        UNION ALL
+          SELECT `i`.`id`, `i`.`$this->_treeColumn` 
+          FROM `$this->_table` `i`
+          INNER JOIN `parents` ON `i`.`id` = `parents`.`$this->_treeColumn`
+        )
+        SELECT DISTINCT `$this->_treeColumn` FROM `parents` WHERE `$this->_treeColumn` IS NOT NULL        
+        SQL;
+
+        // Get parents
+        return db()->query($sql)->col();
     }
 }
