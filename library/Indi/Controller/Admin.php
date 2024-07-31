@@ -3500,7 +3500,7 @@ class Indi_Controller_Admin extends Indi_Controller {
 
         // Start a session for user and report that sing-in was ok
         foreach (ar('id,title,email,password,roleId,roleTitle,alternate,mid') as $allowedI)
-            $admin[$allowedI] = $data[$allowedI];
+            $admin[$allowedI] = $data[$allowedI] ?? null;
 
         // Spoof data
         $_SESSION['admin'] = $admin;

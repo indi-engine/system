@@ -5193,7 +5193,7 @@ class Indi_Db_Table_Row implements ArrayAccess
             if (!is_dir($dir)) return;
 
             // Get the original uploaded file full filename
-            list ($src) = glob($dir . $this->id . '_' . $field . '.*');
+            $src = glob($dir . $this->id . '_' . $field . '.*')[0] ?? null;
 
             // If filename was not found - return
             if (!$src) return;
