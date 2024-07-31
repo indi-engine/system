@@ -111,7 +111,7 @@ unset($_POST, $_GET, $_FILES);
 // Include l10n constants
 foreach (['', VDR . '/public', VDR . '/system'] as $fraction)
     foreach (['', '/admin'] as $module)
-        if ($lang = ini('lang')->{trim($module, '/') ?: 'front'})
+        if ($lang = ini('lang')->{trim($module, '/') ?: 'front'} ?? 0)
             if (file_exists($file = DOC . STD . "$fraction/application/lang$module/$lang.php"))
                 include_once $file;
 
