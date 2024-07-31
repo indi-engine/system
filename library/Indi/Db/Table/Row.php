@@ -7427,10 +7427,10 @@ class Indi_Db_Table_Row implements ArrayAccess
             // While there are possible values remaining
             // Note: $this->_system['possible'][$prop] is being set up within
             //       $this->spaceDisabledValues() for field having ['auto' => true] rule
-            while ($this->_system['possible'][$prop]) {
+            while ($this->_system['possible'][$prop] ?? 0) {
 
                 // If it currently is having zero-value, or non-zero, but it's in the list of disabled values
-                if ($this->zero($prop) || $this->_mismatch[$prop]) {
+                if ($this->zero($prop) || ($this->_mismatch[$prop] ?? 0)) {
 
                     // Pick one of possible values, or zero-value if there are no remaining possible values
                     // Note: this logic is not ok for multi-value fields

@@ -1070,7 +1070,7 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                 else if (null !== ($color = $renderCfg[$columnI]['color'] ?? null) || $columnI == 'level') {
 
                     // If color definition starts with color ':' - assume it's a foreight column name from where column can be picked
-                    if (preg_match('~^:(.+)$~', $color, $m)
+                    if (preg_match('~^:(.+)$~', $color ?? '', $m)
                         && !($typeA['foreign']['multiple'][$columnI] ?? 0))
                         $color = $r->$columnI ? $r->foreign($columnI)->rgb($m[1]) : '';
 
