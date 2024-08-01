@@ -922,6 +922,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                 // Get offset
                 $offset = $scope['rowsOnPage'] * ($scope['page'] ?? 0);
 
+                // Reset pgupLast when not applicable anymore
+                if (($scope['page'] ?? 0) < 2) unset($scope['pgupLast']);
+
                 // Build usable WHERE clause
                 $where = rif($scope['WHERE'] ?? 0, 'WHERE $1');
 
