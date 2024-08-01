@@ -166,8 +166,29 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
                 }
             }
 
+            // If we're going to check custom repo migrations - prevent exit on failure for case
+            // when commit from 'migration-commit-custom' param does not exist in repo, as for
+            // custom repo this might happen due to that repo was created based on template repo,
+            // so commit's history of template repo where commit from 'migration-commit-custom'
+            // do really exists - was not included in custom repo, and in that case we'll just
+            // rely on the very first commit of the custom repo
+            $noExitOnFailureIfMsgContains = $fraction === 'custom' ? 'fatal: bad object' : '';
+
             // Get files changed since last commit which we did migrate at
-            if ($files = $this->exec("git diff --name-only $commit", $folder)) {
+            $files = $this->exec("git diff --name-only $commit", $folder, $noExitOnFailureIfMsgContains);
+
+            // If commit does not exist
+            if ($files === false) {
+
+                // Get the very first commit
+                $commit = $this->exec("git rev-list --max-parents=0 HEAD");
+
+                // Get files changed since the very first commit, if any
+                $files = $this->exec("git diff --name-only $commit", $folder);
+            }
+
+            // If some files were changed
+            if ($files) {
 
                 // Convert files list into an array
                 $files = explode("<br>", $files);
