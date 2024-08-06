@@ -16,7 +16,7 @@ class Consider_Row extends Indi_Db_Table_Row {
         if ($cField->alias == 'relation') $cField->alias = 'entityId';
 
         // Call parent
-        return $this->callParent();
+        return $this->callParent($where, $field, $cField, $cValue, $required);
     }
 
     /**
@@ -74,7 +74,7 @@ class Consider_Row extends Indi_Db_Table_Row {
         $dataRs = $this->callParent();
 
         // Prepend data rowset with 'ID' option
-        if ($field == 'connector') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], 'title');
+        if ($field == 'connector') $dataRs->append(['id' => -1, 'title' => 'ID', 'alias' => 'id'], true);
 
         // Return
         return $dataRs;

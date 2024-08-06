@@ -6156,7 +6156,8 @@ class Indi_Db_Table_Row implements ArrayAccess
      * FORCED to be passed (in extjs, if you call this.callParent() - no arguments would be passed,
      * unless you use this.callParent(arguments) expression instead)
      */
-    public function callParent() {
+    public function callParent(&$arg0 = null, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null,
+                               &$arg5 = null, &$arg6 = null, &$arg7 = null, &$arg8 = null, &$arg9 = null) {
 
         // Get trace
         $trace = array_slice(debug_backtrace(), 1, 1);
@@ -6167,8 +6168,27 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Create a ReflectionMethod for the parent method
         $method = new ReflectionMethod(get_parent_class($call['class']), $call['function']);
 
+        // Prepare args
+        $args = [];
+        foreach ($method->getParameters() as $idx => $parameter) {
+            if (isset($call['args'][$idx])) {
+                if ($parameter->isPassedByReference()) {
+                    $args[$idx] = &${"arg$idx"};
+                } else {
+                    $args[$idx] = $call['args'][$idx];
+                }
+            } else {
+                $args[$idx] = null;
+            }
+        }
+
+        // Trim trailing null args
+        $args = array_reverse($args);
+        foreach ($args as $idx => $arg) if ($arg === null) unset($args[$idx]); else break;
+        $args = array_reverse($args);
+
         // Make the call
-        return $method->invokeArgs($this, func_num_args() ? func_get_args() : $call['args']);
+        return $method->invokeArgs($this, $args);
     }
     
     /**
