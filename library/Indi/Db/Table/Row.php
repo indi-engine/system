@@ -1035,7 +1035,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // SELECT <might-be-deleted-parent-level1>
                         // UNION
                         // SELECT <for-sure-deleted-child-level2>
-                        $prev = shmop_get("tree-chain-for-deleted-record-$this->_table-$this->id");
+                        $prev = shmop_get($shmop_key = "tree-chain-for-deleted-record-$this->_table-$this->id");
 
                         // Prepare ids
                         $ids = rif($faol, '$1,') . $this->id;
@@ -1236,6 +1236,9 @@ class Indi_Db_Table_Row implements ArrayAccess
                 }
             }
         }
+
+        // Delete shared memory block, if any
+        if (isset($shmop_key)) shmop_unset($shmop_key);
 
         // Send data to each channel
         if ($byChannel ?? null) foreach ($byChannel as $channel => $byContext) Indi::ws([

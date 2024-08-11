@@ -4033,11 +4033,13 @@ function _strftime (string $format, $timestamp = null, ?string $locale = null) :
 }
 
 /**
+ * Create/update shared memory segment under $key
+ *
  * @param $key
  * @param $value
  * @return int|false
  */
-function shmop_set($key, $value) {
+function shmop_set(string $key, $value) {
 
     // Convert part of the MD5 hash to a numeric key
     $key = hexdec(substr(md5($key), 0, 8));
@@ -4053,10 +4055,12 @@ function shmop_set($key, $value) {
 }
 
 /**
+ * Get shared memory segment by $key
+ *
  * @param $key
  * @return mixed
  */
-function shmop_get($key) {
+function shmop_get(string $key) {
 
     // Convert part of the MD5 hash to a numeric key
     $key = hexdec(substr(md5($key), 0, 8));
@@ -4072,4 +4076,25 @@ function shmop_get($key) {
 
     // Unserialize and return
     return unserialize($value);
+}
+
+/**
+ * Unset shared memory segment by it's $key
+ *
+ * @param string $key
+ * @return bool|null
+ */
+function shmop_unset(string $key) {
+
+    // Convert part of the MD5 hash to a numeric key
+    $key = hexdec(substr(md5($key), 0, 8));
+
+    // Open memory for access
+    $shm_id = shmop_open($key, 'a', 0, 0);
+
+    // If memory does not exists - return null
+    if ($shm_id === false) return null;
+
+    // Delete segment
+    return shmop_delete($shm_id);
 }
