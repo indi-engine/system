@@ -1,5 +1,30 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function dontShowGridIdsAction() {
+        cfgField('element', 'upload', 'wide', [
+            'title' => 'Full width',
+            'elementId' => 'check',
+            'columnTypeId' => 'BOOLEAN',
+            'defaultValue' => '0',
+            'move' => 'refreshL10nsOnUpdate',
+        ]);
+        field('grid', 'formNotShowGridIds', [
+            'title' => 'Don\'t show which involved columns',
+            'storeRelationAbility' => 'many',
+            'relation' => 'grid',
+            'onDelete' => 'SET NULL',
+            'elementId' => 'combo',
+            'columnTypeId' => 'VARCHAR(255)',
+            'move' => 'formNotHideFieldIds',
+        ]);
+        consider('grid', 'formNotShowGridIds', 'sectionId', ['required' => 'y']);
+        grid('grid', 'formNotShowGridIds', [
+            'gridId' => 'form',
+            'move' => 'formNotHideFieldIds',
+            'icon' => 'resources/images/icons/readonly.png',
+            'editor' => '1',
+        ]);
+    }
     public function usability1Action() {
         enumset('alteredField', 'toggle', 'y', ['boxIcon' => 'resources/images/icons/btn-icon-lime.png']);
         enumset('alteredField', 'toggle', 'n', ['boxIcon' => 'resources/images/icons/btn-icon-red.png']);

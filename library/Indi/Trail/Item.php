@@ -266,18 +266,23 @@ class Indi_Trail_Item {
 
         // Chunks info
         $info = [
-            'gridChunksDontHideFieldIds' => [],
-            'gridChunksInvolvedFieldIds' => [],
+            'gridChunksSharedRow'        => Indi_Trail_Admin::$controller->affected(true),
             'gridChunks'                 => [],
-            'gridChunksSharedRow'        => Indi_Trail_Admin::$controller->affected(true)
+            'gridChunksInvolvedFieldIds' => [],
+            'gridChunksDontHideFieldIds' => [],
+            'gridChunksDontShowGridIds'  => [],
         ];
 
         // Foreach grid column having formToggle-prop turned on
         foreach ($this->grid->select('y', 'formToggle') as $gridR) {
 
-            // Collect ids if fields, what should be still visible in formpanel despite duplicated as grid cells
+            // Collect ids of fields, what should be still visible in formpanel despite duplicated as grid cells
             foreach (ar($gridR->formNotHideFieldIds) as $fieldId)
                 $info['gridChunksDontHideFieldIds'][$fieldId] = true;
+
+            // Collect ids of cols, what should not be visible in formpanel
+            foreach (ar($gridR->formNotShowGridIds) as $gridId)
+                $info['gridChunksDontShowGridIds'][$gridId] = true;
 
             // Create Grid_Rowset instance containing this one grid column only
             $gridChunk = m('grid')->createRowset(['rows' => [$_ = clone $gridR]]);
@@ -294,8 +299,9 @@ class Indi_Trail_Item {
             $info['gridChunks'] []= $gridChunk->toArray(true);
         }
 
-        // Make sure this prop to be a javascript object rather than array
+        // Make sure those props to be a javascript object rather than array
         if (!$info['gridChunksDontHideFieldIds']) $info['gridChunksDontHideFieldIds'] = new stdClass();
+        if (!$info['gridChunksDontShowGridIds']) $info['gridChunksDontShowGridIds'] = new stdClass();
 
         // Flip that array so that field ids will be the keys, for easier use in javascript "if (field.id in gridChunksInvolvedFieldIds)"
         $info['gridChunksInvolvedFieldIds'] = array_flip($info['gridChunksInvolvedFieldIds']);
