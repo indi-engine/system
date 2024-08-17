@@ -1738,6 +1738,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $objDrawing->setPath($abs);
                         $objDrawing->setCoordinates($cellSinceLetter . $currentRowIndex);
                         $objDrawing->setOffsetY(3 + ($columnI['rowspan'] - 1) * 10)->setOffsetX($additionalOffsetX);
+                        $objDrawing->setWidthAndHeight(16, 16);
                         $objDrawing->setWorksheet($sheet);
                     }
 
@@ -2099,6 +2100,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                         $objDrawing->setPath($abs);
                         $objDrawing->setCoordinates($coord);
                         $objDrawing->setOffsetY(3)->setOffsetX($additionalOffsetX);
+                        $objDrawing->setWidthAndHeight(16, 16);
                         $objDrawing->setHyperlink(new PHPExcel_Cell_Hyperlink($url));
                         $objDrawing->setWorksheet($sheet);
 
@@ -4493,6 +4495,7 @@ class Indi_Controller_Admin extends Indi_Controller {
                 $objDrawing->setName($tip);
                 $objDrawing->setPath($abs);
                 $objDrawing->setCoordinates($cellCoords);
+                $objDrawing->setWidthAndHeight(16, 16);
                 $objDrawing->setOffsetY(3)->setOffsetX(max(4, $offsetX));
                 $objDrawing->setWorksheet($sheet);
             }

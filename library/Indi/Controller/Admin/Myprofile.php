@@ -18,6 +18,12 @@ class Indi_Controller_Admin_Myprofile extends Indi_Controller_Admin {
      */
     public function preDispatch() {
 
+        // If we're here due to attempt to render phantom data
+        if (uri()->action === 'phantom') {
+            uri()->action = 'form';
+            uri()->phantom = 1;
+        }
+
         // Force redirect to certain row
         if (uri()->action == 'index' || uri()->id != admin()->id) {
 
