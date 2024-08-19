@@ -782,13 +782,12 @@ class Indi_Db_Table_Row implements ArrayAccess
             ];
         }
 
+        // Append calendar colors
+        // todo: refactor this
+        if ($scope['colors']) $renderCfg['_system']['colors'] = $scope['colors'];
+
         // Add panel type
         $renderCfg['_system']['panel'] = $scope['panel'] ?? 'grid';
-
-        // DEBUG
-        if (! ($scope['panel'] ?? null)) {
-            Indi::log('no-scope-panel', ['scope' => $scope, 'renderCfg' => $renderCfg], false);
-        }
 
         // Render
         $data = $this->toGridData($dataColumns, $renderCfg);

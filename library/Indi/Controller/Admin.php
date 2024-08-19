@@ -323,6 +323,10 @@ class Indi_Controller_Admin extends Indi_Controller {
                             'colorFurther' => t()->section->foreign('colorFurther')->alias
                         ];
 
+                        // Append plan colors into scope
+                        // todo: refactore this
+                        if (t()->section->panel === 'plan' && t()->section->colors) $scope['colors'] = t()->section->colors;
+
                         // Create context if need
                         $this->createContextIfNeed($scope);
 

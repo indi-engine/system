@@ -1113,6 +1113,15 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
                     $data[$pointer]['_system']['style'] = Indi::rowsetItemStyle($renderCfg['_system']['panel'], $color);
                 }
 
+            // If we have calendar colors defined - calc those for specific record
+            // todo: refactor this
+            if ($colors = $renderCfg['_system']['colors'] ?? 0) {
+                $data[$pointer]['_system']['color'] = [
+                    'major' => ($f = $colors['major']['field']) ? $r->$f : null,
+                    'point' => ($f = $colors['point']['field']) ? $r->$f : null,
+                ];
+            }
+
             // Setup _system owner flag
             if ($owner = $renderCfg['_system']['owner'] ?? null) {
                 $data[$pointer]['_system']['owner'] = in($owner['id'], $r->{$owner['field']});
