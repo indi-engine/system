@@ -849,6 +849,13 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Pull foreign data for `realtimeId` key
         $realtimeRs->foreign('realtimeId');
 
+        // If $event is 'delete' and current entity has a tree-column
+        if ($event === 'delete' && $this->model()->treeColumn() && !db()->version('5')) {
+
+            // Setup shmop key name where info about deleted (or possibly deleted) parents is stored
+            $shmop_key = "tree-chain-for-deleted-record-$this->_table-$this->id";
+        }
+
         // Foreach
         foreach ($realtimeRs as $realtimeR) {
 
@@ -1034,7 +1041,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         // SELECT <might-be-deleted-parent-level1>
                         // UNION
                         // SELECT <for-sure-deleted-child-level2>
-                        $prev = shmop_get($shmop_key = "tree-chain-for-deleted-record-$this->_table-$this->id");
+                        $prev = shmop_get($shmop_key);
 
                         // Prepare ids
                         $ids = rif($faol, '$1,') . $this->id;
