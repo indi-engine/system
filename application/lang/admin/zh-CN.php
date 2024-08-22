@@ -360,4 +360,5 @@ define('I_MDL_ADMIN_VK_2', '该页面在 VK 中不存在');
 define('I_MDL_ADMIN_VK_3', 'VK 中的此页面不是用户页面');
 
 define('I_FIELD_DRAG_CLICK', '拖动以重新排序/单击以查看详细信息');
+define('I_ENTITY_CLICK', '单击以查看详细信息');
 define('I_ACTION_FORM', '细节');

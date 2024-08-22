@@ -360,4 +360,5 @@ define('I_MDL_ADMIN_VK_2', 'Esta página no existe en VK.');
 define('I_MDL_ADMIN_VK_3', 'Esta página en VK no es una página de usuario.');
 
 define('I_FIELD_DRAG_CLICK', 'Arrastre para reordenar / Haga clic para ver detalles');
+define('I_ENTITY_CLICK', 'Haga clic para ver detalles');
 define('I_ACTION_FORM', 'Detalles');
