@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', 'Encender');
 define('I_TOGGLE_N', 'Apagar');
 define('I_EXPORT_EXCEL', 'Exportar como una hoja de cálculo de Excel');
 define('I_EXPORT_PDF', 'Exportar como documento PDF');
+define('I_SORT_DEFAULT', 'Restablecer ordenación por defecto');
 define('I_NAVTO_ROWSET', 'Volver al conjunto de filas');
 define('I_NAVTO_ID', 'Ir a fila por ID');
 define('I_NAVTO_RELOAD', 'Actualizar');

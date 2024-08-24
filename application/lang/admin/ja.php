@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', 'オンにする');
 define('I_TOGGLE_N', '消す');
 define('I_EXPORT_EXCEL', 'Excel スプレッドシートとしてエクスポート');
 define('I_EXPORT_PDF', 'PDF文書としてエクスポート');
+define('I_SORT_DEFAULT', 'デフォルトのソートにリセット');
 define('I_NAVTO_ROWSET', '行セットに戻る');
 define('I_NAVTO_ID', 'ID で行へ移動');
 define('I_NAVTO_RELOAD', 'リフレッシュ');

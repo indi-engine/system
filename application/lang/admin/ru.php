@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', 'Включить');
 define('I_TOGGLE_N', 'Выключить');
 define('I_EXPORT_EXCEL', 'Экспортировать в Excel');
 define('I_EXPORT_PDF', 'Экспортировать в PDF');
+define('I_SORT_DEFAULT', 'Вернуть сортировку по умолчанию');
 define('I_NAVTO_ROWSET', 'Вернуться к списку');
 define('I_NAVTO_ID', 'Перейти к записи по ID');
 define('I_NAVTO_RELOAD', 'Обновить');

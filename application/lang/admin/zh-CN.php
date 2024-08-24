@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', '打开');
 define('I_TOGGLE_N', '关');
 define('I_EXPORT_EXCEL', '导出为 Excel 电子表格');
 define('I_EXPORT_PDF', '导出为 PDF 文档');
+define('I_SORT_DEFAULT', '重置为默认排序');
 define('I_NAVTO_ROWSET', '返回行集');
 define('I_NAVTO_ID', '根据 ID 转到行');
 define('I_NAVTO_RELOAD', '刷新');

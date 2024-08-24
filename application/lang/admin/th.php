@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', 'เปิด');
 define('I_TOGGLE_N', 'ปิด');
 define('I_EXPORT_EXCEL', 'ส่งออกเป็นสเปรดชีต Excel');
 define('I_EXPORT_PDF', 'ส่งออกเป็นเอกสาร PDF');
+define('I_SORT_DEFAULT', 'รีเซ็ตเป็นการเรียงลำดับเริ่มต้น');
 define('I_NAVTO_ROWSET', 'กลับไปที่ชุดแถว');
 define('I_NAVTO_ID', 'ไปที่แถวตาม ID');
 define('I_NAVTO_RELOAD', 'รีเฟรช');

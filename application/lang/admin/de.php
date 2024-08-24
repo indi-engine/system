@@ -78,6 +78,7 @@ define('I_TOGGLE_Y', 'Anmachen');
 define('I_TOGGLE_N', 'Abschalten');
 define('I_EXPORT_EXCEL', 'Als Excel-Tabelle exportieren');
 define('I_EXPORT_PDF', 'Als PDF-Dokument exportieren');
+define('I_SORT_DEFAULT', 'Standardsortierung wiederherstellen');
 define('I_NAVTO_ROWSET', 'Zurück zum Rowset');
 define('I_NAVTO_ID', 'Gehe zu Zeile nach ID');
 define('I_NAVTO_RELOAD', 'Aktualisierung');
