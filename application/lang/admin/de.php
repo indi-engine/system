@@ -361,5 +361,6 @@ define('I_MDL_ADMIN_VK_2', 'Diese Seite existiert nicht in VK');
 define('I_MDL_ADMIN_VK_3', 'Diese Seite in VK ist keine Benutzerseite');
 
 define('I_FIELD_DRAG_CLICK', 'Zum Neuordnen ziehen / Zum Anzeigen der Details klicken');
-define('I_ENTITY_CLICK', 'Zum Anzeigen der Details klicken');
+define('I_OPEN_DETAILS', 'Zum Anzeigen der Details klicken');
+define('I_ALTER_FIELDS', 'Klicken Sie, um Felder für diesen Abschnitt anzupassen');
 define('I_ACTION_FORM', 'Einzelheiten');

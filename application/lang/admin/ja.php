@@ -361,5 +361,6 @@ define('I_MDL_ADMIN_VK_2', 'このページはVKに存在しません');
 define('I_MDL_ADMIN_VK_3', 'VKのこのページはユーザーページではありません');
 
 define('I_FIELD_DRAG_CLICK', 'ドラッグして並べ替え / クリックして詳細を表示');
-define('I_ENTITY_CLICK', 'クリックして詳細を表示');
+define('I_OPEN_DETAILS', 'クリックして詳細を表示');
+define('I_ALTER_FIELDS', 'このセクションのフィールドを調整するにはクリックしてください');
 define('I_ACTION_FORM', '詳細');

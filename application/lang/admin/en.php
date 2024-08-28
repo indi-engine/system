@@ -361,5 +361,6 @@ define('I_MDL_ADMIN_VK_2', 'This page does not exist in VK');
 define('I_MDL_ADMIN_VK_3', 'This page in VK is not a user-page');
 
 define('I_FIELD_DRAG_CLICK', 'Drag to reorder / Click to see details');
-define('I_ENTITY_CLICK', 'Click to see details');
+define('I_OPEN_DETAILS', 'Click to see details');
+define('I_ALTER_FIELDS', 'Click to adjust fields for this section');
 define('I_ACTION_FORM', 'Details');
