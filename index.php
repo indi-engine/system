@@ -16,7 +16,7 @@ if(isset($_GET['info'])){phpinfo();die();}
 
 // Set up error reporting
 error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
-ini_set('display_errors', 'On');
+ini_set('display_errors', 'Off');
 
 // PHP 8.x compatiblity
 $_SERVER['STD'] ??= null; $_SERVER['REDIRECT_STD'] ??=null; $GLOBALS['last'] = null;

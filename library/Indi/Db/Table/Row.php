@@ -145,7 +145,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      */
     protected function _init(array $config = []) {
         $this->_table = $config['table'];
-        $this->_original = $config['original'];
+        $this->_original = $this->fixTypes($config['original']);
         $this->_modified  = is_array($config['modified']  ?? null) ? $config['modified']  : [];
         $this->_affected  = is_array($config['affected']  ?? null) ? $config['affected']  : [];
         $this->_system    = is_array($config['system']    ?? null) ? $config['system']    : [];

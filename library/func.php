@@ -3275,6 +3275,9 @@ function __($str) {
     // Spoof 1st arg
     $args = func_get_args(); array_shift($args); array_unshift($args, $str);
 
+    // If there is only one arg - append 2nd one to be compatible with sprintf
+    if (count($args) === 1) $args []= '';
+
     // Call sprintf using $args and return result
     return call_user_func_array('sprintf', $args);
 }
