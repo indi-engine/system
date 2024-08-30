@@ -2690,8 +2690,13 @@ class Indi_Db_Table
 
         // Prepare WHERE clause
         $where = [];
-        foreach ($need as $prop => $value)
-            $where []= "`$prop` = " . db()->quote($value);
+        foreach ($need as $prop => $value) {
+            if (isset($this->_ibfk[$prop])) {
+                $where []= "IFNULL(`$prop`, 0) = " . db()->quote($value);
+            } else {
+                $where []= "`$prop` = " . db()->quote($value);
+            }
+        }
 
         // If row not exists
         if (!$row = $this->row($where)) {

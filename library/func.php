@@ -3754,6 +3754,10 @@ function progress($arg1, $arg2 = null, $id = null) {
             $data['message']
         );
 
+        // Apply constants, if any
+        $data['message'] = preg_replace_callback('~(?<const>I_[A-Z0-9_]+)~',
+            fn($m) => defined($m['const']) ? constant($m['const']) : $m['const'], $data['message']);
+
         // Remember message
         Indi::$progress[$id]['message'] = $data['message'];
     }
