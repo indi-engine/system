@@ -1610,7 +1610,7 @@ function jcheck($ruleA, $data = null, $fn = 'jflush') {
         
         // If prop's value should be unique within the whole database table, but it's not - flush error
         if ($rule['unq'] && count($_ = explode('.', $rule['unq'])) == 2 && m($_[0])->row([
-            '`' . $_[1] . '` = "' . $value . '"'
+                '`' . $_[1] . '` = ' . db()->quote($value)
             ])) $flushFn($arg1, sprintf(constant($c . 'UNQ'), $value, $label));
     }
 
