@@ -1576,7 +1576,7 @@ class Indi_Db_Table
      * @return int Number of affected rows
      * @throws Exception
      */
-    public function delete($where) {
+    public function delete($where, $limit = 0) {
 
         // Basic SQL expression
         $sql = 'DELETE FROM `' . $this->_table . '`';
@@ -1587,8 +1587,11 @@ class Indi_Db_Table
             // Get WHERE clause as string
             if (is_array($where) && count($where)) $where = implode(' AND ', $where);
 
-            // Append WHERE clause to basic expression
+            // Append WHERE clause
             $sql .= ' WHERE ' . $where;
+
+            // Append LIMIT clause
+            $sql .= rif($limit, ' LIMIT $1');
 
             // Execute the query
             return db()->query($sql);
