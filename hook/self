@@ -39,7 +39,7 @@ foreach ($packageA as &$package) {
     chdir('vendor/' . $package['name']);
 
     // Get log for the given range of package's own commit history
-    preg_match_all($rex, `git log {$package['was']}..{$package['now']}`, $commitA,PREG_SET_ORDER);
+    preg_match_all($rex, `git log {$package['was']}..{$package['now']}` ?? '', $commitA,PREG_SET_ORDER);
 
     // Foreach package commit parsed
     foreach ($commitA as &$commit) {
