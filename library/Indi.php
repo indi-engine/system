@@ -2130,7 +2130,7 @@ class Indi {
         ob_implicit_flush($flag);
 
         // Flush
-        if ($flag && ob_get_contents()) ob_end_flush();
+        if ($flag) ob_end_flush();
     }
 
     /**
