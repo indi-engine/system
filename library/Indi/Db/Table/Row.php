@@ -2039,7 +2039,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Compile filters if they contain php-expressions
         for($i = 0; $i < count($where); $i++) {
-            Indi::$cmpTpl = $where[$i]; eval(Indi::$cmpRun); $where[$i] = Indi::cmpOut();
+            Indi::$cmpTpl = str_replace("'", "\'", $where[$i]); eval(Indi::$cmpRun); $where[$i] = Indi::cmpOut();
         }
 
         // If $multiSelect argument is not given - detect it automatically

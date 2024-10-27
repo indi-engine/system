@@ -762,21 +762,25 @@ class Indi_Db {
         // Else if query was not UPDATE|DELETE|INSERT
         } else {
 
-            // Exectute query by PDO->query() method
-            $stmt = self::$_pdo->query($sql);
+            try {
+                // Exectute query by PDO->query() method
+                $stmt = self::$_pdo->query($sql);
 
-            // Increment queries count
-            self::$queryCount++;
+                // Increment queries count
+                self::$queryCount++;
 
-            // If query execition was not successful and mysql error reporting is on
-            // Display error message, backtrace info and make the global stop
-            if (!$stmt) $this->jerror($sql);
+                // If query execition was not successful and mysql error reporting is on
+                // Display error message, backtrace info and make the global stop
+                if (!$stmt) $this->jerror($sql);
 
-            // Else if all was ok, setup fetch mode as PDO::FETCH_ASSOC
-            else if ($stmt) $stmt->setFetchMode(PDO::FETCH_ASSOC);
+                // Else if all was ok, setup fetch mode as PDO::FETCH_ASSOC
+                else if ($stmt) $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
-            // Return PDO statement
-            return $stmt;
+                // Return PDO statement
+                return $stmt;
+            } catch (Exception) {
+                $this->jerror($sql);
+            }
         }
     }
 
