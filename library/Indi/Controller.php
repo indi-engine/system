@@ -435,7 +435,7 @@ class Indi_Controller {
                 }
 
                 // Prepare column name to be used in sql query
-                $column = $further ?: $filterSearchFieldAlias; $sub = false;
+                $column = $further ?: preg_replace('~-(gte|lte)$~', '', $filterSearchFieldAlias); $sub = false;
 
                 // If field is not storing foreign keys
                 if (!$found) {} else if ($found->storeRelationAbility == 'none') {
