@@ -562,8 +562,8 @@ class Indi_Db_Table
             } else {
 
                 // Shortcuts
-                $ke1 = db()->quote("$keyword%");
-                $ke2 = db()->quote(($k2 = Indi::kl($keyword)) . '%');
+                $ke1 = db()->quote("%$keyword%");
+                $ke2 = db()->quote(($k2 = '%' . Indi::kl($keyword)) . '%');
                 $lang = ini('lang')->admin;
 
                 // Build l10n-compatible version of $order for usage in sql queries
