@@ -739,18 +739,26 @@ class Indi_Db {
         // rows count as return value of execution
         if (preg_match('/^(UPDATE|DELETE|INSERT)/', $sql)) {
 
-            // Execute query and get affected rows count
-            $affected = self::$_pdo->exec($sql);
+            // Wrap PDO::exec() into try .. catch because exception is now thrown on error since php 8.0
+            try {
 
-            // Increment queries count
-            self::$queryCount++;
+                // Execute query and get affected rows count
+                $affected = self::$_pdo->exec($sql);
 
-            // Collect DELETE queries
-            if (preg_match('/^DELETE/', $sql))
-                self::$DELETEQueryA[] = [
-                    'sql' => $sql,
-                    'affected' => $affected
-                ];
+                // Increment queries count
+                self::$queryCount++;
+
+                // Collect DELETE queries
+                if (preg_match('/^DELETE/', $sql))
+                    self::$DELETEQueryA[] = [
+                        'sql' => $sql,
+                        'affected' => $affected
+                    ];
+
+            // Catch exception
+            } catch (\PDOException $e) {
+                $affected = false;
+            }
 
             // If no rows were affected and error reporting ($silence argument) is turned on
             // Display error message, backtrace info and make the global stop
