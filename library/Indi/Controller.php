@@ -434,6 +434,9 @@ class Indi_Controller {
                     $excelA[$found->alias] = ['title' => $rename ?: $found->title];
                 }
 
+                // Prepare column name to be used in sql query
+                $column = $further ?: preg_replace('~-(gte|lte)$~', '', $filterSearchFieldAlias); $sub = false;
+
                 // If field is not storing foreign keys
                 if (!$found) {} else if ($found->storeRelationAbility == 'none') {
 
@@ -441,41 +444,45 @@ class Indi_Controller {
                     if ($found->elementId == 11) {
 
                         // Get the hue range borders
-                        list($hueFrom, $hueTo) = $filterSearchFieldValue;
+                        list($hueFrom, $hueTill) = $filterSearchFieldValue;
 
                         // Check $hueFrom and $hueTo
-                        if (!Indi::rexm('int11', $hueFrom) || !Indi::rexm('int11', $hueTo) || $hueFrom < 0 || $hueTo > 360)  continue;
+                        if (!Indi::rexm('int11', $hueFrom) || !Indi::rexm('int11', $hueTIll) || $hueFrom < 0 || $hueTill > 360)  continue;
                         
-                        // Build a WHERE clause for that hue range borders. If $hueTo > $hueFrom, use BETWEEN clause,
-                        // else if $hueTo < $hueFrom, use '>=' and '<=' clauses, or else if $hueTo = $hueFrom, use '='
+                        // Build a WHERE clause for that hue range borders. If $hueTIll > $hueFrom, use BETWEEN clause,
+                        // else if $hueTill < $hueFrom, use '>=' and '<=' clauses, or else if $hueTill = $hueFrom, use '='
                         // clause
-                        if ($hueTo > $hueFrom) {
-                            $where[$found->alias] = 'SUBSTRING(`' . $filterSearchFieldAlias . '`, 1, 3) BETWEEN "' . str_pad($hueFrom, 3, '0', STR_PAD_LEFT) . '" AND "' . str_pad($hueTo, 3, '0', STR_PAD_LEFT) . '"';
-                        } else if ($hueTo < $hueFrom) {
-                            $where[$found->alias] = '(SUBSTRING(`' . $filterSearchFieldAlias . '`, 1, 3) >= "' . str_pad($hueFrom, 3, '0', STR_PAD_LEFT) . '" OR SUBSTRING(`' . $filterSearchFieldAlias . '`, 1, 3) <= "' . str_pad($hueTo, 3, '0', STR_PAD_LEFT) . '")';
+                        $hueFromPad = db()->quote(str_pad($hueFrom, 3, '0', STR_PAD_LEFT));
+                        $hueTillPad = db()->quote(str_pad($hueTill, 3, '0', STR_PAD_LEFT));
+                        if ($hueTill > $hueFrom) {
+                            $where[$found->alias] = "SUBSTRING(`$column`, 1, 3) BETWEEN $hueFromPad AND $hueTillPad";
+                        } else if ($hueTill < $hueFrom) {
+                            $where[$found->alias] = "(SUBSTRING(`$column`, 1, 3) >= $hueFromPad OR SUBSTRING(`$column`, 1, 3) <= $hueTillPad)";
                         } else {
-                            $where[$found->alias] = 'SUBSTRING(`' . $filterSearchFieldAlias . '`, 1, 3) = "' . str_pad($hueFrom, 3, '0', STR_PAD_LEFT) . '"';
+                            $where[$found->alias] = "SUBSTRING(`$column`, 1, 3) = $hueFromPad";
                         }
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['type'] = 'color';
-                        $excelA[$found->alias]['value'] = [$hueFrom, $hueTo];
+                        $excelA[$found->alias]['value'] = [$hueFrom, $hueTill];
                         $excelA[$found->alias]['offset'] = $filterOnField['_xlsLabelWidth'];
 
                     // Else if $found field's control element is 'Check' or 'Combo', we use '=' clause
                     } else if ($found->elementId == 9 || $found->elementId == 23) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` = :s', $filterSearchFieldValue);
+                        $where[$found->alias] = db()->sql("`$column` = :s", $filterSearchFieldValue);
 
                         // Pick the current filter value to $excelA
-                        $excelA[$found->alias]['value'] = $filterSearchFieldValue ? I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_YES : I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_NO;
+                        $excelA[$found->alias]['value'] = $filterSearchFieldValue
+                            ? I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_YES
+                            : I_ACTION_INDEX_FILTER_TOOLBAR_CHECK_NO;
 
                     // Else if $found field's control element is 'String', we use 'LIKE "%xxx%"' clause
                     } else if ($found->elementId == 1) {
 
                         // Build WHERE clause for current field
-                        $where[$found->alias] = db()->sql('`' . $filterSearchFieldAlias . '` LIKE :s', '%' . $filterSearchFieldValue . '%');
+                        $where[$found->alias] = db()->sql("`$column` LIKE :s", '%' . $filterSearchFieldValue . '%');
 
                         // Pick the current filter value to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
@@ -487,7 +494,7 @@ class Indi_Controller {
                         if (Indi::rex('date', $filterSearchFieldValue)) {
                             if ($m[1] == 'gte') $filterSearchFieldValue .=' 00:00:00';
                             else $filterSearchFieldValue = date('Y-m-d H:i:s', strtotime($filterSearchFieldValue) + 86400);
-                            $where['spaceSince'][$m[1]] = $filterSearchFieldValue;
+                            $where['spaceSince'][$sub = $m[1]] = $filterSearchFieldValue;
                         }
 
                         // If we now have both bounds - setup WHERE clause using special Indi_Schedule::where($since, $until) method
@@ -503,7 +510,7 @@ class Indi_Controller {
 
                         // Detect the type of filter value - bottom or top, in 'range' terms mean
                         // greater-or-equal or less-or-equal
-                        if (preg_match('/([a-zA-Z0-9_\-]+)-(lte|gte)$/', $filterSearchFieldAlias, $matches)) {
+                        if (preg_match('/^([a-zA-Z0-9_\-]+)-(lte|gte)$/', $filterSearchFieldAlias, $matches)) {
 
                             // Currently both filter for Date and Datetime fields looks exactly the same, despite on Datetime
                             // fields have time in addition to date. But here, in php-code we need to handle these filter types
@@ -521,19 +528,36 @@ class Indi_Controller {
                                 $filterSearchFieldValue .= preg_match('/gte$/', $filterSearchFieldAlias) ? ' 00:00:00' : ' 23:59:59';
 
                             // Use a '>=' or '<=' clause, according to specified range border's type
-                            $where[$found->alias][$matches[2]] = db()->sql('`' . $matches[1] . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
+                            $where[$found->alias][$sub = $matches[2]] = db()->sql('`' . $column . '` ' . ($matches[2] == 'gte' ? '>' : '<') . '= :s', $filterSearchFieldValue);
 
                         // Else
-                        } else $where[$found->alias] = db()->sql('`' . $found->alias . '` = :s', $filterSearchFieldValue);
+                        } else $where[$found->alias] = db()->sql("`$column` = :s", $filterSearchFieldValue);
 
                     // If $found field's column type is TEXT ( - control elements 'Text' and 'HTML')
                     } else if ($found->columnTypeId == 4) {
 
                         // Use 'MATCH AGAINST' clause
-                        $where[$found->alias] = db()->sql('MATCH(`' . $filterSearchFieldAlias . '`) AGAINST(:s IN BOOLEAN MODE)', $filterSearchFieldValue . '*');
+                        $where[$found->alias] = db()->sql("MATCH(`$column`) AGAINST(:s IN BOOLEAN MODE)", "$filterSearchFieldValue*");
 
                         // Pick the current filter value and field type to $excelA
                         $excelA[$found->alias]['value'] = $filterSearchFieldValue;
+                    }
+
+                    // If further-foreign filter's field should be used
+                    if ($further) {
+
+                        // Get WHERE clause to be run on table, that filter's further / JOINed field belongs to
+                        $furtherWHERE = $sub ? $where[$found->alias][$sub] : $where[$found->alias];
+
+                        // Get ids
+                        $idA = db()->query($sql = "SELECT `id` FROM `:p` WHERE $furtherWHERE", m($found->entityId)->table())->col();
+
+                        // Set up WHERE clause according to value of $multiSelect flag
+                        if ($sub) {
+                            $where[$found->alias][$sub] = db()->sql("`$foreign` IN (:p)", im($idA));
+                        } else {
+                            $where[$found->alias] = db()->sql("`$foreign` IN (:p)", im($idA));
+                        }
                     }
 
                 // Else if $found field is able to store only one foreign key, use '=' clause

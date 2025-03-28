@@ -803,7 +803,7 @@ class Indi {
                     Indi::$cmpOut[$iterator] .= $php[$$iterator];
                 }
             }
-        } else if (preg_match(\'/(\$|::)/\', Indi::$cmpTpl)) {
+        } else if (preg_match(\'/(\$[a-zA-Z_]|::)/\', Indi::$cmpTpl)) {
             if (preg_match(\'/^\\\'/\', trim(Indi::$cmpTpl))) {
                 Indi::$cmpTpl = ltrim(Indi::$cmpTpl, "\' ");
                 if (preg_match(\'/\\\'$/\', trim(Indi::$cmpTpl)))
@@ -2130,7 +2130,7 @@ class Indi {
         ob_implicit_flush($flag);
 
         // Flush
-        if ($flag && ob_get_contents()) ob_end_flush();
+        if ($flag) ob_end_flush();
     }
 
     /**

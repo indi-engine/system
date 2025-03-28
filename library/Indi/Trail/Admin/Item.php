@@ -344,7 +344,9 @@ class Indi_Trail_Admin_Item extends Indi_Trail_Item {
                     }
 
                 // If current cms user is an alternate, and if there is corresponding column-field within current entity structure
-                if (admin()->table() != 'admin' && $ownerColumn = $this->model->ownerField(admin())->alias ?? 0)
+                if (admin()->table() != 'admin'
+                    && ($ownerColumn = $this->model->ownerField(admin())->alias ?? 0)
+                    && !$this->row->isModified($ownerColumn))
 
                     // Force setup of that field value as id of current cms user
                     $this->row->$ownerColumn = admin()->id;

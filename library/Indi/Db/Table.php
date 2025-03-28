@@ -559,9 +559,22 @@ class Indi_Db_Table
                 $where[] = '`' . $titleColumn . '` RLIKE "' . $rlike . '"';
 
             // Else
-            } else $where[] = ($keyword2 = str_replace('"', '\"', Indi::kl($keyword)))
-                ? '(`' . $titleColumn . '` LIKE "' . str_replace('"', '\"', $keyword) . '%" OR `' . $titleColumn . '` LIKE "' . $keyword2 . '%")'
-                : '`' . $titleColumn . '` LIKE "' . str_replace('"', '\"', $keyword) . '%"';
+            } else {
+
+                // Shortcuts
+                $ke1 = db()->quote("%$keyword%");
+                $ke2 = db()->quote(($k2 = '%' . Indi::kl($keyword)) . '%');
+                $lang = ini('lang')->admin;
+
+                // Build l10n-compatible version of $order for usage in sql queries
+                $tc = $titleColumn != 'id' && $this->fields($titleColumn)->l10n == 'y'
+                    ? "SUBSTRING_INDEX(`$titleColumn`, '\"$lang\":\"', -1)"
+                    : "`$titleColumn`";
+
+                $where[] = $k2
+                    ? "($tc LIKE $ke1 OR $tc LIKE $ke2)"
+                    : "`$tc LIKE $ke1";
+            }
 
             // Fetch rows that match $where clause, ant set foundRows
             $foundRs = $this->all($where, $order, $count, $page);
