@@ -2203,7 +2203,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         if ($this->hasIbfk()) return $ibfkName;
 
         // Make sure NULL is allowed and is a default value for that table column
-        db()->query("ALTER TABLE `$table` MODIFY `$fkColumn` INT DEFAULT NULL NULL");
+        db()->query("ALTER TABLE `$table` MODIFY `$fkColumn` INT DEFAULT NULL");
 
         // Convert 0-values to NULL if any
         db()->query("UPDATE `$table` SET `$fkColumn` = NULL WHERE `$fkColumn` = '0'");
