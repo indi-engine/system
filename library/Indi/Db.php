@@ -740,7 +740,11 @@ class Indi_Db {
         if (preg_match('/^(UPDATE|DELETE|INSERT)/', $sql)) {
 
             // Execute query and get affected rows count
-            $affected = self::$_pdo->exec($sql);
+            try {
+                $affected = self::$_pdo->exec($sql);
+            } catch (PDOException $e) {
+                $this->jerror($sql);
+            }
 
             // Increment queries count
             self::$queryCount++;

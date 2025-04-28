@@ -2325,7 +2325,7 @@ class Indi_Controller_Migrate extends Indi_Controller {
         // Mind changelog
         if ($entityIdsHavingChangeLogToggledOn = m('entity')
             ->all('`changeLogToggle` = "all" OR `changeLogExcept` != ""')
-            ->col('id', ','))
+            ->ids())
             param('changeLog', 'entryId', 'whichEntities', ['cfgValue' => $entityIdsHavingChangeLogToggledOn]);
         param('changeLog', 'adminId', 'whichEntities', ['cfgValue' => im(Indi_Db::role())]);
         param('realtime', 'adminId', 'whichEntities', ['cfgValue' => im(Indi_Db::role())]);

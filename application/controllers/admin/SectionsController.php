@@ -532,4 +532,14 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
             t()->row->set('planTypes', $prompt['planTypes']);
         }
     }
+
+    public function exportAction() {
+        $lineA = [];
+        foreach (t()->rows as $sectionR) {
+            foreach (m($sectionR->entityId)->all() as $record) {
+                $lineA []= $record->export();
+            }
+        }
+        jtextarea(false, join("\n", $lineA));
+    }
 }

@@ -2044,7 +2044,7 @@ class Indi_Db_Table
         $qty = (int) db()->query('SELECT COUNT(*) FROM `' . $this->table() . '`' . ($where ? ' WHERE ' . $where : ''))->cell();
 
         // If progress should be shown in ui
-        if ($progress) {
+        if ($progress && $qty > 0) {
 
             // Prepare progress title
             $title = is_string($progress) ? $progress : 'Processing';
@@ -2090,6 +2090,9 @@ class Indi_Db_Table
             // Commit transaction
             //db()->commit();
         }
+
+        //
+        return $qty;
     }
 
     /**
@@ -2678,8 +2681,8 @@ class Indi_Db_Table
      *
      * @return bool
      */
-    public function nativeCascade() {
-        return $this->_nativeCascade;
+    public function nativeCascade(?bool $flag = null) {
+        return func_num_args() ? $this->_nativeCascade = $flag : $this->_nativeCascade;
     }
 
     /**

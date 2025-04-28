@@ -1732,6 +1732,9 @@ function entity($table, array $ctor = []) {
     // If $table arg is an integer - assume it's an `entity` entry's `id`, otherwise assume it's a `table`
     $byprop = Indi::rexm('int11', $table) ? 'id' : 'table';
 
+    //
+    $table = lcfirst($table);
+
     // Return `entity` entry
     $entityR = m('Entity')->row('`' . $byprop . '` = "' . $table . '"');
 
@@ -1744,7 +1747,7 @@ function entity($table, array $ctor = []) {
     if (!array_key_exists('table', $ctor)) $ctor['table'] = $table;
 
     // If `entity` entry was not found - create it
-    if (!$entityR) $entityR = m('Entity')->new();
+    if (!$entityR) $entityR = m('entity')->new();
 
     // Assign other props and save
     $entityR->set($ctor)->{ini()->lang->migration ? 'basicUpdate' : 'save'}();

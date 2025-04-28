@@ -97,7 +97,7 @@ class Grid_Row extends Indi_Db_Table_Row {
      * @param string $certain
      * @return string
      */
-    protected function _ctor($certain = null) {
+    protected function _ctor($certain = '') {
 
         // Use original data as initial ctor
         $ctor = $this->_original;

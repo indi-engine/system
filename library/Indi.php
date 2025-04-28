@@ -573,7 +573,8 @@ class Indi {
             'application/excel' => ['xls','xl','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'],
             'application/x-excel' => ['xls','xla','xlb','xlc','xld','xlk','xll','xlm','xlt','xlv','xlw'],
             'application/x-msexcel' => ['xls','xla','xlw'],
-            'application/vnd.ms-excel' => ['xls','xlb','xlc','xll','xlm','xlw']
+            'application/vnd.ms-excel' => ['xls','xlb','xlc','xll','xlm','xlw'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],
         ]
     ];
 

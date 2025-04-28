@@ -36,8 +36,11 @@ class Entity_Row extends Indi_Db_Table_Row {
         $return = parent::delete();
 
         // Delete database table if that table exists
-        if (db()->query('SHOW TABLES LIKE "' . $this->table . '"')->cell())
+        if (db()->query('SHOW TABLES LIKE "' . $this->table . '"')->cell()) {
+            db()->query('SET `foreign_key_checks` = 0');
             db()->query('DROP TABLE `' . $this->table . '`');
+            db()->query('SET `foreign_key_checks` = 1');
+        }
 
         // Destroy model
         m($this->table, 'destroy');
@@ -169,8 +172,12 @@ class Entity_Row extends Indi_Db_Table_Row {
         // Apply fileGroupBy changes, if any
         $this->_filesGroupBy();
 
-        // Apply monthFieldId changes, if any
-        $this->detachProcess('monthFieldId');
+        // If monthFieldId was changed
+        if ($this->affected('monthFieldId')) {
+
+            // Call monthFieldId() method in a detached (background) process
+            $this->detachProcess('monthFieldId');
+        }
 
         // Reload the model, that current entity row is representing
         if (count($this->_affected)) {
@@ -395,7 +402,15 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // Provide ability for some entity props to be set using aliases rather than ids
         if (is_string($value) && !Indi::rexm('int11', $value)) {
-            if (in($columnName, 'titleFieldId,filesGroupBy')) $value = field($this->table, $value)->id;
+
+            //
+            if (in($columnName, 'titleFieldId,filesGroupBy,monthFieldId,spaceFields,changeLogExcept')) {
+                if (!field($this->table, $value)) {
+                    return;
+                }
+            }
+
+            if (in($columnName, 'titleFieldId,filesGroupBy,monthFieldId')) $value = field($this->table, $value)->id;
             else if (in($columnName,'spaceFields,changeLogExcept')) {
                 if ($value && !Indi::rexm('int11list', $value)) {
                     $fieldIdA = [];
@@ -438,7 +453,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value)
 
             // Exclude prop, if it has value equal to default value
-            if (m('Entity')->fields($prop)->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if (m('entity')->fields($prop)->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
 
             // Exclude prop, if $invert arg is given as `true` and prop is not mentioned in $deferred list
             else if ($invert && !in($prop, $deferred)) unset($ctor[$prop]);
@@ -610,7 +625,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         if ($this->fieldWasUnzeroed('monthFieldId')) {
 
             // Print status
-            msg("Creating 'Month'-field...");
+            //msg("Creating 'Month'-field...");
 
             // Create monthId-field within current entity data-structure
             field($this->table, 'monthId', [
@@ -628,7 +643,7 @@ class Entity_Row extends Indi_Db_Table_Row {
             param($this->table, 'monthId', 'optionTemplate', '<?=$o->foreign(\'month\')->title?>');
 
             // Print status
-            msg("Creating filters for 'Month'-field...");
+            //msg("Creating filters for 'Month'-field...");
 
             // Get comma-separated ids of sections used as groups of left menu items
             $level0 = db()->query('
@@ -654,18 +669,39 @@ class Entity_Row extends Indi_Db_Table_Row {
             // Get alias of date field to calculate values for monthId-field
             $source = $this->foreign('monthFieldId')->alias;
 
-            // Re-setup value of monthId-field for existing entries
-            m($this->table)->batch(
+            // Run batch, which might invoke Google Cloud Translate API call
+            try {
 
-                // Do setup
-                fn($r) => $r->deriveMonthId($source)->basicUpdate(),
+                // Re-setup value of monthId-field for existing entries
+                $qty = m($this->table)->batch(
 
-                // Batch settings
-                null, '`id` ASC', 500, false,
+                    // Do setup
+                    fn($r) => $r->deriveMonthId($source)->basicUpdate(),
 
-                // Progress title
-                "Setting up values for 'Month'-field"
-            );
+                    // Batch settings
+                    null, '`id` ASC', 500, false,
+
+                    // Progress title
+                    "Setting up values for 'Month'-field"
+                );
+
+            // Catch exception
+            } catch (Exception $e) {
+
+                // Get error
+                $error = $e->getMessage();
+                if ($json = json_decode($error))
+                    $error = $json->error->message;
+
+                //
+                msg($error, false);
+
+                // Log error
+                ehandler(1, $error, __FILE__, __LINE__);
+
+                // Exit
+                exit;
+            }
 
             // Indicate done
             progress(true);

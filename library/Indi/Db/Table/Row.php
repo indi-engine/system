@@ -784,7 +784,7 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Append calendar colors
         // todo: refactor this
-        if ($scope['colors']) $renderCfg['_system']['colors'] = $scope['colors'];
+        if ($scope['colors'] ?? 0) $renderCfg['_system']['colors'] = $scope['colors'];
 
         // Add panel type
         $renderCfg['_system']['panel'] = $scope['panel'] ?? 'grid';
@@ -1086,7 +1086,7 @@ class Indi_Db_Table_Row implements ArrayAccess
                         ];
 
                         // Adjust summary if need
-                        foreach (ar($scope['sum']) as $sumCol)
+                        foreach (ar($scope['sum'] ?? '') as $sumCol)
                             $byChannel[$channel][$context]['sum'][$sumCol]
                                 = -$this->$sumCol;
 
@@ -3602,7 +3602,7 @@ class Indi_Db_Table_Row implements ArrayAccess
      * @param string $allowedTags
      * @return string
      */
-    public static function safeHtml($html, $allowedTags = '') {
+    public static function safeHtml($html, $allowedTags = 'div,strong') {
 
         // If $allowedTags arg is '*' - return as is. This may be useful
         // in case if there is a need to save raw (for example: parsed) html code
@@ -3619,7 +3619,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         $html = str_replace('<=', $placeholder, $html ?? '');
 
         // Strip all tags, except tags, mentioned in $tags argument
-        $html = strip_tags($html, '<' . preg_replace('/,/', '><', $allowedS) . '>');
+        //$html = strip_tags($html, '<' . preg_replace('/,/', '><', $allowedS) . '>');
 
         // Replace placeholders back to '<='
         $html = str_replace($placeholder, '<=', $html);
@@ -8328,5 +8328,52 @@ class Indi_Db_Table_Row implements ArrayAccess
 
         // Fetch and return children
         return $this->model()->all("`$tc` = '$this->id'");
+    }
+
+    /**
+     * Build a string, that will be used in Entity_Row->export()
+     *
+     * @param string $deferred
+     * @param bool $invert
+     * @param string $certain
+     * @return string
+     */
+    protected function _ctor($certain = '') {
+
+        // Use original data as initial ctor
+        $ctor = $this->_original;
+
+        // If certain fields should be exported - keep them only
+        $ctor = $this->_certain($certain, $ctor);
+
+        // Exclude monthId, if any, because it will be set automatically
+        unset($ctor['monthId']);
+
+        // Foreach $ctor prop
+        foreach ($ctor as $prop => &$value)
+
+            // Exclude prop, if it has value equal to default value
+            if ($this->field($prop)->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+
+        // Stringify and return
+        return _var_export($ctor, 1);
+    }
+
+    /**
+     * Build an expression for creating the current entity in another project, running on Indi Engine
+     *
+     * @param string $certain
+     * @return string
+     */
+    public function export($certain = '') {
+
+        // If $certain arg is given - export it only
+        if ($certain) return "m('$this->_table')->new(" . $this->_ctor('', false, $certain) . ")->save();";
+
+        // Build `entity` entry creation expression
+        $lineA[] = "m('$this->_table')->new(" . $this->_ctor($deferred) . ")->save();";
+
+        // Return newline-separated list of creation expressions
+        return im($lineA, "\n");
     }
 }

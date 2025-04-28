@@ -10,7 +10,7 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
     public function downloadAction(){
 
         // If user is not logged in - flush error
-        if (!admin()) jflush(false, 'Authentication required');
+        //if (!admin()) jflush(false, 'Authentication required');
 
         // If 'id' param is not set or is not an integer
         if (!preg_match('/^[0-9]+$/', uri('id'))) jflush(false, I_DOWNLOAD_ERROR_NO_ID);

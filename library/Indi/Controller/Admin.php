@@ -4318,7 +4318,7 @@ class Indi_Controller_Admin extends Indi_Controller {
     public function deleteContextIfNeed() {
 
         // If $_POST['destroy'] is only given
-        if ((count(Indi::post()) == 1) && ($ctx = Indi::post('destroy'))) {
+        if ((count(Indi::post() ?? []) == 1) && ($ctx = Indi::post('destroy'))) {
 
             // Check $token format and CID format
             jcheck([

@@ -109,8 +109,8 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         // Exclude `id` and `move` as they will be set automatically by MySQL and Indi Engine, respectively
         unset($ctor['id']);
 
-        // Exclude props that are already represented by one of shorthand-fn args
-        foreach (ar('alias') as $arg) unset($ctor[$arg]);
+        // Exclude props that are already represented by one of shorthand-fn args or are set automatically
+        foreach (ar('alias,roleIds') as $arg) unset($ctor[$arg]);
 
         // If certain fields should be exported - keep them only
         $ctor = $this->_certain($certain, $ctor);
