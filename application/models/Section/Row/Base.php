@@ -110,7 +110,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         unset($ctor['id']);
 
         // Exclude props that are already represented by one of shorthand-fn args or are set automatically
-        foreach (ar('alias,roleIds') as $arg) unset($ctor[$arg]);
+        foreach (ar('alias,roleIds,expand,expandRoles') as $arg) unset($ctor[$arg]);
 
         // If certain fields should be exported - keep them only
         $ctor = $this->_certain($certain, $ctor);
@@ -122,7 +122,9 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             $field = m('Section')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export']) || !$this->sectionId) unset($ctor[$prop]);
+            }
 
             // Else if $prop is 'move' - get alias of the section, that current section is after,
             // among sections with same parent sectionId
@@ -140,7 +142,7 @@ class Section_Row_Base extends Indi_Db_Table_Row {
         }
 
         // Stringify and return $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -150,6 +152,10 @@ class Section_Row_Base extends Indi_Db_Table_Row {
      * @return string
      */
     public function export($certain = '') {
+
+        if (isset($GLOBALS['export'])) {
+            $lineA []= "\n# '$this->title'-section" . rif(!$this->sectionId, " (only used as a group in left menu)");
+        }
 
         // Build `section` entry creation expression
         $lineA[] = "section('" . $this->alias . "', " . $this->_ctor($certain) . ");";

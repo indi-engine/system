@@ -45,7 +45,7 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
 
         // If it's a foreign-key value, that is referencing to some field(s)
         if ($cfgField->relation === m('field')->id()) {
-            $value = m('field')->all($this->cfgValue)->fis('alias');
+            $value = m('field')->all("$this->cfgValue")->fis('alias');
 
         // Else
         } else {
@@ -64,11 +64,18 @@ class Param_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function export($certain = '') {
 
+        $entity = $this->foreign('entityId');
+        $field = $this->foreign('fieldId');
+        $param = $this->foreign('cfgField', true);
+        $value = $this->_ctor($certain);
+        //
+        $lineA []= "\n# '$param->title'-param is set to $value for '$field->title'-field in '$entity->title'-entity";
+
         // Return
-        return "param('" .
-            $this->foreign('entityId')->table . "', '" .
-            $this->foreign('fieldId')->alias . "', '" .
-            $this->foreign('cfgField', true)->alias . "', " . $this->_ctor($certain) . ");";
+        $lineA []= "param('$entity->table', '$field->alias', '$param->alias', $value);";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

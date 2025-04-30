@@ -43,7 +43,7 @@ class Section extends Indi_Db_Table {
             SELECT `id`, `sectionId`, `title`, `alias`' . $_ . '
             FROM `section`
             WHERE IFNULL(`sectionId`, 0) = "0" AND `toggle` = "y"
-            ORDER BY `move`
+            ORDER BY `alias` != "configuration" DESC, `move`
         ')->fetchAll();
 
         // Localize

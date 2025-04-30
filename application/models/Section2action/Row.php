@@ -55,7 +55,9 @@ class Section2action_Row extends Indi_Db_Table_Row {
             $fieldR = $this->field($prop);
 
             // Exclude prop, if it has value equal to default value (unless it's `roleIds`)
-            if ($fieldR->defaultValue == $value && $prop != 'roleIds' && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($fieldR->defaultValue == $value && $prop != 'roleIds' && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Else if $prop is 'move' - get alias of the action, that current action is after,
             // among actions with same value of `sectionId` prop
@@ -74,7 +76,7 @@ class Section2action_Row extends Indi_Db_Table_Row {
         }
 
         // Stringify
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -119,11 +121,17 @@ class Section2action_Row extends Indi_Db_Table_Row {
      */
     public function export($certain = '') {
 
+        $sectionR = $this->foreign('sectionId');
+        $actionR = $this->foreign('actionId');
+
+        //
+        $lineA []= "\n# '$actionR->title'-action in '$sectionR->title'-section";
+
         // Return creation expression
-        return "section2action('" .
-            $this->foreign('sectionId')->alias . "','" .
-            $this->foreign('actionId')->alias . "', " .
-            $this->_ctor($certain) . ");";
+        $lineA []= "section2action('$sectionR->alias', '$actionR->alias', " . $this->_ctor($certain) . ");";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

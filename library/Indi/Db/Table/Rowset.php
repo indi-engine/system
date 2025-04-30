@@ -2592,4 +2592,11 @@ class Indi_Db_Table_Rowset implements SeekableIterator, Countable, ArrayAccess {
         // Return UNION query
         return im($union, "\nUNION\n");
     }
+
+
+    public function export() {
+        $lineA = [];
+        foreach ($this as $r) $lineA []= $r->export();
+        return join("\n", $lineA);
+    }
 }

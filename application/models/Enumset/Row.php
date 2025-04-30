@@ -397,7 +397,9 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
             $field = m('Enumset')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Else if $prop is 'move' - get alias of the enumset, that current enumset is after,
             // among enumsets with same value of `fieldId` prop
@@ -405,7 +407,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Stringify and return $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -417,11 +419,15 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function export($certain = '') {
 
-        // Shortcut
+        // Shortcuts
         $fieldR = $this->foreign('fieldId');
+        $entityR = $fieldR->foreign('entityId');
+
+        //
+        $lineA []= "\n# Enumerated value '$this->title' of '$fieldR->title'-field in '$entityR->title'-entity";
 
         // Return
-        return $fieldR->entry
+        $lineA []= $fieldR->entry
             ? "cfgEnumset('" .
                 $fieldR->foreign('entityId')->table . "', '" .
                 ($fieldR->foreign('entry')->alias ?: $fieldR->entry) . "', '" .
@@ -431,6 +437,9 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
                 $fieldR->foreign('entityId')->table . "', '" .
                 $fieldR->alias . "', '" .
                 $this->alias . "', " . $this->_ctor($certain) . ");";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

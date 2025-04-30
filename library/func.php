@@ -3318,7 +3318,7 @@ function _var_export($ctor, $oneLine = 3) {
     $ctorS = preg_replace('~\)$~', ']', preg_replace('~^array \(~', '[', $ctorS));
 
     // If $ctor contains $oneLine props or less - remove newlines
-    if (count($ctor) <= $oneLine) {
+    if (count($ctor) <= $oneLine && !isset($GLOBALS['export'])) {
         $ctorS = preg_replace('~^\[\n\s\s~', '[', $ctorS);
         $ctorS = preg_replace('~,\n\s\s\'(' .  im(array_keys($ctor), '|'). ')\'~', ', \'$1\'', $ctorS);
         $ctorS = preg_replace('~,\n\]$~', ']', $ctorS);

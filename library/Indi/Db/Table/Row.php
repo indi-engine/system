@@ -8376,4 +8376,68 @@ class Indi_Db_Table_Row implements ArrayAccess
         // Return newline-separated list of creation expressions
         return im($lineA, "\n");
     }
+
+    /**
+     * Function used in *_Row->_ctor() calls.
+     * Same as native php's var_export() but do some styling for array definitions
+     *
+     * @param $ctor
+     * @param int $oneLine
+     * @return mixed|string|string[]|null
+     */
+    public function _var_export($ctor, $oneLine = 3) {
+
+        // If $ctor is empty - return 'true'
+        if (count($ctor) == 0) return 'true';
+
+        // Collect props having newlines in values, and replace null-values with '' (empty string)
+        $nl = [];
+        foreach ($ctor as $prop => &$value)
+            if (preg_match('~\n~', $value)) $nl [] = $prop;
+            else if ($value === null) $value = '';
+
+        // Stringify
+        $ctorS = var_export($ctor, true);
+
+        // Replace newlines with \n
+        foreach ($nl as $nlI) $ctorS = preg_replace_callback(
+            '~(\'' . $nlI . '\' => )(\')(.*)(\')(,\n)~s',
+            function($m) { return $m[1] . '"' . str_replace(["\r\n", "\n"], '\n', $m[3]) . '"' . $m[5]; },
+            $ctorS
+        );
+
+        // Style
+        $ctorS = preg_replace('~\)$~', ']', preg_replace('~^array \(~', '[', $ctorS));
+
+        // If $ctor contains $oneLine props or less - remove newlines
+        if (count($ctor) <= $oneLine && !isset($GLOBALS['export'])) {
+            $ctorS = preg_replace('~^\[\n\s\s~', '[', $ctorS);
+            $ctorS = preg_replace('~,\n\s\s\'(' .  im(array_keys($ctor), '|'). ')\'~', ', \'$1\'', $ctorS);
+            $ctorS = preg_replace('~,\n\]$~', ']', $ctorS);
+        }
+
+        //
+        if (isset($GLOBALS['export'])) {
+
+
+            $ctorS = preg_replace_callback("~'(.+?)' => .*?,$~m", function($m) {
+
+                $pad = str_pad($m[0], 35, ' ', STR_PAD_RIGHT);
+                $field = $this->field($m[1]);
+                if (strlen($this->{$field->alias})) {
+                    if ($field->storeRelationAbility === 'one') {
+                        $value = $this->foreign($field->alias)->title;
+                    }
+                } else {
+                    $value = '';
+                }
+
+                return "$pad # " . $field->title() . rif($value, " = <em>$1</em>");
+
+            }, $ctorS);
+        }
+
+        // Return ctor string
+        return $ctorS;
+    }
 }

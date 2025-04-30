@@ -453,6 +453,7 @@ class Indi {
             'audio/xm' => 'xm',
             'application/xml' => 'xml',
             'text/xml' => 'xml',
+            'text/markdown' => 'md',
             'xgl/movie' => 'xmz',
             'application/x-vnd.ls-xpix' => 'xpix',
             'image/xpm' => 'xpm',
@@ -2481,5 +2482,53 @@ class Indi {
 
         // Return as inline style
         return join(' ', $style);
+    }
+
+    public static function export() {
+
+        //
+        $GLOBALS['export'] = true;
+
+        $pre = '<pre style="font-size: 10px; line-height: 12px; letter-spacing: 0px;">';
+
+        $txt = "CURRENT DATA-STRUCTURES STATE\n";
+        $txt .= wrap(m('entity')->all('`fraction` = "custom"')->export(), $pre);
+
+        // For each row get export expression
+        $txt .= "<br># CURRENT DATA-VIEWS HIERARCHY STATE\n";
+        $txt .= wrap(m('section')->fetchTree('`fraction` = "custom"', '`move`')->export(), $pre);
+
+        $mpdf = new \Mpdf\Mpdf();
+
+        // Write HTML to PDF
+        $mpdf->WriteHTML($txt);
+
+        // Output the file
+        $mpdf->Output('data/gemini/Indi Engine - app-specific state.pdf'); // D = force download
+
+        unset($GLOBALS['export']);
+    }
+
+    public static function purge() {
+
+        // Delete sections
+        m('section')->nativeCascade(true);
+        m('section')->all('`fraction` = "custom" AND `alias` NOT IN ("db","dict")')->delete();
+
+        // Disable ON DELETE = CASCADE rule on PHP, for it to be respected only on MySQL-level
+        m('entity')->nativeCascade(true);
+
+        field('entity', 'monthFieldId', ['onDelete' => 'SET NULL']);
+        field('field', 'relation', ['onDelete' => 'SET NULL']);
+        field('role', 'entityId', ['onDelete' => 'CASCADE']);
+        foreach (m('entity')->all('`fraction` = "custom"') as $entityR) {
+            $entityR->nested('section')->delete();
+            $entityR->system('skipDeletionRESTRICTedCheck', true);
+            $entityR->delete();
+        }
+        //field('field', 'relation', ['onDelete' => 'RESTRICT']);
+        //field('role', 'entityId', ['onDelete' => 'RESTRICT']);
+
+        m('role')->all('`fraction` = "custom" AND `alias` != "admin"')->delete();
     }
 }

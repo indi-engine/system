@@ -64,7 +64,9 @@ class Filter_Row extends Indi_Db_Table_Row {
             $fieldR = $this->field($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($fieldR->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($fieldR->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Else if $prop is 'move' - get alias of the filter, that current filter is after,
             // among filters with same value of `sectionId` prop
@@ -83,7 +85,7 @@ class Filter_Row extends Indi_Db_Table_Row {
         }
 
         // Return stringified $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -130,18 +132,22 @@ class Filter_Row extends Indi_Db_Table_Row {
      */
     public function export($certain = '') {
 
-        // Return creation expression
-        if ($this->further) return "filter('" .
-            $this->foreign('sectionId')->alias . "', '" .
-            $this->foreign('fieldId')->alias . "', '" .
-            $this->foreign('fieldId')->rel()->fields($this->further)->alias . "', " .
-            $this->_ctor($certain) . ");";
+        //
+        $sectionR = $this->foreign('sectionId');
+        $fieldR = $this->foreign('fieldId');
+        $further = $this->further ? $this->foreign('fieldId')->rel()->fields($this->further) : null;
+        $ctor = $this->_ctor($certain);
 
-        // Build and return `filter` entry creation expression
-        else return "filter('" .
-            $this->foreign('sectionId')->alias . "', '" .
-            $this->foreign('fieldId')->alias . "', " .
-            $this->_ctor($certain) . ");";
+        //
+        $lineA []= "\n# '$fieldR->title'-filter in '$sectionR->title'-section";
+
+        // Return creation expression
+        $lineA []= $this->further
+            ? "filter('$sectionR->alias', '$fieldR->alias', '$further->alias', $ctor);"
+            : "filter('$sectionR->alias', '$fieldR->alias', $ctor);";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

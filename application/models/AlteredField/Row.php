@@ -55,7 +55,9 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
             $fieldR = $this->model()->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($fieldR->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($fieldR->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Exclude `title` prop, if it was auto-created
             else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
@@ -77,7 +79,7 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Stringify and return $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -88,11 +90,20 @@ class AlteredField_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function export($certain = '') {
 
-        // Build and return `alteredField` entry creation expression
-        return "alteredField('" .
-            $this->foreign('sectionId')->alias . "', '" .
-            $this->foreign('fieldId')->alias . "', " .
-            $this->_ctor($certain) . ");";
+
+        //
+        $sectionR = $this->foreign('sectionId');
+        $fieldR = $this->foreign('fieldId');
+        $ctor = $this->_ctor($certain);
+
+        //
+        $lineA []= "\n# Alteration for field '$fieldR->title' in '$sectionR->title'-section";
+
+        // Return creation expression
+        $lineA []= "alteredField('$sectionR->alias', '$fieldR->alias', $ctor);";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

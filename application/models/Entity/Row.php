@@ -453,7 +453,11 @@ class Entity_Row extends Indi_Db_Table_Row {
         foreach ($ctor as $prop => &$value)
 
             // Exclude prop, if it has value equal to default value
-            if (m('entity')->fields($prop)->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if (m('entity')->fields($prop)->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])){
+                    unset($ctor[$prop]);
+                }
+            }
 
             // Exclude prop, if $invert arg is given as `true` and prop is not mentioned in $deferred list
             else if ($invert && !in($prop, $deferred)) unset($ctor[$prop]);
@@ -462,7 +466,7 @@ class Entity_Row extends Indi_Db_Table_Row {
             else {
 
                 // If it's titleFieldId or filesGroupBy
-                if (in($prop,'titleFieldId,filesGroupBy'))
+                if (in($prop,'titleFieldId,filesGroupBy,monthFieldId'))
                     $value = field($this->table, $value)->alias;
 
                 // Else if it's spaceFields or changeLogExcept
@@ -471,7 +475,7 @@ class Entity_Row extends Indi_Db_Table_Row {
             }
 
         // Stringify and return
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -485,11 +489,16 @@ class Entity_Row extends Indi_Db_Table_Row {
         // If $certain arg is given - export it only
         if ($certain) return "entity('" . $this->table . "', " . $this->_ctor('', false, $certain) . ");";
 
-        // Declare list of `entity` entry's props, that rely on fields,
-        // that will be created AFTER `entity` entry's itself creation
-        $deferred = 'titleFieldId,filesGroupBy,spaceScheme,spaceFields';
 
         // Build `entity` entry creation expression
+        if (isset($GLOBALS['export'])) {
+            $lineA[] = "\n# '$this->title'-entity";
+            $deferred = '';
+        } else {
+            // Declare list of `entity` entry's props, that rely on fields,
+            // that will be created AFTER `entity` entry's itself creation
+            $deferred = 'titleFieldId,filesGroupBy,spaceScheme,spaceFields';
+        }
         $lineA[] = "entity('" . $this->table . "', " . $this->_ctor($deferred) . ");";
 
         // Foreach `field` entry, nested within current `entity` entry
@@ -500,8 +509,11 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // Build expression, that will now apply $deferred props,
         // because underlying fields creation expressions are already prepared
-        if (($deferred = $this->_ctor($deferred, true)) != 'true')
-            $lineA[] = "entity('" . $this->table . "', " . $deferred . ");";
+        if (!isset($GLOBALS['export'])){
+            if (($deferred = $this->_ctor($deferred, true)) != 'true')
+                $lineA[] = "entity('" . $this->table . "', " . $deferred . ");";
+        }
+
 
         // Return newline-separated list of creation expressions
         return im($lineA, "\n");

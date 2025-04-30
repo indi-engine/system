@@ -1804,7 +1804,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         unset($ctor['l10n']);
 
         // Exclude props that will be already represented by shorthand-fn args
-        foreach (ar('entityId,alias' . rif($this->entry, ',entry')) as $arg) unset($ctor[$arg]);
+        foreach (ar('entityId,alias' . rif($this->entry || isset($GLOBALS['export']), ',entry')) as $arg) unset($ctor[$arg]);
 
         // If certain fields should be exported - keep them only
         $ctor = $this->_certain($certain, $ctor);
@@ -1816,7 +1816,9 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             $field = m('Field')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Else if $prop is 'move' - get alias of the field, that current field is after,
             // among fields with same value of `entityId` prop
@@ -1831,7 +1833,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         }
 
         // Stringify and return $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -1850,6 +1852,10 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
         // Shortcuts
         $table = $this->foreign('entityId')->table;
         $entry = $this->entry ? $this->foreign('entry')->alias : $this->entry;
+
+        if (isset($GLOBALS['export'])) {
+            $lineA []= "\n# '$this->title'-field in '" . $this->foreign('entityId')->title . "'-entity";
+        }
 
         // Build `field` entry creation line
         $lineA[] = $this->entry
@@ -2389,5 +2395,14 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
      */
     public function fraction() {
         return $this->entityId ? parent::fraction() : 'system';
+    }
+
+    public function title() {
+
+        if ($span = $this->_system['span'] ?? '') {
+            $span = m($this->entityId)->fields($span)->title;
+        }
+
+        return rif($span ?? '', '$1 ↴ ') . $this->callParent();
     }
 }

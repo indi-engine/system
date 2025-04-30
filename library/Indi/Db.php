@@ -702,6 +702,16 @@ class Indi_Db {
                 eval('class ' . $identifier . ' extends ' . $extends . '{}');
             }
 
+            //
+            $lastSpan = false;
+            foreach (self::$_entityA[$identifier]['fields'] as $field) {
+                if ($field['elementId'] === 16) {
+                    $lastSpan = $field['alias'];
+                } else if ($lastSpan) {
+                    $field->system('span', $lastSpan);
+                }
+            }
+
             // Create a model, push it to self::$_modelA array as a next item
             self::$_modelA[$identifier] = new $identifier(self::$_entityA[$identifier]);
 
@@ -766,18 +776,23 @@ class Indi_Db {
         // Else if query was not UPDATE|DELETE|INSERT
         } else {
 
-            // Exectute query by PDO->query() method
-            $stmt = self::$_pdo->query($sql);
+            try {
 
-            // Increment queries count
-            self::$queryCount++;
+                // Exectute query by PDO->query() method
+                $stmt = self::$_pdo->query($sql);
 
-            // If query execition was not successful and mysql error reporting is on
-            // Display error message, backtrace info and make the global stop
-            if (!$stmt) $this->jerror($sql);
+                // Increment queries count
+                self::$queryCount++;
 
-            // Else if all was ok, setup fetch mode as PDO::FETCH_ASSOC
-            else if ($stmt) $stmt->setFetchMode(PDO::FETCH_ASSOC);
+                // Else if all was ok, setup fetch mode as PDO::FETCH_ASSOC
+                $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+            } catch (PDOException $e) {
+
+                // If query execition was not successful and mysql error reporting is on
+                // Display error message, backtrace info and make the global stop
+                $this->jerror($sql);
+            }
 
             // Return PDO statement
             return $stmt;

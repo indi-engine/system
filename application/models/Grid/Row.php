@@ -109,7 +109,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         foreach (ar('sectionId,fieldId,alias,further') as $arg) unset($ctor[$arg]);
 
         // If certain fields should be exported - keep them only
-                $ctor = $this->_certain($certain, $ctor);
+        $ctor = $this->_certain($certain, $ctor);
 
         // Foreach $ctor prop
         foreach ($ctor as $prop => &$value) {
@@ -118,7 +118,9 @@ class Grid_Row extends Indi_Db_Table_Row {
             $field = m('Grid')->fields($prop);
 
             // Exclude prop, if it has value equal to default value
-            if ($field->defaultValue == $value && !in($prop, $certain)) unset($ctor[$prop]);
+            if ($field->defaultValue == $value && !in($prop, $certain)) {
+                if (!isset($GLOBALS['export'])) unset($ctor[$prop]);
+            }
 
             // Exclude `title` prop, if it was auto-created
             else if ($prop == 'title' && ($tf = $this->model()->titleField()) && $tf->storeRelationAbility != 'none' && !in($prop, $certain))
@@ -163,7 +165,7 @@ class Grid_Row extends Indi_Db_Table_Row {
         }
 
         // Return stringified $ctor
-        return _var_export($ctor);
+        return $this->_var_export($ctor);
     }
 
     /**
@@ -174,18 +176,23 @@ class Grid_Row extends Indi_Db_Table_Row {
      */
     public function export($certain = '') {
 
-        // Return creation expression
-        if ($this->further) return "grid('" .
-            $this->foreign('sectionId')->alias . "', '" .
-            $this->foreign('fieldId')->alias . "', '" .
-            $this->foreign('fieldId')->rel()->fields($this->further)->alias . "', " .
-            $this->_ctor($certain) . ");";
+        //
+        $sectionR = $this->foreign('sectionId');
+        $fieldR = $this->foreign('fieldId');
+        $isGroup = rif($fieldR->foreign('elementId')->alias === 'span', " (only used as a group for child columns)");
+        $further = $this->further ? $this->foreign('fieldId')->rel()->fields($this->further) : null;
+        $ctor = $this->_ctor($certain);
+
+        //
+        $lineA []= "\n# '$fieldR->title'-column$isGroup in '$sectionR->title'-section";
 
         // Return creation expression
-        else return "grid('" .
-            $this->foreign('sectionId')->alias . "', '" .
-            ($this->foreign('fieldId')->alias ?: $this->alias) . "', " .
-            $this->_ctor($certain) . ");";
+        $lineA []= $this->further
+            ? "grid('$sectionR->alias', '$fieldR->alias', '$further->alias', $ctor);"
+            : "grid('$sectionR->alias', '$fieldR->alias', $ctor);";
+
+        //
+        return join("\n", $lineA);
     }
 
     /**

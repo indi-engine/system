@@ -160,4 +160,17 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
         // Flush
         echo appjs($dirs); if ($exit) exit;
     }
+
+    public function exportAction() {
+
+        Indi::export();
+
+        //
+        die('');
+    }
+
+    public function cleanupAction(){
+
+        Indi::purge();
+    }
 }
