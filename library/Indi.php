@@ -2513,7 +2513,7 @@ class Indi {
 
         // Delete sections
         m('section')->nativeCascade(true);
-        m('section')->all('`fraction` = "custom" AND `alias` NOT IN ("db","dict")')->delete();
+        m('section')->all('`fraction` = "custom" AND `alias` NOT IN ("db","dict","usr")')->delete();
 
         // Disable ON DELETE = CASCADE rule on PHP, for it to be respected only on MySQL-level
         m('entity')->nativeCascade(true);

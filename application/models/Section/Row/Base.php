@@ -46,6 +46,8 @@ class Section_Row_Base extends Indi_Db_Table_Row {
                     ? -1
                     : field($this->entityId, $value)->id;
             }
+            else if ($columnName == 'colorField') $value = field($this->entityId, $value)->id;
+            else if ($columnName == 'colorFurther') $value = field(field($this->entityId, $this->colorField)->relation, $value)->id;
             else if ($columnName == 'entityId') $value = entity($value)->id;
             else if ($columnName == 'sectionId') $value = section($value)->id;
             else if ($columnName == 'tileThumb') $value = thumb($this->entityId, $this->tileField, $value)->id;

@@ -497,7 +497,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
             if ($after) {
 
                 // Append AFTER-expr to sql query
-                $sql []= "AFTER $after";
+                $sql []= "AFTER `$after`";
 
                 // Setup system colAFTER-flag indicating that AFTER-expr was already executed within an ALTER TABLE query
                 $this->_system['colAFTER'] = true;
