@@ -172,6 +172,13 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
     public function prepareAction() {
 
         $gemini = new \Gemini1();
+
+        $pref = "data/gemini/Indi Engine";
+        d($gemini->cacheIfNeed("$pref - docs.pdf"));
+        //die('xx');
+        //$gemini->deleteCached("Indi Engine - docs.pdf");
+        die('xx');
+
         $text = 'data/gemini/data-structures.txt';
         $code = 'data/gemini/data-structures.php';
         $gemini->prepare($text, $code);

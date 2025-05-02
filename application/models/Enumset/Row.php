@@ -141,7 +141,7 @@ class Enumset_Row extends Indi_Db_Table_Row_Noeval {
 
             // Run that query
             db()->query(sprintf($tpl, $table, $fieldR->alias, $fieldR->foreign('columnTypeId')->type,
-                '("' . im($enumsetA, '","') . '")', $defaultValue));
+                '("' . im($enumsetA, '","') . '")', $defaultValue ?: $enumsetA[0]));
         }
 
         // If it was existing enumset-entry - deal with existing values

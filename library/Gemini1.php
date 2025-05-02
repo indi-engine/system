@@ -3,23 +3,22 @@ class Gemini1 {
 
     public $baseUrl = "https://generativelanguage.googleapis.com";
     public $key = '';
-    //public $model = 'models/gemini-2.0-flash-001';
-    //public $model = 'models/gemini-2.5-pro-exp-03-25';
-    //public $model = 'models/gemini-2.5-flash-preview-04-17';
-    //public $model = 'models/gemini-2.5-pro-preview-03-25';
-    //public $model = 'models/gemini-1.5-pro';
-    //public $model = 'models/gemini-1.5-flash-latest';
     public $model =
-        //'models/gemini-2.0-pro'
-        //'models/gemini-2.0-flash',
-        //'models/gemini-2.0-flash-lite'
-        'models/gemini-2.5-flash-preview-04-17'
+        //'models/gemini-1.5-pro' // 131
+        //'models/gemini-1.5-flash-latest' // 76
+        //'models/gemini-2.0-flash'    // 28
+        //'models/gemini-2.0-flash-lite' // 43
+        //'models/gemini-2.0-flash-001' // 34
+        'models/gemini-2.5-flash-preview-04-17' // 80 sec mininum
+        //'models/gemini-2.5-pro-preview-03-25' // 97
+        //'models/gemini-2.5-pro-exp-03-25'
     ;
     public $ds = [];
     public $dv = [];
 
 
-    public $files = [];
+    public $uploaded = [];
+    public $cached = [];
 
     public function upload($file) {
 
@@ -101,12 +100,12 @@ class Gemini1 {
         if ($fileUri === null) {
             jflush(false, "Failed to get file URI from file info response.\nResponse:\n" . $fileInfoJson . "\n");
         }
-        return $this->files[$name] = (object) $fileInfo['file'];
+        return $this->uploaded[$name] = (object) $fileInfo['file'];
     }
 
-    public function files(string $file = null) {
+    public function uploaded(string $file = null) {
 
-        if (!$this->files) {
+        if (!$this->uploaded) {
 
             curl_setopt_array($ch = curl_init(), [
                 CURLOPT_URL => "$this->baseUrl/v1beta/files?key=$this->key",
@@ -133,18 +132,71 @@ class Gemini1 {
             }
 
             $names = array_column($json->files, 'displayName');
-            $this->files = array_combine($names, $json->files);
+            $this->uploaded = array_combine($names, $json->files);
         }
 
         //
         return $file
-            ? $this->files[basename($file)] ?? null
-            : $this->files;
+            ? $this->uploaded[basename($file)] ?? null
+            : $this->uploaded;
     }
 
-    public function deleteFile(string $name) {
+    public function deleteCached(string $file) {
+        if (!$path = $this->cached($file)->name) return;
+        $ch = curl_init("$this->baseUrl/v1beta/$path?key=$this->key");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) jflush(false, "cURL Error: " . curl_error($ch));
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($httpCode === 200) {
+            return true;
+        } else {
+            jflush(false,"Failed to delete cached '$name'.\n$httpCode: $response");
+        }
+    }
 
-        if (!$path = $this->files($name)->name) {
+    public function cached(string $file = null) {
+
+        if (!$this->cached) {
+            curl_setopt_array($ch = curl_init(), [
+                CURLOPT_URL => "$this->baseUrl/v1beta/cachedContents?key=$this->key",
+                CURLOPT_RETURNTRANSFER => true,
+            ]);
+            $resp = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            //
+            if ($code !== 200) {
+                jflush(false, "Cache list retrieval failed with HTTP code: $code.\nResponse:\n$resp\n");
+            }
+
+            // Parse file info JSON
+            $json = json_decode($resp);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                jflush(false, "Failed to parse cache list JSON: " . json_last_error_msg() . "\nResponse:\n$resp\n");
+            }
+
+            //
+            if (!property_exists($json, 'cachedContents')) {
+                return null;
+            }
+
+            $names = array_column($json->cachedContents, 'displayName');
+            $this->cached = array_combine($names, $json->cachedContents);
+        }
+
+        //
+        return $file
+            ? $this->cached[basename($file)] ?? null
+            : $this->cached;
+    }
+
+    public function deleteUploaded(string $name) {
+
+        if (!$path = $this->uploaded($name)->name) {
             return;
         }
 
@@ -175,14 +227,78 @@ class Gemini1 {
      * @return array|mixed|object
      */
     public function uploadIfNeed(string $file) {
-        return $this->files($file) ?? $this->upload($file);
+        return $this->uploaded($file) ?? $this->upload($file);
+    }
+
+    public function cacheIfNeed(string $file) {
+        return $this->cached($file) ?? $this->cache($file);
+    }
+
+    public function cache($file) {
+
+        $uploaded = $this->uploadIfNeed($file);
+        $ch = curl_init($url = "$this->baseUrl/v1beta/cachedContents?key=$this->key");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data = [
+            "model" => $this->model,
+            "display_name" => $uploaded->displayName,
+            "contents" => [[
+                "parts" => [
+                    ["file_data" => ["mime_type" => $uploaded->mimeType, "file_uri" => $uploaded->uri ]],
+                ],
+                "role" => 'user',
+            ]],
+            'system_instruction' => [
+                'parts' => [[
+                    'text' => <<<DOC
+                        You are an expert in Indi Engine, which is a zero-code tool that allows developer to configure data-structures and quite
+                        complex real-time data-views on top, organized into the foreign-key based hierarchies and having lots of features designed
+                        to handle cases when there are lots of data needs to be shown on the screen at the same time. You became an expert because
+                        you read carefully through the Indi Engine app-agnostic docs) and you are aware of rich 
+                        formatting, e.g. bolds, italics, nested bullet points, font foreground and background colors, ordinary and nested tables 
+                        with merged cells, so you have a comprehensive knowledge of concepts explained there, and knowledge of all zero-code 
+                        features that are supported by Indi Engine, each with examples of use cases where those features are relevant and make sense.
+                    DOC
+                ]],
+                "role" => 'system'
+            ],
+            "ttl" => '3600s'
+        ], JSON_UNESCAPED_SLASHES));
+        $resp = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            jflush(false, "cURL Error: " . curl_error($ch));
+        }
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $json = json_decode($resp, true);
+
+        //
+        if ($httpCode !== 200 && $httpCode !== 201) { // Expect 200 or 201 for creation
+
+            //
+            $text = json_last_error() !== JSON_ERROR_NONE
+                ? $resp
+                : json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+            // Parse file info JSON
+            jflush(false, "Request failed with HTTP code: $httpCode\nResponse:\n$text\n");
+        }
+
+        curl_close($ch);
+
+        return $this->cached[$json->displayName] = $json;
     }
 
     public function prompt($prompt) {
 
         // Get files uris to be further mentioned in prompt
         $pref = "data/gemini/Indi Engine";
-        $doc = $this->uploadIfNeed("$pref - docs.pdf")->uri;
+        //$doc = $this->uploadIfNeed("$pref - docs.pdf")->uri;
         //$gen = $this->uploadIfNeed("$pref - generation rules.md")->uri;
         $eds = $this->uploadIfNeed("$pref - data-structures.md")->uri;
         $edv = $this->uploadIfNeed("$pref - data-views.md")->uri;
@@ -193,7 +309,7 @@ class Gemini1 {
         // Get response
         msg('Waiting for response from GPT...');
         mt();
-        $resp = $this->scratch([$doc, $eds, $edv], $prompt);
+        $resp = $this->scratch([$eds, $edv], $prompt);
         msg(mt());
         i($resp);
 
@@ -215,13 +331,14 @@ class Gemini1 {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
             "contents" => [[
                 "parts" => [
-                    ["text" => $systemInstruction],
-                    ["file_data" => ["mime_type" => 'application/pdf', "file_uri" => $uri[0] ]],
+//                    ["file_data" => ["mime_type" => 'application/pdf', "file_uri" => $uri[0] ]],
+                    ["file_data" => ["mime_type" => 'text/markdown'  , "file_uri" => $uri[0] ]],
                     ["file_data" => ["mime_type" => 'text/markdown'  , "file_uri" => $uri[1] ]],
-                    ["file_data" => ["mime_type" => 'text/markdown'  , "file_uri" => $uri[2] ]],
+                    ["text" => $systemInstruction],
                 ],
                 "role" => "user"
             ]],
+            "cachedContent" => 'cachedContents/oegooqnrvjww'//$this->cacheIfNeed("data/gemini/Indi Engine - docs.pdf")
         ]));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -283,6 +400,12 @@ class Gemini1 {
 
         // Trim php opening tag
         $php = preg_replace('~<\?php~', '', $php);
+        $php = preg_replace('~( => )‘(.+?)’~', '$1\'$2\'', $php);
+
+        $m[1] = $php;
+        $m[1] = preg_replace("~countInQtySum\('(?<table>.+?)', '(?<field>.+?)', '(?<param>.+?)', (?<value>.+?)\);$~sm", '', $m[1]);
+        $php = $m[1];
+        //file_put_contents($code, $m[1], FILE_APPEND);
 
         // Move full entities declaration from AI response to code file
         $php = preg_replace_callback("~^(.+?\n)(section\(')~s", function($m) use ($code) {
