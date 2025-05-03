@@ -533,7 +533,7 @@ class Admin_SectionsController extends Indi_Controller_Admin_Exportable {
         }
     }
 
-    public function exportAction() {
+    public function export1Action() {
         $lineA = [];
         foreach (t()->rows as $sectionR) {
             foreach (m($sectionR->entityId)->all() as $record) {

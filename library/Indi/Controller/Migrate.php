@@ -13,6 +13,79 @@ class Indi_Controller_Migrate extends Indi_Controller {
         ]);
         # 'Fraction'-filter in 'Entities'-section
         filter('entities', 'fraction', ['move' => '', 'defaultValue' => 'custom', 'allowZeroResult' => 1]);
+        section('db', ['title' => 'Database', 'move' => '']);
+        section('dict', ['title' => 'Dictionaries', 'move' => '']);
+        section('usr', ['title' => 'Users', 'move' => '']);
+        field('entity', 'stat', [
+            'title' => 'Stats',
+            'mode' => 'hidden',
+            'elementId' => 'span',
+            'move' => 'filesGroupBy',
+        ]);
+        field('entity', 'fieldQty', [
+            'title' => 'Fields',
+            'mode' => 'hidden',
+            'elementId' => 'number',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => 0,
+            'move' => 'stat',
+        ]);
+        field('entity', 'countQty', [
+            'title' => 'Aggregations',
+            'mode' => 'hidden',
+            'elementId' => 'number',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => 0,
+            'move' => 'fieldQty',
+        ]);
+        field('entity', 'indexQty', [
+            'title' => 'Indexes',
+            'mode' => 'hidden',
+            'elementId' => 'number',
+            'columnTypeId' => 'INT(11)',
+            'defaultValue' => 0,
+            'move' => 'countQty',
+        ]);
+
+        inQtySum('field', 'entityId', 'fieldQty', ['sourceWhere' => '`entry` = 0']);
+        inQtySum('inQtySum', 'sourceEntity', 'countQty', true);
+        inQtySum('sqlIndex', 'entityId', 'indexQty', true);
+
+        # 'Stats'-column (only used as a group for child columns) in 'Entities'-section
+        grid('entities', 'stat', ['gridId' => 'props', 'move' => 'binding']);
+
+        # 'Fields'-column in 'Entities'-section
+        grid('entities', 'fieldQty', [
+            'gridId' => 'stat',
+            'move' => '',
+            'rename' => 'FLD',
+            'tooltip' => 'Fields quantity',
+            'summaryType' => 'sum',
+            'jumpSectionId' => 'fields',
+            'jumpSectionActionId' => 'index',
+        ]);
+
+        # 'Aggregations'-column in 'Entities'-section
+        grid('entities', 'countQty', [
+            'gridId' => 'stat',
+            'move' => 'fieldQty',
+            'rename' => 'AGG',
+            'tooltip' => 'Aggregations quantity',
+            'summaryType' => 'sum',
+            'jumpSectionId' => 'inQtySum',
+            'jumpSectionActionId' => 'index',
+        ]);
+
+        # 'Indexes'-column in 'Entities'-section
+        grid('entities', 'indexQty', [
+            'gridId' => 'stat',
+            'move' => 'countQty',
+            'rename' => 'IDX',
+            'tooltip' => 'Indexes quantity',
+            'summaryType' => 'sum',
+            'jumpSectionId' => 'sqlIndexes',
+            'jumpSectionActionId' => 'index',
+        ]);
     }
     public function dontShowGridIdsAction() {
         cfgField('element', 'upload', 'wide', [
