@@ -3338,6 +3338,15 @@ function db() {
 }
 
 /**
+ * Shortcut to Indi::ai()
+ *
+ * @return Indi_Ai
+ */
+function ai() {
+    return forward_static_call_array(['Indi', 'ai'], func_get_args());
+}
+
+/**
  * Shortcut to Indi::uri()
  *
  * @return Indi_Uri

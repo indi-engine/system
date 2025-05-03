@@ -1,5 +1,19 @@
 <?php
 class Indi_Controller_Migrate extends Indi_Controller {
+    public function geminiAction() {
+        action('build', ['title' => 'Build', 'fraction' => 'system', 'selectionRequired' => 'n']);
+        # 'Build'-action in 'Entities'-section
+        section2action('entities', 'build', [
+            'move' => 'update',
+            'roleIds' => 'dev',
+            'south' => 'no',
+            'fitWindow' => 'n',
+            'rename' => 'Build with AI',
+            'l10n' => 'na',
+        ]);
+        # 'Fraction'-filter in 'Entities'-section
+        filter('entities', 'fraction', ['move' => '', 'defaultValue' => 'custom', 'allowZeroResult' => 1]);
+    }
     public function dontShowGridIdsAction() {
         cfgField('element', 'upload', 'wide', [
             'title' => 'Full width',

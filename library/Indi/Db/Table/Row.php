@@ -7517,10 +7517,10 @@ class Indi_Db_Table_Row implements ArrayAccess
      * todo: refactor
      *
      * @param int|string $field
-     * @param bool $store Get store only instead of full config
+     * @param bool|array $store Get store only instead of full config
      * @return array
      */
-    public function combo($field, $store = false) {
+    public function combo($field, bool|array $store = false) {
 
         // If $field arg is an array - assume pseudo-field should be created
         if (is_array($field)) {
@@ -7551,7 +7551,15 @@ class Indi_Db_Table_Row implements ArrayAccess
         $selectedValue = $this->id || strlen($this->$field) ? $this->$field : $defaultValue;
 
         // Get initial combo options rowset
-        $comboDataRs = $this->getComboData($name, null, $selectedValue, null, null, $fieldR);
+        if (is_array($store)) {
+            if (is_numeric(key($store))) {
+                // todo: add support
+            } else {
+                $comboDataRs = Indi::toGroupedComboDataRs($store);
+            }
+        } else {
+            $comboDataRs = $this->getComboData($name, null, $selectedValue, null, null, $fieldR);
+        }
 
         // Prepare combo options data
         $comboDataA = $comboDataRs->toComboData($params, $fieldR->param('ignoreTemplate'));
@@ -7664,7 +7672,7 @@ class Indi_Db_Table_Row implements ArrayAccess
         if ($comboDataRs->optionAttrs ?? null) $options['attrs'] = $comboDataRs->optionAttrs;
 
         // If store arg is given - return only store data
-        if ($store) return $options;
+        if (is_bool($store) && $store) return $options;
 
         // Prepare view params
         $view = [

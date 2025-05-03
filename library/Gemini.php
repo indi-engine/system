@@ -1,22 +1,11 @@
 <?php
-class Gemini1 {
+class Gemini {
 
     public $baseUrl = "https://generativelanguage.googleapis.com";
     public $key = '';
-    public $model =
-        //'models/gemini-1.5-pro' // 131
-        //'models/gemini-1.5-flash-latest' // 76
-        //'models/gemini-2.0-flash'    // 28
-        //'models/gemini-2.0-flash-lite' // 43
-        //'models/gemini-2.0-flash-001' // 34
-        'models/gemini-2.5-flash-preview-04-17' // 80 sec mininum
-        //'models/gemini-2.5-pro-preview-03-25' // 97
-        //'models/gemini-2.5-pro-exp-03-25'
-    ;
+    public $model = '';
     public $ds = [];
     public $dv = [];
-
-
     public $uploaded = [];
     public $cached = [];
 
@@ -643,5 +632,18 @@ class Gemini1 {
             die("JSON parse error: " . json_last_error_msg() . ": " .  print_r($json, true));
         }
         return $array;
+    }
+
+    public static function getModels() {
+        return [
+            'gemini-2.5-pro-exp-03-25',
+            'gemini-2.5-pro-preview-03-25',
+            'gemini-2.5-flash-preview-04-17',
+            'gemini-2.0-flash-001',
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-pro',
+        ];
     }
 }

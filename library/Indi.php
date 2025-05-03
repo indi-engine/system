@@ -927,6 +927,14 @@ class Indi {
     }
 
     /**
+     * @static
+     * @return Indi_Db object
+     */
+    public static function ai() {
+        return Indi_Ai::factory(func_num_args() ? func_get_arg(0) : null);
+    }
+
+    /**
      * Get rabbitmq-channel instance, which will be created if need
      *
      * @return \PhpAmqpLib\Channel\AMQPChannel
@@ -2530,5 +2538,41 @@ class Indi {
         //field('role', 'entityId', ['onDelete' => 'RESTRICT']);
 
         m('role')->all('`fraction` = "custom" AND `alias` != "admin"')->delete();
+    }
+
+    /**
+     * Return *_Rowset object feedable to combo
+     *
+     * @param $grouped
+     * @return Indi_Db_Table_Rowset
+     */
+    public static function toGroupedComboDataRs($grouped) {
+
+        // Aux variables
+        $groups = []; $data = [];
+
+        // Foreach group
+        foreach ($grouped as $group => $values) {
+
+            // Add optgroup
+            $groups []= ['id' => $group, 'title' => $group];
+
+            // Glob files in that dir and foreach file
+            foreach ($values as $value) {
+
+                // Setup option data
+                $data []= [
+                    'title' => $value,
+                    'alias' => $value,
+                    'group' => $group,
+                ];
+            }
+        }
+
+        // Prepare the data
+        $dataRs = m('enumset')->createRowset(['data' => $data]);
+        $dataRs->enumset = true;
+        $dataRs->optgroup = ['by' => 'group', 'groups' => $groups];
+        return $dataRs;
     }
 }
