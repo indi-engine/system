@@ -47,7 +47,7 @@ class Indi_Ai {
     }
 
     public function improve(string $prompt, string $model) {
-        jflush(false, 'Evolving current app via AI is not yet supported');
+        jflush(false, 'Evolving existing app via AI is not yet supported');
     }
 
 
@@ -69,8 +69,8 @@ class Indi_Ai {
 
         // Define choices for that field
         m()->fields('purpose')->nested('enumset', [
-            ['alias' => 'scratch', 'title' => 'Build app from ' . wrap('scratch', '<span data-title="Any customizations you\'ve done so far - will be completely purged">', !$isBare)],
-            ['alias' => 'improve', 'title' => 'Keep evolving current app'],
+            ['alias' => 'improve', 'title' => 'Evolve existing app'],
+            ['alias' => 'scratch', 'title' => 'Build new app from ' . wrap('scratch', '<span data-title="Any customizations you\'ve done so far - will be completely purged">', !$isBare)],
         ]);
 
         // Make sure the long title of a 1st choice won't be cut
@@ -129,6 +129,7 @@ class Indi_Ai {
                     'items' => [
                         [
                             'layout' => 'hbox',
+                            'columns' => 2,
                             'flex' => 1,
                             'fieldLabel' => false,
                             'isCustomField' => true,
