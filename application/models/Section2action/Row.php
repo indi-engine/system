@@ -192,8 +192,8 @@ class Section2action_Row extends Indi_Db_Table_Row {
      */
     public function onSave() {
 
-        // Trigger menu reload
-        Indi::ws(['type' => 'menu', 'to' => true]);
+        // Refresh left menu directly for Developer-users and via XHR for other users
+        Section::refreshMenu();
 
         // Do positioning, if $this->_system['move'] is set
         if (array_key_exists('move', $this->_system)) {
@@ -241,7 +241,9 @@ class Section2action_Row extends Indi_Db_Table_Row {
      *
      */
     public function onDelete() {
-        Indi::ws(['type' => 'menu', 'to' => true]);
+
+        // Refresh left menu directly for Developer-users and via XHR for other users
+        Section::refreshMenu();
     }
 
     /**

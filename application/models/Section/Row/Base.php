@@ -275,15 +275,14 @@ class Section_Row_Base extends Indi_Db_Table_Row {
             // Save
             ->save();
 
-        // Send signal for menu to be reloaded
-        Indi::ws(['type' => 'menu', 'to' => true]);
+        // Refresh left menu directly for Developer-users and via XHR for other users
+        Section::refreshMenu();
     }
 
-    /**
-     *
-     */
     public function onDelete() {
-        Indi::ws(['type' => 'menu', 'to' => true]);
+
+        // Refresh left menu directly for Developer-users and via XHR for other users
+        Section::refreshMenu();
     }
 
     /**
@@ -319,6 +318,6 @@ class Section_Row_Base extends Indi_Db_Table_Row {
 
         // Update menu
         if ($this->affected('move,title,sectionId,expanded'))
-            Indi::ws(['type' => 'menu', 'to' => true]);
+            Section::refreshMenu();
     }
 }

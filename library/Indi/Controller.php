@@ -184,6 +184,9 @@ class Indi_Controller {
         // Setup the Content-Type header
         header('Content-Type: text/html; charset=' . $this->encoding);
 
+        // Remove lock from session
+        if (CMD) session_write_close();
+
         // Do the pre-dispatch maintenance
         $this->preDispatch($args);
 

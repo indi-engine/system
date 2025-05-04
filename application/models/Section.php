@@ -158,4 +158,29 @@ class Section extends Indi_Db_Table {
         // Return
         return $return;
     }
+
+    /**
+     * Refresh left menu directly for Developer-users and via XHR for other users
+     */
+    public static function refreshMenu() {
+
+        // If we're within a process of building app based on AI response
+        if (admin()->role === 'dev') {
+
+            // Prepare and send menu data for all Developer-users
+            Indi::ws(['type' => 'menu', 'to' => 'dev', 'data' => Section::menu()]);
+
+            // Send a signal to refresh menu via XHR for all other users
+            Indi::ws([
+                'type' => 'menu',
+                'to' => m('role')->all('`alias` != "dev"')->fis('alias')
+            ]);
+
+        // Else
+        } else {
+
+            // Send a signal to refresh menu via XHR for all users
+            Indi::ws(['type' => 'menu', 'to' => true]);
+        }
+    }
 }

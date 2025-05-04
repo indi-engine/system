@@ -961,6 +961,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Prompt for app description, build type and AI model version
         $a = $_SERVER['ai'] ??= ai()->dialog($this);
 
+        // Run in background
+        $this->detach();
+
         // Call scratch() or improve() method depending of purpose
         if ($a['purpose'] === 'scratch') {
             ai()->scratch($a['prompt'], $a['model']);
