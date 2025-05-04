@@ -964,6 +964,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Run in background
         $this->detach();
 
+        // Disable logging for jflush-events, because the fact we've reached this line means all is ok
+        Indi::logging('jflush', true);
+
         // Call scratch() or improve() method depending of purpose
         if ($a['purpose'] === 'scratch') {
             ai()->scratch($a['prompt'], $a['model']);
@@ -971,7 +974,66 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
             ai()->improve($a['prompt'], $a['model']);
         }
 
+        // Disable logging for jflush-events, because the fact we've reached this line means all is ok
+        Indi::logging('jflush', false);
+
         // Flush success
         jflush(true);
+    }
+
+    /**
+     * Export selected entities as either PHP or SQL code
+     *
+     * @throws Exception
+     */
+    public function exportAction() {
+
+        // Define 'Purpose'-field to be added further to 'Build with AI'-dialog
+        m()->fields()->add([
+            'alias' => 'format',
+            'columnTypeId' => 'ENUM',
+            'elementId' => 'combo',
+            'storeRelationAbility' => 'one',
+            'relation' => 'enumset',
+            'mode' => 'hidden',
+        ]);
+
+        // Define choices for that field
+        m()->fields('format')->nested('enumset', [
+            ['alias' => 'php', 'title' => 'PHP'],
+            ['alias' => 'sql', 'title' => 'SQL'],
+        ]);
+
+        // Setup default values
+        t()->row->format = 'php';
+
+        // Ask user for description, build purpose and AI model
+        $prompt = $this->prompt('Please select export format', [[
+            //'layout' => 'hbox',
+            'flex' => 1,
+            'fieldLabel' => false,
+            //'isCustomField' => true,
+            ... t()->row->radio('format'),
+        ]]);
+
+        // If export format is 'sql'
+        if ($prompt['format'] === 'sql') {
+
+            // Prepare SHOW CREATE TABLE ... definitions
+            $def = [];
+            foreach (t()->rows as $row) {
+                $def []= db()->query("SHOW CREATE TABLE `$row->table`")->cell(1);
+            }
+            $def = join("\n-------------------\n", $def);
+
+            // Show in message box
+            jtextarea(true, $def);
+
+        // Else if export format is 'php'
+        } else {
+
+            // Call parent
+            $this->callParent();
+        }
     }
 }

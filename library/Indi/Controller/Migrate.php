@@ -86,6 +86,9 @@ class Indi_Controller_Migrate extends Indi_Controller {
             'jumpSectionId' => 'sqlIndexes',
             'jumpSectionActionId' => 'index',
         ]);
+
+        # 'Export'-action in 'Entities'-section
+        section2action('entities', 'export', ['rename' => 'Export as PHP or SQL code']);
     }
     public function dontShowGridIdsAction() {
         cfgField('element', 'upload', 'wide', [

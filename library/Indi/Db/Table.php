@@ -1910,11 +1910,22 @@ class Indi_Db_Table
      * @return string
      */
     public function dir($mode = '', $ckfinder = false, $subdir = '') {
+        return self::_dir($this->_table, $mode = '', $ckfinder = false, $subdir = '');
+    }
+
+    /**
+     * @param $_table
+     * @param string $mode
+     * @param false $ckfinder
+     * @param string $subdir
+     * @return bool|string
+     */
+    public static function _dir($_table, $mode = '', $ckfinder = false, $subdir = '') {
 
         // Build the target directory name
         $dir = DOC . STD . '/' . ini()->upload->path
             . ($ckfinder ? '/' . ini()->ckeditor->uploadPath : '')
-            . '/' . $this->_table . '/'
+            . '/' . $_table . '/'
             . (!is_bool($ckfinder) && preg_match(Indi::rex('int11'), $ckfinder) ? $ckfinder . '/' : '')
             . $subdir;
 

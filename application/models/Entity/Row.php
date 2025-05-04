@@ -95,7 +95,7 @@ class Entity_Row extends Indi_Db_Table_Row {
 
         // If CKFinder upload dir (special dir for entity/model,
         // that current row instance represents) does not exist - return
-        if (($dir = m($this->id)->dir('exists', true)) === false) return;
+        if (($dir = Indi_Db_Table::_dir($this->_table, 'exists', true)) === false) return;
 
         // Delete recursively all the contents - folder and files
         foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $path) {

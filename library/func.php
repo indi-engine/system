@@ -947,6 +947,9 @@ function jflush($success, $msg1 = null, $msg2 = null, $die = true) {
 
         // Flush json
         $json = json_encode($flush, $options); if ($flush['errors'] ?? 0) Indi::$errors []= $json; echo $json;
+
+        //
+        if (CMD && $flush['msg'] ?? 0) msg($flush['msg'], $flush['success'] ?? true);
     }
 
     // If redirect should be done - do that
@@ -1107,7 +1110,7 @@ function jpopup(array $cfg) {
 }
 
 /**
- * Flush text to be shown within <textarea>.
+ * Flush text to be shown within <pre contenteditable="true">.
  * If $text are is not a scalar, it will be preliminary stringified by print_r() fn
  *
  * @param bool $success
@@ -1119,7 +1122,11 @@ function jtextarea($success, $text) {
     if (!is_scalar($text)) $text = print_r($text, true);
 
     // Flush
-    jflush($success, '<textarea style="width: 500px; height: 400px;">' . $text . '</textarea>');
+    jflush([
+        'success' => $success,
+        'icon' => false,
+        'msg' => wrap($text, '<pre contenteditable="true" style="margin: 0; line-height: 12px; font-size: 11px;">'),
+    ]);
 }
 
 /**
