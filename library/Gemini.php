@@ -9,19 +9,96 @@ class Gemini {
     public $uploaded = [];
     public $cached = [];
 
+    /**
+     * Gemini constructor.
+     *
+     * @param string $model
+     */
+    public function __construct(string $model) {
+        $this->key = ini()->{strtolower(self::class)}->key;
+        $this->model = $model;
+    }
+
+    /**
+     * Get answer from AI model on a given prompt
+     *
+     * @param string $prompt
+     * @param array $files
+     * @return int|mixed
+     */
+    public function request(string $prompt, array $files = []) {
+
+        // Prompt content parts
+        $parts = [];
+
+        // Upload (if needed) and append files
+        foreach ($files as $file) {
+            $uploaded = $this->uploadIfNeed($file);
+            $parts []= ['file_data' => ['mime_type' => $uploaded->mimeType, 'file_uri' => $uploaded->uri]];
+        }
+
+        // Add prompt
+        $parts []= ["text" => $prompt];
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/models/$this->model:generateContent?key=$this->key",
+            CURLOPT_POST => true,
+            CURLOPT_TIMEOUT => 300,
+            CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => json_encode([
+                "contents" => [[
+                    "parts" => $parts,
+                    "role" => "user"
+                ]],
+                //"cachedContent" => 'cachedContents/oegooqnrvjww'//$this->cacheIfNeed("data/gemini/Indi Engine - docs.pdf")
+            ])
+        ]);
+
+        // Get response
+        $resp = curl_exec($ch);
+
+        // Flush curl error, if any
+        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
+
+        // Get http status code and close curl
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If code is not ok - flush
+        if ($code !== 200 && $code !== 201) jflush(false, "HTTP $code\nBody:\n$resp\n");
+
+        // Try parse JSON and flush failure if needed
+        $json = json_decode($resp, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            jflush(false, "Failed to parse response JSON: " . json_last_error_msg() . "\nBody:\n$resp\n");
+        }
+
+        // If no text at the expected depth - flush as is
+        if (!$resp = $json['candidates'][0]['content']['parts'][0]['text'] ?? 0) {
+            jtextarea(false, json_encode($json, JSON_PRETTY_PRINT));
+        }
+
+        // Return response
+        return $resp;
+    }
+
     public function upload($file) {
 
         // Get file name (with extension)
         $name = basename($file);
 
+        // Get file path
+        $path = "data/prompt/$file";
+
         // Check file exists
-        if (file_get_contents($file) === false) {
-            jflush(false, "Failed to read file: $file\n");
+        if (file_get_contents($path) === false) {
+            jflush(false, "Failed to read file: $path\n");
         }
 
         // Get mime type and size
         $mime = Indi::mime($name);
-        $size = filesize($file);
+        $size = filesize($path);
 
         // --- 3. Initiate Resumable Upload (Start) ---
         $ch = curl_init("$this->baseUrl/upload/v1beta/files?key=$this->key");
@@ -57,11 +134,10 @@ class Gemini {
         if ($uploadUrl === null) {
             jflush(false, "Failed to get upload URL from response headers.\nResponse Headers:\n" . $responseHeaders . "\n");
         }
-        //echo "Obtained upload_url: " . $uploadUrl . "\n";
 
         $ch = curl_init($uploadUrl);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($file));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($path));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "Content-Length: $size",
             "X-Goog-Upload-Offset: 0",
@@ -124,6 +200,18 @@ class Gemini {
             $this->uploaded = array_combine($names, $json->files);
         }
 
+        /*if ($file) {
+            $info = $this->uploaded[basename($file)] ?? null;
+
+            $created = strtotime($info->updateTime, '');
+            $updated = filemtime("data/prompt/$file");
+
+            i([$created, $updated, $updated - $created, ($updated - $created) / 60]);
+
+        }*/
+
+
+        //jflush(false, json_encode($info, JSON_PRETTY_PRINT));
         //
         return $file
             ? $this->uploaded[basename($file)] ?? null
@@ -183,31 +271,40 @@ class Gemini {
             : $this->cached;
     }
 
-    public function deleteUploaded(string $name) {
+    public function deleteUploaded(string $name, $skip = false) {
 
-        if (!$path = $this->uploaded($name)->name) {
+        if (!$skip && !$path = $this->uploaded($name)->name) {
             return;
         }
 
-        // --- Construct the DELETE request URL ---
-        $deleteUrl = "$this->baseUrl/v1beta/$path?key=$this->key";
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/{$this->uploaded[$name]->name}?key=$this->key",
+            CURLOPT_CUSTOMREQUEST => 'DELETE',
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
 
-        $ch = curl_init($deleteUrl);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE"); // Specify the DELETE method
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the response as a string
-        $response = curl_exec($ch);
+        // Exec curl
+        $resp = curl_exec($ch);
 
-        if (curl_errno($ch)) {
-            jflush(false, "cURL Error: " . curl_error($ch));
-        }
+        // Handle curl error
+        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
 
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        // Get http code
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
 
-        curl_close($ch);
-        if ($httpCode === 200) {
+        // If code is 200
+        if ($code === 200) {
+
+            // Unset from $this->uploaded array
+            unset($this->uploaded[$name]);
+
+            // Return true
             return true;
+
+        // Else flush failure
         } else {
-            jflush(false,"Failed to delete file '$name'.\n$httpCode: $response");
+            jflush(false,"Failed to delete file '$name'.\nCode: $code\nBody: $resp");
         }
     }
 
@@ -216,7 +313,22 @@ class Gemini {
      * @return array|mixed|object
      */
     public function uploadIfNeed(string $file) {
-        return $this->uploaded($file) ?? $this->upload($file);
+
+        // If file was already uploaded
+        if ($uploaded = $this->uploaded($file)) {
+
+            // Get timestamps
+            $uploadedAt = date('Y-m-d H:i:s', strtotime($uploaded->createTime));
+            $modifiedAt = date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
+
+            // If uploaded file is outdated
+            if ($modifiedAt > $uploadedAt) {
+                $this->deleteUploaded($file);
+            }
+        }
+
+        // If uploaded file is still there - return it, else re-upload
+        return $this->uploaded[$file] ?? $this->upload($file);
     }
 
     public function cacheIfNeed(string $file) {
@@ -281,357 +393,6 @@ class Gemini {
         curl_close($ch);
 
         return $this->cached[$json->displayName] = $json;
-    }
-
-    public function prompt($prompt) {
-
-        // Get files uris to be further mentioned in prompt
-        $pref = "data/gemini/Indi Engine";
-        //$doc = $this->uploadIfNeed("$pref - docs.pdf")->uri;
-        //$gen = $this->uploadIfNeed("$pref - generation rules.md")->uri;
-        $eds = $this->uploadIfNeed("$pref - data-structures.md")->uri;
-        $edv = $this->uploadIfNeed("$pref - data-views.md")->uri;
-
-        // Prepare full prompt
-        $prompt = file_get_contents('data/gemini/prompt.md') . "\n$prompt";
-
-        // Get response
-        msg('Waiting for response from GPT...');
-        mt();
-        $resp = $this->scratch([$eds, $edv], $prompt);
-        msg(mt());
-        i($resp);
-
-        // Exctract php code
-        if (!$code = between('~```php\s(|\n<\?php|)~', '~(\?>\n|)```~', $resp)) {
-            jtextarea(false, "No php code detected in: $resp");
-        }
-
-        // Return
-        return $code[0];
-    }
-
-    public function scratch(array $uri, string $systemInstruction) {
-
-        $ch = curl_init("$this->baseUrl/v1beta/$this->model:generateContent?key=$this->key");
-        $mime = 'application/pdf';
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 300);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            "contents" => [[
-                "parts" => [
-//                    ["file_data" => ["mime_type" => 'application/pdf', "file_uri" => $uri[0] ]],
-                    ["file_data" => ["mime_type" => 'text/markdown'  , "file_uri" => $uri[0] ]],
-                    ["file_data" => ["mime_type" => 'text/markdown'  , "file_uri" => $uri[1] ]],
-                    ["text" => $systemInstruction],
-                ],
-                "role" => "user"
-            ]],
-            "cachedContent" => 'cachedContents/oegooqnrvjww'//$this->cacheIfNeed("data/gemini/Indi Engine - docs.pdf")
-        ]));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $cacheJson = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            jflush(false, "cURL Error: " . curl_error($ch));
-        }
-
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode !== 200 && $httpCode !== 201) { // Expect 200 or 201 for creation
-            jflush(false, "Request failed with HTTP code: $httpCode\nResponse:\n$cacheJson\n");
-        }
-
-        // Parse cache JSON
-        $cacheInfo = json_decode($cacheJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            jflush(false, "Failed to parse response JSON: " . json_last_error_msg() . "\nResponse:\n$cacheJson\n");
-        }
-
-        if (!$resp = $cacheInfo['candidates'][0]['content']['parts'][0]['text'] ?? 0) {
-            jtextarea(false, $cacheJson);
-        }
-        return $resp;
-    }
-
-    public function prepare($text, $code) {
-
-        file_put_contents($code, "<?php\n");
-
-        cfgField('element', 'decimal143', 'measure', [
-            'title' => 'Unit of measurement',
-            'elementId' => 'string',
-            'columnTypeId' => 'TEXT',
-        ]);
-
-        section('users', ['title' => 'Users']);
-
-        $txt = file_get_contents($text);
-        // Trim comments
-        $txt = preg_replace('~ // .+?$~m', '', $txt);
-
-        // Copy bare entities declarations to the very top to prevent foreign key dependencies problems
-        $php = preg_replace_callback("~(entity\(')(.+?)(', \['title' => ')(.+?)'~", function($m) use ($code) {
-            $value = "$m[1]$m[2]$m[3]" . ucfirst(strtolower($m[4])) . "'";
-            $this->ds[$m[2]] = [
-                'isDict' => true,
-                'isRole' => false,
-                'props' => [
-                    'title' => ucfirst(strtolower($m[4]))
-                ],
-                'fields' => []
-            ];
-            file_put_contents($code, "$value]);\n", FILE_APPEND);
-            return $value;
-        }, $txt);
-
-        // Trim php opening tag
-        $php = preg_replace('~<\?php~', '', $php);
-        $php = preg_replace('~( => )‘(.+?)’~', '$1\'$2\'', $php);
-
-        $m[1] = $php;
-        $m[1] = preg_replace("~countInQtySum\('(?<table>.+?)', '(?<field>.+?)', '(?<param>.+?)', (?<value>.+?)\);$~sm", '', $m[1]);
-        $php = $m[1];
-        //file_put_contents($code, $m[1], FILE_APPEND);
-
-        // Move full entities declaration from AI response to code file
-        $php = preg_replace_callback("~^(.+?\n)(section\(')~s", function($m) use ($code) {
-
-            $m[1] = preg_replace("~inQtySum\(.+?\);\n~", '', $m[1]);
-            $m[1] = preg_replace("~consider\(.+?\);\s*//.+?\n~", '', $m[1]);
-
-            $m[1] = preg_replace_callback("~field\('(?<table>.+?)', '(?<field>.+?)', (?<props>.+?)\);\s*(//.+?|)\n~s", function($f) use ($code) {
-                $props = $this->toArray($f['props']);
-                $this->ds[$f['table']]['fields'][$f['field']] = $props;
-                if (in($props['columnTypeId'], 'DATE,DATETIME')) {
-                    $this->ds[$f['table']]['isDict'] = false;
-                } else if (count($this->ds[$f['table']]['fields']) > 3) {
-                    if (!str_ends_with($f['table'], 'Type') && !in($f['table'], 'country,city')) {
-                        $this->ds[$f['table']]['isDict'] = false;
-                    }
-                }
-                if ($f['field'] === 'password') {
-                    $this->ds[$f['table']]['isRole'] = true;
-                }
-                file_put_contents($code, $f[0], FILE_APPEND);
-                return '';
-            }, $m[1]);
-
-            $m[1] = preg_replace_callback("~enumset\('(?<table>.+?)', '(?<field>.+?)', '(?<alias>.+?)', (?<props>.+?)\);\s*(//.+?|)\n~s", function($e) {
-                if (in($this->ds[$e['table']]['fields'][$e['field']]['columnTypeId'], 'ENUM,SET')) {
-                    $this->ds[$e['table']]['fields'][$e['field']]['nested']['enumset'][$e['alias']] = $this->toArray($e['props']);
-                    return $e[0];
-                }
-                return '';
-            }, $m[1]);
-
-            $m[1] = preg_replace_callback("~param\('(?<table>.+?)', '(?<field>.+?)', '(?<param>.+?)', (?<value>.+?)\);$~sm", function($p) {
-                if (!is_numeric($p['value'])) {
-                    $p['value'] = trim($p['value'], "'");
-                }
-                if ($p['param'] === 'allowedTypes') {
-                    return str_replace('allowedTypes' , 'allowTypes', $p[0]);
-                } else if ($p['param'] === 'mask') {
-                    return str_replace('mask' , 'inputMask', $p[0]);
-                } else {
-                    return $p[0];
-                }
-            }, $m[1]);
-
-            file_put_contents($code, $m[1], FILE_APPEND);
-
-            return $m[2];
-        }, $php);
-
-        // Add role() for each entity having Password-field
-        foreach ($this->ds as $table => $entity) {
-            if ($entity['isRole']) {
-                if (!preg_match("~role\('$table',.+?\);\s*(//.+?|)\n~s", $php)) {
-                    $title = ucfirst($table);
-                    file_put_contents($code, "role('$table', ['title' => '$title', 'entityId' => '$table']);\n", FILE_APPEND);
-                }
-            }
-        }
-
-        // Move bare sections declarations from AI response to code file
-        $php = preg_replace_callback("~section\('(?<section>.+?)', (?<props>.+?)\);\s*(//.+?|)\n~s", function($s) use ($code, $php){
-            $props = $this->toArray($s['props']);
-            if ($entity = $props['entityId']) {
-                if (!$this->ds[$entity]) {
-                    return '';
-                }
-            }
-            $section = $s['section'];
-            $this->dv[$s['section']]['isRoot'] = !$props['sectionId'];
-            $this->dv[$s['section']]['props'] = $props;
-            return $s[0];
-        }, $php);
-
-        // Move bare sections declarations from AI response to code file
-        $php = preg_replace_callback("~section\('(?<section>.+?)', (?<props>.+?)\);\s*(//.+?|)\n~s", function($s) use ($code, $php){
-            $props = $this->toArray($s['props']);
-            $s['section'] = preg_replace('~Dict$~', '', $s['section']);
-            $section = $s['section'];
-            $entity = $props['entityId'];
-
-            foreach (ar('sectionId,move') as $prop) {
-                if (isset($props[$prop])) {
-                    $props[$prop] = preg_replace('~Dict$~', '', $props[$prop]);
-                }
-            }
-            $props['title'] = ucfirst(mb_strtolower($props['title']));
-
-            if ($this->dv[$props['sectionId']]['isRoot']) {
-                if ($this->ds[$props['entityId']]['isDict']) {
-                    $props['sectionId'] = 'dict';
-                } else if ($this->ds[$props['entityId']]['isRole']) {
-                    $props['sectionId'] = 'usr';
-                } else {
-                    $props['sectionId'] = 'db';
-                }
-            }
-            if ($colorField = $props['colorField']) {
-                if ($colorField = $this->ds[$entity]['fields'][$colorField]) {
-                    if ($colorField['storeRelationAbility'] === 'one') {
-                        if ($colorFurther = $props['colorFurther']) {
-                            if ($colorFurther = $this->ds[$colorField['relation']]['fields'][$colorFurther]) {
-                                if ($colorFurther['elementId'] !== 'color') {
-                                    unset($props['colorField'], $props['colorFurther']);
-                                }
-                            } else {
-                                unset($props['colorField'], $props['colorFurther']);
-                            }
-                        } else {
-                            unset($props['colorField'], $props['colorFurther']);
-                        }
-                    } else if ($colorField['elementId'] !== 'color') {
-                        unset($props['colorField'], $props['colorFurther']);
-                    }
-                } else {
-                    unset($props['colorField'], $props['colorFurther']);
-                }
-            }
-
-            $props = _var_export($props);
-            file_put_contents($code, "section('{$s['section']}', $props);\n", FILE_APPEND);
-            return '';
-        }, $php);
-
-        // Remove trailing 'Dict'
-        $php = preg_replace_callback("~(section2action|grid|alteredField|filter)(\('.+?)Dict',~s", function($sa) {
-            return "$sa[1]$sa[2]', ";
-        }, $php);
-
-        //
-        $php = preg_replace_callback("~(section2action|grid|alteredField|filter)\('(?<section>.+?)',.+?\]\);\n~s", function($sa) {
-            $section = $sa['section'];
-            if (!$this->dv[$section]) {
-                return '';
-            }
-            return $sa[0];
-        }, $php);
-
-        $php = preg_replace_callback("~(grid|alteredField|filter)\('(?<section>.+?)',\s?'(?<field>.+?)',.+?\]\);\n~s", function($sa) {
-            $section = $sa['section'];
-            $field = $sa['field'];
-            $entity = $this->dv[$section]['props']['entityId'];
-            if (!$field = $this->ds[$entity]['fields'][$field]) {
-                return '';
-            }
-            return $sa[0];
-        }, $php);
-
-        // Move section2action declarations from AI response to code file
-        $php = preg_replace_callback("~section2action\((?<section>'.+?)', \[.+?\]\);\s*(//.+?|)\n~s", function($m) use ($code, $php){
-            file_put_contents($code, $m[0], FILE_APPEND);
-            return '';
-        }, $php);
-
-        //
-        $php = preg_replace_callback("~grid\('(?<section>.+?)', '(?<field>.+?)', (?<props>\[.+?\])\);\s*(//.+?|)\n~s", function($g) use ($code, $php){
-
-            $section = $g['section'];
-            $field = $g['field'];
-            if ($entity = $this->dv[$section]['props']['entityId']) {
-                if (!$fieldInfo = $this->ds[$entity]['fields'][$field]) {
-                    return '';
-                }
-            }
-
-            $props = $this->toArray($g['props']);
-            if ($target = $props['jumpSectionId']) {
-                if (!$this->dv[$target]) {
-                    if ($ds = $this->ds[$target]) {
-                        $sectionProps = _var_export([
-                            'title' => $this->ds[$target]['props']['title'] . "s",
-                            'entityId' => $target,
-                            'sectionId' => $ds['isDict'] ? 'dict' : 'db'
-                        ]);
-                        file_put_contents($code, "section('{$target}', $sectionProps);\n", FILE_APPEND);
-                        foreach(ar('index,form,save,delete') as $action) {
-                            file_put_contents($code, "section2action('{$target}', '$action', ['roleIds' => 'dev,admin']);\n", FILE_APPEND);
-                        }
-                    }
-                }
-            }
-            if ($props['summaryType'] === 'avg') {
-                $props['summaryType'] = 'average';
-            }
-            if ($props['colorBreak'] === 'y' && !in($fieldInfo['elementId'], 'number,price,decimal143')) {
-                unset($props['colorBreak']);
-            }
-            $data = _var_export($props, 8);
-            return "grid('$section', '$field', $data);\n";
-        }, $php);
-
-
-        //
-        $php = preg_replace_callback("~m\('(?<entity>.+?)'\)->new\((?<data>\[.+?\])\)->save\(\);\s*(//.+?|)\n~s", function($r) use ($code, $php){
-            if (preg_match('~\$[a-z]~', $r['data'])) {
-                return $r[0];
-            };
-            $entity = $r['entity'];
-            $data = $this->toArray($r['data']);
-            foreach ($data as $field => &$value) {
-                if ($meta = $this->ds[$entity]['fields'][$field]) {
-                    if ($meta['columnTypeId'] == 'ENUM') {
-                        if (!$meta['nested']['enumset'][$value]) {
-                            $value = $meta['defaultValue'];
-                        }
-                    }
-                }
-            }
-            $data = _var_export($data, 10);
-            return "m('$entity')->new($data)->save();\n";
-        }, $php);
-
-        //d($this->ds);
-        // Put remaining
-        file_put_contents($code, $php, FILE_APPEND);
-    }
-
-    public function toArray($raw) {
-
-        // Remove comments
-        $raw = preg_replace('~//.*$~m', '', $raw);
-
-        // Convert PHP-like array syntax to JSON
-        $json = $raw;
-        $json = trim($json);
-        $json = preg_replace("/' => /", "':", $json);                   // Replace => with :
-        $json = preg_replace("/'/", '"', $json);                    // Replace single quotes with double
-        $json = preg_replace("/,\s*]/", "]", $json);                // Remove trailing comma before ]
-        $json = preg_replace("/,\s*}/", "}", $json);                // Remove trailing comma before }
-        $json = preg_replace("~^\[~", "{", $json);                // Remove trailing comma before }
-        $json = preg_replace("~\]$~", "}", $json);                // Remove trailing comma before }
-
-        $array = json_decode($json, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            die("JSON parse error: " . json_last_error_msg() . ": " .  print_r($json, true));
-        }
-        return $array;
     }
 
     public static function getModels() {

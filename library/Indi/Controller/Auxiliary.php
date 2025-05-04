@@ -171,41 +171,10 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
 
     public function prepareAction() {
 
-        $gemini = new \Gemini1();
+        // Prepare php code from response
+        $total = ai()->prepare($code = 'data/prompt/scratch.php', $text = 'data/prompt/scratch.txt');
 
-        $pref = "data/gemini/Indi Engine";
-        d($gemini->cacheIfNeed("$pref - docs.pdf"));
-        //die('xx');
-        //$gemini->deleteCached("Indi Engine - docs.pdf");
-        die('xx');
-
-        $text = 'data/gemini/data-structures.txt';
-        $code = 'data/gemini/data-structures.php';
-        $gemini->prepare($text, $code);
         d(file_get_contents($code));
-
-    }
-
-    public function toArray($raw) {
-
-        // Remove comments
-        $raw = preg_replace('~//.*$~m', '', $raw);
-
-        // Convert PHP-like array syntax to JSON
-        $json = $raw;
-        $json = trim($json);
-        $json = preg_replace("/' => /", "':", $json);                   // Replace => with :
-        $json = preg_replace("/'/", '"', $json);                    // Replace single quotes with double
-        $json = preg_replace("/,\s*]/", "]", $json);                // Remove trailing comma before ]
-        $json = preg_replace("/,\s*}/", "}", $json);                // Remove trailing comma before }
-        $json = preg_replace("~^\[~", "{", $json);                // Remove trailing comma before }
-        $json = preg_replace("~\]$~", "}", $json);                // Remove trailing comma before }
-
-        $array = json_decode($json, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            jflush("JSON parse error: " . json_last_error_msg() . ": " .  print_r($json, true));
-        }
-        return $array;
     }
 
     public function cleanupAction(){

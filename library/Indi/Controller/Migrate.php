@@ -89,6 +89,14 @@ class Indi_Controller_Migrate extends Indi_Controller {
 
         # 'Export'-action in 'Entities'-section
         section2action('entities', 'export', ['rename' => 'Export as PHP or SQL code']);
+
+        cfgField('element', 'decimal143', 'measure', [
+            'title' => 'Unit of measurement',
+            'elementId' => 'string',
+            'columnTypeId' => 'TEXT',
+        ]);
+        section('usr', ['title' => 'Users', 'move' => 'dict']);
+
     }
     public function dontShowGridIdsAction() {
         cfgField('element', 'upload', 'wide', [

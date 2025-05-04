@@ -438,7 +438,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         $ctor = $this->_original;
 
         // Exclude `id`, as it will be set automatically by MySQL
-        unset($ctor['id']);
+        unset($ctor['id'], $ctor['fieldQty'], $ctor['countQty'], $ctor['indexQty']);
 
         // Exclude props that are already represented by one of shorthand-fn args
         foreach (ar('table') as $arg) unset($ctor[$arg]);
