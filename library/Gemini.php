@@ -6,7 +6,7 @@ class Gemini {
     public $model = '';
     public $ds = [];
     public $dv = [];
-    public $uploaded = [];
+    public $uploaded = null;
     public $cached = [];
 
     /**
@@ -26,7 +26,273 @@ class Gemini {
      * @param array $files
      * @return int|mixed
      */
-    public function request(string $prompt, array $files = []) {
+    public function request(string $prompt, array $files = [], bool $cache = false) {
+
+        // Prompt content parts
+        $parts = [];
+
+        // Upload (if needed) and append files
+        if (!$cache) {
+            foreach ($files as $file) {
+                $uploaded = $this->uploadIfNeed($file);
+                $parts []= ['file_data' => ['mime_type' => $uploaded->mimeType, 'file_uri' => $uploaded->uri]];
+            }
+        }
+
+        // Add prompt
+        $parts []= ["text" => $prompt];
+
+        // Prepare data
+        $data = [
+            "contents" => [[
+                "parts" => $parts,
+                "role" => "user"
+            ]],
+        ];
+
+        // If $cache flag is given as true - create a single cached content entry if not created
+        // per the given sequence of $files, and append 'cachedContent' param to the request data
+        if ($cache) {
+            $data['cachedContent'] = $this->cacheIfNeed($files)->name;
+        }
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/models/$this->model:generateContent?key=$this->key",
+            CURLOPT_POST => true,
+            CURLOPT_TIMEOUT => 300,
+            CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => json_encode($data)
+        ]);
+
+        // Get response
+        $resp = curl_exec($ch);
+
+        // Flush curl error, if any
+        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
+
+        // Get http status code and close curl
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If code is not ok - flush
+        if ($code !== 200 && $code !== 201) jflush(false, "HTTP $code\nBody:\n$resp\n");
+
+        // Try parse JSON and flush failure if needed
+        $json = json_decode($resp, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            jflush(false, "Failed to parse response JSON: " . json_last_error_msg() . "\nBody:\n$resp\n");
+        }
+
+        // If no text at the expected depth - flush as is
+        if (!$resp = $json['candidates'][0]['content']['parts'][0]['text'] ?? 0) {
+            jtextarea(false, json_encode($json, JSON_PRETTY_PRINT));
+        }
+
+        // Return response
+        return $resp;
+    }
+
+    /**
+     * Upload $file if not yet uploaded or outdated
+     *
+     * @param $file
+     * @return array|mixed|object
+     */
+    public function uploadIfNeed(string $file) {
+
+        // If file was already uploaded
+        if ($uploaded = $this->uploaded($file)) {
+
+            // Get timestamps
+            $uploadedAt = date('Y-m-d H:i:s', strtotime($uploaded->createTime));
+            $modifiedAt = date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
+
+            // If uploaded file is outdated
+            if ($modifiedAt > $uploadedAt) {
+                $this->dropUploaded($file);
+            }
+        }
+
+        // If uploaded file is still there - return it, else re-upload
+        return $this->uploaded[$file] ?? $this->upload($file);
+    }
+
+    /**
+     * Check whether $file is in the list of uploaded files
+     *
+     * @param string|null $file
+     * @return array|mixed|null
+     */
+    public function uploaded(?string $file = null) {
+
+        // Fetch the list of uploaded, if not yet fetched
+        $this->uploaded ??= $this->listUploaded();
+
+        // Return the info for a given $file, or the whole list of files
+        return $file
+            ? $this->uploaded[basename($file)] ?? null
+            : $this->uploaded;
+    }
+
+    /**
+     * Get array of [file displayName => stdClass info object] pairs
+     *
+     * @return array
+     */
+    public function listUploaded() {
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/files?key=$this->key",
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+        $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If response code is not 200, or response body is not json-decodable - flush failure
+        if ($code !== 200) {
+            jflush(false, "Files list retrieval failed with HTTP code: $code.\nResponse:\n$resp\n");
+        } else if ((!$json = json_decode($resp)) && json_last_error() !== JSON_ERROR_NONE) {
+            jflush(false, "Files list not json-decodable: " . json_last_error_msg() . "\nResponse:\n$resp\n");
+        }
+
+        // Return array of [file displayName => stdClass info object] pairs
+        return property_exists($json, 'files')
+            ? array_combine(array_column($json->files, 'displayName'), $json->files)
+            : [];
+    }
+
+    /**
+     * Drop uploaded $file
+     *
+     * @param string $file
+     * @param false $skip
+     * @return bool|void
+     */
+    public function dropUploaded(string $file) {
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/{$this->uploaded[$file]->name}?key=$this->key",
+            CURLOPT_CUSTOMREQUEST => 'DELETE',
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+
+        // Exec curl
+        $resp = curl_exec($ch);
+
+        // Handle curl error
+        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
+
+        // Get http code
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If code is 200
+        if ($code === 200) {
+
+            // Unset from $this->uploaded array
+            unset($this->uploaded[$file]);
+
+            // Return true
+            return true;
+
+        // Else flush failure
+        } else {
+            jflush(false,"Failed to delete file '$file'.\nCode: $code\nBody: $resp");
+        }
+    }
+
+    /**
+     * Upload $file
+     *
+     * @param $file
+     * @return object
+     */
+    public function upload($file) {
+
+        // Get file path
+        $path = "data/prompt/$file";
+
+        // Check file exists
+        if (file_get_contents($path) === false) {
+            jflush(false, "Failed to read file: $path\n");
+        }
+
+        // Get mime type and size
+        $mime = Indi::mime($file);
+        $size = filesize($path);
+
+        // Make request to get URL for the further uploaded file
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/upload/v1beta/files?key=$this->key",
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_POSTFIELDS => json_encode(['file' => ['display_name' => $file]]),
+            CURLOPT_HTTPHEADER => [
+                "X-Goog-Upload-Protocol: resumable",
+                "X-Goog-Upload-Command: start",
+                "X-Goog-Upload-Header-Content-Length: $size",
+                "X-Goog-Upload-Header-Content-Type: $mime",
+                "Content-Type: application/json"
+            ]
+        ]);
+        $resp = curl_exec($ch);
+        $head = substr($resp, 0, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
+        curl_close($ch);
+
+        // Extract upload URL from headers
+        $uploadUrl = null;
+        $headers = explode("\r\n", $head);
+        foreach ($headers as $header) {
+            if (stripos($header, "x-goog-upload-url:") === 0) {
+                $uploadUrl = trim(substr($header, strlen("x-goog-upload-url:")));
+                break;
+            }
+        }
+
+        // If nothing exctracted - flush failure
+        if ($uploadUrl === null) {
+            jflush(false, "Failed to get upload URL from response headers.\nResponse Headers:\n$head\n");
+        }
+
+        // Upload $file
+        curl_setopt_array($ch = curl_init($uploadUrl), [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => file_get_contents($path),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                "Content-Length: $size",
+                "X-Goog-Upload-Offset: 0",
+                "X-Goog-Upload-Command: upload, finalize",
+                "Content-Type: $mime"
+            ]
+        ]);
+        $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If response code is not 200, or response body is not json-decodable - flush failure
+        if ($code !== 200) {
+            jflush(false, "File upload failed with code: $code\nResp:\n$resp\n");
+        } else if ((!$json = json_decode($resp)) && json_last_error() !== JSON_ERROR_NONE) {
+            jflush(false, "Failed to parse file info JSON: " . json_last_error_msg() . "\nResp:\n$resp\n");
+        }
+
+        // If file uri exists in json - add file info to $this->uploaded and return that info
+        if ($json->file->uri ?? 0) {
+            return $this->uploaded[$file] = $json->file;
+        } else {
+            jflush(false, "Failed to get file URI from file info response.\nResponse:\n$resp\n");
+        }
+    }
+
+    /**
+     * Get answer from AI model on a given prompt
+     *
+     * @param string $prompt
+     * @param array $files
+     * @return int|mixed
+     */
+    public function cache(string $prompt, array $files = []) {
 
         // Prompt content parts
         $parts = [];
@@ -37,22 +303,25 @@ class Gemini {
             $parts []= ['file_data' => ['mime_type' => $uploaded->mimeType, 'file_uri' => $uploaded->uri]];
         }
 
-        // Add prompt
-        $parts []= ["text" => $prompt];
-
         // Init curl
         curl_setopt_array($ch = curl_init(), [
-            CURLOPT_URL => "$this->baseUrl/v1beta/models/$this->model:generateContent?key=$this->key",
+            CURLOPT_URL => "$this->baseUrl/v1beta/cachedContents?key=$this->key",
             CURLOPT_POST => true,
             CURLOPT_TIMEOUT => 300,
             CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POSTFIELDS => json_encode([
-                "contents" => [[
-                    "parts" => $parts,
-                    "role" => "user"
+                'contents' => [[
+                    'parts' => $parts,
+                    'role' => 'user'
                 ]],
-                //"cachedContent" => 'cachedContents/oegooqnrvjww'//$this->cacheIfNeed("data/gemini/Indi Engine - docs.pdf")
+                'system_instruction' => [
+                    'parts' => [
+                        [
+                            'text' => file_get_contents('data/prompt/cache-system.md')
+                        ]
+                    ]
+                ]
             ])
         ]);
 
@@ -83,141 +352,6 @@ class Gemini {
         return $resp;
     }
 
-    public function upload($file) {
-
-        // Get file name (with extension)
-        $name = basename($file);
-
-        // Get file path
-        $path = "data/prompt/$file";
-
-        // Check file exists
-        if (file_get_contents($path) === false) {
-            jflush(false, "Failed to read file: $path\n");
-        }
-
-        // Get mime type and size
-        $mime = Indi::mime($name);
-        $size = filesize($path);
-
-        // --- 3. Initiate Resumable Upload (Start) ---
-        $ch = curl_init("$this->baseUrl/upload/v1beta/files?key=$this->key");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['file' => ['display_name' => $name]]));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "X-Goog-Upload-Protocol: resumable",
-            "X-Goog-Upload-Command: start",
-            "X-Goog-Upload-Header-Content-Length: $size",
-            "X-Goog-Upload-Header-Content-Type: $mime",
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-
-        //echo "Initiating resumable upload...\n";
-        $response = curl_exec($ch);
-        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $responseHeaders = substr($response, 0, $headerSize);
-        $responseBody = substr($response, $headerSize);
-        curl_close($ch);
-
-        // Extract upload URL from headers
-        $uploadUrl = null;
-        $headers = explode("\r\n", $responseHeaders);
-        foreach ($headers as $header) {
-            if (stripos($header, "x-goog-upload-url:") === 0) {
-                $uploadUrl = trim(substr($header, strlen("x-goog-upload-url:")));
-                break;
-            }
-        }
-
-        if ($uploadUrl === null) {
-            jflush(false, "Failed to get upload URL from response headers.\nResponse Headers:\n" . $responseHeaders . "\n");
-        }
-
-        $ch = curl_init($uploadUrl);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($path));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Content-Length: $size",
-            "X-Goog-Upload-Offset: 0",
-            "X-Goog-Upload-Command: upload, finalize",
-            "Content-Type: $mime"
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        //echo "Uploading file bytes...\n";
-        $fileInfoJson = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode !== 200) {
-            jflush(false, "File upload failed with HTTP code: " . $httpCode . "\nResponse:\n" . $fileInfoJson . "\n");
-        }
-
-        // Parse file info JSON
-        $fileInfo = json_decode($fileInfoJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            jflush(false, "Failed to parse file info JSON: " . json_last_error_msg() . "\nResponse:\n" . $fileInfoJson . "\n");
-        }
-
-        $fileUri = $fileInfo['file']['uri'] ?? null;
-        if ($fileUri === null) {
-            jflush(false, "Failed to get file URI from file info response.\nResponse:\n" . $fileInfoJson . "\n");
-        }
-        return $this->uploaded[$name] = (object) $fileInfo['file'];
-    }
-
-    public function uploaded(string $file = null) {
-
-        if (!$this->uploaded) {
-
-            curl_setopt_array($ch = curl_init(), [
-                CURLOPT_URL => "$this->baseUrl/v1beta/files?key=$this->key",
-                CURLOPT_RETURNTRANSFER => true,
-            ]);
-            $resp = curl_exec($ch);
-            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            //
-            if ($code !== 200) {
-                jflush(false, "File list retrieval failed with HTTP code: $code.\nResponse:\n$resp\n");
-            }
-
-            // Parse file info JSON
-            $json = json_decode($resp);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                jflush(false, "Failed to parse file list JSON: " . json_last_error_msg() . "\nResponse:\n$resp\n");
-            }
-
-            //
-            if (!property_exists($json, 'files')) {
-                return null;
-            }
-
-            $names = array_column($json->files, 'displayName');
-            $this->uploaded = array_combine($names, $json->files);
-        }
-
-        /*if ($file) {
-            $info = $this->uploaded[basename($file)] ?? null;
-
-            $created = strtotime($info->updateTime, '');
-            $updated = filemtime("data/prompt/$file");
-
-            i([$created, $updated, $updated - $created, ($updated - $created) / 60]);
-
-        }*/
-
-
-        //jflush(false, json_encode($info, JSON_PRETTY_PRINT));
-        //
-        return $file
-            ? $this->uploaded[basename($file)] ?? null
-            : $this->uploaded;
-    }
-
     public function deleteCached(string $file) {
         if (!$path = $this->cached($file)->name) return;
         $ch = curl_init("$this->baseUrl/v1beta/$path?key=$this->key");
@@ -234,7 +368,7 @@ class Gemini {
         }
     }
 
-    public function cached(string $file = null) {
+    public function cached(string $filesSequence = null) {
 
         if (!$this->cached) {
             curl_setopt_array($ch = curl_init(), [
@@ -271,71 +405,31 @@ class Gemini {
             : $this->cached;
     }
 
-    public function deleteUploaded(string $name, $skip = false) {
-
-        if (!$skip && !$path = $this->uploaded($name)->name) {
-            return;
-        }
-
-        // Init curl
-        curl_setopt_array($ch = curl_init(), [
-            CURLOPT_URL => "$this->baseUrl/v1beta/{$this->uploaded[$name]->name}?key=$this->key",
-            CURLOPT_CUSTOMREQUEST => 'DELETE',
-            CURLOPT_RETURNTRANSFER => true,
-        ]);
-
-        // Exec curl
-        $resp = curl_exec($ch);
-
-        // Handle curl error
-        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
-
-        // Get http code
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-
-        // If code is 200
-        if ($code === 200) {
-
-            // Unset from $this->uploaded array
-            unset($this->uploaded[$name]);
-
-            // Return true
-            return true;
-
-        // Else flush failure
-        } else {
-            jflush(false,"Failed to delete file '$name'.\nCode: $code\nBody: $resp");
-        }
-    }
-
-    /**
-     * @param $file
-     * @return array|mixed|object
-     */
-    public function uploadIfNeed(string $file) {
+    public function cacheIfNeed(array $files) {
 
         // If file was already uploaded
-        if ($uploaded = $this->uploaded($file)) {
+        if ($cached = $this->cached($files)) {
 
             // Get timestamps
             $uploadedAt = date('Y-m-d H:i:s', strtotime($uploaded->createTime));
-            $modifiedAt = date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
+            foreach ($files as $file) {
+                $modifiedAt []= date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
+            }
+            $modifiedAt = max($modifiedAt);
 
             // If uploaded file is outdated
             if ($modifiedAt > $uploadedAt) {
-                $this->deleteUploaded($file);
+                $this->deleteCached($file);
             }
         }
 
         // If uploaded file is still there - return it, else re-upload
-        return $this->uploaded[$file] ?? $this->upload($file);
-    }
+        return $this->cached[im($files)] ?? $this->cache($files);
 
-    public function cacheIfNeed(string $file) {
         return $this->cached($file) ?? $this->cache($file);
     }
 
-    public function cache($file) {
+    public function cache1($file) {
 
         $uploaded = $this->uploadIfNeed($file);
         $ch = curl_init($url = "$this->baseUrl/v1beta/cachedContents?key=$this->key");

@@ -154,7 +154,7 @@ class Indi_Ai {
      * @param string $prompt
      * @param string $model
      */
-    public function scratch(string $prompt, string $model) {
+    public function scratch(string $prompt, string $model, bool $cache = false) {
 
         // Purge all customizations to get back to bare Indi Engine app
         Indi::purge();
@@ -170,7 +170,7 @@ class Indi_Ai {
         ];
 
         // Generate response and write it to file
-        //$resp = $this->prompt($prompt, $model, $files); file_put_contents($text, $resp);
+        $resp = $this->prompt($prompt, $model, $files, $cache); file_put_contents($text, $resp);
 
         // Prepare php code from response
         $total = $this->prepare($code = 'data/prompt/scratch.php', $text); $idx = 0;
@@ -182,7 +182,7 @@ class Indi_Ai {
         include $code;
     }
 
-    public function prompt(string $prompt, string $model, array $files) {
+    public function prompt(string $prompt, string $model, array $files, bool $cache = false) {
 
         // Prepare full prompt
         $prompt = file_get_contents('data/prompt/prompt.md') . "\n\n$prompt";
@@ -191,7 +191,7 @@ class Indi_Ai {
         msg('Waiting for response from GPT...'); mt();
 
         // Get response
-        $resp = $this->request($prompt, $model, $files);
+        $resp = $this->request($prompt, $model, $files, $cache);
 
         // Show response time
         msg('Model response time: ' . round(mt(), 2) . 's');
@@ -200,7 +200,7 @@ class Indi_Ai {
         return $resp;
     }
 
-    public function request(string $prompt, string $model, array $files) {
+    public function request(string $prompt, string $model, array $files, bool $cache = true) {
 
         // Get model vendor
         $vendor = explode('-', $model)[0];
@@ -214,7 +214,7 @@ class Indi_Ai {
         $this->model ??= new $this->vendors[$vendor]($model);
 
         // Do request on underlying model
-        return $this->model->request($prompt, $files);
+        return $this->model->request($prompt, $files, $cache);
     }
 
     public function prepare($code, $text) {

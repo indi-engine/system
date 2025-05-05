@@ -962,14 +962,14 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         $a = $_SERVER['ai'] ??= ai()->dialog($this);
 
         // Run in background
-        $this->detach();
+        //$this->detach();
 
         // Disable logging for jflush-events, because the fact we've reached this line means all is ok
         Indi::logging('jflush', true);
 
         // Call scratch() or improve() method depending of purpose
         if ($a['purpose'] === 'scratch') {
-            ai()->scratch($a['prompt'], $a['model']);
+            ai()->scratch($a['prompt'], $a['model'], false);
         } else {
             ai()->improve($a['prompt'], $a['model']);
         }
