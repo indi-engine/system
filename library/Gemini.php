@@ -7,7 +7,7 @@ class Gemini {
     public $ds = [];
     public $dv = [];
     public $uploaded = null;
-    public $cached = [];
+    public $cached = null;
 
     /**
      * Gemini constructor.
@@ -86,7 +86,7 @@ class Gemini {
 
         // If no text at the expected depth - flush as is
         if (!$resp = $json['candidates'][0]['content']['parts'][0]['text'] ?? 0) {
-            jtextarea(false, json_encode($json, JSON_PRETTY_PRINT));
+            jflush(false, json_encode($json, JSON_PRETTY_PRINT));
         }
 
         // Return response
@@ -131,7 +131,7 @@ class Gemini {
 
         // Return the info for a given $file, or the whole list of files
         return $file
-            ? $this->uploaded[basename($file)] ?? null
+            ? $this->uploaded[$file] ?? null
             : $this->uploaded;
     }
 
@@ -286,18 +286,129 @@ class Gemini {
     }
 
     /**
+     * Cache a sequence of $files if not yet cached or outdated
+     *
+     * @param $file
+     * @return array|mixed|object
+     */
+    public function cacheIfNeed(array $files) {
+
+        // If $files sequence was already cached
+        if ($cached = $this->cached($files)) {
+
+            // Get timestamps
+            $cachedAt = date('Y-m-d H:i:s', strtotime($cached->createTime));
+            foreach ($files as $file) {
+                $modifiedAt []= date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
+            }
+            $modifiedAt = max($modifiedAt);
+
+            // If any of files was updated after cached
+            if ($modifiedAt > $cachedAt) {
+                $this->dropCached($files);
+            }
+        }
+
+        // If cache for sequence of $files is still there - return it, else cache that sequence
+        return $this->cached[im($files)] ?? $this->cache($files);
+    }
+
+    /**
+     * Check whether a sequence of $files is in the list of cached sequences
+     *
+     * @param string|null $file
+     * @return array|mixed|null
+     */
+    public function cached(?array $files = null) {
+
+        // Fetch list of cached, if not yet fetched
+        $this->cached ??= $this->listCached();
+
+        // Return the info for a given cache, or the whole list of cached sequences of files
+        return $files
+            ? $this->cached[im($files)] ?? null
+            : $this->cached;
+    }
+
+    /**
+     * Get array of [cache displayName => stdClass info object] pairs
+     *
+     * @return array
+     */
+    public function listCached() {
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/cachedContents?key=$this->key",
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+        $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If response code is not 200, or response body is not json-decodable - flush failure
+        if ($code !== 200) {
+            jflush(false, "Caches list retrieval failed with HTTP code: $code.\nResponse:\n$resp\n");
+        } else if ((!$json = json_decode($resp)) && json_last_error() !== JSON_ERROR_NONE) {
+            jflush(false, "Caches list not json-decodable: " . json_last_error_msg() . "\nResponse:\n$resp\n");
+        }
+
+        // Return array of [cache displayName => stdClass info object] pairs
+        return property_exists($json, 'cachedContents')
+            ? array_combine(array_column($json->cachedContents, 'displayName'), $json->cachedContents)
+            : [];
+    }
+
+    /**
+     * Drop cached sequence of $files
+     *
+     * @param array $files
+     * @return bool|void
+     */
+    public function dropCached(array $files) {
+
+        // Init curl
+        curl_setopt_array($ch = curl_init(), [
+            CURLOPT_URL => "$this->baseUrl/v1beta/{$this->cached[im($files)]->name}?key=$this->key",
+            CURLOPT_CUSTOMREQUEST => 'DELETE',
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+
+        // Exec curl
+        $resp = curl_exec($ch);
+
+        // Handle curl error
+        if (curl_errno($ch)) jflush(false, "Curl error: " . curl_error($ch));
+
+        // Get http code
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+
+        // If code is 200
+        if ($code === 200) {
+
+            // Unset from $this->cached array
+            unset($this->cached[im($files)]);
+
+            // Return true
+            return true;
+
+        // Else flush failure
+        } else {
+            jflush(false,"Failed to delete cache '" . im($files) . "'.\nCode: $code\nBody: $resp");
+        }
+    }
+
+    /**
      * Get answer from AI model on a given prompt
      *
      * @param string $prompt
      * @param array $files
      * @return int|mixed
      */
-    public function cache(string $prompt, array $files = []) {
+    public function cache(array $files) {
 
         // Prompt content parts
         $parts = [];
 
-        // Upload (if needed) and append files
+        // Upload (if needed) and append files as content parts
         foreach ($files as $file) {
             $uploaded = $this->uploadIfNeed($file);
             $parts []= ['file_data' => ['mime_type' => $uploaded->mimeType, 'file_uri' => $uploaded->uri]];
@@ -311,6 +422,8 @@ class Gemini {
             CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POSTFIELDS => json_encode([
+                'model' => "models/$this->model",
+                'display_name' => im($files),
                 'contents' => [[
                     'parts' => $parts,
                     'role' => 'user'
@@ -320,8 +433,10 @@ class Gemini {
                         [
                             'text' => file_get_contents('data/prompt/cache-system.md')
                         ]
-                    ]
-                ]
+                    ],
+                    'role' => 'system'
+                ],
+                //'ttl' => 300 // Time to live = 1 hour by default
             ])
         ]);
 
@@ -344,89 +459,12 @@ class Gemini {
         }
 
         // If no text at the expected depth - flush as is
-        if (!$resp = $json['candidates'][0]['content']['parts'][0]['text'] ?? 0) {
-            jtextarea(false, json_encode($json, JSON_PRETTY_PRINT));
+        if (!$resp = $json['name'] ?? 0) {
+            jflush(false, json_encode($json, JSON_PRETTY_PRINT));
         }
 
         // Return response
         return $resp;
-    }
-
-    public function deleteCached(string $file) {
-        if (!$path = $this->cached($file)->name) return;
-        $ch = curl_init("$this->baseUrl/v1beta/$path?key=$this->key");
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) jflush(false, "cURL Error: " . curl_error($ch));
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        if ($httpCode === 200) {
-            return true;
-        } else {
-            jflush(false,"Failed to delete cached '$name'.\n$httpCode: $response");
-        }
-    }
-
-    public function cached(string $filesSequence = null) {
-
-        if (!$this->cached) {
-            curl_setopt_array($ch = curl_init(), [
-                CURLOPT_URL => "$this->baseUrl/v1beta/cachedContents?key=$this->key",
-                CURLOPT_RETURNTRANSFER => true,
-            ]);
-            $resp = curl_exec($ch);
-            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            //
-            if ($code !== 200) {
-                jflush(false, "Cache list retrieval failed with HTTP code: $code.\nResponse:\n$resp\n");
-            }
-
-            // Parse file info JSON
-            $json = json_decode($resp);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                jflush(false, "Failed to parse cache list JSON: " . json_last_error_msg() . "\nResponse:\n$resp\n");
-            }
-
-            //
-            if (!property_exists($json, 'cachedContents')) {
-                return null;
-            }
-
-            $names = array_column($json->cachedContents, 'displayName');
-            $this->cached = array_combine($names, $json->cachedContents);
-        }
-
-        //
-        return $file
-            ? $this->cached[basename($file)] ?? null
-            : $this->cached;
-    }
-
-    public function cacheIfNeed(array $files) {
-
-        // If file was already uploaded
-        if ($cached = $this->cached($files)) {
-
-            // Get timestamps
-            $uploadedAt = date('Y-m-d H:i:s', strtotime($uploaded->createTime));
-            foreach ($files as $file) {
-                $modifiedAt []= date('Y-m-d H:i:s', filemtime("data/prompt/$file"));
-            }
-            $modifiedAt = max($modifiedAt);
-
-            // If uploaded file is outdated
-            if ($modifiedAt > $uploadedAt) {
-                $this->deleteCached($file);
-            }
-        }
-
-        // If uploaded file is still there - return it, else re-upload
-        return $this->cached[im($files)] ?? $this->cache($files);
-
-        return $this->cached($file) ?? $this->cache($file);
     }
 
     public function cache1($file) {
