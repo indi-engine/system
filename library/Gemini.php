@@ -351,10 +351,22 @@ class Gemini {
             jflush(false, "Caches list not json-decodable: " . json_last_error_msg() . "\nResponse:\n$resp\n");
         }
 
-        // Return array of [cache displayName => stdClass info object] pairs
-        return property_exists($json, 'cachedContents')
-            ? array_combine(array_column($json->cachedContents, 'displayName'), $json->cachedContents)
-            : [];
+        // Prepare array of [cache displayName => stdClass info object] pairs
+        if (property_exists($json, 'cachedContents')) {
+
+            // Unset caches from other models
+            foreach ($json->cachedContents as $idx => $cache) {
+                if ($cache->model !== "models/$this->model") {
+                    unset ($json->cachedContents[$idx]);
+                }
+            }
+
+            // Prepare and return pairs
+            return array_combine(array_column($json->cachedContents, 'displayName'), $json->cachedContents);
+        }
+
+        // Return empty array
+        return [];
     }
 
     /**
@@ -421,7 +433,7 @@ class Gemini {
             CURLOPT_TIMEOUT => 300,
             CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POSTFIELDS => json_encode([
+            CURLOPT_POSTFIELDS => json_encode($data = [
                 'model' => "models/$this->model",
                 'display_name' => im($files),
                 'contents' => [[
@@ -431,7 +443,7 @@ class Gemini {
                 'system_instruction' => [
                     'parts' => [
                         [
-                            'text' => file_get_contents('data/prompt/cache-system.md')
+                            'text' => '',//file_get_contents('data/prompt/cache-system.md')
                         ]
                     ],
                     'role' => 'system'

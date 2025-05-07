@@ -969,7 +969,7 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
 
         // Call scratch() or improve() method depending of purpose
         if ($a['purpose'] === 'scratch') {
-            ai()->scratch($a['prompt'], $a['model'], false);
+            ai()->scratch($a['prompt'], $a['model']);
         } else {
             ai()->improve($a['prompt'], $a['model']);
         }

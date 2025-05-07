@@ -166,7 +166,7 @@ class Indi_Ai {
         $files = [
             "Indi Engine - docs.pdf",
             "Indi Engine - data-structures.md",
-            "Indi Engine - data-views.md"
+            //"Indi Engine - data-views.md"
         ];
 
         // Generate response and write it to file
