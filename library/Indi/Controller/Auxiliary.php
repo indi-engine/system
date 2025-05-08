@@ -172,9 +172,9 @@ class Indi_Controller_Auxiliary extends Indi_Controller {
     public function prepareAction() {
 
         // Prepare php code from response
-        $total = ai()->prepare($code = 'data/prompt/scratch.php', $text = 'data/prompt/scratch.txt');
+        ai()->prepare();
 
-        d(file_get_contents($code));
+        echo file_get_contents(ai()->code);
     }
 
     public function cleanupAction(){

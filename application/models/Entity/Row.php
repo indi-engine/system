@@ -404,7 +404,7 @@ class Entity_Row extends Indi_Db_Table_Row {
         if (is_string($value) && !Indi::rexm('int11', $value)) {
 
             //
-            if (in($columnName, 'titleFieldId,filesGroupBy,monthFieldId,spaceFields,changeLogExcept')) {
+            if (in($columnName, 'titleFieldId,filesGroupBy,monthFieldId')) {
                 if (!field($this->table, $value)) {
                     return;
                 }

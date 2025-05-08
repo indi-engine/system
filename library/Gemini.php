@@ -4,8 +4,6 @@ class Gemini {
     public $baseUrl = "https://generativelanguage.googleapis.com";
     public $key = '';
     public $model = '';
-    public $ds = [];
-    public $dv = [];
     public $uploaded = null;
     public $cached = null;
 
