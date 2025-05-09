@@ -961,6 +961,9 @@ class Admin_EntitiesController extends Indi_Controller_Admin_Exportable {
         // Prompt for app description, build type and AI model version
         $a = $_SERVER['ai'] ??= ai()->dialog($this);
 
+        // Remember the last used model
+        $_SESSION['ai']['model'] = $a['model'];
+
         // Run in background
         //$this->detach();
 
