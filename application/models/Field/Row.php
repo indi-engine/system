@@ -730,7 +730,7 @@ class Field_Row extends Indi_Db_Table_Row_Noeval {
 
         // Trim the whitespaces and replace double quotes from `defaultValue` property,
         // for proper check of defaultValue compability to mysql column type
-        $this->defaultValue = trim(str_replace('"', '&quot;', $this->defaultValue));
+        $this->defaultValue = trim($this->defaultValue);
 
         // Check if default value contains php expressions
         $php = preg_match(Indi::rex('php'), $this->defaultValue);

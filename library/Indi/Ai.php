@@ -37,7 +37,7 @@ class Indi_Ai {
      *
      * @var string
      */
-    public $debug = 'data/prompt/scratch2.txt';
+    public $debug = 'data/prompt/ds-dv/gemini-2.5-flash-preview-04-17/data-structures.old10.txt';
 
     /**
      * System fraction contents
@@ -658,6 +658,23 @@ class Indi_Ai {
      */
     public function toArray($raw) {
 
+        if (is_array($raw)) {
+            $call = $raw['call'];
+            $alias = [];
+            foreach (array_keys($raw) as $key) {
+                if (!is_numeric($key) && $key != "call") {
+                    $alias [] = $raw[$key];
+                }
+            }
+            $alias = im($alias, ', ');
+            $raw = $raw['ctor'];
+
+        } else {
+            $alias = null;
+            $call = null;
+        }
+        if (!strlen($raw)) return false;
+
         // Remove comments
         $raw = preg_replace('~//.*$~m', '', $raw);
 
@@ -674,7 +691,7 @@ class Indi_Ai {
 
         $array = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            jflush(false,"JSON parse error: " . json_last_error_msg() . ": " .  print_r($json, true));
+            jflush(false,"JSON parse error: $call($alias): " .  print_r($raw, true));
         }
         return $array;
     }
@@ -692,27 +709,35 @@ class Indi_Ai {
         $txt = preg_replace('~,\s*# .+$~m', ',', $txt);
 
         // Cut off and parse entity() calls
-        $txt = preg_replace_callback("~\bentity\('(?<table>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['entity'][ $m['table'] ] ??= [];
-            $this->custom['entity'][ $m['table'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>entity)\('(?<table>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['entity'][ $m['table'] ] ??= [];
+                $this->custom['entity'][ $m['table'] ] += $ctor;
+            }
         }, $txt);
 
         // Cut off and parse field() calls
-        $txt = preg_replace_callback("~\bfield\('(?<table>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['field'][ $m['table'] ][ $m['field'] ] ??= [];
-            $this->custom['field'][ $m['table'] ][ $m['field'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>field)\('(?<table>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['field'][$m['table']][$m['field']] ??= [];
+                $this->custom['field'][$m['table']][$m['field']] += $ctor;
+            }
         }, $txt);
 
         // Cut off and parse enumset() calls
-        $txt = preg_replace_callback("~\benumset\('(?<table>.+?)',\s*'(?<field>.+?)',\s*'(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['enumset'][ $m['table'] ][ $m['field'] ][ $m['alias'] ] ??= [];
-            $this->custom['enumset'][ $m['table'] ][ $m['field'] ][ $m['alias'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>enumset)\('(?<table>.+?)',\s*'(?<field>.+?)',\s*'(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['enumset'][$m['table']][$m['field']][$m['alias']] ??= [];
+                $this->custom['enumset'][$m['table']][$m['field']][$m['alias']] += $ctor;
+            }
         }, $txt);
 
         // Cut off and parse resize() calls
-        $txt = preg_replace_callback("~\bresize\('(?<table>.+?)',\s*'(?<field>.+?)',\s*'(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['resize'][ $m['table'] ][ $m['field'] ][ $m['alias'] ] ??= [];
-            $this->custom['resize'][ $m['table'] ][ $m['field'] ][ $m['alias'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>resize\('(?<table>.+?)',\s*'(?<field>.+?)',\s*'(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['resize'][$m['table']][$m['field']][$m['alias']] ??= [];
+                $this->custom['resize'][$m['table']][$m['field']][$m['alias']] += $ctor;
+            }
         }, $txt);
 
         // Cut off and parse param() calls
@@ -721,39 +746,51 @@ class Indi_Ai {
         }, $txt);
 
         // Cut off and parse role() calls
-        $txt = preg_replace_callback("~\brole\('(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['role'][ $m['alias'] ] ??= [];
-            $this->custom['role'][ $m['alias'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>role)\('(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['role'][$m['alias']] ??= [];
+                $this->custom['role'][$m['alias']] += $ctor;
+            }
         }, $txt);
 
         // Cut off and parse section() calls
         $txt = preg_replace_callback("~\bsection\('(?<alias>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['section'][ $m['alias'] ] ??= [];
-            $this->custom['section'][ $m['alias'] ] += $this->toArray($m['ctor']);
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['section'][$m['alias']] ??= [];
+                $this->custom['section'][$m['alias']] += $ctor;
+            }
         }, $txt);
 
         // Cut off an parse section2action() calls
         $txt = preg_replace_callback("~\bsection2action\('(?<section>.+?)',\s*'(?<action>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['section2action'][ $m['section'] ][ $m['action'] ] ??= [];
-            $this->custom['section2action'][ $m['section'] ][ $m['action'] ] += $this->toArray($m['ctor']);
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['section2action'][$m['section']][$m['action']] ??= [];
+                $this->custom['section2action'][$m['section']][$m['action']] += $ctor;
+            }
         }, $txt);
 
         // Cut off an parse grid() calls
         $txt = preg_replace_callback("~\bgrid\('(?<section>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>.+?)\);~s", function($m) {
-            $this->custom['grid'][ $m['section'] ][ $m['field'] ] ??= [];
-            $this->custom['grid'][ $m['section'] ][ $m['field'] ] += $this->toArray($m['ctor']);
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['grid'][$m['section']][$m['field']] ??= [];
+                $this->custom['grid'][$m['section']][$m['field']] += $ctor;
+            }
         }, $txt);
 
         // Cut off an parse filter() calls
-        $txt = preg_replace_callback("~\bfilter\('(?<section>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>.+?)\);~s", function($m) {
-            $this->custom['filter'][ $m['section'] ][ $m['field'] ] ??= [];
-            $this->custom['filter'][ $m['section'] ][ $m['field'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\bfilter\('(?<section>.+?)',\s*'(?<field>.+?)'\s*(?:,\s*(?<ctor>.+?))?\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['filter'][$m['section']][$m['field']] ??= [];
+                $this->custom['filter'][$m['section']][$m['field']] += $ctor;
+            }
         }, $txt);
 
         // Cut off an parse alteredField() calls
-        $txt = preg_replace_callback("~\balteredField\('(?<section>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
-            $this->custom['alteredField'][ $m['section'] ][ $m['field'] ] ??= [];
-            $this->custom['alteredField'][ $m['section'] ][ $m['field'] ] += $this->toArray($m['ctor']);
+        $txt = preg_replace_callback("~\b(?<call>alteredField)\('(?<section>.+?)',\s*'(?<field>.+?)',\s*(?<ctor>\[.+?])\);~s", function($m) {
+            if (($ctor = $this->toArray($m)) !== false) {
+                $this->custom['alteredField'][$m['section']][$m['field']] ??= [];
+                $this->custom['alteredField'][$m['section']][$m['field']] += $ctor;
+            }
         }, $txt);
 
         // Strip excessive newlines
@@ -839,7 +876,7 @@ class Indi_Ai {
 
         // Write section() calls
         foreach ($this->custom['section'] as $alias => $ctor) {
-            $this->write("section('$alias', ['title' => '{$ctor['title']}']);");
+            //$this->write("section('$alias', ['title' => '{$ctor['title']}']);");
         }
     }
 
@@ -876,17 +913,21 @@ class Indi_Ai {
 
             // Rename usages in first args
             foreach (ar('entity,field,param,resize,enumset') as $type) {
-                $this->renameKey($inuse, "c$inuse", $this->custom[$type]);
+                if (in($table, 'role,enumset')) {
+                    unset($this->custom[$type][$table]);
+                } else if ($this->custom[$type] ?? 0) {
+                    $this->renameKey($inuse, "c$inuse", $this->custom[$type]);
+                }
             }
 
             // Rename usages in fields: 'alias', 'relation', 'move',
             foreach ($this->custom['field'] as $table => &$fields) {
-                foreach ($fields as $alias => &$ctor) {
+                foreach ($fields as $alias => &$fctor) {
                     if (in($alias, "{$inuse}Id,{$inuse}Ids")) {
                         $this->renameKey($alias, "c$alias", $this->custom['field'][$table]);
                     }
-                    if ($ctor['relation'] === $inuse) $ctor['relation'] = "c$inuse";
-                    if ($ctor['move'] === "{$inuse}Id") $ctor['move'] = "c{$inuse}Id";
+                    if ($fctor['relation'] === $inuse) $fctor['relation'] = "c$inuse";
+                    if ($fctor['move'] === "{$inuse}Id") $fctor['move'] = "c{$inuse}Id";
                 }
             }
         }
@@ -948,8 +989,34 @@ class Indi_Ai {
      */
     public function renameKey($oldKey, $newKey, &$array) {
         $keys = array_keys($array);
-        foreach ($keys as &$key) if ($key === $oldKey) $key = $newKey;
-        $array = array_combine($keys, array_values($array));
+        $values = array_values($array);
+
+        // Shortcuts
+        $oldVal = $array[$oldKey] ?? null;
+        $newVal = $array[$newKey] ?? null;
+        $oldIdx = array_search($oldKey, $keys);
+        $newIdx = array_search($newKey, $keys);
+
+        // Rename old key to new key
+        $keys[$oldIdx] = $newKey;
+
+        // If new key already exists
+        if ($newIdx !== false) {
+
+            // Unset from keys to prevent duplicate keys
+            unset($keys[$newIdx]);
+
+            // If value under new key is array as the value under old key - merge thos arrays
+            if (is_array($values[$oldIdx]) && is_array($values[$newIdx])) {
+                $values[$oldIdx] += $values[$newIdx];
+            }
+
+            // Unset value previously existing under new key, as we have merged value now
+            unset($values[$newIdx]);
+        }
+
+        // Overwrite $array
+        $array = array_combine($keys, $values);
     }
 
     /**
@@ -1027,6 +1094,7 @@ class Indi_Ai {
         // If entity does not exist - unset enumset
         if (!isset($this->custom['entity'][$table])) {
             unset($this->custom['enumset'][$table][$alias]);
+            return;
         }
 
         // Convert capitalization from 2nd and further words within titles
@@ -1043,6 +1111,35 @@ class Indi_Ai {
                 'columnTypeId' => 'ENUM',
                 'defaultValue' => $alias,
             ];
+        }
+
+        // If enumset() call is not for a foreign-key field
+        if (!in($this->custom['field'][$table][$field]['storeRelationAbility'], 'one,many')) {
+
+            // Check how many foreign-key fields are using this entity
+            $using = [];
+            foreach ($this->custom['field'] as $_table => $fields) {
+                foreach ($fields as $_alias => $_ctor) {
+                    if ($_ctor['relation'] === $table) {
+                        $using [$_table] []= $_alias;
+                    }
+                }
+            }
+            if (count($using) === 1) {
+                unset ($this->custom['entity'][$table]);
+                unset ($this->custom['field'][$table]);
+                foreach($using as $_table => $fields) {
+                    foreach ($fields as $_field) {
+                        $_ctor = $this->custom['field'][$_table][$_field];
+                        $_ctor['relation'] = 'enumset';
+                        $_ctor['columnTypeId'] = $_ctor['storeRelationAbility'] == 'one' ? 'ENUM' : 'SET';
+                        $_ctor['defaultValue'] = $_ctor['storeRelationAbility'] == 'one' ? $alias : 'SET';
+                        $this->custom['field'][$_table][$_field] = $_ctor;
+                        $this->renameKey($field, $_field, $this->custom['enumset'][$table]);
+                    }
+                    $this->renameKey($table, $_table, $this->custom['enumset']);
+                }
+            }
         }
     }
 
