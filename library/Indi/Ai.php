@@ -703,6 +703,7 @@ class Indi_Ai {
 
         // Remove comments
         $raw = preg_replace('~//.*$~m', '', $raw);
+        $raw = preg_replace('~, #.*$~m', ', ', $raw);
 
         // Convert PHP-like array syntax to JSON
         $json = $raw;
@@ -720,7 +721,9 @@ class Indi_Ai {
         if (json_last_error() !== JSON_ERROR_NONE) {
 
             // Get expected props |-separared list usable in regex
-            $prop = im(array_keys($this->system['field'][$call]), '|');
+            $keys = array_keys($this->system['field'][$call]);
+            usort($keys, fn ($a, $b) => strlen($b) - strlen($a));
+            $prop = im($keys, '|');
 
             // Extract props
             $array = [];
@@ -732,6 +735,9 @@ class Indi_Ai {
                 return $m[0];
             }, $raw);
 
+            if ($call === 'entity' && $coords === "employee") {
+                //d([$raw, $prop, $array]);
+            }
             // If nothing extracted
             if (!$array) {
 
@@ -763,7 +769,7 @@ class Indi_Ai {
         $txt = preg_replace('~,\s*# .+$~m', ',', $txt);
 
         // Cut off and parse entity() calls
-        $txt = preg_replace_callback("~\b(?<call>entity)\('(?<table>.+?)',\s*(?<ctor>\[.*?])\);~s", function($m) {
+        $txt = preg_replace_callback("~\b(?<call>entity)\('(?<table>.+?)'(?:,\s*)?(?<ctor>\[.*?])?\);~s", function($m) {
             if (($ctor = $this->toArray($m)) !== false) {
                 $this->custom['entity'][ $m['table'] ] ??= [];
                 $this->custom['entity'][ $m['table'] ] += $ctor;
@@ -956,32 +962,35 @@ class Indi_Ai {
      */
     public function checkEntity($table, &$ctor) {
 
+        // Convert capitalization from 2nd and further words within titles
+        $ctor['title'] = ucfirst(strtolower($ctor['title']));
+
+        $inuse = $this->system['entity'][$table] ?? 0;
+        $snake = str_contains($table, '_');
+
         // If custom entity table name is already in use
-        if ($this->system['entity'][$table] ?? 0) {
+        if ($inuse || $snake) {
 
             // Shortcut
-            $inuse = $table;
-
-            // Convert capitalization from 2nd and further words within titles
-            $ctor['title'] = ucfirst(strtolower($ctor['title']));
+            $old = $table; $new = $inuse ? "c$old" : $this->snakeToCamel($old);
 
             // Rename usages in first args
             foreach (ar('entity,field,param,resize,enumset') as $type) {
                 if (in($table, 'role,enumset')) {
                     unset($this->custom[$type][$table]);
                 } else if ($this->custom[$type] ?? 0) {
-                    $this->renameKey($inuse, "c$inuse", $this->custom[$type]);
+                    $this->renameKey($old, $new, $this->custom[$type]);
                 }
             }
 
             // Rename usages in fields: 'alias', 'relation', 'move',
             foreach ($this->custom['field'] as $table => &$fields) {
                 foreach ($fields as $alias => &$fctor) {
-                    if (in($alias, "{$inuse}Id,{$inuse}Ids")) {
+                    if (in($alias, "{$old}Id,{$old}Ids")) {
                         $this->renameKey($alias, "c$alias", $this->custom['field'][$table]);
                     }
-                    if ($fctor['relation'] === $inuse) $fctor['relation'] = "c$inuse";
-                    if ($fctor['move'] === "{$inuse}Id") $fctor['move'] = "c{$inuse}Id";
+                    if ($fctor['relation'] === $old) $fctor['relation'] = $new;
+                    if ($fctor['move'] === "{$old}Id") $fctor['move'] = "{$new}Id";
                 }
             }
         }
@@ -996,6 +1005,9 @@ class Indi_Ai {
             if (!isset($this->system['enumset']['entity']['spaceScheme'][ $ctor['spaceScheme'] ])) {
                 unset($ctor['spaceScheme'], $ctor['spaceFields']);
             }
+
+            // Unset for now
+            unset($ctor['spaceScheme'], $ctor['spaceFields']);
         }
 
         // If spaceFields is going to be applied
@@ -1010,6 +1022,9 @@ class Indi_Ai {
             if (!$valid) {
                 unset($ctor['spaceScheme'], $ctor['spaceFields']);
             }
+
+            // Unset for now
+            unset($ctor['spaceScheme'], $ctor['spaceFields']);
         }
 
         // If changeLogToggle is going to be applied
@@ -1171,7 +1186,7 @@ class Indi_Ai {
 
         // If entity does not exist - unset enumset
         if (!isset($this->custom['entity'][$table])) {
-            unset($this->custom['enumset'][$table][$alias]);
+            unset($this->custom['enumset'][$table][$field]);
             return;
         }
 
@@ -1304,5 +1319,9 @@ class Indi_Ai {
         if ($debug && !is_file($this->resp)) {
             jflush(false, "No debug response file: $this->resp");
         }
+    }
+
+    public function snakeToCamel(string $input): string {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 }
