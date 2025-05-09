@@ -98,13 +98,22 @@ class Indi_Ai {
             $this->system['entity'][$entity->table] = true;
         }
 
+        // Collect fields per entity
+        foreach(db()->query("
+            SELECT `t`.`table`, `f`.`alias` AS `field`
+            FROM `entity` `t`, `field` `f`
+            WHERE `f`.`entityId` = `t`.`id` AND `f`.`entry` = 0 AND IFNULL(`columnTypeId`, 0) != 0
+            ORDER BY `f`.`move`
+        ")->all() as $e)
+            $this->system['field'][ $e['table'] ][ $e['field'] ] = true;
+
         // Collect enumerated values per field per entity, if any
         foreach(db()->query("
             SELECT `t`.`table`, `f`.`alias` AS `field`, `e`.`alias`
             FROM `entity` `t`, `field` `f`, `enumset` `e`
             WHERE `e`.`fieldId` = `f`.`id` AND `f`.`entityId` = `t`.`id` AND `f`.`entry` = 0
         ")->all() as $e)
-            $this->system['enumset'][ $e['table'] ][ $e['field'] ][ $e['alias']] = true;
+            $this->system['enumset'][ $e['table'] ][ $e['field'] ][ $e['alias'] ] = true;
 
         // Load aliases system sections to be able to prevent conflicts
         foreach(m('section')->all('`fraction` = "system"') as $section) {
@@ -675,19 +684,19 @@ class Indi_Ai {
      */
     public function toArray($raw) {
 
+        $coord = [];
         if (is_array($raw)) {
             $call = $raw['call'];
-            $coord = [];
             foreach (array_keys($raw) as $key) {
                 if (!is_numeric($key) && $key != "call" && $key != "ctor") {
                     $coord []= $raw[$key];
                 }
             }
-            $coord = im($coord, "', '");
+            $coords = im($coord, "', '");
             $raw = $raw['ctor'];
 
         } else {
-            $coord = null;
+            $coords = null;
             $call = null;
         }
         if (!strlen($raw)) return false;
@@ -705,10 +714,38 @@ class Indi_Ai {
         $json = preg_replace("/,\s*}/", "}", $json);                // Remove trailing comma before }
         $json = preg_replace("~^\[~", "{", $json);                // Remove trailing comma before }
         $json = preg_replace("~\]$~", "}", $json);                // Remove trailing comma before }
-
         $array = json_decode($json, true);
+
+        // If json-decoding was not successful
         if (json_last_error() !== JSON_ERROR_NONE) {
-            jflush(false,"JSON parse error: $call($alias): " .  print_r($raw, true));
+
+            // Get expected props |-separared list usable in regex
+            $prop = im(array_keys($this->system['field'][$call]), '|');
+
+            // Extract props
+            $array = [];
+            $raw = preg_replace_callback("~'?\b(?<prop>$prop)(?<val>.+?)(?:,\s+|$)~s", function($m) use (&$array) {
+                $m['val'] = trim($m['val'], " '");
+                $m['val'] = preg_replace('~^=>?~', '', $m['val']);
+                $m['val'] = trim($m['val'], " ']\n");
+                $array[ $m['prop'] ] = $m['val'];
+                return $m[0];
+            }, $raw);
+
+            // If nothing extracted
+            if (!$array) {
+
+                // Prepare message
+                $msg = "JSON parse error: $call('$coords', $raw);";
+
+                // Flush failure
+                if (apache_request_headers()['Indi-Auth']) {
+                    jtextarea(false, $msg);
+                } else {
+                    echo $msg;
+                    exit(1);
+                }
+            }
         }
         return $array;
     }
