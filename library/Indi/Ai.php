@@ -1219,13 +1219,22 @@ class Indi_Ai {
 
     public function prepareDataSections() {
 
-        // Define sections from parent ones to child ones
+        $this->step = 1;
+
+        // Step1: Define sections with their actions - from parent ones to child ones
         foreach ($this->level1 as $table) {
-            $this->defineSection($table);
+            $this->defineSection($table, '');
+        }
+
+        $this->step = 2;
+
+        // Step2: Define grid columns, filters and altered fields
+        foreach ($this->level1 as $table) {
+            $this->defineSection($table, '');
         }
     }
 
-    public function defineSection($table, string $sectionId = '') {
+    public function defineSection(string $table, string $sectionId = '') {
 
         // Get section alias
         $section = $this->pluralize($table);
@@ -1264,39 +1273,95 @@ class Indi_Ai {
         // Push to sections definitions
         $this->custom['section'][$section] = $ctor;
 
-        // Foreach default actions
-        foreach (ar('index,form,save,delete') as $action) {
+        //
+        if ($this->step === 1) {
 
-            // Add section2action() call
-            $this->custom['section2action'][$section][$action] = [
-                'roleIds' => 'dev,admin'
-            ];
+            // Add default actions
+            foreach (ar('index,form,save,delete') as $action) {
+
+                // Add section2action() call
+                $this->custom['section2action'][$section][$action] = [
+                    'roleIds' => 'dev,admin'
+                ];
+            }
+
+            // Add default filters
+            if (!$parentSectionEntities) {
+                foreach ($this->custom['field'][$table] as $field => $ctor) {
+                    if (($ctor['relation'] ?? 0)
+                        && !in($ctor['relation'], $parentSectionEntities)
+                        && $field !== $this->custom['entity'][$table]['titleFieldId']
+                    ) {
+                        $this->custom['filter'][$section][$field] = [];
+                    }
+                }
+            }
         }
 
-        // Add column for each field
-        foreach ($this->custom['field'][$table] as $field => $ctor) {
-            if ($ctor['storeRelationAbility'] !== 'none') {
-                if (!in($ctor['relation'], $parentSectionEntities)) {
+        if ($this->step === 2) {
+
+            // Add default columns
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if ($ctor['relation'] ?? 0) {
+                    if (!in($ref = $ctor['relation'], $parentSectionEntities)) {
+                        $this->custom['grid'][$section][$field] = [];
+                    }
+                } else {
                     $this->custom['grid'][$section][$field] = [];
                 }
-            } else {
-                $this->custom['grid'][$section][$field] = [];
             }
-        }
 
-        // Add filters for each foreign-key field
-        if (!$parentSectionEntities) {
+            // Add default altered fields
             foreach ($this->custom['field'][$table] as $field => $ctor) {
-                if (($ctor['relation'] ?? 0)
-                    && !in($ctor['relation'], $parentSectionEntities)
-                    && $field !== $this->custom['entity'][$table]['titleFieldId']
-                ) {
-                    //$this->custom['filter'][$section][$field] = [];
+
+                // If it's not a foreign-key field, or is a enumset one - skip
+                if (!isset($ctor['relation']) || $ctor['relation'] === 'enumset') {
+                    continue;
+                }
+
+                // Altered field's config will be added here, if need
+                $altered = [];
+
+                // If current foreign-key field is pointing to a record from parent section
+                if (in($ctor['relation'], $parentSectionEntities)) {
+
+                    // Make it readonly to prevent re-attach to another parent
+                    $altered += ['mode' => 'readonly'];
+                }
+
+                // Get jumpable sections, i.e. sections using $ctor['relation'] as a data-source entity
+                $jump = array_filter($this->custom['section'], fn($jump) => $ctor['relation'] === $jump['entityId']);
+
+                // Foreach jumpable section
+                foreach ($jump as $jumpSection => $jumpSectionCtor) {
+
+                    // If form-action is accessible for at least single role
+                    if ($roleIds = $this->custom['section2action'][$jumpSection]['form']['roleIds'] ?? 0) {
+
+                        // Make field jumpable
+                        $altered += [
+                            'jumpSectionId' => $jumpSection,
+                            'jumpSectionActionId' => 'form'
+                        ];
+
+                        // todo: respect accessRoles and accessExcept
+
+                        // If data-source entitu of a jumpable section - is a dictionary-entity -
+                        // enable jumping to new dictionary record creation
+                        if ($this->isDict[$ctor['relation']]) {
+                            $altered['jumpCreate'] = 'y';
+                        }
+                    }
+                }
+
+                // If we have some alterings for the field - apply
+                if ($altered) {
+                    $this->custom['alteredField'][$section][$field] = $altered;
                 }
             }
         }
 
-        //
+        // Run throug child sections
         foreach ($this->childs[$table] as $child) {
             $this->defineSection($child, $section);
         }
@@ -1370,6 +1435,13 @@ class Indi_Ai {
         foreach ($this->custom['filter'] as $section => $filters) {
             foreach ($filters as $field => $ctor) {
                 $this->write("filter('$section', '$field', " . $this->ctor($ctor) . ");");
+            }
+        }
+
+        // Write alteredField() calls
+        foreach ($this->custom['alteredField'] as $section => $fields) {
+            foreach ($fields as $field => $ctor) {
+                $this->write("alteredField('$section', '$field', " . $this->ctor($ctor) . ");");
             }
         }
     }
