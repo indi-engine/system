@@ -79,6 +79,21 @@ class Indi_Ai {
     /**
      * @var array
      */
+    public $parent = [];
+
+    /**
+     * @var array
+     */
+    public $childs = [];
+
+    /**
+     * @var array
+     */
+    public $level1 = [];
+
+    /**
+     * @var array
+     */
     public $elements = null;
 
     /**
@@ -920,6 +935,9 @@ class Indi_Ai {
         // Prepare dicts
         $this->prepareDicts();
 
+        // Prepare dicts
+        $this->prepareDatas();
+
         // Prepare sections
         $this->prepareSections();
     }
@@ -997,6 +1015,21 @@ class Indi_Ai {
             if ($isDict) $this->isDict[$table] = $table;
         }
 
+        // Exclude entities from dictionaries if having foreign-key fields pointing to non-dictionaries
+        $dictQty = count($this->isDict);
+        for ($i = 0; $i < $dictQty; $i++) {
+            foreach ($this->isDict as $table) {
+                foreach ($this->custom['field'][$table] as $alias => $ctor) {
+                    if (isset($ctor['relation']) && $ctor['relation'] && $ctor['relation'] !== 'enumset') {
+                        if (!isset($this->isDict[$ctor['relation']])) {
+                            unset($this->isDict[$table]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         // Foreach dictionary-entity
         foreach ($this->isDict as $table) {
 
@@ -1008,12 +1041,265 @@ class Indi_Ai {
         }
     }
 
+    /**
+     *
+     */
+    public function prepareDatas() {
+
+        foreach ($this->custom['entity'] as $table => $ctor) {
+            if (!isset($this->isDict[$table])) {
+                if (!isset($this->isRole[$table])) {
+                    $this->isData[$table] = $table;
+                } else {
+
+                }
+            }
+        }
+
+        //
+        foreach ($this->isData as $table) {
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if ($ref = $ctor['relation'] ?? 0) {
+                    if ($ref !== 'enumset') {
+                        if ($this->isData[$ref]) {
+                            $this->parent[$table] = $ref;
+                            $this->childs[$ref] []= $table;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        //
+        foreach ($this->isData as $table) {
+            if (!isset($this->parent[$table])) {
+                $this->level1 []= $table;
+            }
+        }
+    }
 
     /**
      *
      */
     public function prepareSections() {
 
+        // Prepare dictionary-sections
+        $this->prepareDictSections();
+
+        // Prepare role-sections
+        $this->prepareRoleSections();
+
+        // Prepare data-sections
+        $this->prepareDataSections();
+    }
+
+    public function prepareDictSections() {
+
+        // Foreach dictionary-entity
+        foreach ($this->isDict as $table) {
+
+            // Get section alias
+            $section = $this->pluralize($table);
+
+            // Prepare ctor
+            $ctor = [
+                'title' => $this->pluralize($this->custom['entity'][$table]['title']),
+                'sectionId' => 'dict',
+                'entityId' => $table,
+            ];
+
+            // Append default sort
+            if ($titleFieldId = $this->custom['entity'][$table]['titleFieldId'] ?? '') {
+                $ctor['defaultSortField'] = $titleFieldId;
+            }
+
+            // Push to sections definitions
+            $this->custom['section'][$section] = $ctor;
+
+            // Foreach default actions
+            foreach (ar('index,form,save,delete,toggle') as $action) {
+
+                // Roles for which all actions are always accessible
+                $roles = ar('dev,admin');
+
+                // For other roles
+                foreach ($this->custom['role'] as $role => $ctor) {
+
+                    // If it's a role having no separate entity of users
+                    if ($ctor['entityId'] === 'admin') {
+
+                        // Make save-action to be also accessible
+                        if ($action === 'save') {
+                            $roles []= $role;
+                        }
+
+                        // Else
+                    } else {
+
+                        // Make readonly-actions to be only accessible
+                        if (in($action, 'index,form')) {
+                            $roles []= $role;
+                        }
+                    }
+                }
+
+                // Add section2action() call
+                $this->custom['section2action'][$section][$action] = [
+                    'roleIds' => im($roles)
+                ];
+            }
+
+            // Add column for each field
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                $this->custom['grid'][$section][$field] = [];
+            }
+
+            // Add filters for each foreign-key field
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if ($ctor['relation'] ?? 0) {
+                    $this->custom['filter'][$section][$field] = [];
+                }
+            }
+        }
+
+        //
+        $this->custom['section']['dict'] = ['move' => 'usr'];
+    }
+
+    public function prepareRoleSections() {
+
+        // Foreach role-entity
+        foreach ($this->isRole as $table) {
+
+            // Get section alias
+            $section = $this->pluralize($table);
+
+            // Prepare ctor
+            $ctor = [
+                'title' => $this->pluralize($this->custom['entity'][$table]['title']),
+                'sectionId' => 'usr',
+                'entityId' => $table,
+            ];
+
+            // Append default sort
+            if ($titleFieldId = $this->custom['entity'][$table]['titleFieldId'] ?? '') {
+                $ctor['defaultSortField'] = $titleFieldId;
+            }
+
+            // Push to sections definitions
+            $this->custom['section'][$section] = $ctor;
+
+            // Foreach default actions
+            foreach (ar('index,form,save,delete,toggle,login') as $action) {
+
+                // Add section2action() call
+                $this->custom['section2action'][$section][$action] = [
+                    'roleIds' => 'dev,admin'
+                ];
+            }
+
+            // Add column for each field
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if ($field === 'password') {
+                    $this->custom['grid'][$section][$field] = ['icon' => 'resources/images/icons/square-key-blue.png'];
+                } else {
+                    $this->custom['grid'][$section][$field] = [];
+                }
+            }
+
+            // Add filters for each foreign-key field
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if ($ctor['relation'] ?? 0) {
+                    $this->custom['filter'][$section][$field] = [];
+                }
+            }
+        }
+    }
+
+    public function prepareDataSections() {
+
+        // Define sections from parent ones to child ones
+        foreach ($this->level1 as $table) {
+            $this->defineSection($table);
+        }
+    }
+
+    public function defineSection($table, string $sectionId = '') {
+
+        // Get section alias
+        $section = $this->pluralize($table);
+
+        // Get section title
+        $title = $this->custom['entity'][$table]['title'];
+
+        //
+        $parentSectionEntities = [];
+
+        //
+        if ($sectionId) {
+            $parentId = $sectionId;
+            while ($parent = $this->custom['section'][$parentId]['entityId']) {
+                $parentSectionEntities []= $parent;
+                $parentId = $this->custom['section'][$parentId]['sectionId'];
+                $title = preg_replace("~^" . preg_quote($parent, '~') ."\s*~i", '', $title);
+            }
+        }
+
+        // Prepare ctor
+        $ctor = [
+            'title' => $this->pluralize(ucfirst($title)),
+            'sectionId' => $sectionId ?: 'db',
+            'entityId' => $table,
+        ];
+
+        // Append default sort
+        if ($monthFieldId = $this->custom['entity'][$table]['monthFieldId'] ?? '') {
+            $ctor['defaultSortField'] = $monthFieldId;
+            $ctor['defaultSortDirection'] = $parents ? 'ASC' : 'DESC';
+        } else if ($titleFieldId = $this->custom['entity'][$table]['titleFieldId'] ?? '') {
+            $ctor['defaultSortField'] = $titleFieldId;
+        }
+
+        // Push to sections definitions
+        $this->custom['section'][$section] = $ctor;
+
+        // Foreach default actions
+        foreach (ar('index,form,save,delete') as $action) {
+
+            // Add section2action() call
+            $this->custom['section2action'][$section][$action] = [
+                'roleIds' => 'dev,admin'
+            ];
+        }
+
+        // Add column for each field
+        foreach ($this->custom['field'][$table] as $field => $ctor) {
+            if ($ctor['storeRelationAbility'] !== 'none') {
+                if (!in($ctor['relation'], $parentSectionEntities)) {
+                    $this->custom['grid'][$section][$field] = [];
+                }
+            } else {
+                $this->custom['grid'][$section][$field] = [];
+            }
+        }
+
+        // Add filters for each foreign-key field
+        if (!$parentSectionEntities) {
+            foreach ($this->custom['field'][$table] as $field => $ctor) {
+                if (($ctor['relation'] ?? 0)
+                    && !in($ctor['relation'], $parentSectionEntities)
+                    && $field !== $this->custom['entity'][$table]['titleFieldId']
+                ) {
+                    //$this->custom['filter'][$section][$field] = [];
+                }
+            }
+        }
+
+        //
+        foreach ($this->childs[$table] as $child) {
+            $this->defineSection($child, $section);
+        }
     }
 
     public function writeParsedCalls() {
@@ -1022,7 +1308,7 @@ class Indi_Ai {
         $this->write("<?php\n", 0);
 
         // Write entity() calls
-        foreach ($this->custom['entity'] as $table => $ctor) {
+        /*foreach ($this->custom['entity'] as $table => $ctor) {
             $this->write("entity('$table', ['title' => '{$ctor['title']}']);");
         }
 
@@ -1059,11 +1345,32 @@ class Indi_Ai {
         // Write role() calls
         foreach ($this->custom['role'] as $alias => $ctor) {
             $this->write("role('$alias', " . $this->ctor($ctor) . ");");
-        }
+        }*/
 
         // Write section() calls
         foreach ($this->custom['section'] as $alias => $ctor) {
-            //$this->write("section('$alias', ['title' => '{$ctor['title']}']);");
+            $this->write("section('$alias', " . $this->ctor($ctor) . ");");
+        }
+
+        // Write section2action() calls
+        foreach ($this->custom['section2action'] as $section => $actions) {
+            foreach ($actions as $action => $ctor) {
+                $this->write("section2action('$section', '$action', " . $this->ctor($ctor) . ");");
+            }
+        }
+
+        // Write grid() calls
+        foreach ($this->custom['grid'] as $section => $columns) {
+            foreach ($columns as $field => $ctor) {
+                $this->write("grid('$section', '$field', " . $this->ctor($ctor) . ");");
+            }
+        }
+
+        // Write filter() calls
+        foreach ($this->custom['filter'] as $section => $filters) {
+            foreach ($filters as $field => $ctor) {
+                $this->write("filter('$section', '$field', " . $this->ctor($ctor) . ");");
+            }
         }
     }
 
@@ -1452,5 +1759,38 @@ class Indi_Ai {
 
     public function snakeToCamel(string $input): string {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
+    }
+
+    public function pluralize(string $word): string {
+
+        //
+        $irregular = [
+            'person' => 'people',
+            'man' => 'men',
+            'woman' => 'women',
+            'child' => 'children',
+            'tooth' => 'teeth',
+            'foot' => 'feet',
+            'mouse' => 'mice',
+            'goose' => 'geese',
+        ];
+
+        // Irregular words
+        if (isset($irregular[$word])) {
+            return $irregular[$word];
+        }
+
+        // Words ending in 'y' after a consonant: party → parties
+        if (preg_match('/[^aeiou]y$/i', $word)) {
+            return substr($word, 0, -1) . 'ies';
+        }
+
+        // Words ending in s, x, z, ch, sh: bus → buses, box → boxes
+        if (preg_match('/(s|x|z|ch|sh)$/i', $word)) {
+            return $word . 'es';
+        }
+
+        // Default case: just add 's'
+        return $word . 's';
     }
 }
