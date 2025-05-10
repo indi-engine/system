@@ -64,6 +64,11 @@ class Indi_Ai {
     /**
      * @var array
      */
+    public $isRole = [];
+
+    /**
+     * @var array
+     */
     public $elements = null;
 
     /**
@@ -77,6 +82,57 @@ class Indi_Ai {
     public $func = [
         'entity', 'field', 'enumset', 'param', 'resize', 'consider', 'section', 'inQtySum', 'sqlIndex',
         'section', 'section2action', 'grid', 'filter', 'alteredField'
+    ];
+
+    /**
+     * @var string[][]
+     */
+    public $user = [
+        'field' => [
+            'title' => [
+                'title' => 'Title',
+                'mode' => 'required',
+                'elementId' => 'string',
+                'columnTypeId' => 'VARCHAR(255)',
+                'move' => '',
+            ],
+            'email' => [
+                'title' => 'Login',
+                'mode' => 'required',
+                'elementId' => 'string',
+                'columnTypeId' => 'VARCHAR(255)',
+                'move' => 'title',
+            ],
+            'password' => [
+                'title' => 'Password',
+                'mode' => 'required',
+                'elementId' => 'string',
+                'columnTypeId' => 'VARCHAR(255)',
+                'move' => 'email',
+            ],
+            'phone' => [
+                'title' => 'Phone',
+                'elementId' => 'string',
+                'columnTypeId' => 'VARCHAR(255)',
+                'move' => 'password',
+            ],
+            'toggle' => [
+                'title' => 'App access',
+                'storeRelationAbility' => 'one',
+                'relation' => 'enumset',
+                'onDelete' => 'RESTRICT',
+                'elementId' => 'combo',
+                'columnTypeId' => 'ENUM',
+                'defaultValue' => 'y',
+                'move' => 'phone',
+            ]
+        ],
+        'enumset' => [
+            'toggle' => [
+                'y' => ['title' => 'Turned on', 'move' => '', 'boxColor' => '120#00FF00'],
+                'n' => ['title' => 'Turned off', 'move' => 'y', 'boxColor' => '000#FF0000'],
+            ]
+        ]
     ];
 
     /**
@@ -883,6 +939,47 @@ class Indi_Ai {
             }
         }
 
+        // Detect roles
+        $this->prepareRoles();
+    }
+
+    public function prepareRoles() {
+
+        // Collect entities having password-field
+        foreach ($this->custom['field'] as $table => $fields)
+            foreach ($fields as $alias => &$ctor)
+                if ($alias === 'password')
+                    $this->isRole[$table] = $table;
+
+        // Foreach entity having password-field
+        foreach ($this->isRole as $table) {
+
+            // If entity have login-field - rename to email
+            if ($this->custom['field'][$table]['login']) {
+                $this->renameKey('login', 'email', $this->custom['field'][$table]);
+            }
+
+            // Append fields that are minimum required for auth compatibility
+            $this->custom['field'][$table] = [...$this->custom['field'][$table], ...$this->user['field']];
+
+            // Append enumset for toggle-field
+            $this->custom['enumset'][$table]['toggle'] = $this->user['enumset']['toggle'];
+
+            // Try to find role() call for this entity
+            $found = false;
+            foreach ($this->custom['role'] as $alias => $ctor)
+                if (in($table, "$alias,{$ctor['entityId']}"))
+                    $found = true;
+
+            // If not found - add role() call
+            if (!$found) {
+                $this->custom['role'][$table] = [
+                    'title' => $this->custom['entity'][$table]['title'],
+                    'entityId' => $table,
+                ];
+            }
+        }
+
         // Check roles
         foreach ($this->custom['role'] as $alias => &$ctor) {
             $this->checkRole($alias, $ctor);
@@ -1248,9 +1345,11 @@ class Indi_Ai {
         // Convert capitalization from 2nd and further words within titles
         $ctor['title'] = ucfirst(strtolower($ctor['title']));
 
-        // If entity of users, specified for that role - does not exist - use 'admin' as a fallback
+        // If entity of users, specified for that role - does not exist
         if (!isset($this->custom['entity'][$ctor['entityId']])) {
-            $ctor['entityId'] = 'admin';
+
+            // If entity existing having same table name as role alias - use it, else use 'admin' as a fallback
+            $ctor['entityId'] = isset($this->custom['entity'][$alias]) ? $alias : 'admin';
         }
     }
 
@@ -1289,7 +1388,7 @@ class Indi_Ai {
         if (!$model) {
 
             // Assume we're debugging
-            ini()->gemini->debug = true;
+            if (!ini()->gemini->debug) ini()->gemini->debug = true;
 
             // Get last used model
             $model = file_get_contents($this->lastUsedModel);
