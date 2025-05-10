@@ -69,6 +69,16 @@ class Indi_Ai {
     /**
      * @var array
      */
+    public $isDict = [];
+
+    /**
+     * @var array
+     */
+    public $isData = [];
+
+    /**
+     * @var array
+     */
     public $elements = null;
 
     /**
@@ -87,52 +97,73 @@ class Indi_Ai {
     /**
      * @var string[][]
      */
-    public $user = [
-        'field' => [
-            'title' => [
-                'title' => 'Title',
-                'mode' => 'required',
-                'elementId' => 'string',
-                'columnTypeId' => 'VARCHAR(255)',
-                'move' => '',
+    public $meta = [
+        'role' => [
+            'field' => [
+                'title' => [
+                    'title' => 'Title',
+                    'mode' => 'required',
+                    'elementId' => 'string',
+                    'columnTypeId' => 'VARCHAR(255)',
+                    'move' => '',
+                ],
+                'email' => [
+                    'title' => 'Login',
+                    'mode' => 'required',
+                    'elementId' => 'string',
+                    'columnTypeId' => 'VARCHAR(255)',
+                    'move' => 'title',
+                ],
+                'password' => [
+                    'title' => 'Password',
+                    'mode' => 'required',
+                    'elementId' => 'string',
+                    'columnTypeId' => 'VARCHAR(255)',
+                    'move' => 'email',
+                ],
+                'phone' => [
+                    'title' => 'Phone',
+                    'elementId' => 'string',
+                    'columnTypeId' => 'VARCHAR(255)',
+                    'move' => 'password',
+                ],
+                'toggle' => [
+                    'title' => 'App access',
+                    'storeRelationAbility' => 'one',
+                    'relation' => 'enumset',
+                    'onDelete' => 'RESTRICT',
+                    'elementId' => 'combo',
+                    'columnTypeId' => 'ENUM',
+                    'defaultValue' => 'y',
+                    'move' => 'phone',
+                ]
             ],
-            'email' => [
-                'title' => 'Login',
-                'mode' => 'required',
-                'elementId' => 'string',
-                'columnTypeId' => 'VARCHAR(255)',
-                'move' => 'title',
-            ],
-            'password' => [
-                'title' => 'Password',
-                'mode' => 'required',
-                'elementId' => 'string',
-                'columnTypeId' => 'VARCHAR(255)',
-                'move' => 'email',
-            ],
-            'phone' => [
-                'title' => 'Phone',
-                'elementId' => 'string',
-                'columnTypeId' => 'VARCHAR(255)',
-                'move' => 'password',
-            ],
-            'toggle' => [
-                'title' => 'App access',
-                'storeRelationAbility' => 'one',
-                'relation' => 'enumset',
-                'onDelete' => 'RESTRICT',
-                'elementId' => 'combo',
-                'columnTypeId' => 'ENUM',
-                'defaultValue' => 'y',
-                'move' => 'phone',
+            'enumset' => [
+                'toggle' => [
+                    'y' => ['title' => 'Turned on', 'move' => '', 'boxColor' => '120#00FF00'],
+                    'n' => ['title' => 'Turned off', 'move' => 'y', 'boxColor' => '000#FF0000'],
+                ]
             ]
         ],
-        'enumset' => [
-            'toggle' => [
-                'y' => ['title' => 'Turned on', 'move' => '', 'boxColor' => '120#00FF00'],
-                'n' => ['title' => 'Turned off', 'move' => 'y', 'boxColor' => '000#FF0000'],
+        'dict' => [
+            'field' => [
+                'toggle' => [
+                    'title' => 'Toggle',
+                    'storeRelationAbility' => 'one',
+                    'relation' => 'enumset',
+                    'onDelete' => 'RESTRICT',
+                    'elementId' => 'combo',
+                    'columnTypeId' => 'ENUM',
+                    'defaultValue' => 'y',
+                ]
+            ],
+            'enumset' => [
+                'toggle' => [
+                    'y' => ['title' => 'Turned on', 'move' => '', 'boxColor' => '120#00FF00'],
+                    'n' => ['title' => 'Turned off', 'move' => 'y', 'boxColor' => '000#FF0000'],
+                ]
             ]
-        ]
+        ],
     ];
 
     /**
@@ -445,38 +476,6 @@ class Indi_Ai {
         $php = str_replace("'elementId' => 'decimal',", "'elementId' => 'price',", $php);
         $php = str_replace("  'toggleTile' => 'textUnderImage',", "  'toggleTile' => 'y',", $php);
 
-        // Foreach field
-        $php = preg_replace_callback("~^field\('(?<table>.+?)', '(?<field>.+?)',\s+(?<props>.+?)\);\s*~ms", function($f) use ($code) {
-
-            $props = $this->toArray($f['props']); $table = $f['table']; $field = $f['field'];
-
-            // Append field definition
-            $this->ds[$table]['fields'][$field] = $props;
-
-            // Decide on wheter current entity is NOT a dictionary
-            if (
-                in($props['columnTypeId'], 'DATE,DATETIME')
-                || (
-                    count($this->ds[$table]['fields']) > 3
-                    && !str_ends_with($table, 'Type')
-                    && !in($f['table'], 'country,city')
-                )
-            ) {
-                $this->ds[$table]['isDict'] = false;
-            }
-
-            // If it's a Password-field - mark entity as used by a role
-            if ($field === 'password') {
-                $this->ds[$table]['isRole'] = true;
-            }
-
-            // Move field definitions at the top right after entities
-            file_put_contents($code, $f[0], FILE_APPEND);
-
-            // Return empty string to cut off from $php
-            return '';
-        }, $php);
-
         // Foreach enumset
         $php = preg_replace_callback("~enumset\('(?<table>.+?)', '(?<field>.+?)', '(?<alias>.+?)',\s+(?<props>.+?)\);\s*~ms", function($m) {
 
@@ -512,23 +511,6 @@ class Indi_Ai {
             }
         }, $php);
 
-        // Move full data-structures declarations from AI response to code file, with cutting it out of $php variable
-        $php = preg_replace_callback("~^(.+?\n)(section\(')~s", function($m) use ($code) {
-            file_put_contents($code, $m[1], FILE_APPEND);
-            return $m[2];
-        }, $php);
-
-        // Add role() for each entity having Password-field
-        foreach ($this->ds as $table => $entity) {
-            if ($entity['isRole']) {
-                if (!preg_match("~role\('$table',.+?\);\s*(//.+?|)\n~s", $php)) {
-                    $title = ucfirst($table);
-                    file_put_contents($code, "role('$table', ['title' => '$title', 'entityId' => '$table']);\n", FILE_APPEND);
-                }
-            }
-        }
-        file_put_contents($code, "\n", FILE_APPEND);
-
         // Strip sections data-sourced by non-existing entities and collect valid ones
         $php = preg_replace_callback("~section\('(?<section>.+?)', (?<props>.+?)\);\s*(//.+?|)\n~s", function($m) use ($code, $php){
             $props = $this->toArray($m['props']); $section = $m['section'];
@@ -543,13 +525,7 @@ class Indi_Ai {
         }, $php);
 
         // Trim php opening tag
-        //$php = preg_replace('~<\?php~', '', $php);
-        //$php = preg_replace('~( => )‘(.+?)’~', '$1\'$2\'', $php);
-
-        //$m[1] = $php;
         //$m[1] = preg_replace("~countInQtySum\('(?<table>.+?)', '(?<field>.+?)', '(?<param>.+?)', (?<value>.+?)\);$~sm", '', $m[1]);
-        //$php = $m[1];
-        //file_put_contents($code, $m[1], FILE_APPEND);
 
         //
         $php = preg_replace_callback("~section\('(?<section>.+?)', (?<props>.+?)\);\s*~s", function($m) use ($code, $php){
@@ -728,10 +704,6 @@ class Indi_Ai {
             $data = _var_export($data, 10);
             return "m('$entity')->new($data)->save();\n";
         }, $php);*/
-
-        //d($this->ds);
-        // Put remaining
-        file_put_contents($code, $php, FILE_APPEND);
     }
 
     /**
@@ -916,6 +888,9 @@ class Indi_Ai {
         return $txt;
     }
 
+    /**
+     *
+     */
     public function checkParsedCalls() {
 
         // Check entities
@@ -939,17 +914,22 @@ class Indi_Ai {
             }
         }
 
-        // Detect roles
+        // Prepare roles
         $this->prepareRoles();
+
+        // Prepare dicts
+        $this->prepareDicts();
+
+        // Prepare sections
+        $this->prepareSections();
     }
 
     public function prepareRoles() {
 
         // Collect entities having password-field
         foreach ($this->custom['field'] as $table => $fields)
-            foreach ($fields as $alias => &$ctor)
-                if ($alias === 'password')
-                    $this->isRole[$table] = $table;
+            if ($fields['password'] ?? 0)
+                $this->isRole[$table] = $table;
 
         // Foreach entity having password-field
         foreach ($this->isRole as $table) {
@@ -960,10 +940,10 @@ class Indi_Ai {
             }
 
             // Append fields that are minimum required for auth compatibility
-            $this->custom['field'][$table] = [...$this->custom['field'][$table], ...$this->user['field']];
+            $this->custom['field'][$table] = [...$this->custom['field'][$table], ...$this->meta['role']['field']];
 
             // Append enumset for toggle-field
-            $this->custom['enumset'][$table]['toggle'] = $this->user['enumset']['toggle'];
+            $this->custom['enumset'][$table]['toggle'] = $this->meta['role']['enumset']['toggle'];
 
             // Try to find role() call for this entity
             $found = false;
@@ -984,6 +964,56 @@ class Indi_Ai {
         foreach ($this->custom['role'] as $alias => &$ctor) {
             $this->checkRole($alias, $ctor);
         }
+    }
+
+    /**
+     *
+     */
+    public function prepareDicts() {
+
+        // Collect entities that are dictionaries
+        foreach ($this->custom['field'] as $table => $fields) {
+            $isDict = true;
+            if ($this->isRole[$table] ?? 0) {
+                $isDict = false;
+            } else if (isset($fields['title']) && isset($fields['email']) && isset($fields['phone'])) {
+                $isDict = false;
+            } else {
+                foreach ($fields as $alias => $ctor) {
+                    if (
+                        in($ctor['columnTypeId'], 'DATE,DATETIME')
+                        || str_ends_with($table, 'Task')
+                        || (
+                            count($this->custom['field'][$table]) > 3
+                            && !str_ends_with($table, 'Type')
+                            && !in($table, 'country,city')
+                        )
+                    ) {
+                        $isDict = false;
+                        break;
+                    }
+                }
+            }
+            if ($isDict) $this->isDict[$table] = $table;
+        }
+
+        // Foreach dictionary-entity
+        foreach ($this->isDict as $table) {
+
+            // Append fields that are minimum required for auth compatibility
+            $this->custom['field'][$table]['toggle'] = $this->meta['dict']['field']['toggle'];
+
+            // Append enumset for toggle-field
+            $this->custom['enumset'][$table]['toggle'] = $this->meta['dict']['enumset']['toggle'];
+        }
+    }
+
+
+    /**
+     *
+     */
+    public function prepareSections() {
+
     }
 
     public function writeParsedCalls() {
